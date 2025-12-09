@@ -22,7 +22,6 @@ jobs:
         exclude: |
           **/application/cache/**
           **/application/config/database.php
-          **/application/config/**
           **/.buildpath/**
           .ftp-deploy-sync-state.json
           .git-ftp.log
