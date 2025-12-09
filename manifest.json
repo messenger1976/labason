@@ -1,0 +1,46 @@
+{
+  "name": "Water Billing - Statement of Account",
+  "short_name": "Statement",
+  "description": "Customer Statement of Account - Water Billing System",
+  "start_url": "/master/statementofaccount/search",
+  "display": "standalone",
+  "background_color": "#f5f5f5",
+  "theme_color": "#5bc0de",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "img/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "img/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["utilities", "finance"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Search Statement",
+      "short_name": "Search",
+      "description": "Search for customer statement",
+      "url": "/master/statementofaccount/search",
+      "icons": [
+        {
+          "src": "img/logo.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+}
+
