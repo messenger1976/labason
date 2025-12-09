@@ -177,7 +177,7 @@ body {
 <div class="header">
   <img src="<?php echo base_url();?>images/mroxas-logo-report-new.jpg" alt="Water District Logo" class="logo">
   <!--<p style="font-size: 7pt;">PRES. M.A. ROXAS WATER DIST.</p>
-  <p style="font-size: 7pt;">Langatian, Pres. M. A. Roxas</p>
+  <p style="font-size: 7pt;">Langatian, LABASON</p>
   <p style="font-size: 7pt;">TIN 004-315-023-00000</p>-->
 </div>
 
