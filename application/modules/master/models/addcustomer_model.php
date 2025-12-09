@@ -13,6 +13,7 @@ class addcustomer_model extends CI_Model {
 	public $table_metercustomer = 'tbl_addmetercustomer';
 	public $table_customerreading = 'tbl_addcustomer_reading';
 	public $table_account ='tbl_subaccountgroup';
+	public $tbl_admininfo = 'tbl_admininfo';
 	// Autoloading a system library usin constructor method
 	public function __construct() {
         parent::__construct();

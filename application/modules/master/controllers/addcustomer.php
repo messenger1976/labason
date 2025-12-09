@@ -230,6 +230,10 @@ class addcustomer extends CI_Controller {
 	}
 	public function adminconfigurationupdate()
 	{
+		// Ensure database connection is available
+		if (!isset($this->db) || !is_object($this->db)) {
+			$this->load->database();
+		}
 		$this->load->library('image_lib');
 		$adminid						= $this->input->post('adminid');
 		$data['name'] 					= $this->input->post('name');
@@ -265,7 +269,6 @@ class addcustomer extends CI_Controller {
 														'size'      => $upload_data['file_size'],
 														'date'      => date('Y-m-d')
 													  );
-														$this->load->database();
 														$this->db->where('adminid', $adminid);
 														$this->db->update('tbl_adminlogo', $data_ary);
 							}
