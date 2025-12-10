@@ -243,13 +243,10 @@ class amountrate_model extends CI_Model {
 		
 		for ($i = $start; $i <= $end; $i++) {
 			// Apply incremental rate only if checkbox is checked AND incre is provided
+			// Match import_data.php logic: increment happens BEFORE using the rate for each iteration
 			if($apply_increment == 1 && $incre != '' && $incre != '0') {
-				// For first iteration, use base rate. For subsequent iterations, add increment
-				if($i > $start) {
-					$current_rate += floatval($incre);
-				} else {
-					$current_rate = $base_rate;
-				}
+				// Apply increment BEFORE using the rate (so first row also gets increment)
+				$current_rate += floatval($incre);
 			} else {
 				// If increment is not applied, use the same rate for all records
 				$current_rate = $base_rate;
