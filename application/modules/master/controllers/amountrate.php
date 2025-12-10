@@ -35,6 +35,25 @@ class amountrate extends CI_Controller {
 		$this->load->view($this->listPage,$data);
 	}
 	
+	/** AJAX endpoint to get per_unit by cubic_meter **/
+	public function get_rate_by_cubic_meter() {
+		$cubic_meter = $this->input->post('cubic_meter') !== null ? intval($this->input->post('cubic_meter')) : -1;
+		$classification_id = $this->input->post('classification_id') ? $this->input->post('classification_id') : '';
+		
+		// Allow 0 and positive values, but return 0 if cubic_meter is negative (e.g., when start is 0)
+		if($cubic_meter < 0) {
+			header('Content-Type: application/json');
+			echo json_encode(array('success' => false, 'per_unit' => 0));
+			exit;
+		}
+		
+		$per_unit = $this->my_model->get_per_unit_by_cubic_meter($cubic_meter, $classification_id);
+		
+		header('Content-Type: application/json');
+		echo json_encode(array('success' => true, 'per_unit' => floatval($per_unit)));
+		exit;
+	}
+	
 	/** AJAX endpoint for DataTables server-side processing **/
 	public function get_datatable_data() {
 		// Get DataTables parameters
@@ -51,8 +70,9 @@ class amountrate extends CI_Controller {
 			1 => 'tbl_classification.class_name',
 			2 => 'tbl_amountrate.cubic_meter',
 			3 => 'tbl_amountrate.per_unit',
-			4 => 'tbl_amountrate.status',
-			5 => 'tbl_amountrate.id'
+			4 => 'tbl_amountrate.commodity_charges',
+			5 => 'tbl_amountrate.status',
+			6 => 'tbl_amountrate.id'
 		);
 		$order_column = isset($columns[$order_column_index]) ? $columns[$order_column_index] : 'tbl_amountrate.cubic_meter';
 		
@@ -94,11 +114,14 @@ class amountrate extends CI_Controller {
 								</div>
 							</div>';
 			
+			$commodity_charges = isset($row['commodity_charges']) && $row['commodity_charges'] != '' ? number_format($row['commodity_charges'], 2) : '0.00';
+			
 			$data[] = array(
 				$i++,
 				stripslashes($row['class_name']),
 				stripslashes($row['cubic_meter']),
 				'<div align="right">'.stripslashes(number_format($row['per_unit'],2)).'</div>',
+				'<div align="right">'.stripslashes($commodity_charges).'</div>',
 				$status_html,
 				$action_html
 			);
@@ -123,24 +146,51 @@ class amountrate extends CI_Controller {
 	 
 		$header['roleResponsible'] = $this->top_model->get_responsibilities();
 		$data['classification'] = $this->addcustomer_model->get_classification();
-		if($this->input->post('add') != ''){
+		
+		// Check if this is an AJAX request (check for X-Requested-With header or accept header)
+		$is_ajax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') || 
+				   (!empty($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false);
+		
+		if($is_ajax && $this->input->post('add') != ''){
 			// Get form values
 			$classification = $this->input->post('classification');
 			$start = $this->input->post('start');
 			$end = $this->input->post('end');
 			$rate = $this->input->post('rate');
 			$incre = $this->input->post('incre') ? $this->input->post('incre') : '';
+			$apply_increment = $this->input->post('apply_increment') ? intval($this->input->post('apply_increment')) : 0;
 			
-			// Validate inputs
-			if(empty($classification) || empty($start) || empty($end) || empty($rate)) {
-				$data['msg'] = "Please fill in all required fields.";
-			} elseif($start > $end) {
-				$data['msg'] = "Start value must be less than or equal to End value.";
+			// Validate inputs - allow 0 values (empty() returns true for 0, so use explicit checks)
+			// Check if values are set and not empty strings (allow 0 as valid value)
+			$start = trim($start);
+			$end = trim($end);
+			$rate = trim($rate);
+			
+			if(empty($classification) || 
+			   $start === '' || $start === null || 
+			   $end === '' || $end === null || 
+			   $rate === '' || $rate === null) {
+				header('Content-Type: application/json');
+				echo json_encode(array('success' => false, 'message' => 'Please fill in all required fields.'));
+				exit;
+			}
+			
+			// Convert to numbers for comparison
+			$start = intval($start);
+			$end = intval($end);
+			$rate = floatval($rate);
+			
+			if($start > $end) {
+				header('Content-Type: application/json');
+				echo json_encode(array('success' => false, 'message' => 'Start value must be less than or equal to End value.'));
+				exit;
 			} elseif($start < 0 || $end < 0) {
-				$data['msg'] = "Start and End values must be positive numbers.";
+				header('Content-Type: application/json');
+				echo json_encode(array('success' => false, 'message' => 'Start and End values must be 0 or positive numbers.'));
+				exit;
 			} else {
 				// Call batch insert/update method
-				$result = $this->my_model->batch_add_records($classification, $start, $end, $rate, $incre);
+				$result = $this->my_model->batch_add_records($classification, $start, $end, $rate, $incre, $apply_increment);
 				
 				if($result['success'] > 0) {
 					$msg = "Successfully processed " . $result['success'] . " record(s). ";
@@ -155,10 +205,78 @@ class amountrate extends CI_Controller {
 						$msg .= " Errors: " . implode(", ", $result['errors']);
 					}
 					
-					$this->session->set_flashdata('msg_succ', $msg);
-					redirect($this->listPage_redirect);
+					header('Content-Type: application/json');
+					echo json_encode(array(
+						'success' => true, 
+						'message' => $msg,
+						'inserted' => $result['inserted'],
+						'updated' => $result['updated'],
+						'total' => $result['success']
+					));
+					exit;
 				} else {
-					$data['msg'] = "No records were processed. " . (!empty($result['errors']) ? implode(", ", $result['errors']) : "");
+					header('Content-Type: application/json');
+					echo json_encode(array(
+						'success' => false, 
+						'message' => "No records were processed. " . (!empty($result['errors']) ? implode(", ", $result['errors']) : "")
+					));
+					exit;
+				}
+			}
+		}
+		
+		// Regular form submission (non-AJAX) - keep for backward compatibility
+		if($this->input->post('add') != '' && !$is_ajax){
+			// Get form values
+			$classification = $this->input->post('classification');
+			$start = $this->input->post('start');
+			$end = $this->input->post('end');
+			$rate = $this->input->post('rate');
+			$incre = $this->input->post('incre') ? $this->input->post('incre') : '';
+			
+			// Validate inputs - allow 0 values (empty() returns true for 0, so use explicit checks)
+			$start = trim($start);
+			$end = trim($end);
+			$rate = trim($rate);
+			
+			if(empty($classification) || 
+			   $start === '' || $start === null || 
+			   $end === '' || $end === null || 
+			   $rate === '' || $rate === null) {
+				$data['msg'] = "Please fill in all required fields.";
+			} else {
+				// Convert to numbers for comparison
+				$start = intval($start);
+				$end = intval($end);
+				$rate = floatval($rate);
+				
+				if($start > $end) {
+					$data['msg'] = "Start value must be less than or equal to End value.";
+				} elseif($start < 0 || $end < 0) {
+					$data['msg'] = "Start and End values must be 0 or positive numbers.";
+				} else {
+					$apply_increment = $this->input->post('apply_increment') ? intval($this->input->post('apply_increment')) : 0;
+					// Call batch insert/update method
+					$result = $this->my_model->batch_add_records($classification, $start, $end, $rate, $incre, $apply_increment);
+					
+					if($result['success'] > 0) {
+						$msg = "Successfully processed " . $result['success'] . " record(s). ";
+						if($result['inserted'] > 0) {
+							$msg .= $result['inserted'] . " inserted, ";
+						}
+						if($result['updated'] > 0) {
+							$msg .= $result['updated'] . " updated.";
+						}
+						
+						if(!empty($result['errors'])) {
+							$msg .= " Errors: " . implode(", ", $result['errors']);
+						}
+						
+						$this->session->set_flashdata('msg_succ', $msg);
+						redirect($this->listPage_redirect);
+					} else {
+						$data['msg'] = "No records were processed. " . (!empty($result['errors']) ? implode(", ", $result['errors']) : "");
+					}
 				}
 			}
 		}

@@ -36,6 +36,28 @@ class amountrate_model extends CI_Model {
 		}
 		return $result;
     }
+	
+	/** Get per_unit by cubic_meter and optionally classification_id **/
+	public function get_per_unit_by_cubic_meter($cubic_meter, $classification_id = '') {
+		$this->db->select("per_unit");
+		$this->db->from($this->table_name);
+		$this->db->where('cubic_meter', $cubic_meter);
+		
+		// If classification_id is provided, filter by it
+		if($classification_id != '' && $classification_id != '0') {
+			$this->db->where('classification_id', $classification_id);
+		}
+		
+		$this->db->order_by('id', 'desc');
+		$this->db->limit(1);
+		$query = $this->db->get();
+		
+		if($query->num_rows() > 0) {
+			$result = $query->row_array();
+			return $result['per_unit'];
+		}
+		return 0;
+	}
   	/** In Function Add Check Exits records for select table **/
 	public function exit_details($exit_data) {
         $this->db->select("*");
@@ -198,6 +220,7 @@ class amountrate_model extends CI_Model {
 			$this->db->like('tbl_classification.class_name', $search);
 			$this->db->or_like('tbl_amountrate.cubic_meter', $search);
 			$this->db->or_like('tbl_amountrate.per_unit', $search);
+			$this->db->or_like('tbl_amountrate.commodity_charges', $search);
 			$this->db->group_end();
 		}
 		
@@ -207,7 +230,7 @@ class amountrate_model extends CI_Model {
 	}
 	
 	/** Batch insert/update records based on range (from import_data.php logic) **/
-	public function batch_add_records($classification_id, $start, $end, $rate, $incre = '') {
+	public function batch_add_records($classification_id, $start, $end, $rate, $incre = '', $apply_increment = 0) {
 		$results = array(
 			'success' => 0,
 			'updated' => 0,
@@ -215,42 +238,60 @@ class amountrate_model extends CI_Model {
 			'errors' => array()
 		);
 		
-		$current_rate = floatval($rate);
+		$base_rate = floatval($rate);
+		$current_rate = $base_rate;
 		
 		for ($i = $start; $i <= $end; $i++) {
-			// Apply incremental rate if provided (same logic as import_data.php)
-			if($incre != '' && $incre != '0') {
-				$current_rate += floatval($incre);
+			// Apply incremental rate only if checkbox is checked AND incre is provided
+			if($apply_increment == 1 && $incre != '' && $incre != '0') {
+				// For first iteration, use base rate. For subsequent iterations, add increment
+				if($i > $start) {
+					$current_rate += floatval($incre);
+				} else {
+					$current_rate = $base_rate;
+				}
+			} else {
+				// If increment is not applied, use the same rate for all records
+				$current_rate = $base_rate;
 			}
 			
-			// Check if record exists
+			// Check if record exists with BOTH classification_id AND cubic_meter
 			$this->db->select('id');
 			$this->db->from($this->table_name);
 			$this->db->where('classification_id', $classification_id);
 			$this->db->where('cubic_meter', $i);
 			$query = $this->db->get();
 			
+			// Prepare commodity_charges value (use incre if provided, otherwise 0)
+			$commodity_charges = ($incre != '' && $incre != '0') ? floatval($incre) : 0;
+			
 			if($query->num_rows() > 0) {
-				// Update existing record
+				// Record exists: UPDATE existing record
 				$record = $query->row_array();
 				$update_data = array(
 					'per_unit' => $current_rate,
+					'commodity_charges' => $commodity_charges,
 					'status' => 1,
 					'create_date_time' => date('Y-m-d H:i:s')
 				);
+				// Update using ID for safety, but we already verified classification_id and cubic_meter match
 				$this->db->where('id', $record['id']);
+				// Also add classification_id and cubic_meter to WHERE clause for extra safety
+				$this->db->where('classification_id', $classification_id);
+				$this->db->where('cubic_meter', $i);
 				if($this->db->update($this->table_name, $update_data)) {
 					$results['updated']++;
 					$results['success']++;
 				} else {
-					$results['errors'][] = "Error updating record for cubic_meter: $i";
+					$results['errors'][] = "Error updating record for classification_id: $classification_id, cubic_meter: $i";
 				}
 			} else {
-				// Insert new record
+				// Record does NOT exist: INSERT new record
 				$insert_data = array(
 					'classification_id' => $classification_id,
 					'cubic_meter' => $i,
 					'per_unit' => $current_rate,
+					'commodity_charges' => $commodity_charges,
 					'status' => 1,
 					'create_date_time' => date('Y-m-d H:i:s')
 				);
@@ -258,7 +299,7 @@ class amountrate_model extends CI_Model {
 					$results['inserted']++;
 					$results['success']++;
 				} else {
-					$results['errors'][] = "Error inserting record for cubic_meter: $i";
+					$results['errors'][] = "Error inserting record for classification_id: $classification_id, cubic_meter: $i";
 				}
 			}
 		}

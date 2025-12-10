@@ -160,6 +160,7 @@
 												<th>Classification</th>
 												<th>Cubic Meter</th>
 												<th>Meter Rate</th>
+												<th>Charges/Consumption</th>
 												<th>Status</th>
 												<th>Action</th>
 											</tr>
@@ -267,7 +268,8 @@
 						{ "data": 2, "orderable": true },
 						{ "data": 3, "orderable": false },
 						{ "data": 4, "orderable": false },
-						{ "data": 5, "orderable": false }
+						{ "data": 5, "orderable": false },
+						{ "data": 6, "orderable": false }
 					],
 					"order": [[2, 'asc']],
 					"pageLength": 10,
