@@ -55,7 +55,6 @@
 								<?php if($this->uri->segment(2)=='feesplaning'){echo 'active open';}?>
 								<?php if($this->uri->segment(2)=='paymentmonthlycustomer'){echo 'active open';}?>
 								<?php if($this->uri->segment(2)=='addpaymentcustomer'){echo 'active open';}?>
-								<?php if($this->uri->segment(2)=='amountrate'){echo 'active open';}?>	
 								<?php if($this->uri->segment(2)=='leakingentry'){echo 'active open';}?>							   
 						     ">
 						<a href="#"><i class="fa fa-lg fa-fw fa-money"></i> <span class="menu-item-parent">Finance</span></a>
@@ -74,12 +73,6 @@
 							</li>
 							<?php } ?>
 
-
-							<?php if((array_key_exists('amountrate',$roleResponsible) && ($roleResponsible['amountrate'] == 1) ) || ($this->session->userdata('usertype') == 'admin')){ ?>
-								<li class="<?php if($this->uri->segment(2)=='amountrate'){echo 'active';}?>">
-									<a href="<?php echo ADMIN_URL;?>amountrate">Per Unit Value</a>
-								</li>
-							<?php } ?>
 							<?php if((array_key_exists('feesplaning',$roleResponsible) && ($roleResponsible['feesplaning'] == 1) ) || ($this->session->userdata('usertype') == 'admin')){ ?>
 								<li class="<?php if($this->uri->segment(2)=='feesplaning'){echo 'active';}?>">
 									<a href="<?php echo ADMIN_URL;?>feesplaning">Monthly Fees Plans</a>
@@ -309,7 +302,8 @@
 								   <?php if($this->uri->segment(2)=='employee_logins'){echo 'active open';}?>
 								   <?php if($this->uri->segment(2)=='mobilenotifications'){echo 'active open';}?>
 								   <?php if($this->uri->segment(2)=='classification_category'){echo 'active open';}?>
-								   <?php if($this->uri->segment(2)=='classification'){echo 'active open';}?>">
+								   <?php if($this->uri->segment(2)=='classification'){echo 'active open';}?>
+								   <?php if($this->uri->segment(2)=='amountrate'){echo 'active open';}?>">
 						<a href="#"><i class="fa fa-lg fa-fw fa-user"></i> <span class="menu-item-parent">Admin</span></a>
 						<ul>
 
@@ -357,6 +351,11 @@
 							<li class="<?php if($this->uri->segment(2)=='classification') echo 'active';?>">
 								<a href="<?php echo ADMIN_URL;?>classification/"> Classification</a>
 							</li>
+							<?php if((array_key_exists('amountrate',$roleResponsible) && ($roleResponsible['amountrate'] == 1) ) || ($this->session->userdata('usertype') == 'admin')){ ?>
+								<li class="<?php if($this->uri->segment(2)=='amountrate'){echo 'active';}?>">
+									<a href="<?php echo ADMIN_URL;?>amountrate">Per Unit Value</a>
+								</li>
+							<?php } ?>
 								 
 						</ul>
 					</li>
