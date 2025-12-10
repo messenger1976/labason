@@ -307,7 +307,9 @@
 									<?php if($this->uri->segment(2)=='addbillingperiod'){echo 'active open';}?>
 									<?php if($this->uri->segment(2)=='createbalanceforward'){echo 'active open';}?>
 								   <?php if($this->uri->segment(2)=='employee_logins'){echo 'active open';}?>
-								   <?php if($this->uri->segment(2)=='mobilenotifications'){echo 'active open';}?>">
+								   <?php if($this->uri->segment(2)=='mobilenotifications'){echo 'active open';}?>
+								   <?php if($this->uri->segment(2)=='classification_category'){echo 'active open';}?>
+								   <?php if($this->uri->segment(2)=='classification'){echo 'active open';}?>">
 						<a href="#"><i class="fa fa-lg fa-fw fa-user"></i> <span class="menu-item-parent">Admin</span></a>
 						<ul>
 
@@ -349,6 +351,12 @@
 									<a href="<?php echo ADMIN_URL;?>database_backup/"><i class="fa fa-database"></i> Database Backup</a>
 								</li>
 							<?php } ?>
+							<li class="<?php if($this->uri->segment(2)=='classification_category') echo 'active';?>">
+								<a href="<?php echo ADMIN_URL;?>classification_category/"> Classification Category</a>
+							</li>
+							<li class="<?php if($this->uri->segment(2)=='classification') echo 'active';?>">
+								<a href="<?php echo ADMIN_URL;?>classification/"> Classification</a>
+							</li>
 								 
 						</ul>
 					</li>
@@ -359,9 +367,7 @@
 						</li>
 					<?php } ?>	-->
 					<li class="<?php if($this->uri->segment(2)=='change_username'){echo 'active open';}?>
-								   <?php if($this->uri->segment(2)=='change_password'){echo 'active open';}?>
-								   <?php if($this->uri->segment(2)=='classification_category'){echo 'active open';}?>
-								   <?php if($this->uri->segment(2)=='classification'){echo 'active open';}?>">
+								   <?php if($this->uri->segment(2)=='change_password'){echo 'active open';}?>">
 						<a href="#"><i class="fa fa-lg fa-fw fa fa-key"></i> <span class="menu-item-parent">Setting</span></a>
 						<ul>
 							<?php
@@ -378,12 +384,6 @@
 							</li>
 							<li class="<?php if($this->uri->segment(2)=='change_password' && $this->uri->segment(2)=='change_password') echo 'active';?>">
 								<a href="<?php echo ADMIN_URL;?>change_password/"> Change Password</a>
-							</li>
-							<li class="<?php if($this->uri->segment(2)=='classification_category') echo 'active';?>">
-								<a href="<?php echo ADMIN_URL;?>classification_category/"> Classification Category</a>
-							</li>
-							<li class="<?php if($this->uri->segment(2)=='classification') echo 'active';?>">
-								<a href="<?php echo ADMIN_URL;?>classification/"> Classification</a>
 							</li>
 						</ul>
 					</li>

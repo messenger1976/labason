@@ -92,9 +92,7 @@
 					<?php } ?>-->
 					
 					<li class="<?php if($this->uri->segment(2)=='change_username'){echo 'active open';}?>
-<?php if($this->uri->segment(2)=='change_password'){echo 'active open';}?>
-<?php if($this->uri->segment(2)=='classification_category'){echo 'active open';}?>
-<?php if($this->uri->segment(2)=='classification'){echo 'active open';}?>">
+<?php if($this->uri->segment(2)=='change_password'){echo 'active open';}?>">
 						<a href="#"><i class="fa fa-lg fa-fw fa fa-key"></i> <span class="menu-item-parent">Setting</span></a>
 						<ul>
 							<?php
@@ -112,6 +110,13 @@
 							<li class="<?php if($this->uri->segment(2)=='change_password' && $this->uri->segment(2)=='change_password') echo 'active';?>">
 								<a href="<?php echo ADMIN_URL;?>change_password/"> Change Password</a>
 							</li>
+						</ul>
+					</li>
+					<?php if((array_key_exists('admin',$roleResponsible) && ($roleResponsible['admin'] == 1) ) || ($this->session->userdata('usertype') == 'admin')){ ?>
+					<li class="<?php if($this->uri->segment(2)=='classification_category'){echo 'active open';}?>
+<?php if($this->uri->segment(2)=='classification'){echo 'active open';}?>">
+						<a href="#"><i class="fa fa-lg fa-fw fa-user"></i> <span class="menu-item-parent">Admin</span></a>
+						<ul>
 							<li class="<?php if($this->uri->segment(2)=='classification_category') echo 'active';?>">
 								<a href="<?php echo ADMIN_URL;?>classification_category/"> Classification Category</a>
 							</li>
@@ -120,6 +125,7 @@
 							</li>
 						</ul>
 					</li>
+					<?php } ?>
 					</ul>
 			</nav>
 			
