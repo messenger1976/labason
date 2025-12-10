@@ -84,6 +84,7 @@
 								<header style="height: 42px;">
 									<span class="widget-icon"> <i class="fa fa-users"></i> </span>
 									<p style="padding: 5px 0 0 45px;font-size: 16px;"><strong>Manage Zone</strong>
+									<button class="btn btn-sm btn-primary" style="float:right;"><a href="<?php echo ADMIN_URL?>add_zone/add/" style="color: #fff;"><i class="fa fa-plus"></i> Add Zone</a></button>
 									</p>
 								</header>
 				
