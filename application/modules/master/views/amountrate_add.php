@@ -35,7 +35,7 @@
 				<ol class="breadcrumb">
 					<li><a href="<?php echo ADMIN_URL;?>">Home</a></li>
 					<li><a href="<?php echo ADMIN_URL;?>amountrate">Meter-rate</a></li>
-					<li>Edit</li>
+					<li>Add</li>
 				</ol>
 				
 			</div>
@@ -120,7 +120,7 @@
 											<?php } ?>	
 											
 											<fieldset>
-														<legend>Meter-rate </legend>
+													<legend>Generate Meter Rate Data</legend>
                                                         <div class="form-group col-lg-12">
                                                             <div class="col-lg-12 controls">
                                                                 <div class="form-group">
@@ -137,23 +137,41 @@
 												<div class="form-group col-lg-6">
 													<div class="col-lg-12 controls">
 														<div class="form-group">
-															<span class="input-group-addon"><i class="icon-user"></i><strong>Cubic Meter : </strong></span>
-															<input  class="form-control"  id="cubic_meter" name="cubic_meter" value="<?php echo $record['per_unit']; ?>" required/>
-															<?php echo form_error('cubic_meter'); ?>
+															<span class="input-group-addon"><i class="icon-user"></i><strong>Start: <span style="color:red;font-weight: bold;">*</span></strong></span>
+															<input type="number" class="form-control" id="start" name="start" min="0" required/>
+															<?php echo form_error('start'); ?>
 														</div>
 													</div>
 												</div>
 												<div class="form-group col-lg-6">
 													<div class="col-lg-12 controls">
 														<div class="form-group">
-															<span class="input-group-addon"><i class="icon-user"></i><strong>Meter rate : </strong></span>
-															<input  class="form-control"  id="amountrate" name="amountrate" value="<?php echo $record['per_unit']; ?>" required/>
-															<?php echo form_error('amountrate'); ?>
+															<span class="input-group-addon"><i class="icon-user"></i><strong>End: <span style="color:red;font-weight: bold;">*</span></strong></span>
+															<input type="number" class="form-control" id="end" name="end" min="0" required/>
+															<?php echo form_error('end'); ?>
+														</div>
+													</div>
+												</div>
+												<div class="form-group col-lg-6">
+													<div class="col-lg-12 controls">
+														<div class="form-group">
+															<span class="input-group-addon"><i class="icon-user"></i><strong>Rate: <span style="color:red;font-weight: bold;">*</span></strong></span>
+															<input type="number" class="form-control" id="rate" name="rate" step="0.01" placeholder="0.00" min="0" required/>
+															<?php echo form_error('rate'); ?>
+														</div>
+													</div>
+												</div>
+												<div class="form-group col-lg-6">
+													<div class="col-lg-12 controls">
+														<div class="form-group">
+															<span class="input-group-addon"><i class="icon-user"></i><strong>Incremental:</strong></span>
+															<input type="number" class="form-control" id="incre" name="incre" step="0.01" placeholder="0.00" min="0"/>
+															<?php echo form_error('incre'); ?>
 														</div>
 													</div>
 												</div>		
 														
-							
+											
 													</fieldset>
 
 													<div class="form-actions">

@@ -101,12 +101,28 @@
 							<!-- Widget ID (each widget will need unique ID)-->
 							<div class="jarviswidget jarviswidget-color-darken" id="wid-id-0" data-widget-editbutton="false">
 								
-								<header style="height: 42px;">
-									<span class="widget-icon"> <i class="fa fa-users"></i> </span>
-									<p style="padding: 5px 0 0 45px;font-size: 16px;"><strong>Meter Rate</strong>
-									<button class="btn btn-sm btn-primary" style="float:right;"><a href="<?php echo ADMIN_URL?>amountrate/add/" style="color: #fff;"><i class="fa fa-plus"></i> Add Meter Rate</a></button>
-									</p>
-								</header>
+							<header style="height: 42px;">
+								<span class="widget-icon"> <i class="fa fa-users"></i> </span>
+								<p style="padding: 5px 0 0 45px;font-size: 16px;"><strong>Meter Rate</strong>
+								<button class="btn btn-sm btn-primary" style="float:right;"><a href="<?php echo ADMIN_URL?>amountrate/add/" style="color: #fff;"><i class="fa fa-plus"></i> Add Meter Rate</a></button>
+								</p>
+							</header>
+							
+							<!-- Classification Filter -->
+							<div style="padding: 10px 15px; background: #f5f5f5; border-bottom: 1px solid #ddd;">
+								<div class="row">
+									<div class="col-md-4">
+										<label><strong>Filter by Classification:</strong></label>
+										<select class="form-control" id="filter_classification" style="width: 100%;">
+											<option value="0">All Classifications</option>
+											<?php if(isset($classification) && count($classification) > 0) { 
+												foreach($classification as $key => $value){ ?>
+													<option value="<?php echo $value['class_id'];?>"><?php echo $value['class_name'];?></option>
+											<?php } } ?>
+										</select>
+									</div>
+								</div>
+							</div>
 				
 								<!-- widget div-->
 								<div>
@@ -134,66 +150,24 @@
                                         }
                                     </script>
 				                    <form method="post" action="<?php echo ADMIN_URL;?>addcustomer/multi_delete">
-										<!-- widget content -->
-										<div class="widget-body no-padding">
-										   <table id="dt_basic" class="table table-striped table-bordered table-hover" width="100%">
-											
-												<thead>			                
-													<tr>
-														<!--<th data-hide="phone"><input type="checkbox" class="ace" name="delete_ids[]" id="delete_ids[]" value="<?php echo $row['id'];?>" /></th>-->
-														<th data-hide="phone">S No</th>
-														<th data-hide="expand">Classification</th>
-														<th data-hide="expand">Cubic Meter</th>
-														<th data-hide="expand">Meter Rate</th>
-														<th data-hide="expand">Status</th>
-														<th data-hide="expand">Action</th>
-													</tr>
-												</thead>
-												<tbody>
-												  <?php
-														if(count($record) > 0){
-                                                        $i=1;
-                                                        foreach($record as $key => $row){ 
-													?>   
-													<tr>
-														<!--<td><label>
-																<input type="checkbox" class="ace" name="delete_ids[]" id="delete_ids[]" value="<?php echo $row['id'];?>" />
-																<span class="lbl"></span>
-															</label>
-														</td>-->
-														<td><?php echo $i; ?></td>
-														<td><?php echo stripslashes($row['class_name']); ?></td>
-														<td><?php echo stripslashes($row['cubic_meter']); ?></td>
-														<td align="right"><?php echo stripslashes(number_format($row['per_unit'],2)); ?></td>
-														<td><span <?php if($row['status']== 1){ echo " class='label label-success arrowed-in arrowed-in-right'"; } elseif($row['status']== 0){ echo "class='label label-danger arrowed'"; } ?>><a href="JavaScript:if(confirm('Are you sure want to Chanage the Status?')==true){window.location='<?php echo ADMIN_URL;?>amountrate/status/<?php echo $row['id']?>/<?php echo $row['status'];?>';}" style="color:#FFF; text-decoration:none;"><?php if($row['status']== 1){ echo "Active"; } elseif($row['status']== 0){ echo "De-Active"; } ?></a></span></td>
-														
-														   <div class="visible-md visible-lg hidden-sm hidden-xs action-buttons"><td><div class="visible-md visible-lg hidden-sm hidden-xs action-buttons">
-															   <a class="green" href="<?php echo ADMIN_URL;?>amountrate/edit/<?php echo $row['id']; ?>" title="Edit">
-																		<i class="fa fa-edit"></i>
-																</a>
-															</div>
-																<div class="visible-xs visible-sm hidden-md hidden-lg">
-																	<div class="inline position-relative">
-																		<button class="btn btn-minier btn-yellow dropdown-toggle" data-toggle="dropdown">
-																			<i class="icon-caret-down icon-only bigger-120"></i>
-																		</button>
-																		
-																		<ul class="dropdown-menu dropdown-only-icon dropdown-yellow pull-right dropdown-caret dropdown-close">
-																			<li>
-																			    <a href="<?php echo ADMIN_URL;?>amountrate/edit/<?php echo $row['id']; ?>" class="tooltip-success" data-rel="tooltip" title="Edit">
-																					<span class="green">
-																						<img src="<?php echo base_url();?>images/favicon/document-edit.gif">
-																					</span>
-																				</a>
-																			</li>
-																			
-																		</ul>
-																	</div>
-																</div></td>
-													</tr>
-														<?php $i++;} }?>	
-												</tbody>
-											</table>
+									<!-- widget content -->
+									<div class="widget-body no-padding">
+									   <table id="dt_basic" class="table table-striped table-bordered table-hover" width="100%">
+										
+										<thead>			                
+											<tr>
+												<th>S No</th>
+												<th>Classification</th>
+												<th>Cubic Meter</th>
+												<th>Meter Rate</th>
+												<th>Status</th>
+												<th>Action</th>
+											</tr>
+										</thead>
+										<tbody>
+											<!-- Data will be loaded via AJAX -->
+										</tbody>
+									</table>
 											
 
 										</div>
@@ -266,7 +240,7 @@
 			Also see: http://legacy.datatables.net/usage/features
 			*/	
 	
-			/* BASIC ;*/
+			/* BASIC - Server-side Processing */
 				var responsiveHelper_dt_basic = undefined;
 				var responsiveHelper_datatable_fixed_column = undefined;
 				var responsiveHelper_datatable_col_reorder = undefined;
@@ -276,14 +250,35 @@
 					tablet : 1024,
 					phone : 480
 				};
-	
-				$('#dt_basic').dataTable({
+
+				var table = $('#dt_basic').DataTable({
+					"processing": true,
+					"serverSide": true,
+					"ajax": {
+						"url": "<?php echo ADMIN_URL;?>amountrate/get_datatable_data",
+						"type": "POST",
+						"data": function(d) {
+							d.classification_id = $('#filter_classification').val();
+						}
+					},
+					"columns": [
+						{ "data": 0, "orderable": false },
+						{ "data": 1, "orderable": true },
+						{ "data": 2, "orderable": true },
+						{ "data": 3, "orderable": false },
+						{ "data": 4, "orderable": false },
+						{ "data": 5, "orderable": false }
+					],
+					"order": [[2, 'asc']],
+					"pageLength": 10,
+					"lengthMenu": [[10, 25, 50, 100], [10, 25, 50, 100]],
 					"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-12 hidden-xs'l>r>"+
 						"t"+
 						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
 					"autoWidth" : true,
 			        "oLanguage": {
-					    "sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
+					    "sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>',
+						"sProcessing": "Loading data..."
 					},
 					"preDrawCallback" : function() {
 						// Initialize the responsive datatables helper once.
@@ -298,7 +293,12 @@
 						responsiveHelper_dt_basic.respond();
 					}
 				});
-	
+				
+				// Reload table when classification filter changes
+				$('#filter_classification').on('change', function() {
+					table.ajax.reload();
+				});
+
 			/* END BASIC */
 			
 			/* COLUMN FILTER  */

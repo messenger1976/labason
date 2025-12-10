@@ -150,6 +150,122 @@ class amountrate_model extends CI_Model {
 		return $result;
 	}
 	
+	/** Server-side pagination: Get paginated records with filtering **/
+	public function get_paginated_records($start = 0, $length = 10, $search = '', $order_column = 'cubic_meter', $order_dir = 'asc', $classification_id = '') {
+		$this->db->select("tbl_amountrate.*,tbl_classification.*");
+		$this->db->from($this->table_name);
+		$this->db->join('tbl_classification', 'tbl_amountrate.classification_id = tbl_classification.class_id');
+		
+		// Apply classification filter
+		if($classification_id != '' && $classification_id != '0') {
+			$this->db->where('tbl_amountrate.classification_id', $classification_id);
+		}
+		
+		// Apply search filter
+		if($search != '') {
+			$this->db->group_start();
+			$this->db->like('tbl_classification.class_name', $search);
+			$this->db->or_like('tbl_amountrate.cubic_meter', $search);
+			$this->db->or_like('tbl_amountrate.per_unit', $search);
+			$this->db->group_end();
+		}
+		
+		// Order by
+		$this->db->order_by($order_column, $order_dir);
+		
+		// Limit and offset
+		$this->db->limit($length, $start);
+		
+		$query = $this->db->get();
+		$result = $query->result_array();
+		return $result;
+	}
+	
+	/** Server-side pagination: Get total count with filtering **/
+	public function get_total_count($search = '', $classification_id = '') {
+		$this->db->select("COUNT(tbl_amountrate.id) as total");
+		$this->db->from($this->table_name);
+		$this->db->join('tbl_classification', 'tbl_amountrate.classification_id = tbl_classification.class_id');
+		
+		// Apply classification filter
+		if($classification_id != '' && $classification_id != '0') {
+			$this->db->where('tbl_amountrate.classification_id', $classification_id);
+		}
+		
+		// Apply search filter
+		if($search != '') {
+			$this->db->group_start();
+			$this->db->like('tbl_classification.class_name', $search);
+			$this->db->or_like('tbl_amountrate.cubic_meter', $search);
+			$this->db->or_like('tbl_amountrate.per_unit', $search);
+			$this->db->group_end();
+		}
+		
+		$query = $this->db->get();
+		$result = $query->row_array();
+		return $result['total'];
+	}
+	
+	/** Batch insert/update records based on range (from import_data.php logic) **/
+	public function batch_add_records($classification_id, $start, $end, $rate, $incre = '') {
+		$results = array(
+			'success' => 0,
+			'updated' => 0,
+			'inserted' => 0,
+			'errors' => array()
+		);
+		
+		$current_rate = floatval($rate);
+		
+		for ($i = $start; $i <= $end; $i++) {
+			// Apply incremental rate if provided (same logic as import_data.php)
+			if($incre != '' && $incre != '0') {
+				$current_rate += floatval($incre);
+			}
+			
+			// Check if record exists
+			$this->db->select('id');
+			$this->db->from($this->table_name);
+			$this->db->where('classification_id', $classification_id);
+			$this->db->where('cubic_meter', $i);
+			$query = $this->db->get();
+			
+			if($query->num_rows() > 0) {
+				// Update existing record
+				$record = $query->row_array();
+				$update_data = array(
+					'per_unit' => $current_rate,
+					'status' => 1,
+					'create_date_time' => date('Y-m-d H:i:s')
+				);
+				$this->db->where('id', $record['id']);
+				if($this->db->update($this->table_name, $update_data)) {
+					$results['updated']++;
+					$results['success']++;
+				} else {
+					$results['errors'][] = "Error updating record for cubic_meter: $i";
+				}
+			} else {
+				// Insert new record
+				$insert_data = array(
+					'classification_id' => $classification_id,
+					'cubic_meter' => $i,
+					'per_unit' => $current_rate,
+					'status' => 1,
+					'create_date_time' => date('Y-m-d H:i:s')
+				);
+				if($this->db->insert($this->table_name, $insert_data)) {
+					$results['inserted']++;
+					$results['success']++;
+				} else {
+					$results['errors'][] = "Error inserting record for cubic_meter: $i";
+				}
+			}
+		}
+		
+		return $results;
+	}
+	
 }
 
 
