@@ -121,6 +121,11 @@
 											<?php } } ?>
 										</select>
 									</div>
+									<div class="col-md-4" style="padding-top: 25px;">
+										<a href="#" id="exportExcelBtn" class="btn btn-sm btn-success">
+											<i class="fa fa-file-excel-o"></i> Export to Excel
+										</a>
+									</div>
 								</div>
 							</div>
 				
@@ -299,6 +304,14 @@
 				// Reload table when classification filter changes
 				$('#filter_classification').on('change', function() {
 					table.ajax.reload();
+				});
+				
+				// Export to Excel button click handler
+				$('#exportExcelBtn').on('click', function(e) {
+					e.preventDefault();
+					var classificationId = $('#filter_classification').val() || '0';
+					var url = "<?php echo ADMIN_URL;?>amountrate/export_excel/" + classificationId;
+					window.location.href = url;
 				});
 
 			/* END BASIC */

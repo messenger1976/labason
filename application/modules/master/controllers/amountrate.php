@@ -346,6 +346,67 @@ class amountrate extends CI_Controller {
 				$this->load->view($this->addassetsajax,$data);
 			}		
 	}	
+	/** Export to Excel Function **/
+	public function export_excel($classification_id = '0') {
+		$this->load->helper('csv');
+		
+		// Normalize classification_id
+		$classification_id = ($classification_id == '0' || $classification_id == '') ? '' : $classification_id;
+		
+		// Get all records based on classification filter
+		$classification_id = ($classification_id == '0' || $classification_id == '') ? '' : $classification_id;
+		
+		// Get all records (no pagination for export)
+		$records = $this->my_model->get_all_records_for_export($classification_id);
+		
+		// Prepare data array for CSV export
+		$export_data = array();
+		
+		// Add header row
+		$export_data[] = array(
+			'S No',
+			'Classification',
+			'Cubic Meter',
+			'Meter Rate',
+			'Charges/Consumption',
+			'Status'
+		);
+		
+		// Add data rows
+		$i = 1;
+		foreach($records as $row) {
+			$status = ($row['status'] == 1) ? 'Active' : 'De-Active';
+			$commodity_charges = isset($row['commodity_charges']) && $row['commodity_charges'] != '' ? number_format($row['commodity_charges'], 2) : '0.00';
+			
+			$export_data[] = array(
+				$i++,
+				stripslashes($row['class_name']),
+				stripslashes($row['cubic_meter']),
+				number_format($row['per_unit'], 2),
+				$commodity_charges,
+				$status
+			);
+		}
+		
+		// Generate filename with date and classification
+		$filename = 'amountrate';
+		if($classification_id != '' && $classification_id != '0') {
+			// Get classification name for filename
+			$classification_name = $this->addcustomer_model->get_classification();
+			foreach($classification_name as $class) {
+				if($class['class_id'] == $classification_id) {
+					$filename .= '_' . preg_replace('/[^a-zA-Z0-9]/', '_', $class['class_name']);
+					break;
+				}
+			}
+		}
+		$filename .= '_' . date('d-m-Y') . '.csv';
+		
+		// Export to CSV (Excel can open CSV files)
+		array_to_csv($export_data, $filename);
+		exit;
+	}
+	
 	/** Status Change Function **/
 	public function status($id,$status){
 		$data['msg'] ='';

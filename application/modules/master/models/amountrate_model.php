@@ -23,6 +23,24 @@ class amountrate_model extends CI_Model {
 		return $result;
     }
 	
+	/** Get all records for export with optional classification filter **/
+	public function get_all_records_for_export($classification_id = '') {
+		$this->db->select("tbl_amountrate.*,tbl_classification.*");
+		$this->db->from($this->table_name);
+		$this->db->join('tbl_classification', 'tbl_amountrate.classification_id = tbl_classification.class_id');
+		
+		// Apply classification filter if provided
+		if($classification_id != '' && $classification_id != '0') {
+			$this->db->where('tbl_amountrate.classification_id', $classification_id);
+		}
+		
+		$this->db->order_by('tbl_classification.class_name', 'asc');
+		$this->db->order_by('tbl_amountrate.cubic_meter', 'asc');
+		$query = $this->db->get();
+		$result = $query->result_array();
+		return $result;
+	}
+	
  	/** In Function Get single records for edit view purpose from select table **/
     public function get_single_record($id='') {
         $this->db->select("tbl_amountrate.*,tbl_classification.*");
