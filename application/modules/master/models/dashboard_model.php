@@ -233,6 +233,20 @@ class dashboard_model extends CI_Model {
 		$result = $query->row_array();
 		return $result;
 	}
+	
+	// Get all zones with customer counts dynamically
+	public function get_all_zones_with_customer_counts(){
+		$this->db->select('z.id, z.zone, COUNT(c.id) as count_id');
+		$this->db->from($this->table_zone . ' as z');
+		$this->db->join($this->table_customer . ' as c', 'z.id = c.zone', 'left');
+		$this->db->where('z.status', '1');
+		$this->db->group_by('z.id, z.zone');
+		$this->db->order_by('z.order_series', 'asc');
+		$this->db->order_by('z.id', 'asc');
+		$query = $this->db->get();
+		$result = $query->result_array();
+		return $result;
+	}
 	public function get_mytickets_chart($status){
 		$this->db->select('COUNT(id) as count_id');
 		$this->db->from($this->table_technical);

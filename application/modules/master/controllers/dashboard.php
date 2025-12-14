@@ -91,6 +91,10 @@ class dashboard extends CI_Controller {
 		$data['NovTotalUnpaid'] = $this->my_model->get_total_sales(11,$yearrep,0);
 		$data['DecTotalUnpaid'] = $this->my_model->get_total_sales(12,$yearrep,0);
 
+		// Get all zones with customer counts dynamically
+		$data['zones'] = $this->my_model->get_all_zones_with_customer_counts();
+		
+		// Keep old zone variables for backward compatibility if needed
 		$data['zone1'] = $this->my_model->get_cust_by_zone(1);
 		$data['zone2'] = $this->my_model->get_cust_by_zone(2);
 		$data['zone3'] = $this->my_model->get_cust_by_zone(3);

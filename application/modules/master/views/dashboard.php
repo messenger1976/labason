@@ -806,18 +806,43 @@
 			    //var myNewChart = new Chart(ctx).Bar(barData, barOptions);
 				const myChart1 = new Chart(ctx1, config1);
 
-				// Sample data for the doughnut chart
-				const data2 = {
-				labels: ['ZONE 1', 'ZONE 2', 'ZONE 3', 'ZONE 4'],
-				datasets: [{
-					label: 'Customer Zone Area',
-					data: [<?php echo $zone1['count_id'];?>, <?php echo $zone2['count_id'];?>, <?php echo $zone3['count_id'];?>, <?php echo $zone4['count_id'];?>],
-					backgroundColor: [
+				// Dynamic data for the doughnut chart - shows all zones
+				<?php
+				$zoneLabels = array();
+				$zoneData = array();
+				$zoneColors = array();
+				$colorPalette = array(
 					'rgb(255, 99, 132)',
 					'rgb(54, 162, 235)',
 					'rgb(255, 205, 86)',
-					'rgba(60, 28, 89, 1)'
-					],
+					'rgba(60, 28, 89, 1)',
+					'rgb(75, 192, 192)',
+					'rgb(153, 102, 255)',
+					'rgb(255, 159, 64)',
+					'rgb(199, 199, 199)',
+					'rgb(83, 102, 255)',
+					'rgb(255, 99, 255)',
+					'rgb(99, 255, 132)',
+					'rgb(255, 205, 86)',
+					'rgb(54, 162, 235)',
+					'rgb(255, 99, 132)',
+					'rgb(153, 102, 255)'
+				);
+				
+				if(isset($zones) && !empty($zones)) {
+					foreach($zones as $index => $zone) {
+						$zoneLabels[] = $zone['zone'];
+						$zoneData[] = $zone['count_id'];
+						$zoneColors[] = $colorPalette[$index % count($colorPalette)];
+					}
+				}
+				?>
+				const data2 = {
+				labels: <?php echo json_encode($zoneLabels); ?>,
+				datasets: [{
+					label: 'Customer Zone Area',
+					data: <?php echo json_encode($zoneData); ?>,
+					backgroundColor: <?php echo json_encode($zoneColors); ?>,
 					hoverOffset: 8
 				}]
 				};
