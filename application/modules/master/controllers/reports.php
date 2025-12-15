@@ -21,12 +21,34 @@ class reports extends CI_Controller {
         parent::__construct();
         $this->load->model('addbillingperiod_model','billingperiod_model');   //*****    Model Loading     *****//	
   		$this->load->model('adddailyreport_model','my_model');   //*****    Model Loading     *****//	
-        $this->load->model('Report_model','report_model');   //*****    Model Loading     *****//	
+        
+        // Load Report_model - handle case sensitivity for Linux/Windows compatibility
+        // MX Loader converts model names to lowercase when searching for files
+        // On Linux, it looks for 'report_model.php' but file is 'Report_model.php'
+        $model_file_lower = APPPATH . 'modules/master/models/report_model.php';
+        $model_file_upper = APPPATH . 'modules/master/models/Report_model.php';
+        
+        if (file_exists($model_file_upper)) {
+            // File exists with uppercase R, manually load it to handle case sensitivity
+            require_once($model_file_upper);
+            if (class_exists('Report_model')) {
+                $this->report_model = new Report_model();
+            } else {
+                log_message('error', 'Report_model class not found after loading file');
+                show_error('Unable to load Report_model. Class not found.');
+            }
+        } elseif (file_exists($model_file_lower)) {
+            // File exists with lowercase name, use standard loading
+            $this->load->model('report_model','report_model');
+        } else {
+            // Try standard loading as fallback
+            $this->load->model('Report_model','report_model');
+        }
+        
         $this->load->model('common_model','comm_model');
 		$this->load->model('leakingentry_model');
 		$this->load->model('addcustomer_model','customer_model');	
 		$this->load->model('addmetercustomerreading_model','meterreading_model'); 
-        $this->load->model('addbillingperiod_model','billingperiod_model');   //*****    Model Loading     *****//	
         $this->load->helper('common');
 		$this->load->library('form_validation');
 		$this->load->library('Pdf');
