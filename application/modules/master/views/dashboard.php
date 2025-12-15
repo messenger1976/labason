@@ -127,7 +127,7 @@
 						        
 						        <div class="col-xs-12 col-sm-6 col-md-3">
 						            <div class="panel panel-primary pricing-big">
-						            	<img src="img/ribbon.png" class="ribbon" alt="">
+						            	<img src="<?php echo ADMIN_URL;?>img/ribbon.png" class="ribbon" alt="">
 						                <div class="panel-heading">
 						                    <h3 class="panel-title"><i class="fa fa-money fa-lg"></i>
 						                        Total Leaking Balances</h3>
