@@ -224,7 +224,15 @@
 		<!-- END MAIN PANEL -->
 		
 
-		<?php include('footer.php');?>
+		<?php 
+		// Use absolute path for footer to avoid path issues on Linux
+		$footerPath = APPPATH . 'modules/master/views/footer.php';
+		if (file_exists($footerPath)) {
+			include($footerPath);
+		} else {
+			log_message('error', 'Footer file not found: ' . $footerPath);
+		}
+		?>
 
 	</body>
 

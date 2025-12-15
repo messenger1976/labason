@@ -31,9 +31,12 @@ class reports extends CI_Controller {
 		$this->load->library('form_validation');
 		$this->load->library('Pdf');
 		$this->form_validation->set_error_delimiters('<div class="error" style="color:red;">', '</div>');
-		error_reporting(E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
-		error_reporting(0);
-		ini_set('display_errors','off'); 				
+		// Error reporting: log errors but don't display them on production
+		error_reporting(E_ALL);
+		ini_set('display_errors','off');
+		ini_set('log_errors','on');
+		// Log errors to CodeIgniter's log file
+		log_message('debug', 'Reports controller initialized'); 				
 		$this->load->model('adminheader_model','top_model');
     }
 	public function index(){ 		 //*****  View Loading  *****//
@@ -55,13 +58,36 @@ class reports extends CI_Controller {
 		$this->load->view($this->monthlyBillingReportPage,$data);
 	}
 
-    public function customer_report(){ 		 //*****  View Loading  *****//
-		$header['roleResponsible'] = $this->top_model->get_responsibilities();
-		$data['zone'] = $this->customer_model->get_zone();
-		$data['employee'] = $this->my_model->get_employee();
-		//$header['record_info'] = $this->top_model->get_last_login_details(1);
-		$this->load->view($this->headerPage,$header);
-		$this->load->view($this->customerReportPage,$data);
+	public function customer_report(){ 		 //*****  View Loading  *****//
+		try {
+			$header['roleResponsible'] = $this->top_model->get_responsibilities();
+			$data['zone'] = $this->customer_model->get_zone();
+			$data['employee'] = $this->my_model->get_employee();
+			//$header['record_info'] = $this->top_model->get_last_login_details(1);
+			
+			// Verify header file exists
+			$headerPath = APPPATH . 'views/admin-includes/header.php';
+			if (!file_exists($headerPath)) {
+				log_message('error', 'Header file not found: ' . $headerPath);
+				show_error('Header file not found. Please contact administrator.');
+				return;
+			}
+			
+			// Verify view file exists
+			$viewPath = APPPATH . 'modules/master/views/' . $this->customerReportPage . '.php';
+			if (!file_exists($viewPath)) {
+				log_message('error', 'View file not found: ' . $viewPath);
+				show_error('View file not found. Please contact administrator.');
+				return;
+			}
+			
+			$this->load->view($this->headerPage,$header);
+			$this->load->view($this->customerReportPage,$data);
+		} catch (Exception $e) {
+			log_message('error', 'Error in customer_report: ' . $e->getMessage());
+			log_message('error', 'Stack trace: ' . $e->getTraceAsString());
+			show_error('An error occurred while loading the customer report. Please check the error logs.');
+		}
 	}
 
     public function aging_ar_report(){ 		 //*****  View Loading  *****//
@@ -167,29 +193,50 @@ class reports extends CI_Controller {
 	}
 	public function getcustomerreportsearch()
 	{		//*****  Add Search records  *****//
-			$data['msg'] ='';
-			
-			$zone = $this->input->post('zone');
-			$status = $this->input->post('status');
-			
-			// Convert zone to integer, default to 0 if empty
-			$zone = ($zone === '' || $zone === null) ? 0 : (int)$zone;
-			
-			// Ensure status is empty string if not set, handle '99' as 'All'
-			if($status === '99' || $status === '' || $status === null){
-				$status = '';
+			try {
+				$data['msg'] ='';
+				
+				$zone = $this->input->post('zone');
+				$status = $this->input->post('status');
+				
+				// Convert zone to integer, default to 0 if empty
+				$zone = ($zone === '' || $zone === null) ? 0 : (int)$zone;
+				
+				// Ensure status is empty string if not set, handle '99' as 'All'
+				if($status === '99' || $status === '' || $status === null){
+					$status = '';
+				}
+				
+				// Verify model is loaded
+				if (!isset($this->report_model) || !is_object($this->report_model)) {
+					log_message('error', 'Report_model not loaded in getcustomerreportsearch');
+					echo '<div class="alert alert-danger">Error: Model not loaded. Please contact administrator.</div>';
+					return;
+				}
+				
+				// Get records
+				$data['record'] = $this->report_model->get_customer_report_records($zone,$status);
+				
+				// If no records, set empty array
+				if(!isset($data['record']) || !is_array($data['record'])){
+					$data['record'] = array();
+				}
+				
+				// Verify view file exists
+				$viewPath = APPPATH . 'modules/master/views/' . $this->customerreport_ajaxPage . '.php';
+				if (!file_exists($viewPath)) {
+					log_message('error', 'AJAX view file not found: ' . $viewPath);
+					echo '<div class="alert alert-danger">Error: View file not found. Please contact administrator.</div>';
+					return;
+				}
+				
+				// Load the view
+				$this->load->view($this->customerreport_ajaxPage,$data);
+			} catch (Exception $e) {
+				log_message('error', 'Error in getcustomerreportsearch: ' . $e->getMessage());
+				log_message('error', 'Stack trace: ' . $e->getTraceAsString());
+				echo '<div class="alert alert-danger">An error occurred while loading data. Please check the error logs.</div>';
 			}
-			
-			// Get records
-			$data['record'] = $this->report_model->get_customer_report_records($zone,$status);
-			
-			// If no records, set empty array
-			if(!isset($data['record']) || !is_array($data['record'])){
-				$data['record'] = array();
-			}
-			
-			// Load the view
-			$this->load->view($this->customerreport_ajaxPage,$data);
 	}	
 	public function getagingARreportsearch()
 	{		//*****  Add Search records  *****//
