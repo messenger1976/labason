@@ -155,8 +155,8 @@ class addbillingperiod_model extends CI_Model {
 	
   	/** In Function Delete records for select table **/
 	public function delete_record($id){
-		$this->db->where('id',$id);
-		$result = $this->db->delete($this->table_name); 
+		$this->db->where('bp_id',$id);
+		$result = $this->db->delete($this->table_billing_period); 
 		return $result;
 	}
 	

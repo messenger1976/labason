@@ -193,19 +193,23 @@ class addbillingperiod extends CI_Controller {
 		$data['msg'] ='';
 		if($this->input->post('delete_ids') != ''){
 			$delete_ids = $this->input->post('delete_ids');
+			$success_count = 0;
+			$fail_count = 0;
 			for($i=0;$i<count($delete_ids);$i++){
 				$result = $this->my_model->delete_record($delete_ids[$i]);
+				if($result){
+					$success_count++;
+				}else{
+					$fail_count++;
+				}
 			}
-			if($result){
-				$this->session->set_flashdata('msg_succ', 'Deleted Successfully...');
-				redirect($this->listPage_redirect);
+			if($success_count > 0){
+				echo 'Deleted Successfully...';
 			}else{
-				$this->session->set_flashdata('msg_succ', 'Not Deleted...');
-				redirect($this->listPage_redirect);
+				echo 'Not Deleted...';
 			}
 		}else{
-			$this->session->set_flashdata('msg_succ', 'Select any Check Box...');
-			redirect($this->listPage_redirect);
+			echo 'Select any Check Box...';
 		}
 	}
 	

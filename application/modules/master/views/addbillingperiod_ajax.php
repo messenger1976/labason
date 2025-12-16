@@ -85,7 +85,7 @@
 										
 										<div class="row">
 											<div class="col-lg-12">
-												<input type="submit" class="btn btn-sm btn-primary" name="delete" id="delete" value="Delete All" onClick="return deleteAllData();" />
+												<a class="btn btn-sm btn-primary" name="delete" id="delete" value="Delete All">Delete All</a>
 												<a class="btn btn-sm btn-danger" name="close" id="close" value="Close">Close</a>
 												<a class="btn btn-sm btn-success" name="open" id="open" value="Close">Open</a>
 												
@@ -273,22 +273,51 @@
 			/* END TABLETOOLS */
 
 
-			function deleteAllData(){ 
+			$(document).on('click', '#delete', function(evt){
+				evt.preventDefault();
 				var checked_num = $('input[name="delete_ids[]"]:checked').length;
 				if (checked_num == 0) {
 					alert('Select Atleast One Check Box... ');
 					return false;
 				}else if (checked_num > 0){ 
 					if(confirm('Confirm Delete?')==true){
-						//$('#careers').submit();
+						showSpinner(); // Call this to show the spinner
+						var selectedItems = [];
+						$("input[name='delete_ids[]']:checked").each(function(){
+							selectedItems.push($(this).val());
+						});
+
+						if(selectedItems.length === 0) {
+							alert("Please select at least one checkbox.");
+							hideSpinner();
+							return;
+						}
+
+						$.ajax({
+							url: "<?php echo ADMIN_URL;?>addbillingperiod/multi_delete",
+							type: "POST",
+							data: {delete_ids: selectedItems},
+							success: function(response){
+								hideSpinner();
+								//alert(response);
+								$('#search').trigger('click');
+							},
+							error: function(xhr, status, error){
+								hideSpinner();
+								alert('Error deleting records. Please try again.');
+								console.log('AJAX Error:', error);
+								console.log('Response:', xhr.responseText);
+							}
+						});
+
 						return true;
 					}else{
 						return false;
 					}
 				}
-			}
+			});
 
-			$('#close').on('click', function(evt){
+			$(document).on('click', '#close', function(evt){
 				evt.preventDefault();
 				var checked_num = $('input[name="delete_ids[]"]:checked').length;
 				if (checked_num == 0) {
@@ -347,7 +376,7 @@
 				}
 			});
 
-			$('#open').on('click', function(evt){
+			$(document).on('click', '#open', function(evt){
 				evt.preventDefault();
 				var checked_num = $('input[name="delete_ids[]"]:checked').length;
 				if (checked_num == 0) {
