@@ -56,6 +56,22 @@ class addmetercustomerreading_model extends CI_Model {
 		return '25.00';
 	}
 	
+	/** Get franchise fee percentage from global settings **/
+	public function get_franchise_fee_percentage() {
+		$this->db->select('value');
+		$this->db->from('tbl_global_settings');
+		$this->db->where('code', 'FRANCHISE_FEE_PERCENTAGE');
+		$query = $this->db->get();
+		$result = $query->row();
+		
+		if($result && isset($result->value)){
+			return floatval($result->value);
+		}
+		
+		// Default fallback value if setting doesn't exist
+		return 2.00;
+	}
+	
 	public function add_record(){
 		$get_date = $this->input->post('date');
 		$parts = explode('-', $get_date);
@@ -88,6 +104,22 @@ class addmetercustomerreading_model extends CI_Model {
 			if(empty($maintenance_fee) || $maintenance_fee == ''){
 				$maintenance_fee = $this->get_maintenance_fee();
 			}
+			
+			// Calculate franchise fee
+			$customerinfo = $this->get_customer_info($this->input->post('customer_id'));
+			$unit_price = $this->input->post('unit_price');
+			$sc_discount = $this->input->post('discount');
+			$account_type = isset($customerinfo[0]['account_type']) ? $customerinfo[0]['account_type'] : 0;
+			
+			$franchise_fee_percentage = $this->get_franchise_fee_percentage();
+			if($account_type == 3){
+				// SC: compute after SC deduction
+				$bill_amount_for_franchise = $unit_price - $sc_discount;
+			} else {
+				// Non-SC: compute on unit price
+				$bill_amount_for_franchise = $unit_price;
+			}
+			$franchise_fee_amount = ($bill_amount_for_franchise * $franchise_fee_percentage) / 100;
 
 			$set_data = array(
 				'customer_id' => trim($this->input->post('customer_id')),
@@ -107,6 +139,8 @@ class addmetercustomerreading_model extends CI_Model {
 				'username' => $this->session->userdata('username'),
 				'refno' =>  $doc_num,
 				'maintenance_fee' => $maintenance_fee,
+				'franchise_fee_percent' => number_format($franchise_fee_percentage, 2, '.', ''),
+				'franchise_fee_amount' => number_format($franchise_fee_amount, 2, '.', ''),
 			);
 			$result = $this->db->insert($this->table_name, $set_data); 
 			$update_counter_array = array( 
@@ -126,6 +160,22 @@ class addmetercustomerreading_model extends CI_Model {
 	/** In Function Update records for select table **/
 	public function update_record($id){
 		
+		// Calculate franchise fee
+		$customerinfo = $this->get_customer_info($this->input->post('customer_id'));
+		$unit_price = $this->input->post('current_bill');
+		$sc_discount = $this->input->post('sc_discount');
+		$account_type = isset($customerinfo[0]['account_type']) ? $customerinfo[0]['account_type'] : 0;
+		
+		$franchise_fee_percentage = $this->get_franchise_fee_percentage();
+		if($account_type == 3){
+			// SC: compute after SC deduction
+			$bill_amount_for_franchise = $unit_price - $sc_discount;
+		} else {
+			// Non-SC: compute on unit price
+			$bill_amount_for_franchise = $unit_price;
+		}
+		$franchise_fee_amount = ($bill_amount_for_franchise * $franchise_fee_percentage) / 100;
+		
 		$set_data = array(
 						'customer_id' => trim($this->input->post('customer_id')),
 						'previous_reading' => $this->input->post('previous_reading'),
@@ -137,6 +187,8 @@ class addmetercustomerreading_model extends CI_Model {
 						'amount' => $this->input->post('total_amount'),
 						'penalty' => $this->input->post('penalty'),
 						'maintenance_fee' => $this->input->post('maintenance_fee'),
+						'franchise_fee_percent' => number_format($franchise_fee_percentage, 2, '.', ''),
+						'franchise_fee_amount' => number_format($franchise_fee_amount, 2, '.', ''),
 						'date' => $this->input->post('reading_date'),
 						'customer_status' => $this->input->post('customer_status'),
 					);
@@ -237,7 +289,7 @@ class addmetercustomerreading_model extends CI_Model {
 
 	public function get_addcustomer_meterreading_records($customer_id,$bp_month='',$bp_year='')
 	{ 
-        $this->db->select($this->table_customername.".customer_id,".$this->table_customername.".first_name,".$this->table_customername.".last_name,".$this->table_customername.".middle_name,".$this->table_customername.".gender,".$this->table_customername.".address,".$this->table_customername.".mobile1,".$this->table_customername.".mobile2,".$this->table_customername.".email_id,".$this->table_customername.".customer_type,".$this->table_name.".bp_id,".$this->table_name.".previous_reading,".$this->table_name.".reading,".$this->table_name.".consumed,".$this->table_name.".unit_price,".$this->table_name.".sc_discount,".$this->table_name.".penalty,".$this->table_name.".arrears,".$this->table_name.".amount,".$this->table_name.".month,".$this->table_name.".year,".$this->table_name.".maintenance_fee,".$this->table_name.".date,".$this->table_name.".refno,".$this->table_name.".id,".$this->table_months.".month_name,".$this->table_customername.".account_type,".$this->table_customername.".special_priviledge,".$this->table_name.".status,".$this->table_name.".customer_status");
+        $this->db->select($this->table_customername.".customer_id,".$this->table_customername.".first_name,".$this->table_customername.".last_name,".$this->table_customername.".middle_name,".$this->table_customername.".gender,".$this->table_customername.".address,".$this->table_customername.".mobile1,".$this->table_customername.".mobile2,".$this->table_customername.".email_id,".$this->table_customername.".customer_type,".$this->table_name.".bp_id,".$this->table_name.".previous_reading,".$this->table_name.".reading,".$this->table_name.".consumed,".$this->table_name.".unit_price,".$this->table_name.".sc_discount,".$this->table_name.".penalty,".$this->table_name.".arrears,".$this->table_name.".amount,".$this->table_name.".month,".$this->table_name.".year,".$this->table_name.".maintenance_fee,".$this->table_name.".franchise_fee_percent,".$this->table_name.".franchise_fee_amount,".$this->table_name.".date,".$this->table_name.".refno,".$this->table_name.".id,".$this->table_months.".month_name,".$this->table_customername.".account_type,".$this->table_customername.".special_priviledge,".$this->table_name.".status,".$this->table_name.".customer_status");
 		$this->db->from($this->table_customername);
 		$this->db->join($this->table_name,$this->table_customername.'.customer_id='.$this->table_name.'.customer_id');
 		$this->db->join($this->table_months,$this->table_name.'.month='.$this->table_months.'.month_id');
@@ -357,6 +409,19 @@ class addmetercustomerreading_model extends CI_Model {
 			$total_amount = $cubicmeter_rate->per_unit - $discount;
 			$maintenance_fee = $this->get_single_record_refno($data['refno'])->maintenance_fee;
 			$total_amount += $maintenance_fee;
+			
+			// Calculate franchise fee: 2% of bill amount, after SC deduction if SC
+			$franchise_fee_percentage = $this->get_franchise_fee_percentage();
+			if($customerinfo[0]['account_type']==3){
+				// SC: compute after SC deduction
+				$bill_amount_for_franchise = $cubicmeter_rate->per_unit - $discount;
+			} else {
+				// Non-SC: compute on unit price
+				$bill_amount_for_franchise = $cubicmeter_rate->per_unit;
+			}
+			$franchise_fee_amount = ($bill_amount_for_franchise * $franchise_fee_percentage) / 100;
+			$total_amount += $franchise_fee_amount;
+			
 			$amount_total_penalty = 0;
 			if($customerinfo[0]['special_priviledge']==='0'){
 				$amount_total_penalty = ($total_amount * 10)/100;
@@ -376,9 +441,9 @@ class addmetercustomerreading_model extends CI_Model {
 			//exit;
 		
 			$sql = "UPDATE tbl_addcustomer_reading 
-            SET reading = ?, consumed = ?, sc_discount = ?, amount = ?, unit_price = ?, penalty = ?, date = ? , bp_id = ?, update_date_time = ?
+            SET reading = ?, consumed = ?, sc_discount = ?, amount = ?, unit_price = ?, penalty = ?, franchise_fee_percent = ?, franchise_fee_amount = ?, date = ? , bp_id = ?, update_date_time = ?
             WHERE refno = ? AND (reading ='' OR reading = 0)";
-    		$this->db->query($sql, [$data['current_reading'],  $consumed, $discount, number_format($total_amount,2,".",""), $cubicmeter_rate->per_unit,number_format($amount_total_penalty,2,".",""), $reading_date, $bp->bp_id,$updated_date,$data['refno']]);
+    		$this->db->query($sql, [$data['current_reading'],  $consumed, $discount, number_format($total_amount,2,".",""), $cubicmeter_rate->per_unit,number_format($amount_total_penalty,2,".",""), number_format($franchise_fee_percentage,2,".",""), number_format($franchise_fee_amount,2,".",""), $reading_date, $bp->bp_id,$updated_date,$data['refno']]);
 			return '[{"msg":"success"}]';
 		}
     	

@@ -330,7 +330,9 @@ class addbillingperiod extends CI_Controller {
 		tbl_addcustomer_reading.arrears,
 		tbl_addcustomer_reading.month as billing_month,
 		tbl_addcustomer_reading.year as billing_year,
-		tbl_addcustomer_reading.maintenance_fee
+		tbl_addcustomer_reading.maintenance_fee,
+		tbl_addcustomer_reading.franchise_fee_percent,
+		tbl_addcustomer_reading.franchise_fee_amount
        
         ");
 		$this->db->from("tbl_addcustomer_reading");
@@ -399,7 +401,9 @@ class addbillingperiod extends CI_Controller {
 		tbl_addcustomer_reading.arrears,
 		tbl_addcustomer_reading.month as billing_month,
 		tbl_addcustomer_reading.year as billing_year,
-		tbl_addcustomer_reading.maintenance_fee
+		tbl_addcustomer_reading.maintenance_fee,
+		tbl_addcustomer_reading.franchise_fee_percent,
+		tbl_addcustomer_reading.franchise_fee_amount
        
         ");
 		$this->db->from("tbl_addcustomer_reading");

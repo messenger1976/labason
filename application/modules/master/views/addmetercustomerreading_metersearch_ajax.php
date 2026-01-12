@@ -28,6 +28,8 @@
 														<th data-hide="expand">Consumed</th>
 														<th data-hide="expand">Bill Amount</th>
 														<th data-hide="expand">WMMF</th>
+														<th data-hide="expand">Franchise Fee %</th>
+														<th data-hide="expand">Franchise Fee Amt</th>
 														<th data-hide="expand">SC Discount</th>
 														<th data-hide="expand">Total</th>
                                                         <th data-hide="expand">Penalty</th>
@@ -56,6 +58,8 @@
 														<td class="consumed" align="center"><?php echo stripslashes($row['consumed']); ?></td>
 														<td class="current_bill" align="right"><?php echo stripslashes($row['unit_price']); ?></td>
 														<td class="maintenance_fee" align="right"><?php echo stripslashes(number_format($row['maintenance_fee'],2)); ?></td>
+														<td class="franchise_fee_percent" align="right"><?php echo stripslashes(isset($row['franchise_fee_percent']) ? number_format($row['franchise_fee_percent'],2) : '0.00'); ?></td>
+														<td class="franchise_fee_amount" align="right"><?php echo stripslashes(isset($row['franchise_fee_amount']) ? number_format($row['franchise_fee_amount'],2) : '0.00'); ?></td>
 														<td class="sc_discount" align="right"><?php echo stripslashes($row['sc_discount']); ?></td>
 														<td class="total_amount" align="right"><?php echo stripslashes(number_format($row['amount'],2)); ?></td>
 														<td class="penalty" align="right"><?php echo stripslashes(number_format($row['penalty'],2)); ?></td>
@@ -80,6 +84,8 @@
 														data-total_amount="<?php echo stripslashes($row['amount']); ?>"
 														data-penalty="<?php echo stripslashes($row['penalty']); ?>"
 														data-maintenance_fee="<?php echo stripslashes($row['maintenance_fee']); ?>"
+														data-franchise_fee_percent="<?php echo stripslashes(isset($row['franchise_fee_percent']) ? $row['franchise_fee_percent'] : '0.00'); ?>"
+														data-franchise_fee_amount="<?php echo stripslashes(isset($row['franchise_fee_amount']) ? $row['franchise_fee_amount'] : '0.00'); ?>"
 														data-reading_date="<?php echo date('d-m-Y',strtotime($row['date'])); ?>"
 														data-account_type="<?php echo stripslashes($row['account_type']); ?>"
 														data-special_priviledge="<?php echo stripslashes($row['special_priviledge']); ?>"
@@ -301,6 +307,8 @@
 				let total_amount = $(this).data("total_amount");
 				let penalty = $(this).data("penalty");
 				let maintenance_fee = $(this).data("maintenance_fee");
+				let franchise_fee_percent = $(this).data("franchise_fee_percent") || '2.00';
+				let franchise_fee_amount = $(this).data("franchise_fee_amount") || '0.00';
 				let reading_date = $(this).data("reading_date");
 				let account_type = $(this).data("account_type");
 				let special_priviledge = $(this).data("special_priviledge");
@@ -318,6 +326,8 @@
 				$("#total_amount").val(total_amount);
 				$("#penalty").val(penalty);
 				$("#maintenance_fee").val(maintenance_fee);
+				$("#franchise_fee_percent").val(franchise_fee_percent);
+				$("#franchise_fee_amount").val(franchise_fee_amount);
 				$("#reading_date").val(reading_date);
 				$("#cust_type_id").val(account_type);
 				$("#special_priviledge").val(special_priviledge);

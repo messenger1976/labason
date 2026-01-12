@@ -27,6 +27,7 @@
 						<th>Discount</th>
 						<th>Penalty</th>
 						<th>WMMF</th>
+						<th>Franchise Fee</th>
 						<th>OR Number</th>
 						<th>Date Paid</th>
 						<th>Total Amount</th>
@@ -120,6 +121,9 @@
 									<input type="hidden" name="year_<?php echo $i;?>" id="year_<?php echo $i;?>" value = "<?php echo $row['year'];?>">
 									<input type="hidden" name="status_<?php echo $i;?>" id="status_<?php echo $i;?>" value = "<?php echo $row['status'];?>">
 									<input type="hidden" name="refno_<?php echo $i;?>" id="refno_<?php echo $i;?>" value = "<?php echo $row['refno'];?>">
+									<input type="hidden" name="due_date_<?php echo $i;?>" id="due_date_<?php echo $i;?>" value = "<?php echo $row['bp_due_date'];?>">
+									<input type="hidden" name="special_priviledge_<?php echo $i;?>" id="special_priviledge_<?php echo $i;?>" value = "<?php echo $row['special_priviledge'];?>">
+									<input type="hidden" name="base_amount_<?php echo $i;?>" id="base_amount_<?php echo $i;?>" value = "<?php echo $row['amount'];?>">
 								</td>
 								<td><?php echo date('M j, Y',strtotime($row['bp_due_date'])); ?>
 								<td align="center"><?php echo stripslashes($row['previous_reading']); ?>
@@ -138,6 +142,8 @@
 								<td align="right"><?php echo stripslashes(number_format($penalty,2)); ?>
 								</td>
 								<td align="right"><?php echo stripslashes(number_format($row['maintenance_fee'],2)); ?>
+								</td>
+								<td align="right"><?php echo stripslashes(isset($row['franchise_fee_amount']) ? number_format($row['franchise_fee_amount'],2) : '0.00'); ?>
 								</td>
 								<td align="center"><?php echo stripslashes($or_number_paid); ?></td>
 								<td align="center"><?php echo stripslashes($trans_date); ?></td>
@@ -178,6 +184,7 @@
 						<th></th>
 						<th></th>
 						<th></th>
+						<td></td>
 						<td></td>
 						<td></td>
 						<td></td>

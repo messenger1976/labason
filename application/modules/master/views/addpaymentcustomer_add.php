@@ -138,6 +138,9 @@
 														<input type="hidden" name="status_id" id="status_id" value="<?php echo $this->input->post('status_id'); ?>">
 														<input type="hidden" name="refno" id="refno" value="">
 														<input type="hidden" name="leaking_id" id="leaking_id" value="">
+														<input type="hidden" name="due_date" id="due_date" value="">
+														<input type="hidden" name="special_priviledge" id="special_priviledge" value="">
+														<input type="hidden" name="base_amount" id="base_amount" value="">
 
 														<div style="clear:both"></div>
 														
@@ -160,6 +163,18 @@
 																		<div class="col-md-7">
 																			<input type="text" class="form-control text-input" id="or_num" name="or_num" value="<?php echo $this->input->post('or_num'); ?>" required/>
 																			<?php echo form_error('or_num'); ?>
+																		</div>
+																	</div>
+																</div>
+															</div>
+
+															<div class="row">
+																<div class="col-md-12 controls">
+																	<div class="form-group" style=" width: 100%; ">
+																		<label class="col-md-5 control-label" for="transdate" style="text-align:right;">Transaction Date : (<span style="color:red;font-style:italic;">*</span>)</label>
+																		<div class="col-md-7">
+																			<input  type="text"  class="form-control"  id="transdate" name="transdate"  value="<?php echo $this->input->post('transdate')!=''?$this->input->post('transdate'):Date('d-m-Y'); ?>" required/>
+																			<?php echo form_error('transdate'); ?>
 																		</div>
 																	</div>
 																</div>
@@ -368,17 +383,6 @@
 																				<div class="col-md-7">
 																					<input  type="text"  class="form-control"  id="change_amount" name="change_amount"  value="0.00" readonly/>
 																					
-																				</div>
-																			</div>
-																		</div>
-																	</div>
-																	<div class="row">
-																		<div class="col-md-12 controls">
-																			<div class="form-group" style=" width: 100%; ">
-																				<label class="col-md-5 control-label" for="transdate" style="text-align:right;">Transaction Date : (<span style="color:red;font-style:italic;">*</span>)</label>
-																				<div class="col-md-7">
-																					<input  type="text"  class="form-control"  id="transdate" name="transdate"  value="<?php echo $this->input->post('transdate')!=''?$this->input->post('transdate'):Date('d-m-Y'); ?>" required/>
-																					<?php echo form_error('transdate'); ?>
 																				</div>
 																			</div>
 																		</div>
@@ -749,8 +753,16 @@ $(document).on('click','.pay_button',function(e){
 	var customer_id = $('#cust_id').val();
 	var lastamount = $('#prsentreadingamount_'+paybtnid).val();
 	var lastreading = $('#previousreading_'+paybtnid).val();
+	var due_date = $('#due_date_'+paybtnid).val();
+	var special_priviledge = $('#special_priviledge_'+paybtnid).val();
+	var base_amount = $('#base_amount_'+paybtnid).val();
 	
 	var new_total = parseInt(balanace_name)+parseInt(lastamount);
+	
+	// Store due date and special privilege for penalty calculation
+	$('#due_date').val(due_date);
+	$('#special_priviledge').val(special_priviledge);
+	$('#base_amount').val(base_amount);
 	
 	$('#deepmala').text(amount);
 	$("#paid_total_amount").val(amount);
@@ -775,6 +787,13 @@ $(document).on('click','.pay_button',function(e){
 	$('#change_amount').val('0.00');
 	$('#leaking_id').val('');
 	
+	// Set transaction date to current date
+	var today = new Date();
+	var dd = String(today.getDate()).padStart(2, '0');
+	var mm = String(today.getMonth() + 1).padStart(2, '0'); // January is 0!
+	var yyyy = today.getFullYear();
+	var currentDate = dd + '-' + mm + '-' + yyyy;
+	$('#transdate').val(currentDate);
 
 	$.ajax({
 		type: 'POST',
@@ -867,6 +886,14 @@ $(document).on('click','.total_pay',function(e){
 	$('#leaking_amount').val('0.00');
 	$('#pay_amount').val('0.00');
 	$('#change_amount').val('0.00');
+	
+	// Set transaction date to current date
+	var today = new Date();
+	var dd = String(today.getDate()).padStart(2, '0');
+	var mm = String(today.getMonth() + 1).padStart(2, '0'); // January is 0!
+	var yyyy = today.getFullYear();
+	var currentDate = dd + '-' + mm + '-' + yyyy;
+	$('#transdate').val(currentDate);
 
 	$.ajax({
 		type: 'POST',
@@ -901,10 +928,12 @@ $('#vat_percent').on('blur', function() {
 	var leaking_balance = $('#leaking_balance').val()==''?0:$('#leaking_balance').val();
 	var taxpercent = $('#vat_percent').val()==''?0:$('#vat_percent').val();
 	var total_total_amount = $('#total_total_amount').val();
-	var paid_total_amount = $("#paid_total_amount").val();
-	var leaking_amount = $("#leaking_amount").val();
+	var paid_total_amount = parseFloat($("#paid_total_amount").val() || 0);
+	var leaking_amount = parseFloat($("#leaking_amount").val() || 0);
 	var taxdeduct = 0;
-
+	
+	// Recalculate penalty if needed based on transaction date
+	recalculatePenaltyIfNeeded();
 
 	if(total_total_amount!=0){
 		if(leaking_amount>0){
@@ -916,6 +945,8 @@ $('#vat_percent').on('blur', function() {
 		$("#grand_total").val(grand_total.toFixed(2));
 
 	}else{
+		// Use updated paid_total_amount (which may include penalty)
+		paid_total_amount = parseFloat($("#paid_total_amount").val() || 0);
 		if(leaking_amount>0){
 			paid_total_amount-=leaking_amount;
 		}
@@ -930,7 +961,12 @@ $('#vat_percent').on('blur', function() {
 $('#leaking_percent').on('blur', function() {
 	var leakingpercent = $('#leaking_percent').val();
 	var total_total_amount = $('#total_total_amount').val();
-	var paid_total_amount = $("#paid_total_amount").val();
+	var paid_total_amount = parseFloat($("#paid_total_amount").val() || 0);
+	var vat_amount = parseFloat($('#vat_amount').val() || 0);
+	
+	// Recalculate penalty if needed based on transaction date
+	recalculatePenaltyIfNeeded();
+	paid_total_amount = parseFloat($("#paid_total_amount").val() || 0);
 	
 	var leakingdeduct = 0;
 	if(total_total_amount!=0){
@@ -942,24 +978,29 @@ $('#leaking_percent').on('blur', function() {
 	}else{
 		leakingdeduct = (paid_total_amount * leakingpercent)/100;
 		$('#leaking_amount').val(leakingdeduct.toFixed(2));
-		var grand_total =  paid_total_amount - taxdeduct;
+		var grand_total =  paid_total_amount - leakingdeduct - vat_amount;
 		$("#grand_total").val(grand_total.toFixed(2));
 	}
 	
 });	
 
 $('#leaking_balance').on('blur', function() {
-	var leaking_balance = $('#leaking_balance').val()==''?0:$('#leaking_balance').val();
-	var total_total_amount = $('#total_total_amount').val();
-	var paid_total_amount = $("#paid_total_amount").val();
-	var vat_amount = $('#vat_amount').val()==''?0:$('#vat_amount').val();
+	var leaking_balance = parseFloat($('#leaking_balance').val() || 0);
+	var total_total_amount = parseFloat($('#total_total_amount').val() || 0);
+	var paid_total_amount = parseFloat($("#paid_total_amount").val() || 0);
+	var vat_amount = parseFloat($('#vat_amount').val() || 0);
+	var leaking_amount = parseFloat($('#leaking_amount').val() || 0);
+	
+	// Recalculate penalty if needed based on transaction date
+	recalculatePenaltyIfNeeded();
+	paid_total_amount = parseFloat($("#paid_total_amount").val() || 0);
 
 	if(total_total_amount!=0){
-		total_total_amount = parseFloat(total_total_amount) + parseFloat(leaking_balance)-parseFloat(vat_amount);
-		$("#grand_total").val(Number.isNaN(total_total_amount.toFixed(2))? 0 : total_total_amount.toFixed(2));
+		var grand_total = total_total_amount + leaking_balance - vat_amount - leaking_amount;
+		$("#grand_total").val(Number.isNaN(grand_total.toFixed(2))? 0 : grand_total.toFixed(2));
 	}else{
-		paid_total_amount = parseFloat(paid_total_amount) + parseFloat(leaking_balance)-parseFloat(vat_amount);
-		$("#grand_total").val(Number.isNaN(paid_total_amount.toFixed(2))? 0 : paid_total_amount.toFixed(2));
+		var grand_total = paid_total_amount + leaking_balance - vat_amount - leaking_amount;
+		$("#grand_total").val(Number.isNaN(grand_total.toFixed(2))? 0 : grand_total.toFixed(2));
 	}	
 
 });
@@ -1132,6 +1173,78 @@ $("#transdate").datepicker({
 	//setDate: new Date(),
 	//minDate: curDate,
 	//maxDate: ''
+});
+
+// Function to recalculate penalty based on transaction date
+function recalculatePenaltyIfNeeded() {
+	var trans_date = $('#transdate').val();
+	var due_date = $('#due_date').val();
+	var special_priviledge = $('#special_priviledge').val();
+	var base_amount = parseFloat($('#base_amount').val()) || 0;
+	
+	if(trans_date && due_date && base_amount > 0) {
+		// Convert dates to comparable format (YYYY-MM-DD)
+		var trans_date_parts = trans_date.split('-');
+		var trans_date_formatted = trans_date_parts[2] + '-' + trans_date_parts[1] + '-' + trans_date_parts[0];
+		var due_date_formatted = due_date.split(' ')[0]; // Already in YYYY-MM-DD format
+		
+		var penalty = 0;
+		var new_amount = base_amount;
+		
+		// Check if transaction date is greater than due date and special privilege is 0
+		if(special_priviledge == 0 && trans_date_formatted > due_date_formatted) {
+			// Apply 10% penalty
+			penalty = (base_amount * 10) / 100;
+			new_amount = base_amount + penalty;
+		} else {
+			// No penalty
+			new_amount = base_amount;
+		}
+		
+		// Update the amount display
+		$('#deepmala').text(new_amount.toFixed(2));
+		$("#paid_total_amount").val(new_amount.toFixed(2));
+		
+		return new_amount;
+	}
+	return parseFloat($("#paid_total_amount").val() || 0);
+}
+
+// Recalculate penalty when transaction date changes
+$('#transdate').on('blur change', function() {
+	var leaking_balance = parseFloat($('#leaking_balance').val() || 0);
+	var vat_amount = parseFloat($('#vat_amount').val() || 0);
+	var leaking_amount = parseFloat($('#leaking_amount').val() || 0);
+	
+	// Recalculate penalty
+	var new_amount = recalculatePenaltyIfNeeded();
+	
+	// Recalculate grand total
+	var grand_total = new_amount;
+	
+	// Apply leaking discount if applicable
+	if(leaking_amount > 0) {
+		grand_total = grand_total - leaking_amount;
+	}
+	
+	// Apply VAT if applicable
+	if(vat_amount > 0) {
+		grand_total = grand_total - vat_amount;
+	}
+	
+	// Add leaking balance if applicable
+	if(leaking_balance > 0) {
+		grand_total = grand_total + leaking_balance;
+	}
+	
+	$("#grand_total").val(grand_total.toFixed(2));
+	
+	// Update change amount if pay amount is already entered
+	var pay_amount = parseFloat($('#pay_amount').val() || 0);
+	if(pay_amount > 0) {
+		var change_amount = pay_amount - grand_total;
+		$('#change_amount').val(change_amount.toFixed(2));
+	}
 });
 
 	$('.text-input').on('focus', function() {

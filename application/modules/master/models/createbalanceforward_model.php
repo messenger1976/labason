@@ -167,6 +167,21 @@ class createbalanceforward_model extends CI_Model {
 		return '25.00';
 	}
 	
+	/** Get franchise fee percentage from global settings **/
+	public function get_franchise_fee_percentage() {
+		$this->db->select('value');
+		$this->db->from('tbl_global_settings');
+		$this->db->where('code', 'FRANCHISE_FEE_PERCENTAGE');
+		$query = $this->db->get();
+		$result = $query->row();
+		
+		if($result && isset($result->value)){
+			return floatval($result->value);
+		}
+		
+		return 2.00;
+	}
+	
 	/** Process single customer balance forward **/
 	public function process_single_customer($customer_data, $bp_month, $bp_year, $bp_current_month, $bp_current_year) {
 		// Get billing period
@@ -220,11 +235,36 @@ class createbalanceforward_model extends CI_Model {
 				$arrears = isset($customer_current_billing_data->penalty) ? $customer_current_billing_data->penalty : 0;
 			}
 			$maintenance_fee = $this->get_maintenance_fee();
+			
+			// Calculate franchise fee
+			$franchise_fee_percentage = $this->get_franchise_fee_percentage();
+			$unit_price = isset($customer_current_billing_data->unit_price) ? $customer_current_billing_data->unit_price : 0;
+			$sc_discount = isset($customer_current_billing_data->sc_discount) ? $customer_current_billing_data->sc_discount : 0;
+			
+			// Get customer account type
+			$this->db->select('account_type');
+			$this->db->from('tbl_addcustomer');
+			$this->db->where('customer_id', $customer_data->customer_id);
+			$customer_query = $this->db->get();
+			$customer_account = $customer_query->row();
+			$account_type = isset($customer_account->account_type) ? $customer_account->account_type : 0;
+			
+			if($account_type == 3){
+				// SC: compute after SC deduction
+				$bill_amount_for_franchise = $unit_price - $sc_discount;
+			} else {
+				// Non-SC: compute on unit price
+				$bill_amount_for_franchise = $unit_price;
+			}
+			$franchise_fee_amount = ($bill_amount_for_franchise * $franchise_fee_percentage) / 100;
+			
 			$update_counter_array1 = array( 
 				'previous_reading' => $customer_current_billing_data->reading,
 				'arrears' => $arrears,
 				'customer_status' => $customer_data->status,
 				'maintenance_fee' => $maintenance_fee,
+				'franchise_fee_percent' => number_format($franchise_fee_percentage, 2, '.', ''),
+				'franchise_fee_amount' => number_format($franchise_fee_amount, 2, '.', ''),
 			);
 			$this->db->where('id', $checkresult_id);
 			$this->db->update('tbl_addcustomer_reading', $update_counter_array1);

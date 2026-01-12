@@ -132,7 +132,9 @@
 													  ?>	  
 													  <td align="left" valign="middle" bgcolor="#FFFFFF" >
 														<b>Amount :</b> <?php echo stripslashes(number_format($record['unit_price'],2)); ?><br/>
-														<b>SC Discount :</b> (<?php echo stripslashes(number_format($record['sc_discount'],2)); ?>)<br/>	
+														<b>SC Discount :</b> (<?php echo stripslashes(number_format($record['sc_discount'],2)); ?>)<br/>
+														<b>Maintenance Fee :</b> <?php echo stripslashes(isset($record['maintenance_fee']) ? number_format($record['maintenance_fee'],2) : '0.00'); ?><br/>
+														<b>Franchise Fee (<?php echo stripslashes(isset($record['franchise_fee_percent']) ? number_format($record['franchise_fee_percent'],2) : '0.00'); ?>%) :</b> <?php echo stripslashes(isset($record['franchise_fee_amount']) ? number_format($record['franchise_fee_amount'],2) : '0.00'); ?><br/>	
 														<b>Plus Penalty :</b> <?php echo stripslashes(number_format($penaltyamount,2)); ?><br/>					
 													  </td>
 													  
@@ -151,7 +153,8 @@
 													  </td>
 													 
 													  <td align="left" valign="middle" bgcolor="#FFFFFF" class="right">
-														<?php echo date("M d, Y ", strtotime($record['date'])) ;?>			  
+														<b>Transaction Date:</b> <?php echo date("M d, Y ", strtotime($record['date'])) ;?><br/>
+														<b>Due Date:</b> <?php echo isset($record['bp_due_date']) && $record['bp_due_date'] != '' ? date("M d, Y ", strtotime($record['bp_due_date'])) : 'N/A'; ?>			  
 													  </td>
 													  </tr>  
 													</tbody>

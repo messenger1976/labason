@@ -201,6 +201,7 @@ class addpaymentcustomer_model extends CI_Model {
 				ac.bp_id as bp_id,
 				ac.penalty,
 				ac.maintenance_fee,
+				ac.franchise_fee_amount,
 				ac.refno,
 				bp.*
 				FROM  `tbl_addcustomer_reading` ac
@@ -291,12 +292,18 @@ class addpaymentcustomer_model extends CI_Model {
         $this->db->select($this->table_name.".*,".$this->table_zone.".zone as zonename, ".$this->table_meter_reading.".unit_price,".$this->table_meter_reading.".penalty,
 		".$this->table_meter_reading.".amount,
 		".$this->table_meter_reading.".sc_discount,
+		".$this->table_meter_reading.".maintenance_fee,
+		".$this->table_meter_reading.".franchise_fee_percent,
+		".$this->table_meter_reading.".franchise_fee_amount,
+		".$this->table_meter_reading.".bp_id,
+		".$this->table_billing_period.".bp_due_date,
 		".$this->table_users.".employee_name
 		");
 		$this->db->from($this->table_name);
 		$this->db->join($this->table_meter_reading,$this->table_name.'.customer_id='.$this->table_meter_reading.'.customer_id AND '.$this->table_name.'.month='.$this->table_meter_reading.'.month AND '.$this->table_name.'.year='.$this->table_meter_reading.'.year','left');
 		$this->db->join($this->table_customers,$this->table_name.'.customer_id='.$this->table_customers.'.customer_id','left');
 		$this->db->join($this->table_zone,$this->table_customers.'.zone='.$this->table_zone.'.id','left');
+		$this->db->join($this->table_billing_period,$this->table_meter_reading.'.bp_id='.$this->table_billing_period.'.bp_id','left');
 		$this->db->join($this->table_users,$this->table_name.'.userid='.$this->table_users.'.id','left');
 		if($id != ''){
 			$this->db->where($this->table_name.".id",$id);

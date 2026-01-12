@@ -197,11 +197,28 @@ if(!function_exists('customerbillingperiod'))
                     $arrears = $customer_current_billing_data->penalty;
                 }
                 $maintenance_fee = get_maintenance_fee();
+                
+                // Calculate franchise fee
+                $franchise_fee_percentage = get_franchise_fee_percentage();
+                $unit_price = isset($customer_current_billing_data->unit_price) ? $customer_current_billing_data->unit_price : 0;
+                $sc_discount = isset($customer_current_billing_data->sc_discount) ? $customer_current_billing_data->sc_discount : 0;
+                
+                if($customerinfodata->account_type == 3){
+                    // SC: compute after SC deduction
+                    $bill_amount_for_franchise = $unit_price - $sc_discount;
+                } else {
+                    // Non-SC: compute on unit price
+                    $bill_amount_for_franchise = $unit_price;
+                }
+                $franchise_fee_amount = ($bill_amount_for_franchise * $franchise_fee_percentage) / 100;
+                
                 $update_counter_array1 = array( 
                     'previous_reading' => $customer_current_billing_data->reading,
                     'arrears' => $arrears,
                     'customer_status' => $customerinfodata->status,
                     'maintenance_fee' => $maintenance_fee,
+                    'franchise_fee_percent' => number_format($franchise_fee_percentage, 2, '.', ''),
+                    'franchise_fee_amount' => number_format($franchise_fee_amount, 2, '.', ''),
                 );
                 $C5 = &get_instance();
                 $C5->db->where('id', $checkresult_id);
@@ -449,6 +466,44 @@ if (!function_exists("get_maintenance_fee")) {
         
         // Default fallback value if setting doesn't exist
         return '25.00';
+    }
+}
+
+if (!function_exists("get_franchise_fee_percentage")) {
+    function get_franchise_fee_percentage() {
+        $CI = &get_instance();
+        $CI->db->select('value');
+        $CI->db->from('tbl_global_settings');
+        $CI->db->where('code', 'FRANCHISE_FEE_PERCENTAGE');
+        $query = $CI->db->get();
+        $result = $query->row();
+        
+        if($result && isset($result->value)){
+            return floatval($result->value);
+        }
+        
+        // Default fallback value if setting doesn't exist
+        return 2.00;
+    }
+}
+
+if (!function_exists("calculate_franchise_fee")) {
+    function calculate_franchise_fee($unit_price, $sc_discount = 0, $account_type = 0) {
+        $percentage = get_franchise_fee_percentage();
+        
+        // If SC account (account_type == 3), compute after SC deduction
+        if($account_type == 3) {
+            $bill_amount = $unit_price - $sc_discount;
+        } else {
+            $bill_amount = $unit_price;
+        }
+        
+        $franchise_fee_amount = ($bill_amount * $percentage) / 100;
+        
+        return array(
+            'percent' => number_format($percentage, 2, '.', ''),
+            'amount' => number_format($franchise_fee_amount, 2, '.', '')
+        );
     }
 }
 
