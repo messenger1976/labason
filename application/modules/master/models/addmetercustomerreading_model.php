@@ -40,6 +40,22 @@ class addmetercustomerreading_model extends CI_Model {
 		$result = $query->result_array();
 		return $result;
     }
+	/** Get maintenance fee from global settings **/
+	public function get_maintenance_fee() {
+		$this->db->select('value');
+		$this->db->from('tbl_global_settings');
+		$this->db->where('code', 'MAINTENANCE_FEE');
+		$query = $this->db->get();
+		$result = $query->row();
+		
+		if($result && isset($result->value)){
+			return number_format($result->value, 2, '.', '');
+		}
+		
+		// Default fallback value if setting doesn't exist
+		return '25.00';
+	}
+	
 	public function add_record(){
 		$get_date = $this->input->post('date');
 		$parts = explode('-', $get_date);
@@ -67,6 +83,11 @@ class addmetercustomerreading_model extends CI_Model {
 			$billing_number = $this->db->get('tbl_doc_series_number')->row();
 			$doc_num = $billing_number->doc_series_num+1;
 			
+			// Get maintenance fee from global settings or use posted value if available
+			$maintenance_fee = $this->input->post('maintenance_fee');
+			if(empty($maintenance_fee) || $maintenance_fee == ''){
+				$maintenance_fee = $this->get_maintenance_fee();
+			}
 
 			$set_data = array(
 				'customer_id' => trim($this->input->post('customer_id')),
@@ -85,6 +106,7 @@ class addmetercustomerreading_model extends CI_Model {
 				'userid' => $this->session->userdata('userid'),
 				'username' => $this->session->userdata('username'),
 				'refno' =>  $doc_num,
+				'maintenance_fee' => $maintenance_fee,
 			);
 			$result = $this->db->insert($this->table_name, $set_data); 
 			$update_counter_array = array( 

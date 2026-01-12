@@ -151,6 +151,22 @@ class createbalanceforward_model extends CI_Model {
 		return $query->result();
 	}
 	
+	/** Get maintenance fee from global settings **/
+	public function get_maintenance_fee() {
+		$this->db->select('value');
+		$this->db->from('tbl_global_settings');
+		$this->db->where('code', 'MAINTENANCE_FEE');
+		$query = $this->db->get();
+		$result = $query->row();
+		
+		if($result && isset($result->value)){
+			return number_format($result->value, 2, '.', '');
+		}
+		
+		// Default fallback value if setting doesn't exist
+		return '25.00';
+	}
+	
 	/** Process single customer balance forward **/
 	public function process_single_customer($customer_data, $bp_month, $bp_year, $bp_current_month, $bp_current_year) {
 		// Get billing period
@@ -203,11 +219,12 @@ class createbalanceforward_model extends CI_Model {
 			}else{
 				$arrears = isset($customer_current_billing_data->penalty) ? $customer_current_billing_data->penalty : 0;
 			}
+			$maintenance_fee = $this->get_maintenance_fee();
 			$update_counter_array1 = array( 
 				'previous_reading' => $customer_current_billing_data->reading,
 				'arrears' => $arrears,
 				'customer_status' => $customer_data->status,
-				'maintenance_fee' => '25.00',
+				'maintenance_fee' => $maintenance_fee,
 			);
 			$this->db->where('id', $checkresult_id);
 			$this->db->update('tbl_addcustomer_reading', $update_counter_array1);

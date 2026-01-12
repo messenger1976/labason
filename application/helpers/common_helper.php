@@ -196,11 +196,12 @@ if(!function_exists('customerbillingperiod'))
                 }else{
                     $arrears = $customer_current_billing_data->penalty;
                 }
+                $maintenance_fee = get_maintenance_fee();
                 $update_counter_array1 = array( 
                     'previous_reading' => $customer_current_billing_data->reading,
                     'arrears' => $arrears,
                     'customer_status' => $customerinfodata->status,
-                    'maintenance_fee' => '25.00',
+                    'maintenance_fee' => $maintenance_fee,
                 );
                 $C5 = &get_instance();
                 $C5->db->where('id', $checkresult_id);
@@ -430,6 +431,24 @@ if(!function_exists("get_customer_unpaid_records")){
         $result = $query->row()->penalty;
         
         return $result;		
+    }
+}
+
+if (!function_exists("get_maintenance_fee")) {
+    function get_maintenance_fee() {
+        $CI = &get_instance();
+        $CI->db->select('value');
+        $CI->db->from('tbl_global_settings');
+        $CI->db->where('code', 'MAINTENANCE_FEE');
+        $query = $CI->db->get();
+        $result = $query->row();
+        
+        if($result && isset($result->value)){
+            return number_format($result->value, 2, '.', '');
+        }
+        
+        // Default fallback value if setting doesn't exist
+        return '25.00';
     }
 }
 

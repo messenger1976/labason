@@ -92,12 +92,16 @@
 					<?php } ?>-->
 					
 					<li class="<?php if($this->uri->segment(2)=='change_username'){echo 'active open';}?>
-<?php if($this->uri->segment(2)=='change_password'){echo 'active open';}?>">
+<?php if($this->uri->segment(2)=='change_password'){echo 'active open';}?>
+<?php if($this->uri->segment(2)=='global_settings'){echo 'active open';}?>">
 						<a href="#"><i class="fa fa-lg fa-fw fa fa-key"></i> <span class="menu-item-parent">Setting</span></a>
 						<ul>
 							<?php
 							if($this->session->userdata('usertype') == 'admin'){
 							?>
+							<li class="<?php if($this->uri->segment(2)=='global_settings') echo 'active';?>">
+								<a href="<?php echo ADMIN_URL;?>global_settings"> Global Settings</a>
+							</li>
 							<li class="<?php if($this->uri->segment(3)=='adminconfiguration') echo 'active';?>">
 								<a href="<?php echo ADMIN_URL;?>addcustomer/adminconfiguration"> Admin Configuration</a>
 							</li>
