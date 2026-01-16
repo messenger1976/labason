@@ -55,13 +55,40 @@ class statementofaccount extends CI_Controller {
 	public function search(){ 
 		$data['msg'] = '';
 		
-		// Handle form submission (if any)
-		if($this->input->post('search') != ''){
+		// Handle form submission
+		if($this->input->post('customer_id') != '' || $this->input->post('password') != ''){
 			$customer_id = $this->input->post('customer_id');
-			if($customer_id != ''){
-				redirect('/master/statementofaccount/index/'.$customer_id);
-			} else {
+			$password = $this->input->post('password');
+			
+			// Validate inputs
+			if(empty($customer_id)){
 				$data['msg'] = '<div class="alert alert-danger">Please enter a Customer ID!</div>';
+			} elseif(empty($password)){
+				$data['msg'] = '<div class="alert alert-danger">Please enter your password!</div>';
+			} else {
+				// Get customer password from database
+				$stored_password = $this->my_model->get_customer_password($customer_id);
+				
+				// Check if customer exists
+				if($stored_password === false){
+					$data['msg'] = '<div class="alert alert-danger">Customer not found!</div>';
+				} else {
+					// Check if password is set for this customer
+					if(empty($stored_password)){
+						$data['msg'] = '<div class="alert alert-danger">Password not set for this customer. Please contact administrator.</div>';
+					} else {
+						// Validate password - MD5 hash the input and compare with stored password
+						$encrypted_password = md5($password);
+						
+						if($encrypted_password === $stored_password){
+							// Password matches - redirect to statement
+							redirect('/master/statementofaccount/index/'.$customer_id);
+						} else {
+							// Password doesn't match
+							$data['msg'] = '<div class="alert alert-danger">Invalid password! Please try again.</div>';
+						}
+					}
+				}
 			}
 		}
 		

@@ -187,6 +187,22 @@ class statementofaccount_model extends CI_Model {
 		return $balance;
 	}
 	
+	/** Get customer password for validation **/
+	public function get_customer_password($customer_id='') {
+		if($customer_id == ''){
+			return false;
+		}
+		$this->db->select('password');
+		$this->db->from($this->table_customer);
+		$this->db->where('customer_id', $customer_id);
+		$query = $this->db->get();
+		if($query->num_rows() > 0){
+			$result = $query->row_array();
+			return isset($result['password']) ? $result['password'] : false;
+		}
+		return false;
+	}
+	
 }
 ?>
 

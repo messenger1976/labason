@@ -22,30 +22,49 @@
 								<div class="panel panel-primary" style="border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
 									<div class="panel-body" style="padding: 30px 20px;">
 										<h3 style="margin-top: 0; margin-bottom: 25px; color: #31708f; text-align: center; font-size: 24px;">
-											<i class="fa fa-id-card"></i> Enter Customer ID
+											<i class="fa fa-id-card"></i> Enter Customer ID & Password
 										</h3>
-										<div class="form-group" style="margin-bottom: 20px;">
-											<label class="control-label" style="font-weight: 600; margin-bottom: 12px; font-size: 16px; display: block;">
-												Customer ID <span class="text-danger">*</span>
-											</label>
-											<div class="input-group input-group-lg" style="width: 100%;">
-												<span class="input-group-addon" style="background: #5bc0de; color: #fff; border: 1px solid #5bc0de; min-width: 50px;">
-													<i class="fa fa-id-card"></i>
-												</span>
-												<input type="text" class="form-control" id="direct_customer_id" name="direct_customer_id" 
-													placeholder="Enter Customer ID" 
-													style="height: 50px; font-size: 16px; border: 1px solid #5bc0de; -webkit-appearance: none;" 
-													autofocus required autocomplete="off" inputmode="text">
+										<form method="post" action="<?php echo base_url();?>master/statementofaccount/search" id="statementSearchForm">
+											<div class="form-group" style="margin-bottom: 20px;">
+												<label class="control-label" style="font-weight: 600; margin-bottom: 12px; font-size: 16px; display: block;">
+													Customer ID <span class="text-danger">*</span>
+												</label>
+												<div class="input-group input-group-lg" style="width: 100%;">
+													<span class="input-group-addon" style="background: #5bc0de; color: #fff; border: 1px solid #5bc0de; min-width: 50px;">
+														<i class="fa fa-id-card"></i>
+													</span>
+													<input type="text" class="form-control" id="direct_customer_id" name="customer_id" 
+														placeholder="Enter Customer ID" 
+														style="height: 50px; font-size: 16px; border: 1px solid #5bc0de; -webkit-appearance: none;" 
+														autofocus required autocomplete="off" inputmode="text" value="<?php echo isset($_POST['customer_id']) ? htmlspecialchars($_POST['customer_id']) : ''; ?>">
+												</div>
+												<small class="help-block" style="margin-top: 10px; color: #777; font-size: 14px; text-align: center; display: block;">
+													<i class="fa fa-info-circle"></i> Type your customer ID
+												</small>
 											</div>
-											<small class="help-block" style="margin-top: 10px; color: #777; font-size: 14px; text-align: center; display: block;">
-												<i class="fa fa-info-circle"></i> Type your customer ID and press Enter or tap the button
-											</small>
-										</div>
-										<div class="form-group" style="margin-top: 25px;">
-											<button type="button" class="btn btn-primary btn-lg btn-block" onclick="goToStatement()" style="padding: 15px; font-size: 18px; font-weight: 600; -webkit-tap-highlight-color: rgba(0,0,0,0.1);">
-												<i class="fa fa-search"></i> View Statement
-											</button>
-										</div>
+											<div class="form-group" style="margin-bottom: 20px;">
+												<label class="control-label" style="font-weight: 600; margin-bottom: 12px; font-size: 16px; display: block;">
+													Password <span class="text-danger">*</span>
+												</label>
+												<div class="input-group input-group-lg" style="width: 100%;">
+													<span class="input-group-addon" style="background: #5bc0de; color: #fff; border: 1px solid #5bc0de; min-width: 50px;">
+														<i class="fa fa-lock"></i>
+													</span>
+													<input type="password" class="form-control" id="customer_password" name="password" 
+														placeholder="Enter Password" 
+														style="height: 50px; font-size: 16px; border: 1px solid #5bc0de; -webkit-appearance: none;" 
+														required autocomplete="off">
+												</div>
+												<small class="help-block" style="margin-top: 10px; color: #777; font-size: 14px; text-align: center; display: block;">
+													<i class="fa fa-info-circle"></i> Enter your customer login password
+												</small>
+											</div>
+											<div class="form-group" style="margin-top: 25px;">
+												<button type="submit" class="btn btn-primary btn-lg btn-block" id="viewStatementBtn" style="padding: 15px; font-size: 18px; font-weight: 600; -webkit-tap-highlight-color: rgba(0,0,0,0.1);">
+													<i class="fa fa-search"></i> View Statement
+												</button>
+											</div>
+										</form>
 									</div>
 								</div>
 								
@@ -68,15 +87,15 @@
 			
 			// DO NOT REMOVE : GLOBAL FUNCTIONS!
 			jQuery(document).ready(function($) {
-				// Enable Enter key on customer ID input
-				$('#direct_customer_id').on('keypress', function(e) {
+				// Enable Enter key on form inputs
+				$('#statementSearchForm input').on('keypress', function(e) {
 					if(e.which == 13) {
 						e.preventDefault();
-						goToStatement();
+						$('#statementSearchForm').submit();
 					}
 				});
 				
-				// Focus on input field when page loads
+				// Focus on customer ID input field when page loads
 				$('#direct_customer_id').focus();
 			});
 		}
@@ -84,15 +103,6 @@
 		initScripts();
 	})();
 	
-	function goToStatement() {
-		var customerId = document.getElementById('direct_customer_id').value.trim();
-		if(customerId == '') {
-			alert('Please enter a Customer ID');
-			document.getElementById('direct_customer_id').focus();
-			return false;
-		}
-		window.location.href = '<?php echo base_url();?>master/statementofaccount/index/' + customerId;
-	}
 </script>
 
 <style>
