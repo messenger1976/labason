@@ -628,5 +628,112 @@ class addcustomer_model extends CI_Model {
 		return $result;
 	}
 	
+	/** Update customer password **/
+	public function update_customer_password($customer_id, $password) {
+		try {
+			// First check if password column exists
+			$query = $this->db->query("SHOW COLUMNS FROM `".$this->table_name."` LIKE 'password'");
+			if($query->num_rows() == 0) {
+				// Column doesn't exist, try to create it
+				$alter_query = "ALTER TABLE `".$this->table_name."` ADD COLUMN `password` VARCHAR(255) NULL";
+				$alter_result = $this->db->query($alter_query);
+				
+				// Check if ALTER was successful by checking for errors
+				if(!$alter_result) {
+					log_message('error', 'Failed to create password column. Query: ' . $alter_query);
+					// Column creation failed, but continue anyway - might already exist or permission issue
+				}
+			}
+			
+			// Now update the password
+			$this->db->where('id', $customer_id);
+			$data = array('password' => $password);
+			$result = $this->db->update($this->table_name, $data);
+			
+			// Log the query for debugging
+			log_message('debug', 'Update password query: ' . $this->db->last_query());
+			log_message('debug', 'Customer ID: ' . $customer_id . ', Affected rows: ' . $this->db->affected_rows());
+			
+			// Return true if update executed (affected_rows can be 0 if password was the same)
+			return $result !== false;
+			
+		} catch(Exception $e) {
+			log_message('error', 'Exception in update_customer_password: ' . $e->getMessage());
+			log_message('error', 'Exception trace: ' . $e->getTraceAsString());
+			return false;
+		}
+	}
+	
+	/** Server-side pagination: Get paginated records with filtering **/
+	public function get_paginated_records($start = 0, $length = 10, $search = '', $order_column = 'last_name', $order_dir = 'asc') {
+		$this->db->select($this->table_name.".*,".$this->table_zone.".zone as zones,
+		tbl_classification.class_name as classification_name,
+		tbl_customer_type.cust_type_name as type_name,
+		".$this->table_billing.".name as billingplans_name");
+		$this->db->from($this->table_name);
+		$this->db->join($this->table_zone, $this->table_zone.'.id = '.$this->table_name.'.zone', 'left');
+		$this->db->join('tbl_classification', 'tbl_classification.class_id = '.$this->table_name.'.classification', 'left');
+		$this->db->join('tbl_customer_type', 'tbl_customer_type.cust_type_id = '.$this->table_name.'.account_type', 'left');
+		$this->db->join($this->table_billing, $this->table_billing.'.id = '.$this->table_name.'.billingplans', 'left');
+		
+		// Apply search filter
+		if($search != '') {
+			$search_escaped = $this->db->escape_like_str($search);
+			$this->db->where("(
+				".$this->table_name.".customer_id LIKE '%".$search_escaped."%' OR
+				".$this->table_name.".first_name LIKE '%".$search_escaped."%' OR
+				".$this->table_name.".middle_name LIKE '%".$search_escaped."%' OR
+				".$this->table_name.".last_name LIKE '%".$search_escaped."%' OR
+				".$this->table_name.".address LIKE '%".$search_escaped."%' OR
+				".$this->table_name.".meter_number LIKE '%".$search_escaped."%' OR
+				".$this->table_name.".mobile1 LIKE '%".$search_escaped."%' OR
+				".$this->table_name.".mobile2 LIKE '%".$search_escaped."%' OR
+				".$this->table_zone.".zone LIKE '%".$search_escaped."%' OR
+				tbl_classification.class_name LIKE '%".$search_escaped."%'
+			)", NULL, FALSE);
+		}
+		
+		// Order by - use the order_column directly as it already contains table.column format
+		$this->db->order_by($order_column, $order_dir);
+		
+		// Limit and offset
+		$this->db->limit($length, $start);
+		
+		$query = $this->db->get();
+		$result = $query->result_array();
+		return $result;
+	}
+	
+	/** Server-side pagination: Get total count with filtering **/
+	public function get_total_count($search = '') {
+		$this->db->select("COUNT(".$this->table_name.".id) as total");
+		$this->db->from($this->table_name);
+		$this->db->join($this->table_zone, $this->table_zone.'.id = '.$this->table_name.'.zone', 'left');
+		$this->db->join('tbl_classification', 'tbl_classification.class_id = '.$this->table_name.'.classification', 'left');
+		$this->db->join('tbl_customer_type', 'tbl_customer_type.cust_type_id = '.$this->table_name.'.account_type', 'left');
+		$this->db->join($this->table_billing, $this->table_billing.'.id = '.$this->table_name.'.billingplans', 'left');
+		
+		// Apply search filter
+		if($search != '') {
+			$search_escaped = $this->db->escape_like_str($search);
+			$this->db->where("(
+				".$this->table_name.".customer_id LIKE '%".$search_escaped."%' OR
+				".$this->table_name.".first_name LIKE '%".$search_escaped."%' OR
+				".$this->table_name.".middle_name LIKE '%".$search_escaped."%' OR
+				".$this->table_name.".last_name LIKE '%".$search_escaped."%' OR
+				".$this->table_name.".address LIKE '%".$search_escaped."%' OR
+				".$this->table_name.".meter_number LIKE '%".$search_escaped."%' OR
+				".$this->table_name.".mobile1 LIKE '%".$search_escaped."%' OR
+				".$this->table_name.".mobile2 LIKE '%".$search_escaped."%' OR
+				".$this->table_zone.".zone LIKE '%".$search_escaped."%' OR
+				tbl_classification.class_name LIKE '%".$search_escaped."%'
+			)", NULL, FALSE);
+		}
+		
+		$query = $this->db->get();
+		$result = $query->row_array();
+		return isset($result['total']) ? intval($result['total']) : 0;
+	}
+	
 }
 ?>

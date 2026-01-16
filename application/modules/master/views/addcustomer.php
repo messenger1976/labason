@@ -137,78 +137,7 @@
 													</tr>
 												</thead>
 												<tbody>
-												  <?php
-														if(count($record) > 0){
-															$i=1;
-															foreach($record as $key => $row){ 
-													?>   
-													<tr>
-														<td><input type="checkbox" class="ace" name="delete_ids[]" id="delete_ids[]" value="<?php echo $row['id'];?>" /></td>
-														<td><?php echo $i; ?></td>
-														<td><!--<a href="<?php echo ADMIN_URL;?>addcustomer/get_customer_invoice/<?php echo $row['id'];?>"><?php echo stripslashes($row['customer_id']); ?></a>-->
-														<?php echo stripslashes($row['customer_id']); ?>
-													</td>
-														<td><?php echo stripslashes($row['last_name'].',  '.$row['first_name'].'  '.$row['middle_name']); ?></td>
-														<!--<td><?php echo stripslashes($row['gender']); ?></td>-->
-														<td width="25%"><?php echo stripslashes($row['address']); ?></td>
-														<?php /*<td><?php echo stripslashes($row['mobile2']); ?></td>
-														<td><?php echo stripslashes($row['address']); ?></td>*/?>
-														<td><?php echo stripslashes($row['meter_number']); ?></td>
-														<td width="5%"><?php echo stripslashes($row['zones']); ?></td>
-														<td width="10%"><?php echo stripslashes($row['classification_name']); ?></td>
-														<td><span <?php if($row['status']== 1){ echo " class='label label-success arrowed-in arrowed-in-right'"; } elseif($row['status']== 0){ echo "class='label label-danger arrowed'"; } elseif($row['status']== 2){ echo "class='label label-danger arrowed'"; } ?>><a href="JavaScript:if(confirm('Are you sure want to Chanage the Status?')==true){window.location='<?php echo ADMIN_URL;?>addcustomer/status/<?php echo $row['id']?>/<?php echo $row['status'];?>';}" style="color:#FFF; text-decoration:none;"><?php if($row['status']== 1){ echo "Active"; } elseif($row['status']== 0){ echo "De-Active"; } elseif($row['status']== 2){ echo "Disconnected"; } ?></a></span></td>
-														<td>
-														<input type="hidden" name="id_<?php echo $i;?>" id="id_<?php echo $i;?>" value = "<?php echo $row['id'];?>">
-														<input type="hidden" name="customerid_<?php echo $i;?>" id="customerid_<?php echo $i;?>" value = "<?php echo $row['customer_id'];?>">
-														<input type="hidden" name="billingplansid_<?php echo $i;?>" id="billingplansid_<?php echo $i;?>" value = "<?php echo $row['billingplans'];?>">
-														    
-														    <div class="visible-md visible-lg hidden-sm hidden-xs action-buttons">
-                                                                 <!--<a href="#" title="Print">
-																 <i class="print_button fa fa-print" id="print_button<?php echo $i;?>" data-print-val-id="<?php echo $i ?>"></i>
-																 </a>-->
-															    <a class="blue" href="<?php echo ADMIN_URL;?>addcustomer/view/<?php echo $row['id'];?>" title="View">
-																	<i class="fa fa-info-circle"></i>
-																</a>	
-																<a class="green" href="<?php echo ADMIN_URL;?>addcustomer/edit/<?php echo $row['id']; ?>" title="Edit">
-																	<i class="fa fa-edit"></i>
-																</a>
-																<a class="red" href="JavaScript:if(confirm('Confirm Delete?')==true){window.location='<?php echo ADMIN_URL;?>addcustomer/delete/<?php echo $row['id'];?>';}" title="Delete">
-																	<i class="fa fa-remove"></i>
-																</a>
-															</div>
-															<div class="visible-xs visible-sm hidden-md hidden-lg">
-																<div class="inline position-relative">
-																	<button class="btn btn-minier btn-yellow dropdown-toggle" data-toggle="dropdown">
-																		<i class="icon-caret-down icon-only bigger-120"></i>
-																	</button>
-																		
-																	<ul class="dropdown-menu dropdown-only-icon dropdown-yellow pull-right dropdown-caret dropdown-close">                                                       
-                                                                       <li> <a href="#"><img src="<?php echo base_url();?>images/favicon/icon-printer.gif" class="print_button" id="print_button<?php echo $i;?>" data-print-val-id="<?php echo $i ?>"></a></li>
-																		<li>
-																			<a href="<?php echo ADMIN_URL;?>addcustomer/edit/<?php echo $row['id']; ?>" class="tooltip-success" data-rel="tooltip" title="Edit">
-																					<span class="green">
-																						<img src="<?php echo base_url();?>images/favicon/document-edit.gif">
-																					</span>
-																				</a>
-																		</li>
-																		<li>
-																			<a class="blue" href="<?php echo ADMIN_URL;?>addcustomer/view/<?php echo $row['id'];?>">
-																				<img src="<?php echo base_url();?>images/favicon/view_icon.gif">
-																			</a>			
-																		</li>
-																		<li>
-																			<a href="JavaScript:if(confirm('Confirm Delete?')==true){window.location='<?php echo ADMIN_URL;?>addcustomer/delete/<?php echo $row['id'];?>';}" class="tooltip-error" data-rel="tooltip" title="Delete">
-																				<span class="red">
-																					<img src="<?php echo base_url();?>images/favicon/delete.png">
-																				</span>
-																			</a>
-																		</li>
-																	</ul>
-																</div>
-															</div>
-														</td>
-													</tr>
-														<?php $i++;} }?>	
+													<!-- Data will be loaded via AJAX -->
 												</tbody>
 											</table>
 											
@@ -248,6 +177,43 @@
 		</div>
 		<!-- END MAIN PANEL -->
 		
+		<!-- Modal for Setting Customer Password -->
+		<div class="modal fade" id="passwordModal" tabindex="-1" role="dialog" aria-labelledby="passwordModalLabel">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+							&times;
+						</button>
+						<h4 class="modal-title" id="passwordModalLabel">Set Customer Login Password</h4>
+					</div>
+					<div class="modal-body">
+						<form id="passwordForm">
+							<input type="hidden" id="modal_customer_id" name="customer_id" value="">
+							<div class="form-group">
+								<label for="modal_customer_code">Customer ID:</label>
+								<input type="text" class="form-control" id="modal_customer_code" readonly>
+							</div>
+							<div class="form-group">
+								<label for="modal_password">Password: <span class="text-danger">*</span></label>
+								<input type="password" class="form-control" id="modal_password" name="password" required>
+								<small class="help-block">Enter a password for customer login</small>
+							</div>
+							<div class="form-group">
+								<label for="modal_confirm_password">Confirm Password: <span class="text-danger">*</span></label>
+								<input type="password" class="form-control" id="modal_confirm_password" name="confirm_password" required>
+							</div>
+							<div id="password_error" class="alert alert-danger" style="display:none;"></div>
+							<div id="password_success" class="alert alert-success" style="display:none;"></div>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+						<button type="button" class="btn btn-primary" id="savePasswordBtn">Save Password</button>
+					</div>
+				</div>
+			</div>
+		</div>
 
 		<?php include('footer.php');?>
 
@@ -295,13 +261,35 @@
 					phone : 480
 				};
 	
-				$('#dt_basic').dataTable({
+				var table = $('#dt_basic').DataTable({
+					"processing": true,
+					"serverSide": true,
+					"ajax": {
+						"url": "<?php echo ADMIN_URL;?>addcustomer/get_datatable_data",
+						"type": "POST"
+					},
+					"columns": [
+						{ "data": 0, "orderable": false },
+						{ "data": 1, "orderable": false },
+						{ "data": 2, "orderable": true },
+						{ "data": 3, "orderable": true },
+						{ "data": 4, "orderable": true },
+						{ "data": 5, "orderable": true },
+						{ "data": 6, "orderable": true },
+						{ "data": 7, "orderable": true },
+						{ "data": 8, "orderable": true },
+						{ "data": 9, "orderable": false }
+					],
+					"order": [[3, 'asc']],
+					"pageLength": 100,
+					"lengthMenu": [[10, 25, 50, 100], [10, 25, 50, 100]],
 					"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-12 hidden-xs'l>r>"+
 						"t"+
 						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
 					"autoWidth" : true,
 			        "oLanguage": {
-					    "sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
+					    "sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>',
+						"sProcessing": "Loading data..."
 					},
 					"preDrawCallback" : function() {
 						// Initialize the responsive datatables helper once.
@@ -440,6 +428,97 @@
 
 		
 <script>
+$(document).ready(function() {
+	// Handle Set Password Button Click
+	$(document).on('click', '.set-password-btn', function(e) {
+		e.preventDefault();
+		var customerId = $(this).data('customer-id');
+		var customerCode = $(this).data('customer-code');
+		
+		$('#modal_customer_id').val(customerId);
+		$('#modal_customer_code').val(customerCode);
+		$('#modal_password').val('');
+		$('#modal_confirm_password').val('');
+		$('#password_error').hide().text('');
+		$('#password_success').hide().text('');
+		
+		$('#passwordModal').modal('show');
+	});
+
+	// Handle Save Password Button
+	$('#savePasswordBtn').on('click', function() {
+		var customerId = $('#modal_customer_id').val();
+		var password = $('#modal_password').val();
+		var confirmPassword = $('#modal_confirm_password').val();
+		
+		// Reset messages
+		$('#password_error').hide().text('');
+		$('#password_success').hide().text('');
+		
+		// Validation
+		if(!password || password.length < 3) {
+			$('#password_error').text('Password must be at least 3 characters long.').show();
+			return;
+		}
+		
+		if(password !== confirmPassword) {
+			$('#password_error').text('Passwords do not match.').show();
+			return;
+		}
+		
+		// Disable button during save
+		$('#savePasswordBtn').prop('disabled', true).text('Saving...');
+		
+		// Send AJAX request
+		$.ajax({
+			url: '<?php echo ADMIN_URL;?>addcustomer/save_customer_password',
+			type: 'POST',
+			data: {
+				customer_id: customerId,
+				password: password
+			},
+			dataType: 'json',
+			success: function(response) {
+				if(response.success) {
+					$('#password_success').text(response.message).show();
+					setTimeout(function() {
+						$('#passwordModal').modal('hide');
+						// Optionally reload the table or show a success message
+					}, 1500);
+				} else {
+					$('#password_error').text(response.message).show();
+					$('#savePasswordBtn').prop('disabled', false).text('Save Password');
+				}
+			},
+			error: function(xhr, status, error) {
+				var errorMsg = 'An error occurred while saving the password.';
+				if(xhr.responseJSON && xhr.responseJSON.message) {
+					errorMsg = xhr.responseJSON.message;
+				} else if(xhr.responseText) {
+					try {
+						var response = JSON.parse(xhr.responseText);
+						if(response.message) {
+							errorMsg = response.message;
+						}
+					} catch(e) {
+						errorMsg = 'Server error: ' + xhr.status + ' ' + error;
+					}
+				}
+				$('#password_error').text(errorMsg).show();
+				$('#savePasswordBtn').prop('disabled', false).text('Save Password');
+			}
+		});
+	});
+
+	// Reset form when modal is closed
+	$('#passwordModal').on('hidden.bs.modal', function () {
+		$('#passwordForm')[0].reset();
+		$('#password_error').hide().text('');
+		$('#password_success').hide().text('');
+		$('#savePasswordBtn').prop('disabled', false).text('Save Password');
+	});
+});
+
 $(document).on('click','.print_button',function(e){
 	var buttonid = $(this).attr('id');
 	var paybtnid = $(this).data('print-val-id');

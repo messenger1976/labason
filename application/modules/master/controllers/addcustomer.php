@@ -67,11 +67,273 @@ class addcustomer extends CI_Controller {
 		if(	array_key_exists('addcustomer',$this->head['roleResponsible']) && $this->session->userdata('usertype') == 'subadmin' ){
 			$this->top_model->get_responsibilities_conditions($this->head['roleResponsible']['addcustomer']);
 		}	
-		$data['record'] = $this->my_model->get_all_records();	
+		// No longer loading all records - using server-side pagination instead
+		$data['record'] = array();	
 		//$header['host'] = $this->comm_model->get_single_record();				
 		//$header['record_info'] = $this->top_model->get_last_login_details(1);
 		$this->load->view($this->headerPage,$this->head);
 		$this->load->view($this->listPage,$data);
+	}
+	
+	/** AJAX endpoint for DataTables server-side processing **/
+	public function get_datatable_data() {
+		// Set JSON header first
+		header('Content-Type: application/json');
+		
+		// Start output buffering to catch any errors
+		ob_start();
+		
+		try {
+			// Get DataTables parameters
+			$start = $this->input->post('start') ? intval($this->input->post('start')) : 0;
+			$length = $this->input->post('length') ? intval($this->input->post('length')) : 100;
+			$draw = $this->input->post('draw') ? intval($this->input->post('draw')) : 1;
+			
+			// Safely get search value
+			$search_post = $this->input->post('search');
+			$search = '';
+			if(is_array($search_post) && isset($search_post['value']) && !empty($search_post['value'])) {
+				$search = trim($search_post['value']);
+			}
+			
+			// Safely get order parameters
+			$order_post = $this->input->post('order');
+			$order_column_index = 3; // Default to Name column
+			$order_dir = 'asc';
+			if(is_array($order_post) && isset($order_post[0]) && is_array($order_post[0])) {
+				if(isset($order_post[0]['column'])) {
+					$order_column_index = intval($order_post[0]['column']);
+				}
+				if(isset($order_post[0]['dir'])) {
+					$order_dir = $order_post[0]['dir'];
+				}
+			}
+			
+			// Map column index to column name (matching the table structure)
+			$columns = array(
+				0 => 'tbl_addcustomer.id',  // Checkbox column
+				1 => 'tbl_addcustomer.id',  // S No
+				2 => 'tbl_addcustomer.customer_id',  // Customer id
+				3 => 'tbl_addcustomer.last_name',  // Name (ordered by last_name)
+				4 => 'tbl_addcustomer.address',  // Address
+				5 => 'tbl_addcustomer.meter_number',  // Meter Number
+				6 => 'tbl_zone.zone',  // Zone
+				7 => 'tbl_classification.class_name',  // Classification
+				8 => 'tbl_addcustomer.status',  // Status
+				9 => 'tbl_addcustomer.id'  // Action
+			);
+			$order_column = isset($columns[$order_column_index]) ? $columns[$order_column_index] : 'tbl_addcustomer.last_name';
+			
+			// Ensure model is loaded
+			if(!isset($this->my_model)) {
+				$this->load->model('addcustomer_model','my_model');
+			}
+			
+			// Get filtered and paginated records
+			$records = $this->my_model->get_paginated_records($start, $length, $search, $order_column, $order_dir);
+			$total_records = $this->my_model->get_total_count('');
+			$filtered_records = $this->my_model->get_total_count($search);
+			
+			// Format data for DataTables
+			$data = array();
+			$i = $start + 1;
+			foreach($records as $row) {
+				$status_html = '';
+				$row_status = isset($row['status']) ? $row['status'] : 0;
+				$row_id = isset($row['id']) ? $row['id'] : 0;
+				
+				if($row_status == 1) {
+					$status_html = '<span class="label label-success arrowed-in arrowed-in-right"><a href="JavaScript:if(confirm(\'Are you sure want to Chanage the Status?\')==true){window.location=\''.ADMIN_URL.'addcustomer/status/'.$row_id.'/'.$row_status.'\';}" style="color:#FFF; text-decoration:none;">Active</a></span>';
+				} elseif($row_status == 0) {
+					$status_html = '<span class="label label-danger arrowed"><a href="JavaScript:if(confirm(\'Are you sure want to Chanage the Status?\')==true){window.location=\''.ADMIN_URL.'addcustomer/status/'.$row_id.'/'.$row_status.'\';}" style="color:#FFF; text-decoration:none;">De-Active</a></span>';
+				} elseif($row_status == 2) {
+					$status_html = '<span class="label label-danger arrowed"><a href="JavaScript:if(confirm(\'Are you sure want to Chanage the Status?\')==true){window.location=\''.ADMIN_URL.'addcustomer/status/'.$row_id.'/'.$row_status.'\';}" style="color:#FFF; text-decoration:none;">Disconnected</a></span>';
+				}
+				
+				$action_html = '<input type="hidden" name="id_'.$i.'" id="id_'.$i.'" value="'.$row_id.'">
+								<input type="hidden" name="customerid_'.$i.'" id="customerid_'.$i.'" value="'.(isset($row['customer_id']) ? $row['customer_id'] : '').'">
+								<input type="hidden" name="billingplansid_'.$i.'" id="billingplansid_'.$i.'" value="'.(isset($row['billingplans']) ? $row['billingplans'] : '').'">
+								<div class="visible-md visible-lg hidden-sm hidden-xs action-buttons">
+									<a class="blue" href="'.ADMIN_URL.'addcustomer/view/'.$row_id.'" title="View">
+										<i class="fa fa-info-circle"></i>
+									</a>	
+									<a class="green" href="'.ADMIN_URL.'addcustomer/edit/'.$row_id.'" title="Edit">
+										<i class="fa fa-edit"></i>
+									</a>
+									<a class="orange set-password-btn" href="javascript:void(0);" data-customer-id="'.$row_id.'" data-customer-code="'.(isset($row['customer_id']) ? $row['customer_id'] : '').'" title="Set Login Password">
+										<i class="fa fa-key"></i>
+									</a>
+									<a class="red" href="JavaScript:if(confirm(\'Confirm Delete?\')==true){window.location=\''.ADMIN_URL.'addcustomer/delete/'.$row_id.'\';}" title="Delete">
+										<i class="fa fa-remove"></i>
+									</a>
+								</div>
+								<div class="visible-xs visible-sm hidden-md hidden-lg">
+									<div class="inline position-relative">
+										<button class="btn btn-minier btn-yellow dropdown-toggle" data-toggle="dropdown">
+											<i class="icon-caret-down icon-only bigger-120"></i>
+										</button>
+										<ul class="dropdown-menu dropdown-only-icon dropdown-yellow pull-right dropdown-caret dropdown-close">
+											<li>
+												<a href="'.ADMIN_URL.'addcustomer/edit/'.$row_id.'" class="tooltip-success" data-rel="tooltip" title="Edit">
+													<span class="green">
+														<img src="'.base_url().'images/favicon/document-edit.gif">
+													</span>
+												</a>
+											</li>
+											<li>
+												<a class="blue" href="'.ADMIN_URL.'addcustomer/view/'.$row_id.'">
+													<img src="'.base_url().'images/favicon/view_icon.gif">
+												</a>			
+											</li>
+											<li>
+												<a href="javascript:void(0);" class="set-password-btn" data-customer-id="'.$row_id.'" data-customer-code="'.(isset($row['customer_id']) ? $row['customer_id'] : '').'" data-rel="tooltip" title="Set Login Password">
+													<span class="orange">
+														<i class="fa fa-key"></i>
+													</span>
+												</a>
+											</li>
+											<li>
+												<a href="JavaScript:if(confirm(\'Confirm Delete?\')==true){window.location=\''.ADMIN_URL.'addcustomer/delete/'.$row_id.'\';}" class="tooltip-error" data-rel="tooltip" title="Delete">
+													<span class="red">
+														<img src="'.base_url().'images/favicon/delete.png">
+													</span>
+												</a>
+											</li>
+										</ul>
+									</div>
+								</div>';
+				
+				$data[] = array(
+					'<input type="checkbox" class="ace" name="delete_ids[]" id="delete_ids[]" value="'.$row_id.'" />',
+					$i++,
+					stripslashes(isset($row['customer_id']) ? $row['customer_id'] : ''),
+					stripslashes((isset($row['last_name']) ? $row['last_name'] : '').',  '.(isset($row['first_name']) ? $row['first_name'] : '').'  '.(isset($row['middle_name']) ? $row['middle_name'] : '')),
+					'<span style="width:25%;">'.stripslashes(isset($row['address']) ? $row['address'] : '').'</span>',
+					stripslashes(isset($row['meter_number']) ? $row['meter_number'] : ''),
+					stripslashes(isset($row['zones']) ? $row['zones'] : ''),
+					stripslashes(isset($row['classification_name']) ? $row['classification_name'] : ''),
+					$status_html,
+					$action_html
+				);
+			}
+			
+			// Clear any output that might have been generated
+			ob_clean();
+			
+			// Return JSON response
+			$output = array(
+				"draw" => $draw,
+				"recordsTotal" => $total_records,
+				"recordsFiltered" => $filtered_records,
+				"data" => $data
+			);
+			
+			echo json_encode($output);
+			ob_end_flush();
+			exit;
+			
+		} catch(Exception $e) {
+			// Clear any output
+			ob_clean();
+			
+			// Log the error for debugging
+			log_message('error', 'DataTables Error: ' . $e->getMessage());
+			log_message('error', 'DataTables Trace: ' . $e->getTraceAsString());
+			log_message('error', 'DataTables File: ' . $e->getFile() . ' Line: ' . $e->getLine());
+			
+			// Return error response
+			$draw = $this->input->post('draw') ? intval($this->input->post('draw')) : 1;
+			$output = array(
+				"draw" => $draw,
+				"recordsTotal" => 0,
+				"recordsFiltered" => 0,
+				"data" => array(),
+				"error" => "An error occurred: " . $e->getMessage()
+			);
+			
+			echo json_encode($output);
+			ob_end_flush();
+			exit;
+		} catch(Error $e) {
+			// Clear any output
+			ob_clean();
+			
+			// Catch PHP 7+ errors
+			log_message('error', 'DataTables PHP Error: ' . $e->getMessage());
+			log_message('error', 'DataTables Trace: ' . $e->getTraceAsString());
+			log_message('error', 'DataTables File: ' . $e->getFile() . ' Line: ' . $e->getLine());
+			
+			$draw = $this->input->post('draw') ? intval($this->input->post('draw')) : 1;
+			$output = array(
+				"draw" => $draw,
+				"recordsTotal" => 0,
+				"recordsFiltered" => 0,
+				"data" => array(),
+				"error" => "An error occurred: " . $e->getMessage()
+			);
+			
+			echo json_encode($output);
+			ob_end_flush();
+			exit;
+		}
+	}
+	
+	/** Save Customer Login Password **/
+	public function save_customer_password() {
+		// Clear any previous output
+		if(ob_get_level()) {
+			ob_clean();
+		}
+		
+		// Set JSON header first
+		header('Content-Type: application/json');
+		
+		try {
+			// Ensure model is loaded
+			if(!isset($this->my_model)) {
+				$this->load->model('addcustomer_model','my_model');
+			}
+			
+			$customer_id = $this->input->post('customer_id');
+			$password = $this->input->post('password');
+			
+			// Log the received data for debugging
+			log_message('debug', 'Save password - Customer ID: ' . $customer_id . ', Password length: ' . strlen($password));
+			
+			if(empty($customer_id) || empty($password)) {
+				echo json_encode(array('success' => false, 'message' => 'Customer ID and Password are required.'));
+				exit;
+			}
+			
+			// Encrypt password using MD5 (same as login)
+			$encrypted_password = md5($password);
+			
+			// Update password in database
+			$result = $this->my_model->update_customer_password($customer_id, $encrypted_password);
+			
+			if($result !== false) {
+				echo json_encode(array('success' => true, 'message' => 'Password saved successfully.'));
+			} else {
+				$error_msg = 'Failed to save password. Please check the logs for details.';
+				log_message('error', 'Password save returned false for customer ID: ' . $customer_id);
+				echo json_encode(array('success' => false, 'message' => $error_msg));
+			}
+			exit;
+			
+		} catch(Exception $e) {
+			log_message('error', 'Save Password Exception: ' . $e->getMessage());
+			log_message('error', 'Save Password Trace: ' . $e->getTraceAsString());
+			log_message('error', 'Save Password File: ' . $e->getFile() . ' Line: ' . $e->getLine());
+			
+			echo json_encode(array('success' => false, 'message' => 'An error occurred: ' . $e->getMessage()));
+			exit;
+		} catch(Error $e) {
+			log_message('error', 'Save Password PHP Error: ' . $e->getMessage());
+			log_message('error', 'Save Password Trace: ' . $e->getTraceAsString());
+			
+			echo json_encode(array('success' => false, 'message' => 'A PHP error occurred: ' . $e->getMessage()));
+			exit;
+		}
 	}
 	
 	/** Add Function **/
