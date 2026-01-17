@@ -97,6 +97,52 @@ class statementofaccount extends CI_Controller {
 		$this->load->view('statementofaccount_search',$data);
 	}
 	
+	/** Reset Customer Password **/
+	public function reset_password() {
+		// Clear any previous output
+		if(ob_get_level()) {
+			ob_clean();
+		}
+		
+		// Set JSON header
+		header('Content-Type: application/json');
+		
+		try {
+			$customer_id = $this->input->post('customer_id');
+			$password = $this->input->post('password');
+			
+			// Validate inputs
+			if(empty($customer_id) || empty($password)) {
+				echo json_encode(array('success' => false, 'message' => 'Customer ID and Password are required.'));
+				exit;
+			}
+			
+			// Validate password length
+			if(strlen($password) < 3) {
+				echo json_encode(array('success' => false, 'message' => 'Password must be at least 3 characters long.'));
+				exit;
+			}
+			
+			// Encrypt password using MD5 (same as login)
+			$encrypted_password = md5($password);
+			
+			// Update password in database using customer_id
+			$result = $this->my_model->update_customer_password_by_customer_id($customer_id, $encrypted_password);
+			
+			if($result !== false) {
+				echo json_encode(array('success' => true, 'message' => 'Password reset successfully. Redirecting to login page...'));
+			} else {
+				echo json_encode(array('success' => false, 'message' => 'Failed to reset password. Please try again.'));
+			}
+			exit;
+			
+		} catch(Exception $e) {
+			log_message('error', 'Reset Password Exception: ' . $e->getMessage());
+			echo json_encode(array('success' => false, 'message' => 'An error occurred: ' . $e->getMessage()));
+			exit;
+		}
+	}
+
 }
 ?>
 

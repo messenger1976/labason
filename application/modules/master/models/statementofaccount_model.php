@@ -203,6 +203,42 @@ class statementofaccount_model extends CI_Model {
 		return false;
 	}
 	
+	/** Update customer password by customer_id **/
+	public function update_customer_password_by_customer_id($customer_id, $password) {
+		try {
+			// First check if password column exists
+			$query = $this->db->query("SHOW COLUMNS FROM `".$this->table_customer."` LIKE 'password'");
+			if($query->num_rows() == 0) {
+				// Column doesn't exist, try to create it
+				$alter_query = "ALTER TABLE `".$this->table_customer."` ADD COLUMN `password` VARCHAR(255) NULL";
+				$alter_result = $this->db->query($alter_query);
+				
+				// Check if ALTER was successful by checking for errors
+				if(!$alter_result) {
+					log_message('error', 'Failed to create password column. Query: ' . $alter_query);
+					// Column creation failed, but continue anyway - might already exist or permission issue
+				}
+			}
+			
+			// Now update the password using customer_id
+			$this->db->where('customer_id', $customer_id);
+			$data = array('password' => $password);
+			$result = $this->db->update($this->table_customer, $data);
+			
+			// Log the query for debugging
+			log_message('debug', 'Update password query: ' . $this->db->last_query());
+			log_message('debug', 'Customer ID: ' . $customer_id . ', Affected rows: ' . $this->db->affected_rows());
+			
+			// Return true if update executed (affected_rows can be 0 if password was the same)
+			return $result !== false;
+			
+		} catch(Exception $e) {
+			log_message('error', 'Exception in update_customer_password_by_customer_id: ' . $e->getMessage());
+			log_message('error', 'Exception trace: ' . $e->getTraceAsString());
+			return false;
+		}
+	}
+	
 }
 ?>
 

@@ -3,6 +3,7 @@
 		<div class="row" style="margin-bottom: 20px;">
 			<div class="col-xs-12 text-right">
 				<button class="btn btn-primary" onclick="window.print()"><i class="fa fa-print"></i> Print</button>
+				<button class="btn btn-warning" id="resetPasswordBtn"><i class="fa fa-key"></i> Reset Password</button>
 				<a href="<?php echo base_url();?>master/statementofaccount/search" class="btn btn-default"><i class="fa fa-arrow-left"></i> Back to Search</a>
 			</div>
 		</div>
@@ -159,7 +160,49 @@
 </div>
 <!-- End content wrapper -->
 
+<!-- Reset Password Modal -->
+<div class="modal fade" id="resetPasswordModal" tabindex="-1" role="dialog" aria-labelledby="resetPasswordModalLabel" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" id="closeResetPasswordModal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h4 class="modal-title" id="resetPasswordModalLabel">
+					<i class="fa fa-key"></i> Reset Password
+				</h4>
+			</div>
+			<div class="modal-body">
+				<form id="resetPasswordForm">
+					<input type="hidden" id="reset_customer_id" name="customer_id" value="<?php echo isset($customer_info['customer_id']) ? htmlspecialchars($customer_info['customer_id']) : ''; ?>">
+					
+					<div class="form-group">
+						<label for="new_password">New Password <span class="text-danger">*</span></label>
+						<input type="password" class="form-control" id="new_password" name="new_password" required autocomplete="off">
+						<small class="help-block">Enter your new password (minimum 3 characters)</small>
+					</div>
+					
+					<div class="form-group">
+						<label for="confirm_password">Confirm Password <span class="text-danger">*</span></label>
+						<input type="password" class="form-control" id="confirm_password" name="confirm_password" required autocomplete="off">
+						<small class="help-block">Re-enter your new password to confirm</small>
+					</div>
+					
+					<div id="reset_password_error" class="alert alert-danger" style="display:none;"></div>
+					<div id="reset_password_success" class="alert alert-success" style="display:none;"></div>
+				</form>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" id="cancelResetPasswordBtn">Cancel</button>
+				<button type="button" class="btn btn-primary" id="saveResetPasswordBtn">Reset Password</button>
+			</div>
+		</div>
+	</div>
+</div>
+
 <!-- PAGE RELATED PLUGIN(S) -->
+<!-- Bootstrap JS (required for modals) -->
+<script src="<?php echo base_url();?>js/bootstrap/bootstrap.min.js"></script>
 <script src="<?php echo base_url();?>js/plugin/datatables/jquery.dataTables.min.js"></script>
 <script src="<?php echo base_url();?>js/plugin/datatables/dataTables.colVis.min.js"></script>
 <script src="<?php echo base_url();?>js/plugin/datatables/dataTables.tableTools.min.js"></script>
@@ -215,6 +258,146 @@
 					responsiveHelper_dt_basic.respond();
 				}
 			}
+		});
+		
+		// Reset Password Button Click Handler
+		$('#resetPasswordBtn').on('click', function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+			// Ensure Bootstrap modal is available
+			if(typeof $.fn.modal !== 'undefined') {
+				$('#resetPasswordModal').modal({
+					backdrop: 'static',
+					keyboard: false,
+					show: true
+				});
+			} else {
+				alert('Bootstrap modal is not loaded. Please refresh the page.');
+			}
+		});
+		
+		// Prevent modal from closing on backdrop click or ESC key during processing
+		var isProcessing = false;
+		
+		// Reset Password Modal Handling
+		$('#resetPasswordModal').on('show.bs.modal', function () {
+			// Reset processing flag
+			isProcessing = false;
+			// Clear form and messages when modal opens
+			$('#resetPasswordForm')[0].reset();
+			$('#reset_password_error').hide().text('');
+			$('#reset_password_success').hide().text('');
+			$('#saveResetPasswordBtn').prop('disabled', false).text('Reset Password');
+		});
+		
+		$('#resetPasswordModal').on('hide.bs.modal', function (e) {
+			if(isProcessing) {
+				e.preventDefault();
+				e.stopImmediatePropagation();
+				return false;
+			}
+		});
+		
+		// Prevent closing via backdrop click
+		$('#resetPasswordModal').on('click', function(e) {
+			if($(e.target).hasClass('modal') && isProcessing) {
+				e.preventDefault();
+				e.stopImmediatePropagation();
+				return false;
+			}
+		});
+		
+		// Prevent form submission on Enter key
+		$('#resetPasswordForm').on('submit', function(e) {
+			e.preventDefault();
+			return false;
+		});
+		
+		// Close button handler (X button)
+		$('#closeResetPasswordModal').on('click', function(e) {
+			if(!isProcessing) {
+				$('#resetPasswordModal').modal('hide');
+			}
+		});
+		
+		// Cancel button handler
+		$('#cancelResetPasswordBtn').on('click', function(e) {
+			if(!isProcessing) {
+				$('#resetPasswordModal').modal('hide');
+			}
+		});
+		
+		// Prevent Enter key from submitting form
+		$('#resetPasswordForm input').on('keypress', function(e) {
+			if(e.which == 13) {
+				e.preventDefault();
+				$('#saveResetPasswordBtn').click();
+				return false;
+			}
+		});
+		
+		// Handle Reset Password Button Click
+		$('#saveResetPasswordBtn').on('click', function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+			var newPassword = $('#new_password').val();
+			var confirmPassword = $('#confirm_password').val();
+			var customerId = $('#reset_customer_id').val();
+			
+			// Clear previous messages
+			$('#reset_password_error').hide().text('');
+			$('#reset_password_success').hide().text('');
+			
+			// Validate inputs
+			if(!newPassword || newPassword.length < 3) {
+				$('#reset_password_error').text('Password must be at least 3 characters long.').show();
+				$('#new_password').focus();
+				return false;
+			}
+			
+			if(newPassword !== confirmPassword) {
+				$('#reset_password_error').text('Passwords do not match. Please try again.').show();
+				$('#confirm_password').focus();
+				return false;
+			}
+			
+			// Disable button and show loading
+			isProcessing = true;
+			$('#saveResetPasswordBtn').prop('disabled', true).text('Resetting...');
+			
+			// Submit via AJAX
+			$.ajax({
+				url: '<?php echo base_url();?>master/statementofaccount/reset_password',
+				type: 'POST',
+				dataType: 'json',
+				data: {
+					customer_id: customerId,
+					password: newPassword
+				},
+				success: function(response) {
+					isProcessing = false;
+					if(response.success) {
+						$('#reset_password_success').text(response.message).show();
+						// Allow modal to close and redirect to search page after 2 seconds
+						setTimeout(function() {
+							$('#resetPasswordModal').modal('hide');
+							window.location.href = '<?php echo base_url();?>master/statementofaccount/search';
+						}, 2000);
+					} else {
+						$('#reset_password_error').text(response.message).show();
+						$('#saveResetPasswordBtn').prop('disabled', false).text('Reset Password');
+					}
+				},
+				error: function(xhr, status, error) {
+					isProcessing = false;
+					var errorMsg = 'An error occurred while resetting the password. Please try again.';
+					if(xhr.responseJSON && xhr.responseJSON.message) {
+						errorMsg = xhr.responseJSON.message;
+					}
+					$('#reset_password_error').text(errorMsg).show();
+					$('#saveResetPasswordBtn').prop('disabled', false).text('Reset Password');
+				}
+			});
 		});
 	});
 </script>
