@@ -27,7 +27,7 @@ Returns customer info, ledger entries, and current balance.
 - `GET /master/statementofaccount_api/ledger/11-7-12-01262`
 - `GET /master/statementofaccount_api/ledger?customer_id=11-7-12-01262`
 
-### 4. Get Current Balance Only
+### 4. Get Current Billing Balance Only
 **URL:** 
 - `GET /master/statementofaccount_api/balance/11-7-12-01262`
 - `GET /master/statementofaccount_api/balance?customer_id=11-7-12-01262`
@@ -84,7 +84,7 @@ fetch('http://labason.com/master/statementofaccount_api/get/11-7-12-01262')
     console.log('Success:', data);
     if (data.success) {
       console.log('Customer:', data.data.customer_info);
-      console.log('Current Balance:', data.data.current_balance);
+      console.log('Current Billing Balance:', data.data.current_balance);
       console.log('Ledger Entries:', data.data.ledger_entries);
     }
   })
@@ -113,7 +113,7 @@ async function getStatementOfAccount(customerId) {
 getStatementOfAccount('11-7-12-01262')
   .then(statement => {
     console.log('Customer Info:', statement.customer_info);
-    console.log('Current Balance:', statement.current_balance);
+    console.log('Current Billing Balance:', statement.current_balance);
     console.log('Total Entries:', statement.entry_count);
   });
 
@@ -179,7 +179,7 @@ $data = json_decode($response, true);
 
 if ($data['success']) {
     echo "Customer: " . $data['data']['customer_info']['customer_id'] . "\n";
-    echo "Current Balance: PHP " . number_format($data['data']['current_balance'], 2) . "\n";
+    echo "Current Billing Balance: PHP " . number_format($data['data']['current_balance'], 2) . "\n";
     echo "Total Entries: " . $data['data']['entry_count'] . "\n";
 } else {
     echo "Error: " . $data['message'] . "\n";
@@ -211,7 +211,7 @@ if ($data['success']) {
     
     echo "Customer ID: " . $customer['customer_id'] . "\n";
     echo "Name: " . strtoupper($customer['last_name'] . ', ' . $customer['first_name']) . "\n";
-    echo "Current Balance: PHP " . number_format($balance, 2) . "\n";
+    echo "Current Billing Balance: PHP " . number_format($balance, 2) . "\n";
     echo "Total Transactions: " . count($entries) . "\n";
 }
 ?>
@@ -228,7 +228,7 @@ $.ajax({
     success: function(data) {
         if (data.success) {
             console.log('Customer Info:', data.data.customer_info);
-            console.log('Current Balance:', data.data.current_balance);
+            console.log('Current Billing Balance:', data.data.current_balance);
             console.log('Ledger Entries:', data.data.ledger_entries);
             
             // Display customer info
@@ -269,7 +269,7 @@ if data['success']:
     
     print(f"Customer ID: {customer_info['customer_id']}")
     print(f"Name: {customer_info['last_name']}, {customer_info['first_name']}")
-    print(f"Current Balance: PHP {current_balance:,.2f}")
+    print(f"Current Billing Balance: PHP {current_balance:,.2f}")
     print(f"Total Entries: {len(ledger_entries)}")
     
     # Print first 5 ledger entries
@@ -316,13 +316,15 @@ else:
                 "reading": "100",
                 "previous_reading": "90",
                 "consumed": "10",
-                "penalty": 0
+                "penalty": 150.00,
+                "penalty_included": false,
+                "due_date": "2026-02-15"
             },
             {
                 "date": "2026-01-10",
                 "type": "payment",
                 "refno": "OR-12345",
-                "description": "Payment - OR# OR-12345",
+                "description": "Payment - OR# OR-12345 (Billing Period: January 2026)",
                 "debit": 0,
                 "credit": 1000.00,
                 "balance": 500.00
@@ -360,5 +362,9 @@ else:
 - Customer ID format: `11-7-12-01262` (zone-branch-customer format)
 - Dates are in `Y-m-d` format
 - Amounts are in PHP (Philippine Peso)
-- Ledger entries are sorted by date (newest first)
-- Running balance is calculated automatically
+- Ledger entries are sorted by date (newest first), with payments appearing before billings when dates are the same
+- Running balance is calculated chronologically (oldest to newest) for accuracy
+- **Current Billing Balance** = Total Debit - Total Credit (sum of all debit amounts minus sum of all credit amounts)
+- **Billing Entry Debit Amount**: Uses penalty amount if payment is made after due date, otherwise uses original amount
+- Payment descriptions include billing period information
+- The `penalty_included` field indicates whether the penalty amount is being used in the debit calculation

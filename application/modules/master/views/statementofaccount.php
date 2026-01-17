@@ -1,10 +1,12 @@
 <!-- Content starts here - no header/sidebar -->
-<div style="max-width: 1400px; margin: 0 auto; background: #fff; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-		<div class="row" style="margin-bottom: 20px;">
-			<div class="col-xs-12 text-right">
-				<button class="btn btn-primary" onclick="window.print()"><i class="fa fa-print"></i> Print</button>
-				<button class="btn btn-warning" id="resetPasswordBtn"><i class="fa fa-key"></i> Reset Password</button>
-				<a href="<?php echo base_url();?>master/statementofaccount/search" class="btn btn-default"><i class="fa fa-arrow-left"></i> Back to Search</a>
+<div class="statement-container" style="max-width: 1400px; margin: 0 auto; background: #fff; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+		<div class="row no-print action-buttons" style="margin-bottom: 20px;">
+			<div class="col-xs-12 col-sm-12">
+				<div class="btn-group-mobile">
+					<button class="btn btn-primary btn-block-mobile" onclick="window.print()"><i class="fa fa-print"></i> Print</button>
+					<button class="btn btn-warning btn-block-mobile" id="resetPasswordBtn"><i class="fa fa-key"></i> Reset Password</button>
+					<a href="<?php echo base_url();?>master/statementofaccount/search" class="btn btn-default btn-block-mobile"><i class="fa fa-arrow-left"></i> Back to Search</a>
+				</div>
 			</div>
 		</div>
 		
@@ -57,7 +59,7 @@
 																<td><?php echo isset($customer_info['cust_type_name']) ? $customer_info['cust_type_name'] : 'N/A'; ?></td>
 															</tr>
 															<tr>
-																<td><strong>Current Balance:</strong></td>
+																<td><strong>Current Billing Balance:</strong></td>
 																<td><strong class="text-danger">PHP <?php echo number_format($current_balance, 2); ?></strong></td>
 															</tr>
 														</table>
@@ -93,7 +95,6 @@
 															$debit = $entry['debit'] > 0 ? number_format($entry['debit'], 2) : '';
 															$credit = $entry['credit'] > 0 ? number_format($entry['credit'], 2) : '';
 															$balance = number_format($entry['balance'], 2);
-															$balance_class = $entry['balance'] > 0 ? 'text-danger' : 'text-success';
 													?>
 													<tr>
 														<td style="text-align: center;" data-order="<?php echo $entry_date_sort; ?>"><?php echo $entry_date; ?></td>
@@ -112,7 +113,7 @@
 														</td>
 														<td style="text-align: right;"><?php echo $debit ? 'PHP '.$debit : '-'; ?></td>
 														<td style="text-align: right;"><?php echo $credit ? 'PHP '.$credit : '-'; ?></td>
-														<td style="text-align: right;" class="<?php echo $balance_class; ?>">
+														<td style="text-align: right;">
 															<strong>PHP <?php echo $balance; ?></strong>
 														</td>
 													</tr>
@@ -404,73 +405,408 @@
 
 <style>
 	@media print {
-		#ribbon, .btn, .jarviswidget-editbox, .dt-toolbar {
+		/* Hide non-essential elements */
+		#ribbon, .btn, .jarviswidget-editbox, .dt-toolbar, 
+		button, .no-print, .dataTables_wrapper .dataTables_filter,
+		.dataTables_wrapper .dataTables_length, .dataTables_wrapper .dataTables_info,
+		.dataTables_wrapper .dataTables_paginate,
+		.modal, #resetPasswordModal, .modal-backdrop, .modal-dialog, .modal-content {
 			display: none !important;
 		}
-		.widget-body {
-			padding: 0 !important;
+		
+		/* Page setup */
+		@page {
+			size: A4 landscape;
+			margin: 1cm 1.5cm;
 		}
-		.page-title {
+		
+		/* Body and container */
+		body {
+			background: white !important;
+			color: black !important;
+			font-size: 11pt;
+			line-height: 1.4;
+		}
+		
+		div[style*="max-width"] {
+			max-width: 100% !important;
+			margin: 0 !important;
+			padding: 0 !important;
+			box-shadow: none !important;
+		}
+		
+		/* Card and panel styling */
+		.card {
+			border: none !important;
+			box-shadow: none !important;
+			border-radius: 0 !important;
+		}
+		
+		.card-body {
+			padding: 10px 0 !important;
+		}
+		
+		.panel {
+			border: 1px solid #000 !important;
+			box-shadow: none !important;
+			margin-bottom: 15px !important;
+			page-break-inside: avoid;
+		}
+		
+		.panel-heading {
+			background: #f5f5f5 !important;
+			border-bottom: 2px solid #000 !important;
+			padding: 8px 12px !important;
+			font-weight: bold;
+			font-size: 12pt;
+		}
+		
+		.panel-body {
+			padding: 12px !important;
+		}
+		
+		/* Table styling */
+		.table {
+			width: 100% !important;
+			border-collapse: collapse !important;
+			font-size: 9pt;
 			margin-bottom: 10px !important;
+		}
+		
+		.table thead {
+			display: table-header-group;
+		}
+		
+		.table tbody {
+			display: table-row-group;
+		}
+		
+		.table tfoot {
+			display: table-footer-group;
+		}
+		
+		.table th,
+		.table td {
+			border: 1px solid #000 !important;
+			padding: 6px 8px !important;
+			text-align: left;
+			vertical-align: top;
+		}
+		
+		.table th {
+			background: #f0f0f0 !important;
+			font-weight: bold;
+			text-align: center;
+			font-size: 9pt;
+		}
+		
+		.table-bordered {
+			border: 2px solid #000 !important;
+		}
+		
+		.table-bordered th,
+		.table-bordered td {
+			border: 1px solid #000 !important;
+		}
+		
+		.table-striped tbody tr:nth-child(odd) {
+			background: #f9f9f9 !important;
+		}
+		
+		/* Ensure table doesn't break across pages */
+		.table-responsive {
+			overflow: visible !important;
+		}
+		
+		/* Customer info tables */
+		.table-bordered td {
+			font-size: 10pt;
+			padding: 6px 10px !important;
+		}
+		
+		/* Text styling */
+		strong {
+			font-weight: bold;
+		}
+		
+		.text-danger {
+			color: #000 !important;
+			font-weight: bold;
+		}
+		
+		.text-success {
+			color: #000 !important;
+		}
+		
+		.text-muted {
+			color: #666 !important;
+		}
+		
+		/* Page breaks */
+		.page-break-before {
+			page-break-before: always;
+		}
+		
+		.page-break-after {
+			page-break-after: always;
+		}
+		
+		.page-break-inside-avoid {
+			page-break-inside: avoid;
+		}
+		
+		/* Row styling */
+		.row {
+			margin: 0 !important;
+		}
+		
+		[class*="col-"] {
+			padding: 0 10px !important;
+		}
+		
+		/* Remove shadows and effects */
+		* {
+			box-shadow: none !important;
+			text-shadow: none !important;
+		}
+		
+		/* Ensure colors print */
+		-webkit-print-color-adjust: exact !important;
+		print-color-adjust: exact !important;
+		color-adjust: exact !important;
+		
+		/* Header for each page */
+		thead {
+			display: table-header-group;
+		}
+		
+		/* Footer totals */
+		tfoot th {
+			background: #e0e0e0 !important;
+			font-weight: bold;
+			border-top: 2px solid #000 !important;
+		}
+		
+		/* Small text adjustments */
+		small {
+			font-size: 8pt;
+		}
+		
+		/* Ensure proper spacing */
+		.margin-bottom-20 {
+			margin-bottom: 15px !important;
 		}
 	}
 	
 	/* Mobile Responsive Styles */
-	@media (max-width: 768px) {
+	@media (max-width: 991px) {
+		.statement-container {
+			padding: 10px !important;
+		}
+		
+		.card-body {
+			padding: 15px !important;
+		}
+		
+		.panel-body {
+			padding: 12px !important;
+		}
+		
 		.table-responsive {
 			overflow-x: auto;
 			-webkit-overflow-scrolling: touch;
+			-ms-overflow-style: -ms-autohiding-scrollbar;
 		}
-		.table {
+		
+		#ledger_table {
+			min-width: 700px !important;
+		}
+	}
+	
+	@media (max-width: 768px) {
+		.statement-container {
+			padding: 8px !important;
+		}
+		
+		.action-buttons .col-xs-12 {
+			padding: 0 !important;
+		}
+		
+		.btn-group-mobile {
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+		}
+		
+		.btn-block-mobile {
+			width: 100% !important;
+			margin-bottom: 0 !important;
+			padding: 12px 16px !important;
+			font-size: 14px !important;
+			min-height: 44px; /* Better touch target */
+		}
+		
+		.card-body {
+			padding: 12px !important;
+		}
+		
+		.panel {
+			margin-bottom: 15px !important;
+		}
+		
+		.panel-heading {
+			padding: 10px 12px !important;
+			font-size: 14px !important;
+		}
+		
+		.panel-body {
+			padding: 10px !important;
+		}
+		
+		/* Customer info tables stack on mobile */
+		.col-md-6 {
+			width: 100% !important;
+			margin-bottom: 15px !important;
+			padding-left: 0 !important;
+			padding-right: 0 !important;
+		}
+		
+		.table-bordered {
 			font-size: 12px;
 		}
+		
+		.table-bordered td {
+			padding: 8px 10px !important;
+			font-size: 12px !important;
+			word-break: break-word;
+		}
+		
+		.table-responsive {
+			overflow-x: auto;
+			-webkit-overflow-scrolling: touch;
+			border: none;
+		}
+		
+		.table {
+			font-size: 11px;
+			margin-bottom: 0;
+		}
+		
 		.table th,
 		.table td {
-			padding: 8px 4px;
+			padding: 8px 6px !important;
+			white-space: nowrap;
 		}
-		.panel-body {
-			padding: 15px !important;
+		
+		.table th {
+			font-size: 10px !important;
+			font-weight: bold;
 		}
-		.table-bordered td {
-			font-size: 11px;
+		
+		#ledger_table {
+			min-width: 800px !important;
 		}
-		.btn {
-			padding: 8px 12px;
-			font-size: 13px;
-			margin-bottom: 5px;
+		
+		/* Description column can wrap */
+		.table td:nth-child(3) {
+			white-space: normal !important;
+			max-width: 200px;
+			word-break: break-word;
 		}
-		h1.page-title {
-			font-size: 18px;
-		}
-		h1.page-title span {
-			display: block;
-			font-size: 14px;
-			margin-top: 5px;
+		
+		/* Small text adjustments */
+		small {
+			font-size: 10px !important;
 		}
 	}
 	
 	@media (max-width: 480px) {
+		.statement-container {
+			padding: 5px !important;
+		}
+		
+		.btn-block-mobile {
+			padding: 14px 16px !important;
+			font-size: 13px !important;
+		}
+		
+		.panel-heading {
+			padding: 8px 10px !important;
+			font-size: 13px !important;
+		}
+		
+		.panel-body {
+			padding: 8px !important;
+		}
+		
+		.table-bordered td {
+			padding: 6px 8px !important;
+			font-size: 11px !important;
+		}
+		
 		.table {
 			font-size: 10px;
 		}
+		
 		.table th,
 		.table td {
-			padding: 6px 2px;
+			padding: 6px 4px !important;
 		}
-		.table-bordered td {
-			font-size: 10px;
+		
+		.table th {
+			font-size: 9px !important;
 		}
-		.btn {
-			padding: 6px 10px;
-			font-size: 12px;
-			width: 100%;
-			margin-bottom: 5px;
+		
+		#ledger_table {
+			min-width: 700px !important;
 		}
+		
+		/* Description column adjustments for very small screens */
+		.table td:nth-child(3) {
+			max-width: 150px;
+			font-size: 9px !important;
+		}
+		
+		/* Hide less important columns on very small screens */
+		.table th:nth-child(2),
+		.table td:nth-child(2) {
+			display: none; /* Hide Ref No on very small screens */
+		}
+		
+		small {
+			font-size: 9px !important;
+		}
+		
 		.text-right {
-			text-align: left !important;
+			text-align: right !important; /* Keep right alignment for numbers */
 		}
-		.col-md-6 {
-			margin-bottom: 15px;
+	}
+	
+	/* Tablet styles */
+	@media (min-width: 481px) and (max-width: 768px) {
+		.btn-group-mobile {
+			display: flex;
+			flex-direction: row;
+			flex-wrap: wrap;
+			gap: 8px;
+		}
+		
+		.btn-block-mobile {
+			flex: 1 1 auto;
+			min-width: 120px;
+		}
+	}
+	
+	/* Touch-friendly improvements */
+	@media (hover: none) and (pointer: coarse) {
+		.btn {
+			min-height: 44px;
+			min-width: 44px;
+		}
+		
+		.table th,
+		.table td {
+			padding: 10px 8px !important;
 		}
 	}
 </style>
