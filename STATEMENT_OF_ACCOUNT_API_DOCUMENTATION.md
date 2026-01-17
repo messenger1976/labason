@@ -49,14 +49,17 @@ Currently, the API does not require authentication. However, it is recommended t
 
 ### 1. Get Complete Statement of Account
 
-Retrieves the complete statement of account for a customer, including customer information, all ledger entries, and current balance.
+Retrieves the complete statement of account for a customer, including customer information, all ledger entries, and current billing balance (calculated as Total Debit - Total Credit). **Requires password authentication.**
 
-**Endpoint**: `GET /master/statementofaccount_api/get/{customer_id}`
+**Endpoint**: `GET /master/statementofaccount_api/get/{customer_id}?password={password}`
 
-**Alternative**: `GET /master/statementofaccount_api/get?customer_id={customer_id}`
+**Alternative**: 
+- `GET /master/statementofaccount_api/get?customer_id={customer_id}&password={password}`
+- `POST /master/statementofaccount_api/get` (with `customer_id` and `password` in request body)
 
 **Parameters**:
 - `customer_id` (required) - Customer ID
+- `password` (required) - Customer password for authentication
 
 **Response**:
 ```json
@@ -102,15 +105,27 @@ Retrieves the complete statement of account for a customer, including customer i
     ],
     "current_balance": 0.00,
     "entry_count": 2,
+    "password": "userpassword",
     "generated_at": "2024-01-15 10:30:00"
   }
 }
 ```
 
-**cURL Example**:
+**cURL Examples**:
 ```bash
-curl -X GET "http://yourdomain.com/master/statementofaccount_api/get/12345"
+# GET request with password in query string
+curl -X GET "http://yourdomain.com/master/statementofaccount_api/get/12345?password=userpassword"
+
+# POST request with password in body
+curl -X POST "http://yourdomain.com/master/statementofaccount_api/get" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "customer_id": "12345",
+    "password": "userpassword"
+  }'
 ```
+
+**Note**: The `password` field in the response contains the password in plaintext (the password that was sent in the request). The password is validated against the stored MD5 hash before returning the statement of account.
 
 **JavaScript Example**:
 ```javascript
@@ -604,8 +619,8 @@ curl -X GET "http://yourdomain.com/master/statementofaccount_api/"
 | HTTP Code | Description |
 |-----------|-------------|
 | 200 | Success - Request completed successfully |
-| 400 | Bad Request - Missing or invalid parameters |
-| 401 | Unauthorized - Incorrect current password (for reset_password endpoint) |
+| 400 | Bad Request - Missing or invalid parameters (customer_id, password, or password not set) |
+| 401 | Unauthorized - Invalid password or incorrect current password (for reset_password endpoint) |
 | 404 | Not Found - Customer not found |
 | 405 | Method Not Allowed - Wrong HTTP method used |
 | 500 | Internal Server Error - Server error occurred |
@@ -858,6 +873,11 @@ For issues, questions, or feature requests, please contact the development team.
 ---
 
 ## Changelog
+
+### Version 1.3.0 (2026-01-17)
+- **Password Authentication**: Get statement of account endpoint now requires password authentication
+- **Password in Response**: Password is returned in plaintext in the API response (the password sent in the request)
+- **Enhanced Security**: Password validation using MD5 hash comparison before returning statement data
 
 ### Version 1.2.0 (2026-01-17)
 - **Updated Current Billing Balance Calculation**: Changed from running balance to Total Debit - Total Credit

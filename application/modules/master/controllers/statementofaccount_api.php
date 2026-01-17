@@ -24,17 +24,26 @@ class Statementofaccount_api extends CI_Controller {
 	/**
 	 * Get Statement of Account for a Customer
 	 * 
-	 * GET /master/statementofaccount_api/get/{customer_id}
+	 * GET /master/statementofaccount_api/get/{customer_id}?password={password}
 	 * or
-	 * GET /master/statementofaccount_api/get?customer_id={customer_id}
+	 * POST /master/statementofaccount_api/get (with customer_id and password in body)
 	 * 
-	 * @param string $customer_id Customer ID (optional if passed as query parameter)
-	 * @return JSON Response with customer info, ledger entries, and current balance
+	 * @param string $customer_id Customer ID (optional if passed as query parameter or POST)
+	 * @return JSON Response with customer info, ledger entries, current balance, and password in plaintext
 	 */
 	public function get($customer_id = '') {
-		// Get customer_id from URL parameter or query string
+		// Get customer_id from URL parameter, query string, or POST
 		if(empty($customer_id)) {
-			$customer_id = $this->input->get('customer_id');
+			$customer_id = $this->input->post('customer_id');
+			if(empty($customer_id)) {
+				$customer_id = $this->input->get('customer_id');
+			}
+		}
+		
+		// Get password from POST or GET
+		$password = $this->input->post('password');
+		if(empty($password)) {
+			$password = $this->input->get('password');
 		}
 		
 		// Validate customer_id
@@ -43,11 +52,38 @@ class Statementofaccount_api extends CI_Controller {
 			return;
 		}
 		
+		// Validate password
+		if(empty($password)) {
+			$this->_send_response(false, 'Password is required', null, 400);
+			return;
+		}
+		
 		// Get customer information
 		$customer_info = $this->my_model->get_customer_info($customer_id);
 		
 		if(empty($customer_info)) {
 			$this->_send_response(false, 'Customer not found', null, 404);
+			return;
+		}
+		
+		// Validate password
+		$stored_password = $this->my_model->get_customer_password($customer_id);
+		
+		if($stored_password === false) {
+			$this->_send_response(false, 'Customer not found', null, 404);
+			return;
+		}
+		
+		if(empty($stored_password)) {
+			$this->_send_response(false, 'Password not set for this customer. Please contact administrator.', null, 400);
+			return;
+		}
+		
+		// Validate password - MD5 hash the input and compare with stored password
+		$encrypted_password = md5($password);
+		
+		if($encrypted_password !== $stored_password) {
+			$this->_send_response(false, 'Invalid password', null, 401);
 			return;
 		}
 		
@@ -66,6 +102,7 @@ class Statementofaccount_api extends CI_Controller {
 			'ledger_entries' => $ledger_entries,
 			'current_balance' => floatval($current_balance),
 			'entry_count' => count($ledger_entries),
+			'password' => $password, // Return password in plaintext
 			'generated_at' => date('Y-m-d H:i:s')
 		);
 		
@@ -360,7 +397,8 @@ class Statementofaccount_api extends CI_Controller {
 			'version' => '1.0.0',
 			'description' => 'RESTful API for retrieving customer statement of account information',
 			'endpoints' => array(
-				'GET /master/statementofaccount_api/get/{customer_id}' => 'Get complete statement of account',
+				'GET /master/statementofaccount_api/get/{customer_id}?password={password}' => 'Get complete statement of account (requires password)',
+				'POST /master/statementofaccount_api/get' => 'Get complete statement of account (requires customer_id and password in body)',
 				'GET /master/statementofaccount_api/customer/{customer_id}' => 'Get customer information only',
 				'GET /master/statementofaccount_api/ledger/{customer_id}' => 'Get ledger entries only',
 				'GET /master/statementofaccount_api/balance/{customer_id}' => 'Get current balance only',
@@ -374,7 +412,7 @@ class Statementofaccount_api extends CI_Controller {
 				'timestamp' => 'string - ISO 8601 timestamp',
 				'data' => 'object/array - Response data (if applicable)'
 			),
-			'example_request' => '/master/statementofaccount_api/get/12345',
+			'example_request' => '/master/statementofaccount_api/get/12345?password=userpassword',
 			'example_response' => array(
 				'success' => true,
 				'message' => 'Statement of account retrieved successfully',
@@ -384,6 +422,7 @@ class Statementofaccount_api extends CI_Controller {
 					'ledger_entries' => array(/* ledger entries */),
 					'current_balance' => 1500.00,
 					'entry_count' => 25,
+					'password' => 'userpassword', // Password returned in plaintext
 					'generated_at' => '2024-01-15 10:30:00'
 				)
 			)
