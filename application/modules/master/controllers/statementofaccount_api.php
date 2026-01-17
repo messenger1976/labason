@@ -233,6 +233,94 @@ class Statementofaccount_api extends CI_Controller {
 	}
 	
 	/**
+	 * Reset Customer Password
+	 * 
+	 * POST /master/statementofaccount_api/reset_password
+	 * 
+	 * Required Parameters:
+	 * - customer_id: Customer ID
+	 * - password: New password (minimum 3 characters)
+	 * 
+	 * Optional Parameters:
+	 * - current_password: Current password for verification (if required)
+	 * 
+	 * @return JSON Response indicating success or failure
+	 */
+	public function reset_password() {
+		// Only allow POST requests
+		if($this->input->server('REQUEST_METHOD') !== 'POST') {
+			$this->_send_response(false, 'Method not allowed. Use POST.', null, 405);
+			return;
+		}
+		
+		// Get parameters from POST data
+		$customer_id = $this->input->post('customer_id');
+		$password = $this->input->post('password');
+		$current_password = $this->input->post('current_password'); // Optional: for verification
+		
+		// Validate required inputs
+		if(empty($customer_id)) {
+			$this->_send_response(false, 'Customer ID is required', null, 400);
+			return;
+		}
+		
+		if(empty($password)) {
+			$this->_send_response(false, 'Password is required', null, 400);
+			return;
+		}
+		
+		// Validate password length
+		if(strlen($password) < 3) {
+			$this->_send_response(false, 'Password must be at least 3 characters long', null, 400);
+			return;
+		}
+		
+		// Verify customer exists
+		$customer_info = $this->my_model->get_customer_info($customer_id);
+		if(empty($customer_info)) {
+			$this->_send_response(false, 'Customer not found', null, 404);
+			return;
+		}
+		
+		// If current_password is provided, verify it
+		if(!empty($current_password)) {
+			$stored_password = $this->my_model->get_customer_password($customer_id);
+			if($stored_password === false || empty($stored_password)) {
+				$this->_send_response(false, 'Current password not set for this customer', null, 400);
+				return;
+			}
+			
+			$encrypted_current = md5($current_password);
+			if($encrypted_current !== $stored_password) {
+				$this->_send_response(false, 'Current password is incorrect', null, 401);
+				return;
+			}
+		}
+		
+		try {
+			// Encrypt new password using MD5 (same as login)
+			$encrypted_password = md5($password);
+			
+			// Update password in database
+			$result = $this->my_model->update_customer_password_by_customer_id($customer_id, $encrypted_password);
+			
+			if($result !== false) {
+				$response_data = array(
+					'customer_id' => $customer_id,
+					'password_reset_at' => date('Y-m-d H:i:s'),
+					'message' => 'Password reset successfully'
+				);
+				$this->_send_response(true, 'Password reset successfully', $response_data, 200);
+			} else {
+				$this->_send_response(false, 'Failed to reset password. Please try again.', null, 500);
+			}
+		} catch(Exception $e) {
+			log_message('error', 'Reset Password API Exception: ' . $e->getMessage());
+			$this->_send_response(false, 'An error occurred while resetting the password: ' . $e->getMessage(), null, 500);
+		}
+	}
+	
+	/**
 	 * Send standardized JSON response
 	 * 
 	 * @param bool $success Success status
@@ -277,6 +365,7 @@ class Statementofaccount_api extends CI_Controller {
 				'GET /master/statementofaccount_api/ledger/{customer_id}' => 'Get ledger entries only',
 				'GET /master/statementofaccount_api/balance/{customer_id}' => 'Get current balance only',
 				'GET /master/statementofaccount_api/search?customer_id={customer_id}' => 'Search customer by ID',
+				'POST /master/statementofaccount_api/reset_password' => 'Reset customer password',
 				'GET /master/statementofaccount_api/' => 'API information (this endpoint)'
 			),
 			'response_format' => array(

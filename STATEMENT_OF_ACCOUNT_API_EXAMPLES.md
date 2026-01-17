@@ -32,6 +32,10 @@ Returns customer info, ledger entries, and current balance.
 - `GET /master/statementofaccount_api/balance/11-7-12-01262`
 - `GET /master/statementofaccount_api/balance?customer_id=11-7-12-01262`
 
+### 5. Reset Customer Password
+**URL:** 
+- `POST /master/statementofaccount_api/reset_password`
+
 ## Example API Calls
 
 ### cURL (Command Line)
@@ -51,6 +55,23 @@ curl -X GET "http://labason.com/master/statementofaccount_api/ledger/11-7-12-012
 
 # Get current balance only
 curl -X GET "http://labason.com/master/statementofaccount_api/balance/11-7-12-01262"
+
+# Reset customer password
+curl -X POST "http://labason.com/master/statementofaccount_api/reset_password" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "customer_id": "11-7-12-01262",
+    "password": "newpassword123"
+  }'
+
+# Reset password with current password verification
+curl -X POST "http://labason.com/master/statementofaccount_api/reset_password" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "customer_id": "11-7-12-01262",
+    "current_password": "oldpassword",
+    "password": "newpassword123"
+  }'
 ```
 
 ### JavaScript (Fetch API)
@@ -95,6 +116,46 @@ getStatementOfAccount('11-7-12-01262')
     console.log('Current Balance:', statement.current_balance);
     console.log('Total Entries:', statement.entry_count);
   });
+
+// Reset customer password
+async function resetPassword(customerId, newPassword, currentPassword = null) {
+  try {
+    const data = {
+      customer_id: customerId,
+      password: newPassword
+    };
+    
+    if (currentPassword) {
+      data.current_password = currentPassword;
+    }
+    
+    const response = await fetch('http://labason.com/master/statementofaccount_api/reset_password', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data)
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      console.log('Password reset successfully');
+      console.log('Reset at:', result.data.password_reset_at);
+      return true;
+    } else {
+      console.error('Error:', result.message);
+      return false;
+    }
+  } catch (error) {
+    console.error('Network error:', error);
+    return false;
+  }
+}
+
+// Usage
+resetPassword('11-7-12-01262', 'newpassword123');
+resetPassword('11-7-12-01262', 'newpassword123', 'oldpassword');
 ```
 
 ### PHP (cURL)
@@ -287,8 +348,11 @@ else:
 ## HTTP Status Codes
 
 - `200` - Success
-- `400` - Bad Request (missing customer_id)
+- `400` - Bad Request (missing/invalid parameters)
+- `401` - Unauthorized (incorrect current password for reset_password)
 - `404` - Customer not found
+- `405` - Method Not Allowed (wrong HTTP method)
+- `500` - Internal Server Error
 
 ## Notes
 
