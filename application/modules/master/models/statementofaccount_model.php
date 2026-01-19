@@ -272,7 +272,7 @@ class statementofaccount_model extends CI_Model {
 		});
 		
 		// Second pass: Check if due billings are paid and add penalty to debit if needed
-		// Process chronologically (oldest first) to check payment status accurately
+		// We need to process chronologically (oldest first) to check payment status accurately
 		$ledger_entries_chronological = $ledger_entries;
 		usort($ledger_entries_chronological, function($a, $b) {
 			$dateA = strtotime($a['date']);
