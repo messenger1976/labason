@@ -187,6 +187,15 @@
 										<div class="row">
 											<div class="col-lg-12 controls">
 												<div class="form-group" style="padding: 5px 15px;"> 
+													<span class="input-group-addon"><strong>Franchise Tax :</strong></span>
+													<input class="form-control text-input" type="text" id="franchise_fee" name="franchise_fee" style="background-color:yellow;font-size: larger; font-weight: bold; text-align: center;" readonly>
+													
+												</div>
+											</div>
+										</div>
+										<div class="row">
+											<div class="col-lg-12 controls">
+												<div class="form-group" style="padding: 5px 15px;"> 
 													<span class="input-group-addon"><strong>Amt before due date :</strong></span>
 													<input class="form-control text-input" type="text" id="total_amount" name="total_amount" style="background-color:yellow;font-size: larger; font-weight: bold; text-align: center;" readonly>
 													
@@ -330,6 +339,7 @@
 										$('#current_bill').val('');
 										$('#sc_discount').val('');
 										$('#arrears').val('');
+										$('#franchise_fee').val('');
 										$('#total_amount').val('');
 										$('#penalty').val('');
 										//$('#maintenance_fee').val('');
@@ -364,6 +374,7 @@
 					$('#total_amount').val('');
 					$('#penalty').val('');
 					$('#maintenance_fee').val('');
+					$('#franchise_fee').val('');
 					$('#save').attr("disabled", "disabled");
 					// If no parent is selected
 					// , clear the child dropdown
@@ -471,6 +482,7 @@
 										$('#total_amount').val('');
 										$('#penalty').val('');
 										$('#maintenance_fee').val('');
+										$('#franchise_fee').val('');
 										$("#save").attr("disabled", "disabled");
 									} else {
 										//alert("Error saving record.");
@@ -592,6 +604,11 @@
 						total_amount = multiprice - discount;
 						total_amount = total_amount??0;
 						total_amount+=maintenance_fee;
+						var franchise_fee_percentage = <?php echo isset($franchise_fee_percentage) ? floatval($franchise_fee_percentage) : '2.00'; ?>;
+						var bill_amount_for_franchise = ($('#cust_type_id').val()==3) ? (multiprice - discount) : multiprice;
+						var franchise_fee_amount = (bill_amount_for_franchise * franchise_fee_percentage) / 100;
+						total_amount += parseFloat(franchise_fee_amount);
+						$('#franchise_fee').val(amount_formatted(franchise_fee_amount));
 						amount_total_penalty = 0;
 						//console.log('SP:'+$('#special_priviledge').val());
 						if($('#special_priviledge').val()==='0'){
@@ -619,6 +636,7 @@
 
 					} else {
 						$('#current_bill').val(amount_formatted(0));
+						$('#franchise_fee').val(amount_formatted(0));
 						var unit_price = $('#current_bill').val();
 						$("#save").attr("disabled", "disabled");
 						$("#amount_pay").val(amount_formatted(0));
@@ -664,6 +682,7 @@
 			$('#sc_discount').val('');
 			$('#arrears').val('');
 			$('#maintenance_fee').val('');
+			$('#franchise_fee').val('');
 			$('#total_amount').val('');
 			$('#penalty').val('');
 			$('#save').attr("disabled", "disabled");

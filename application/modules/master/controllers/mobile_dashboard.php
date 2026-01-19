@@ -41,6 +41,7 @@ class mobile_dashboard extends CI_Controller {
 		//$header['record_info'] = $this->top_model->get_last_login_details(1);
 		$this->load->view($this->headerPage,$header);
 		$data['customer_listing'] = $this->customer_model->get_all_records();
+		$data['franchise_fee_percentage'] = $this->meterreading_model->get_franchise_fee_percentage();
 		//echo '<pre>';print_r($data);exit;
 		$this->load->view($this->listPage,$data);
 	}

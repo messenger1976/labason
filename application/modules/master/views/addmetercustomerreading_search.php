@@ -242,7 +242,7 @@
                                     <div class="row">
                                         <div class="col-lg-12 controls">
                                             <div class="form-group"> 
-                                                <span class="input-group-addon"><strong>Franchise Fee % : </strong></span>
+                                                <span class="input-group-addon"><strong>Franchise Tax % : </strong></span>
                                                 <input class="form-control" type="text" id="franchise_fee_percent" name="franchise_fee_percent" style="background-color:white;" readonly>
                                                 <?php echo form_error('franchise_fee_percent'); ?>
                                             </div>
@@ -251,7 +251,7 @@
                                     <div class="row">
                                         <div class="col-lg-12 controls">
                                             <div class="form-group"> 
-                                                <span class="input-group-addon"><strong>Franchise Fee Amount : </strong></span>
+                                                <span class="input-group-addon"><strong>Franchise Tax Amount : </strong></span>
                                                 <input class="form-control" type="text" id="franchise_fee_amount" name="franchise_fee_amount" style="background-color:white;" readonly>
                                                 <?php echo form_error('franchise_fee_amount'); ?>
                                             </div>

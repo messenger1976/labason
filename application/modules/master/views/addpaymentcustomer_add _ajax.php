@@ -27,7 +27,7 @@
 						<th>Discount</th>
 						<th>Penalty</th>
 						<th>WMMF</th>
-						<th>Franchise Fee</th>
+						<th>Franchise Tax</th>
 						<th>OR Number</th>
 						<th>Date Paid</th>
 						<th>Total Amount</th>

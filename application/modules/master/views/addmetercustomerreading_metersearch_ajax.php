@@ -28,8 +28,8 @@
 														<th data-hide="expand">Consumed</th>
 														<th data-hide="expand">Bill Amount</th>
 														<th data-hide="expand">WMMF</th>
-														<th data-hide="expand">Franchise Fee %</th>
-														<th data-hide="expand">Franchise Fee Amt</th>
+														<th data-hide="expand">Franchise Tax %</th>
+														<th data-hide="expand">Franchise Tax Amt</th>
 														<th data-hide="expand">SC Discount</th>
 														<th data-hide="expand">Total</th>
                                                         <th data-hide="expand">Penalty</th>

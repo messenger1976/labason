@@ -134,7 +134,7 @@
 														<b>Amount :</b> <?php echo stripslashes(number_format($record['unit_price'],2)); ?><br/>
 														<b>SC Discount :</b> (<?php echo stripslashes(number_format($record['sc_discount'],2)); ?>)<br/>
 														<b>Maintenance Fee :</b> <?php echo stripslashes(isset($record['maintenance_fee']) ? number_format($record['maintenance_fee'],2) : '0.00'); ?><br/>
-														<b>Franchise Fee (<?php echo stripslashes(isset($record['franchise_fee_percent']) ? number_format($record['franchise_fee_percent'],2) : '0.00'); ?>%) :</b> <?php echo stripslashes(isset($record['franchise_fee_amount']) ? number_format($record['franchise_fee_amount'],2) : '0.00'); ?><br/>	
+														<b>Franchise Tax (<?php echo stripslashes(isset($record['franchise_fee_percent']) ? number_format($record['franchise_fee_percent'],2) : '0.00'); ?>%) :</b> <?php echo stripslashes(isset($record['franchise_fee_amount']) ? number_format($record['franchise_fee_amount'],2) : '0.00'); ?><br/>	
 														<b>Plus Penalty :</b> <?php echo stripslashes(number_format($penaltyamount,2)); ?><br/>					
 													  </td>
 													  
