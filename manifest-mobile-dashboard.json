@@ -1,0 +1,60 @@
+{
+  "name": "Mobile - Utilities Billing System",
+  "short_name": "Mobile Billing",
+  "description": "Mobile Billing System - Meter reading, tickets, and utilities",
+  "start_url": "/master/mobile_dashboard",
+  "scope": "/master/",
+  "display": "standalone",
+  "background_color": "#3276b1",
+  "theme_color": "#3276b1",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "img/favicon/favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon",
+      "purpose": "any"
+    },
+    {
+      "src": "img/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "img/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "img/splash/touch-icon-iphone-retina.png",
+      "sizes": "120x120",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "img/splash/touch-icon-ipad-retina.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["utilities", "finance", "business"],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Meter reading dashboard",
+      "url": "/master/mobile_dashboard",
+      "icons": [{ "src": "img/logo.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Tickets",
+      "short_name": "Tickets",
+      "description": "Tickets listing",
+      "url": "/master/mobile_tickets",
+      "icons": [{ "src": "img/logo.png", "sizes": "96x96" }]
+    }
+  ]
+}

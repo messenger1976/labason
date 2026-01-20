@@ -57,6 +57,27 @@ if(($this->session->userdata('logged_in')!='ECOM')||($this->session->userdata('u
 		<meta name="apple-mobile-web-app-capable" content="yes">
 		<meta name="mobile-web-app-capable" content="yes">
 		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+		<meta name="apple-mobile-web-app-title" content="Mobile Billing">
+		<meta name="theme-color" content="#3276b1">
+		
+		<!-- PWA Manifest for Mobile Dashboard (install as app) -->
+		<link rel="manifest" href="<?php echo base_url();?>manifest-mobile-dashboard.json">
+		
+		<!-- Service Worker for Mobile Dashboard PWA (scope: /master/) -->
+		<?php
+		$sw_path = parse_url(base_url(), PHP_URL_PATH);
+		$sw_base = is_string($sw_path) ? rtrim($sw_path, '/') : '';
+		$sw_scope = ($sw_base ? $sw_base : '') . '/master/';
+		?>
+		<script>
+			if ('serviceWorker' in navigator) {
+				window.addEventListener('load', function() {
+					navigator.serviceWorker.register('<?php echo base_url(); ?>sw-mobile-dashboard.js', { scope: '<?php echo $sw_scope; ?>' })
+						.then(function() {})
+						.catch(function() {});
+				});
+			}
+		</script>
 		
 		<!-- Startup image for web apps -->
 		<link rel="apple-touch-startup-image" href="<?php echo base_url();?>img/splash/ipad-landscape.png" media="screen and (min-device-width: 481px) and (max-device-width: 1024px) and (orientation:landscape)">
