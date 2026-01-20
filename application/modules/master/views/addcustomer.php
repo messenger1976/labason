@@ -118,6 +118,17 @@
 				                    <form method="post" action="<?php echo ADMIN_URL;?>addcustomer/multi_delete">
 										<!-- widget content -->
 										<div class="widget-body no-padding">
+										   <div class="row" style="margin: 10px 10px 0 10px;">
+											<div class="col-sm-3 col-md-2">
+												<label for="filter_zone" style="margin-bottom: 4px;">Filter by Zone:</label>
+												<select id="filter_zone" name="filter_zone" class="form-control">
+													<option value="all">All</option>
+													<?php if(!empty($zone)) { foreach($zone as $z) { ?>
+													<option value="<?php echo $z['id']; ?>"><?php echo htmlspecialchars($z['zone']); ?></option>
+													<?php } } ?>
+												</select>
+											</div>
+										   </div>
 										   <table id="dt_basic" class="table table-striped table-bordered table-hover" width="100%">
 											    <thead>			                
 													<tr>
@@ -266,7 +277,10 @@
 					"serverSide": true,
 					"ajax": {
 						"url": "<?php echo ADMIN_URL;?>addcustomer/get_datatable_data",
-						"type": "POST"
+						"type": "POST",
+						"data": function(d) {
+							d.zone = ($('#filter_zone').length ? $('#filter_zone').val() : '') || 'all';
+						}
 					},
 					"columns": [
 						{ "data": 0, "orderable": false },
@@ -303,6 +317,11 @@
 					"drawCallback" : function(oSettings) {
 						responsiveHelper_dt_basic.respond();
 					}
+				});
+
+				// Reload table when Zone filter changes
+				$('#filter_zone').on('change', function() {
+					table.ajax.reload();
 				});
 	
 			/* END BASIC */

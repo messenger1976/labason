@@ -68,7 +68,8 @@ class addcustomer extends CI_Controller {
 			$this->top_model->get_responsibilities_conditions($this->head['roleResponsible']['addcustomer']);
 		}	
 		// No longer loading all records - using server-side pagination instead
-		$data['record'] = array();	
+		$data['record'] = array();
+		$data['zone'] = $this->my_model->get_zone();
 		//$header['host'] = $this->comm_model->get_single_record();				
 		//$header['record_info'] = $this->top_model->get_last_login_details(1);
 		$this->load->view($this->headerPage,$this->head);
@@ -94,6 +95,14 @@ class addcustomer extends CI_Controller {
 			$search = '';
 			if(is_array($search_post) && isset($search_post['value']) && !empty($search_post['value'])) {
 				$search = trim($search_post['value']);
+			}
+
+			// Zone filter: 'all' or empty = no filter
+			$zone = $this->input->post('zone');
+			if($zone === '' || $zone === 'all' || $zone === null) {
+				$zone = '';
+			} else {
+				$zone = trim($zone);
 			}
 			
 			// Safely get order parameters
@@ -130,9 +139,9 @@ class addcustomer extends CI_Controller {
 			}
 			
 			// Get filtered and paginated records
-			$records = $this->my_model->get_paginated_records($start, $length, $search, $order_column, $order_dir);
-			$total_records = $this->my_model->get_total_count('');
-			$filtered_records = $this->my_model->get_total_count($search);
+			$records = $this->my_model->get_paginated_records($start, $length, $search, $order_column, $order_dir, $zone);
+			$total_records = $this->my_model->get_total_count('', $zone);
+			$filtered_records = $this->my_model->get_total_count($search, $zone);
 			
 			// Format data for DataTables
 			$data = array();

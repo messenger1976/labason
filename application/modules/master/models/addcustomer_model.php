@@ -665,7 +665,7 @@ class addcustomer_model extends CI_Model {
 	}
 	
 	/** Server-side pagination: Get paginated records with filtering **/
-	public function get_paginated_records($start = 0, $length = 10, $search = '', $order_column = 'last_name', $order_dir = 'asc') {
+	public function get_paginated_records($start = 0, $length = 10, $search = '', $order_column = 'last_name', $order_dir = 'asc', $zone = '') {
 		$this->db->select($this->table_name.".*,".$this->table_zone.".zone as zones,
 		tbl_classification.class_name as classification_name,
 		tbl_customer_type.cust_type_name as type_name,
@@ -675,6 +675,11 @@ class addcustomer_model extends CI_Model {
 		$this->db->join('tbl_classification', 'tbl_classification.class_id = '.$this->table_name.'.classification', 'left');
 		$this->db->join('tbl_customer_type', 'tbl_customer_type.cust_type_id = '.$this->table_name.'.account_type', 'left');
 		$this->db->join($this->table_billing, $this->table_billing.'.id = '.$this->table_name.'.billingplans', 'left');
+
+		// Apply zone filter (empty or 'all' = show all)
+		if($zone != '') {
+			$this->db->where($this->table_name.'.zone', $zone);
+		}
 		
 		// Apply search filter
 		if($search != '') {
@@ -705,13 +710,18 @@ class addcustomer_model extends CI_Model {
 	}
 	
 	/** Server-side pagination: Get total count with filtering **/
-	public function get_total_count($search = '') {
+	public function get_total_count($search = '', $zone = '') {
 		$this->db->select("COUNT(".$this->table_name.".id) as total");
 		$this->db->from($this->table_name);
 		$this->db->join($this->table_zone, $this->table_zone.'.id = '.$this->table_name.'.zone', 'left');
 		$this->db->join('tbl_classification', 'tbl_classification.class_id = '.$this->table_name.'.classification', 'left');
 		$this->db->join('tbl_customer_type', 'tbl_customer_type.cust_type_id = '.$this->table_name.'.account_type', 'left');
 		$this->db->join($this->table_billing, $this->table_billing.'.id = '.$this->table_name.'.billingplans', 'left');
+
+		// Apply zone filter (empty or 'all' = show all)
+		if($zone != '') {
+			$this->db->where($this->table_name.'.zone', $zone);
+		}
 		
 		// Apply search filter
 		if($search != '') {
