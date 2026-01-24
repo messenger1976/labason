@@ -243,7 +243,7 @@
                                         <div class="col-lg-12 controls">
                                             <div class="form-group"> 
                                                 <span class="input-group-addon"><strong>Franchise Tax % : </strong></span>
-                                                <input class="form-control" type="text" id="franchise_fee_percent" name="franchise_fee_percent" style="background-color:white;" readonly>
+                                                <input class="form-control" type="text" id="franchise_fee_percent" name="franchise_fee_percent" style="background-color:white;">
                                                 <?php echo form_error('franchise_fee_percent'); ?>
                                             </div>
                                         </div>
@@ -566,6 +566,63 @@ $(document).ready(function(){
 		});
 	});
 	
+// Reusable function to calculate franchise fee and totals
+function recalculateFranchiseFeeAndTotals() {
+	var unit_price = parseFloat($('#current_bill').val().replace(/,/g, '') || 0);
+	var maintenance_fee = parseFloat($('#maintenance_fee').val().replace(/,/g, '') || 0);
+	var multiprice = unit_price;
+	var discount = parseFloat($('#sc_discount').val().replace(/,/g, '') || 0);
+	
+	// Get franchise fee percentage from input field, or use default from global settings
+	var franchise_fee_percentage = parseFloat($('#franchise_fee_percent').val().replace(/,/g, '') || 0);
+	if (!franchise_fee_percentage || franchise_fee_percentage <= 0) {
+		franchise_fee_percentage = <?php echo isset($franchise_fee_percentage) ? floatval($franchise_fee_percentage) : '2.00'; ?>;
+		$('#franchise_fee_percent').val(franchise_fee_percentage);
+	}
+	
+	var bill_amount_for_franchise;
+	if($('#cust_type_id').val()==3){
+		// SC: compute after SC deduction
+		bill_amount_for_franchise = multiprice - discount;
+	} else {
+		// Non-SC: compute on unit price
+		bill_amount_for_franchise = multiprice;
+	}
+	
+	var franchise_fee_amount = (bill_amount_for_franchise * franchise_fee_percentage) / 100;
+	var total_amount = multiprice - discount;
+	total_amount += parseFloat(maintenance_fee);
+	total_amount += parseFloat(franchise_fee_amount);
+	
+	// Update franchise fee fields
+	if($('#franchise_fee_percent').length) {
+		$('#franchise_fee_percent').val(franchise_fee_percentage);
+	}
+	if($('#franchise_fee_amount').length) {
+		$('#franchise_fee_amount').val(amount_formatted(franchise_fee_amount));
+	}
+	
+	// Calculate penalty
+	var amount_total_penalty = 0;
+	if($('#special_priviledge').val()==='0'){
+		amount_total_penalty = (total_amount * 10)/100;
+		amount_total_penalty = amount_total_penalty + total_amount;
+	}else{
+		amount_total_penalty = total_amount;
+	}
+	
+	// Update total amount and penalty fields
+	if($('#total_amount').length) {
+		$('#total_amount').val(amount_formatted(total_amount));
+	}
+	if($('#penalty').length) {
+		$('#penalty').val(amount_formatted(amount_total_penalty));
+	}
+	if($('#amount_pay').length) {
+		$('#amount_pay').val(amount_formatted(multiprice));
+	}
+}
+
 $('#btn_save').on('click', function(evt){
 	evt.preventDefault();
 	var record_id = $('#record_id').val();
@@ -609,90 +666,18 @@ $('#btn_save').on('click', function(evt){
 
 $('#sc_discount').on('blur', function(evt){
 	evt.preventDefault();
-	var unit_price = parseFloat($('#current_bill').val().replace(/,/g, ''));
-	var maintenance_fee = parseFloat($('#maintenance_fee').val().replace(/,/g, '') || 0);
-	//var multiprice = parseInt(difer) * parseInt(unit_price);
-	var multiprice = unit_price;
-	var discount = parseFloat($(this).val().replace(/,/g, '') || 0);
-	
-	total_amount = multiprice - discount;
-	total_amount += parseFloat(maintenance_fee);
-	
-	// Calculate franchise fee: 2% of bill amount, after SC deduction if SC
-	var franchise_fee_percentage = 2.00; // Get from global settings or default
-	var bill_amount_for_franchise;
-	if($('#cust_type_id').val()==3){
-		// SC: compute after SC deduction
-		bill_amount_for_franchise = multiprice - discount;
-	} else {
-		// Non-SC: compute on unit price
-		bill_amount_for_franchise = multiprice;
-	}
-	var franchise_fee_amount = (bill_amount_for_franchise * franchise_fee_percentage) / 100;
-	total_amount += parseFloat(franchise_fee_amount);
-	
-	if($('#franchise_fee_percent').length) {
-		$('#franchise_fee_percent').val(franchise_fee_percentage);
-	}
-	if($('#franchise_fee_amount').length) {
-		$('#franchise_fee_amount').val(amount_formatted(franchise_fee_amount));
-	}
-	
-	amount_total_penalty = 0;
-	if($('#special_priviledge').val()==='0'){
-		amount_total_penalty = (total_amount * 10)/100;
-		amount_total_penalty = amount_total_penalty + total_amount;
-	}else{
-		amount_total_penalty = total_amount;
-	}
-	//$('#discount').val(amount_formatted(discount));
-	$("#amount_pay").val(amount_formatted(multiprice));
-	$("#total_amount").val(amount_formatted(total_amount));
-	$("#penalty").val(amount_formatted(amount_total_penalty));	
+	recalculateFranchiseFeeAndTotals();
+});
+
+// Event listener for franchise_fee_percent field changes
+$('#franchise_fee_percent').on('blur', function(evt){
+	evt.preventDefault();
+	recalculateFranchiseFeeAndTotals();
 });
 
 $('#maintenance_fee').on('blur', function(evt){
 	evt.preventDefault();
-	var unit_price = parseFloat($('#current_bill').val().replace(/,/g, ''));
-	var maintenance_fee = parseFloat($(this).val().replace(/,/g, '') || 0);
-	//var multiprice = parseInt(difer) * parseInt(unit_price);
-	var multiprice = unit_price;
-	var discount = parseFloat($('#sc_discount').val().replace(/,/g, '') || 0);
-	
-	total_amount = multiprice - discount;
-	total_amount += parseFloat(maintenance_fee);
-	
-	// Calculate franchise fee: 2% of bill amount, after SC deduction if SC
-	var franchise_fee_percentage = 2.00; // Get from global settings or default
-	var bill_amount_for_franchise;
-	if($('#cust_type_id').val()==3){
-		// SC: compute after SC deduction
-		bill_amount_for_franchise = multiprice - discount;
-	} else {
-		// Non-SC: compute on unit price
-		bill_amount_for_franchise = multiprice;
-	}
-	var franchise_fee_amount = (bill_amount_for_franchise * franchise_fee_percentage) / 100;
-	total_amount += parseFloat(franchise_fee_amount);
-	
-	if($('#franchise_fee_percent').length) {
-		$('#franchise_fee_percent').val(franchise_fee_percentage);
-	}
-	if($('#franchise_fee_amount').length) {
-		$('#franchise_fee_amount').val(amount_formatted(franchise_fee_amount));
-	}
-	
-	amount_total_penalty = 0;
-	if($('#special_priviledge').val()==='0'){
-		amount_total_penalty = (total_amount * 10)/100;
-		amount_total_penalty = amount_total_penalty + total_amount;
-	}else{
-		amount_total_penalty = total_amount;
-	}
-	//$('#discount').val(amount_formatted(discount));
-	$("#amount_pay").val(amount_formatted(multiprice));
-	$("#total_amount").val(amount_formatted(total_amount));
-	$("#penalty").val(amount_formatted(amount_total_penalty));	
+	recalculateFranchiseFeeAndTotals();
 });
 
 
@@ -719,49 +704,23 @@ $('#current_reading').on('blur', function() {
 			if (result.per_unit) {
 				
 				$('#current_bill').val(amount_formatted(result.per_unit));
+				
+				// Set initial franchise fee percentage if not set
+				if(!$('#franchise_fee_percent').val() || $('#franchise_fee_percent').val() == '') {
+					var default_franchise_fee_percentage = <?php echo isset($franchise_fee_percentage) ? floatval($franchise_fee_percentage) : '2.00'; ?>;
+					$('#franchise_fee_percent').val(default_franchise_fee_percentage);
+				}
+				
+				// Set SC discount if applicable
 				var unit_price = parseFloat($('#current_bill').val().replace(/,/g, ''));
-				var maintenance_fee = parseFloat($('#maintenance_fee').val().replace(/,/g, '') || 0);
-				//var multiprice = parseInt(difer) * parseInt(unit_price);
 				var multiprice = unit_price;
-				var discount =0;
 				if($('#cust_type_id').val()==3){
-					discount = (multiprice * 5)/100;
-				}
-				total_amount = multiprice - discount;
-				total_amount += parseFloat(maintenance_fee);
-				
-				// Calculate franchise fee: 2% of bill amount, after SC deduction if SC
-				var franchise_fee_percentage = 2.00; // Get from global settings or default
-				var bill_amount_for_franchise;
-				if($('#cust_type_id').val()==3){
-					// SC: compute after SC deduction
-					bill_amount_for_franchise = multiprice - discount;
-				} else {
-					// Non-SC: compute on unit price
-					bill_amount_for_franchise = multiprice;
-				}
-				var franchise_fee_amount = (bill_amount_for_franchise * franchise_fee_percentage) / 100;
-				total_amount += parseFloat(franchise_fee_amount);
-				
-				if($('#franchise_fee_percent').length) {
-					$('#franchise_fee_percent').val(franchise_fee_percentage);
-				}
-				if($('#franchise_fee_amount').length) {
-					$('#franchise_fee_amount').val(amount_formatted(franchise_fee_amount));
+					var discount = (multiprice * 5)/100;
+					$('#sc_discount').val(amount_formatted(discount));
 				}
 				
-				amount_total_penalty = 0;
-				//console.log('SP:'+$('#special_priviledge').val());
-				if($('#special_priviledge').val()==='0'){
-					amount_total_penalty = (total_amount * 10)/100;
-					amount_total_penalty = amount_total_penalty + total_amount;
-				}else{
-					amount_total_penalty = total_amount;
-				}
-				$('#sc_discount').val(amount_formatted(discount));
-				$("#amount_pay").val(amount_formatted(multiprice));
-				$("#total_amount").val(amount_formatted(total_amount));
-				$("#penalty").val(amount_formatted(amount_total_penalty));
+				// Recalculate franchise fee and totals
+				recalculateFranchiseFeeAndTotals();
 				
 
 			} else {

@@ -160,21 +160,32 @@ class addmetercustomerreading_model extends CI_Model {
 	/** In Function Update records for select table **/
 	public function update_record($id){
 		
-		// Calculate franchise fee
-		$customerinfo = $this->get_customer_info($this->input->post('customer_id'));
-		$unit_price = $this->input->post('current_bill');
-		$sc_discount = $this->input->post('sc_discount');
-		$account_type = isset($customerinfo[0]['account_type']) ? $customerinfo[0]['account_type'] : 0;
+		// Get franchise fee values from posted form data (user may have edited them)
+		$franchise_fee_percent = $this->input->post('franchise_fee_percent');
+		$franchise_fee_amount = $this->input->post('franchise_fee_amount');
 		
-		$franchise_fee_percentage = $this->get_franchise_fee_percentage();
-		if($account_type == 3){
-			// SC: compute after SC deduction
-			$bill_amount_for_franchise = $unit_price - $sc_discount;
-		} else {
-			// Non-SC: compute on unit price
-			$bill_amount_for_franchise = $unit_price;
+		// If franchise fee values are not posted, calculate them (fallback)
+		if(empty($franchise_fee_percent) || $franchise_fee_percent == ''){
+			$customerinfo = $this->get_customer_info($this->input->post('customer_id'));
+			$unit_price = $this->input->post('current_bill');
+			$sc_discount = $this->input->post('sc_discount');
+			$account_type = isset($customerinfo[0]['account_type']) ? $customerinfo[0]['account_type'] : 0;
+			
+			$franchise_fee_percentage = $this->get_franchise_fee_percentage();
+			if($account_type == 3){
+				// SC: compute after SC deduction
+				$bill_amount_for_franchise = $unit_price - $sc_discount;
+			} else {
+				// Non-SC: compute on unit price
+				$bill_amount_for_franchise = $unit_price;
+			}
+			$franchise_fee_amount = ($bill_amount_for_franchise * $franchise_fee_percentage) / 100;
+			$franchise_fee_percent = $franchise_fee_percentage;
 		}
-		$franchise_fee_amount = ($bill_amount_for_franchise * $franchise_fee_percentage) / 100;
+		
+		// Clean and format the values
+		$franchise_fee_percent = number_format(floatval(str_replace(',', '', $franchise_fee_percent)), 2, '.', '');
+		$franchise_fee_amount = number_format(floatval(str_replace(',', '', $franchise_fee_amount)), 2, '.', '');
 		
 		$set_data = array(
 						'customer_id' => trim($this->input->post('customer_id')),
@@ -187,8 +198,8 @@ class addmetercustomerreading_model extends CI_Model {
 						'amount' => $this->input->post('total_amount'),
 						'penalty' => $this->input->post('penalty'),
 						'maintenance_fee' => $this->input->post('maintenance_fee'),
-						'franchise_fee_percent' => number_format($franchise_fee_percentage, 2, '.', ''),
-						'franchise_fee_amount' => number_format($franchise_fee_amount, 2, '.', ''),
+						'franchise_fee_percent' => $franchise_fee_percent,
+						'franchise_fee_amount' => $franchise_fee_amount,
 						'date' => $this->input->post('reading_date'),
 						'customer_status' => $this->input->post('customer_status'),
 					);

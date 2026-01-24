@@ -143,6 +143,7 @@ class addmetercustomerreading extends CI_Controller {
 		}else{
 			$data['record'] = $this->customer_model->get_all_records();
 			$data['zone'] = $this->comm_model->get_zone_records();
+			$data['franchise_fee_percentage'] = $this->my_model->get_franchise_fee_percentage();
 			$this->load->view($this->editSearchPage,$data);
 		}
 		
@@ -170,6 +171,7 @@ class addmetercustomerreading extends CI_Controller {
 			$this->load->view($this->editPage,$data);
 		}else{
 			$data['zone'] = $this->comm_model->get_zone_records();
+			$data['franchise_fee_percentage'] = $this->my_model->get_franchise_fee_percentage();
 			$this->load->view($this->editSearchPage,$data);
 		}
 		
