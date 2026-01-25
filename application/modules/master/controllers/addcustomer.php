@@ -166,7 +166,7 @@ class addcustomer extends CI_Controller {
 									<a class="blue view-customer-btn" href="javascript:void(0);" data-customer-id="'.$row_id.'" title="View">
 										<i class="fa fa-info-circle"></i>
 									</a>	
-									<a class="green" href="'.ADMIN_URL.'addcustomer/edit/'.$row_id.'" title="Edit">
+									<a class="green edit-customer-btn" href="javascript:void(0);" data-customer-id="'.$row_id.'" title="Edit">
 										<i class="fa fa-edit"></i>
 									</a>
 									<a class="orange set-password-btn" href="javascript:void(0);" data-customer-id="'.$row_id.'" data-customer-code="'.(isset($row['customer_id']) ? $row['customer_id'] : '').'" title="Set Login Password">
@@ -183,7 +183,7 @@ class addcustomer extends CI_Controller {
 										</button>
 										<ul class="dropdown-menu dropdown-only-icon dropdown-yellow pull-right dropdown-caret dropdown-close">
 											<li>
-												<a href="'.ADMIN_URL.'addcustomer/edit/'.$row_id.'" class="tooltip-success" data-rel="tooltip" title="Edit">
+												<a href="javascript:void(0);" class="edit-customer-btn" data-customer-id="'.$row_id.'" data-rel="tooltip" title="Edit">
 													<span class="green">
 														<img src="'.base_url().'images/favicon/document-edit.gif">
 													</span>
@@ -573,6 +573,106 @@ class addcustomer extends CI_Controller {
 		$data['image'] = $this->my_model->get_customerphoto($id);
 		// Load only the view content without header/footer for modal
 		$this->load->view('addcustomer_view_modal',$data);
+	}
+	
+	/** Edit Function for AJAX/Modal **/
+	public function edit_ajax($id){ 
+		$data['record'] = $this->my_model->get_single_record($id);
+		$data['billing'] = $this->my_model->get_billingplans();
+		$data['image'] = $this->my_model->get_customerphoto($id);
+		$data['classification'] = $this->my_model->get_classification();
+		$data['customer_type'] = $this->my_model->get_customer_type();
+		$data['zone'] = $this->my_model->get_zone();
+		
+		$withimage = 1;
+		if(!$data['image']){
+			$data['image']['file']='a.png';
+			$withimage = 0;
+		}
+		$data['withimage'] = $withimage;
+		
+		// Load only the edit form content without header/footer for modal
+		$this->load->view('addcustomer_edit_modal',$data);
+	}
+	
+	/** Update Function for AJAX/Modal **/
+	public function update_ajax(){
+		// Clear any previous output
+		if(ob_get_level()) {
+			ob_clean();
+		}
+		
+		// Set JSON header first
+		header('Content-Type: application/json');
+		
+		try {
+			$id = $this->input->post('id');
+			if(empty($id)) {
+				echo json_encode(array('success' => false, 'message' => 'Customer ID is required.'));
+				exit;
+			}
+			
+			// Get the record to check if image exists
+			$record = $this->my_model->get_single_record($id);
+			$image = $this->my_model->get_customerphoto($id);
+			$withimage = 1;
+			if(!$image){
+				$withimage = 0;
+			}
+			
+			// Update the record
+			$result = $this->my_model->update_record($id);
+			
+			if($result){
+				// Handle file upload if provided
+				$config = array(
+					'upload_path'   => './images/upload',
+					'allowed_types' => 'gif|jpg|png',
+					'max_size'      => '10000',
+					'max_width'     => '1024',
+					'max_height'    => '768',
+					'encrypt_name'  => false,
+				);
+				$this->load->library('upload', $config);
+				
+				if (isset($_FILES['userfile']) && $_FILES['userfile']['error'] == 0) {
+					if ($this->upload->do_upload('userfile')) {
+						$upload_data = $this->upload->data();
+						$data_ary = array(
+							'title'     => $upload_data['client_name'],
+							'file'      => $upload_data['file_name'],
+							'width'     => $upload_data['image_width'],
+							'height'    => $upload_data['image_height'],
+							'type'      => $upload_data['image_type'],
+							'size'      => $upload_data['file_size'],
+							'date'      => date('Y-m-d')
+						);
+						$this->load->database();
+						if($withimage==0){
+							$data_ary['customerid'] = $id;
+							$this->db->insert('tbl_userphotoupload', $data_ary);
+						}else{
+							$this->db->where('customerid', $id);
+							$this->db->update('tbl_userphotoupload', $data_ary);
+						}
+					}
+				}
+				
+				echo json_encode(array('success' => true, 'message' => 'Customer updated successfully.'));
+			} else {
+				echo json_encode(array('success' => false, 'message' => 'Failed to update customer.'));
+			}
+			exit;
+			
+		} catch(Exception $e) {
+			log_message('error', 'Update Customer Exception: ' . $e->getMessage());
+			echo json_encode(array('success' => false, 'message' => 'An error occurred: ' . $e->getMessage()));
+			exit;
+		} catch(Error $e) {
+			log_message('error', 'Update Customer PHP Error: ' . $e->getMessage());
+			echo json_encode(array('success' => false, 'message' => 'A PHP error occurred: ' . $e->getMessage()));
+			exit;
+		}
 	}
 	public function Search()
 	{ 

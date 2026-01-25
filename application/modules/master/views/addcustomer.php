@@ -211,6 +211,26 @@
 			</div>
 		</div>
 
+		<!-- Modal for Editing Customer Details -->
+		<div class="modal fade" id="editCustomerModal" tabindex="-1" role="dialog" aria-labelledby="editCustomerModalLabel">
+			<div class="modal-dialog modal-lg" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+							&times;
+						</button>
+						<h4 class="modal-title" id="editCustomerModalLabel">Edit Customer</h4>
+					</div>
+					<div class="modal-body" id="editCustomerModalBody">
+						<div class="text-center">
+							<i class="fa fa-spinner fa-spin fa-3x"></i>
+							<p>Loading customer details...</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
 		<!-- Modal for Setting Customer Password -->
 		<div class="modal fade" id="passwordModal" tabindex="-1" role="dialog" aria-labelledby="passwordModalLabel">
 			<div class="modal-dialog">
@@ -491,6 +511,75 @@ $(document).ready(function() {
 			},
 			error: function(xhr, status, error) {
 				$('#viewCustomerModalBody').html('<div class="alert alert-danger">Error loading customer details. Please try again.</div>');
+			}
+		});
+	});
+
+	// Handle Edit Customer Button Click
+	$(document).on('click', '.edit-customer-btn', function(e) {
+		e.preventDefault();
+		var customerId = $(this).data('customer-id');
+		
+		// Show loading state
+		$('#editCustomerModalBody').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x"></i><p>Loading customer details...</p></div>');
+		
+		// Show modal
+		$('#editCustomerModal').modal('show');
+		
+		// Load customer edit form via AJAX
+		$.ajax({
+			url: '<?php echo ADMIN_URL;?>addcustomer/edit_ajax/' + customerId,
+			type: 'GET',
+			success: function(response) {
+				$('#editCustomerModalBody').html(response);
+			},
+			error: function(xhr, status, error) {
+				$('#editCustomerModalBody').html('<div class="alert alert-danger">Error loading customer details. Please try again.</div>');
+			}
+		});
+	});
+
+	// Handle Edit Customer Form Submission
+	$(document).on('submit', '#editCustomerForm', function(e) {
+		e.preventDefault();
+		var form = $(this);
+		var formData = new FormData(form[0]);
+		var submitBtn = form.find('button[type="submit"]');
+		var originalBtnText = submitBtn.text();
+		
+		// Disable submit button
+		submitBtn.prop('disabled', true).text('Updating...');
+		
+		// Clear previous messages
+		$('#edit_customer_msg').hide().html('');
+		
+		$.ajax({
+			url: '<?php echo ADMIN_URL;?>addcustomer/update_ajax',
+			type: 'POST',
+			data: formData,
+			processData: false,
+			contentType: false,
+			dataType: 'json',
+			success: function(response) {
+				if(response.success) {
+					$('#edit_customer_msg').removeClass('alert-danger').addClass('alert alert-success').html(response.message).show();
+					// Reload the DataTable after a short delay
+					setTimeout(function() {
+						$('#dt_basic').DataTable().ajax.reload();
+						$('#editCustomerModal').modal('hide');
+					}, 1500);
+				} else {
+					$('#edit_customer_msg').removeClass('alert-success').addClass('alert alert-danger').html(response.message).show();
+					submitBtn.prop('disabled', false).text(originalBtnText);
+				}
+			},
+			error: function(xhr, status, error) {
+				var errorMsg = 'An error occurred while updating the customer.';
+				if(xhr.responseJSON && xhr.responseJSON.message) {
+					errorMsg = xhr.responseJSON.message;
+				}
+				$('#edit_customer_msg').removeClass('alert-success').addClass('alert alert-danger').html(errorMsg).show();
+				submitBtn.prop('disabled', false).text(originalBtnText);
 			}
 		});
 	});
