@@ -163,7 +163,7 @@ class addcustomer extends CI_Controller {
 								<input type="hidden" name="customerid_'.$i.'" id="customerid_'.$i.'" value="'.(isset($row['customer_id']) ? $row['customer_id'] : '').'">
 								<input type="hidden" name="billingplansid_'.$i.'" id="billingplansid_'.$i.'" value="'.(isset($row['billingplans']) ? $row['billingplans'] : '').'">
 								<div class="visible-md visible-lg hidden-sm hidden-xs action-buttons">
-									<a class="blue" href="'.ADMIN_URL.'addcustomer/view/'.$row_id.'" title="View">
+									<a class="blue view-customer-btn" href="javascript:void(0);" data-customer-id="'.$row_id.'" title="View">
 										<i class="fa fa-info-circle"></i>
 									</a>	
 									<a class="green" href="'.ADMIN_URL.'addcustomer/edit/'.$row_id.'" title="Edit">
@@ -190,8 +190,10 @@ class addcustomer extends CI_Controller {
 												</a>
 											</li>
 											<li>
-												<a class="blue" href="'.ADMIN_URL.'addcustomer/view/'.$row_id.'">
-													<img src="'.base_url().'images/favicon/view_icon.gif">
+												<a class="blue view-customer-btn" href="javascript:void(0);" data-customer-id="'.$row_id.'" data-rel="tooltip" title="View">
+													<span class="blue">
+														<img src="'.base_url().'images/favicon/view_icon.gif">
+													</span>
 												</a>			
 											</li>
 											<li>
@@ -563,6 +565,14 @@ class addcustomer extends CI_Controller {
 		//$header['record_info'] = $this->top_model->get_last_login_details(1);
 		$this->load->view($this->headerPage,$this->head);
 		$this->load->view($this->viewPage,$data);
+	}
+	
+	/** View Function for AJAX/Modal **/
+	public function view_ajax($id){ 
+		$data['record'] = $this->my_model->get_single_record($id);
+		$data['image'] = $this->my_model->get_customerphoto($id);
+		// Load only the view content without header/footer for modal
+		$this->load->view('addcustomer_view_modal',$data);
 	}
 	public function Search()
 	{ 
