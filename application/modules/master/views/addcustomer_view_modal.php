@@ -91,11 +91,4 @@
 			</tr>
 		</tbody>
 	</table>
-	
-	<div class="clearfix form-actions" style="margin-top: 20px;">
-		<div class="col-md-offset-3 col-md-9">
-			<a href="<?php echo ADMIN_URL;?>addcustomer/edit/<?php echo $record['id']; ?>" class="btn btn-sm btn-primary">Edit</a>
-			<button type="button" class="btn btn-sm btn-danger" data-dismiss="modal">Close</button>
-		</div>
-	</div>
 </div>
