@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - main
+      - labasonsandbox
 name: 🚀 Deploy labason Sandbox water district system on push
 jobs:
   web-deploy:
