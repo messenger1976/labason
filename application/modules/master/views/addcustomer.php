@@ -188,6 +188,29 @@
 		</div>
 		<!-- END MAIN PANEL -->
 		
+		<!-- Modal for Viewing Customer Details -->
+		<div class="modal fade" id="viewCustomerModal" tabindex="-1" role="dialog" aria-labelledby="viewCustomerModalLabel">
+			<div class="modal-dialog modal-lg" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+							&times;
+						</button>
+						<h4 class="modal-title" id="viewCustomerModalLabel">Customer Details</h4>
+					</div>
+					<div class="modal-body" id="viewCustomerModalBody">
+						<div class="text-center">
+							<i class="fa fa-spinner fa-spin fa-3x"></i>
+							<p>Loading customer details...</p>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
 		<!-- Modal for Setting Customer Password -->
 		<div class="modal fade" id="passwordModal" tabindex="-1" role="dialog" aria-labelledby="passwordModalLabel">
 			<div class="modal-dialog">
@@ -448,6 +471,30 @@
 		
 <script>
 $(document).ready(function() {
+	// Handle View Customer Button Click
+	$(document).on('click', '.view-customer-btn', function(e) {
+		e.preventDefault();
+		var customerId = $(this).data('customer-id');
+		
+		// Show loading state
+		$('#viewCustomerModalBody').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x"></i><p>Loading customer details...</p></div>');
+		
+		// Show modal
+		$('#viewCustomerModal').modal('show');
+		
+		// Load customer details via AJAX
+		$.ajax({
+			url: '<?php echo ADMIN_URL;?>addcustomer/view_ajax/' + customerId,
+			type: 'GET',
+			success: function(response) {
+				$('#viewCustomerModalBody').html(response);
+			},
+			error: function(xhr, status, error) {
+				$('#viewCustomerModalBody').html('<div class="alert alert-danger">Error loading customer details. Please try again.</div>');
+			}
+		});
+	});
+
 	// Handle Set Password Button Click
 	$(document).on('click', '.set-password-btn', function(e) {
 		e.preventDefault();
