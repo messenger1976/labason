@@ -131,7 +131,7 @@ class addcustomer extends CI_Controller {
 				8 => 'tbl_addcustomer.status',  // Status
 				9 => 'tbl_addcustomer.id'  // Action
 			);
-			$order_column = isset($columns[$order_column_index]) ? $columns[$order_column_index] : 'tbl_addcustomer.last_name';
+			$order_column = isset($columns[$order_column_index]) ? $columns[$order_column_index] : 'tbl_zone.zone';
 			
 			// Ensure model is loaded
 			if(!isset($this->my_model)) {
