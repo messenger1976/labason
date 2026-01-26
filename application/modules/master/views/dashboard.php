@@ -225,6 +225,25 @@
 
 									<!-- widget content -->
 									<div class="widget-body no-padding">
+										<!-- Year selector above chart -->
+										<div style="padding: 15px; border-bottom: 1px solid #efefef; background-color: #fafafa;">
+											<div class="row">
+												<div class="col-xs-12">
+													<label class="control-label" style="margin-right: 10px; font-weight: bold;">Select Year:</label>
+													<select id="yearSelector" class="form-control" style="display: inline-block; width: auto; min-width: 120px; z-index: 1000; position: relative;">
+														<?php if(isset($available_years) && !empty($available_years)): ?>
+															<?php foreach($available_years as $year): ?>
+																<option value="<?php echo $year; ?>" <?php echo (isset($selected_year) && $selected_year == $year) ? 'selected' : ''; ?>>
+																	<?php echo $year; ?>
+																</option>
+															<?php endforeach; ?>
+														<?php else: ?>
+															<option value="<?php echo date('Y'); ?>"><?php echo date('Y'); ?></option>
+														<?php endif; ?>
+													</select>
+												</div>
+											</div>
+										</div>
 										<canvas id="barChart" height="60"></canvas>
 										
 
@@ -602,55 +621,20 @@
 				    //String - A legend template
 				    legendTemplate : "<ul class=\"<%=name.toLowerCase()%>-legend\"><% for (var i=0; i<datasets.length; i++){%><li><span style=\"background-color:<%=datasets[i].lineColor%>\"></span><%if(datasets[i].label){%><%=datasets[i].label%><%}%></li><%}%></ul>"
 			    }
-				var month_array=[];
-				var JanTotal = '<?php echo $JanTotal['total'];?>';
-				var FebTotal = '<?php echo $FebTotal['total'];?>';
-				var MarTotal = '<?php echo $MarchTotal['total'];?>';
-				var AprTotal = '<?php echo $AprilTotal['total'];?>';
-				var MayTotal = '<?php echo $MayTotal['total'];?>';
-				var JunTotal = '<?php echo $JuneTotal['total'];?>';
-				var JulTotal = '<?php echo $JulyTotal['total'];?>';
-				var AugTotal = '<?php echo $AugTotal['total'];?>';
-				var SepTotal = '<?php echo $SepTotal['total'];?>';
-				var OctTotal = '<?php echo $OctTotal['total'];?>';
-				var NovTotal = '<?php echo $NovTotal['total'];?>';
-				var DecTotal = '<?php echo $DecTotal['total'];?>';
-				if(JanTotal>0){
-					month_array.push('January');
-				}
-				if(FebTotal>0){
-					month_array.push('February');
-				}
-				if(MarTotal>0){
-					month_array.push('March');
-				}
-				if(MarTotal>0){
-					month_array.push('April');
-				}
-				if(MayTotal>0){
-					month_array.push('May');
-				}
-				if(JunTotal>0){
-					month_array.push('June');
-				}
-				if(JulTotal>0){
-					month_array.push('July');
-				}
-				if(AugTotal>0){
-					month_array.push('August');
-				}
-				if(SepTotal>0){
-					month_array.push('September');
-				}
-				if(OctTotal>0){
-					month_array.push('October');
-				}
-				if(NovTotal>0){
-					month_array.push('November');
-				}
-				if(DecTotal>0){
-					month_array.push('December');
-				}
+				// Always show all 12 months to match the data arrays
+				var month_array = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+				var JanTotal = parseFloat('<?php echo isset($JanTotal['total']) ? $JanTotal['total'] : 0;?>') || 0;
+				var FebTotal = parseFloat('<?php echo isset($FebTotal['total']) ? $FebTotal['total'] : 0;?>') || 0;
+				var MarTotal = parseFloat('<?php echo isset($MarchTotal['total']) ? $MarchTotal['total'] : 0;?>') || 0;
+				var AprTotal = parseFloat('<?php echo isset($AprilTotal['total']) ? $AprilTotal['total'] : 0;?>') || 0;
+				var MayTotal = parseFloat('<?php echo isset($MayTotal['total']) ? $MayTotal['total'] : 0;?>') || 0;
+				var JunTotal = parseFloat('<?php echo isset($JuneTotal['total']) ? $JuneTotal['total'] : 0;?>') || 0;
+				var JulTotal = parseFloat('<?php echo isset($JulyTotal['total']) ? $JulyTotal['total'] : 0;?>') || 0;
+				var AugTotal = parseFloat('<?php echo isset($AugTotal['total']) ? $AugTotal['total'] : 0;?>') || 0;
+				var SepTotal = parseFloat('<?php echo isset($SepTotal['total']) ? $SepTotal['total'] : 0;?>') || 0;
+				var OctTotal = parseFloat('<?php echo isset($OctTotal['total']) ? $OctTotal['total'] : 0;?>') || 0;
+				var NovTotal = parseFloat('<?php echo isset($NovTotal['total']) ? $NovTotal['total'] : 0;?>') || 0;
+				var DecTotal = parseFloat('<?php echo isset($DecTotal['total']) ? $DecTotal['total'] : 0;?>') || 0;
 			    var barData = {
 			        labels: month_array,
 			         datasets: [
@@ -663,18 +647,18 @@
 							backgroundColor:'rgba(255, 99, 132, 0.5)',  // Red with 50% opacity
 							borderColor: 'rgba(255, 99, 132, 1)',   // Solid Red
 				            data: [
-								<?php echo number_format($JanTotalUnpaid['total'],0,'.','');?>,
-								<?php echo number_format($FebTotalUnpaid['total'],0,'.','');?>,
-								<?php echo number_format($MarchTotalUnpaid['total'],0,'.','');?>,
-								<?php echo number_format($AprilTotalUnpaid['total'],0,'.','');?>,
-								<?php echo number_format($MayTotalUnpaid['total'],0,'.','');?>,
-								<?php echo number_format($JuneTotalUnpaid['total'],0,'.','');?>,
-								<?php echo number_format($JulyTotalUnpaid['total'],0,'.','');?>,
-								<?php echo number_format($AugTotalUnpaid['total'],0,'.','');?>,
-								<?php echo number_format($SepTotalUnpaid['total'],0,'.','');?>,
-								<?php echo number_format($OctTotalUnpaid['total'],0,'.','');?>,
-								<?php echo number_format($NovTotalUnpaid['total'],0,'.','');?>,
-								<?php echo number_format($DecTotalUnpaid['total'],0,'.','');?>
+								<?php echo number_format(isset($JanTotalUnpaid['total']) ? $JanTotalUnpaid['total'] : 0,0,'.','');?>,
+								<?php echo number_format(isset($FebTotalUnpaid['total']) ? $FebTotalUnpaid['total'] : 0,0,'.','');?>,
+								<?php echo number_format(isset($MarchTotalUnpaid['total']) ? $MarchTotalUnpaid['total'] : 0,0,'.','');?>,
+								<?php echo number_format(isset($AprilTotalUnpaid['total']) ? $AprilTotalUnpaid['total'] : 0,0,'.','');?>,
+								<?php echo number_format(isset($MayTotalUnpaid['total']) ? $MayTotalUnpaid['total'] : 0,0,'.','');?>,
+								<?php echo number_format(isset($JuneTotalUnpaid['total']) ? $JuneTotalUnpaid['total'] : 0,0,'.','');?>,
+								<?php echo number_format(isset($JulyTotalUnpaid['total']) ? $JulyTotalUnpaid['total'] : 0,0,'.','');?>,
+								<?php echo number_format(isset($AugTotalUnpaid['total']) ? $AugTotalUnpaid['total'] : 0,0,'.','');?>,
+								<?php echo number_format(isset($SepTotalUnpaid['total']) ? $SepTotalUnpaid['total'] : 0,0,'.','');?>,
+								<?php echo number_format(isset($OctTotalUnpaid['total']) ? $OctTotalUnpaid['total'] : 0,0,'.','');?>,
+								<?php echo number_format(isset($NovTotalUnpaid['total']) ? $NovTotalUnpaid['total'] : 0,0,'.','');?>,
+								<?php echo number_format(isset($DecTotalUnpaid['total']) ? $DecTotalUnpaid['total'] : 0,0,'.','');?>
 							]
 				        },
 						{
@@ -686,18 +670,18 @@
 							backgroundColor:'rgba(255, 206, 86, 0.5)',  // Red with 50% opacity
 							borderColor: 'rgba(255, 206, 86, 1)',   // Solid Red
 				            data: [
-								<?php echo number_format($JanTotalPaid['total'],0,'.','');?>, 
-								<?php echo number_format($FebTotalPaid['total'],0,'.','');?>, 
-								<?php echo number_format($MarchTotalPaid['total'],0,'.','');?>, 
-								<?php echo number_format($AprilTotalPaid['total'],0,'.','');?>,
-								<?php echo number_format($MayTotalPaid['total'],0,'.','');?>, 
-								<?php echo $JuneTotalPaid['total'];?>, 
-								<?php echo $JulyTotalPaid['total'];?>,
-								<?php echo $AugTotalPaid['total'];?>,
-								<?php echo $SepTotalPaid['total'];?>,
-								<?php echo $OctTotalPaid['total'];?>,
-								<?php echo $NovTotalPaid['total'];?>,
-								<?php echo $DecTotalPaid['total'];?>
+								<?php echo number_format(isset($JanTotalPaid['total']) ? $JanTotalPaid['total'] : 0,0,'.','');?>, 
+								<?php echo number_format(isset($FebTotalPaid['total']) ? $FebTotalPaid['total'] : 0,0,'.','');?>, 
+								<?php echo number_format(isset($MarchTotalPaid['total']) ? $MarchTotalPaid['total'] : 0,0,'.','');?>, 
+								<?php echo number_format(isset($AprilTotalPaid['total']) ? $AprilTotalPaid['total'] : 0,0,'.','');?>,
+								<?php echo number_format(isset($MayTotalPaid['total']) ? $MayTotalPaid['total'] : 0,0,'.','');?>, 
+								<?php echo number_format(isset($JuneTotalPaid['total']) ? $JuneTotalPaid['total'] : 0,0,'.','');?>, 
+								<?php echo number_format(isset($JulyTotalPaid['total']) ? $JulyTotalPaid['total'] : 0,0,'.','');?>,
+								<?php echo number_format(isset($AugTotalPaid['total']) ? $AugTotalPaid['total'] : 0,0,'.','');?>,
+								<?php echo number_format(isset($SepTotalPaid['total']) ? $SepTotalPaid['total'] : 0,0,'.','');?>,
+								<?php echo number_format(isset($OctTotalPaid['total']) ? $OctTotalPaid['total'] : 0,0,'.','');?>,
+								<?php echo number_format(isset($NovTotalPaid['total']) ? $NovTotalPaid['total'] : 0,0,'.','');?>,
+								<?php echo number_format(isset($DecTotalPaid['total']) ? $DecTotalPaid['total'] : 0,0,'.','');?>
 							]
 				        },
 				        {
@@ -728,18 +712,18 @@
 							backgroundColor:'rgba(54, 162, 235, 0.5)',  // Red with 50% opacity
 							borderColor: 'rgba(54, 162, 235, 1)',   // Solid Red
 				            data: [
-								<?php echo number_format($JanTotal['total'],0,'.','');?>,
-								<?php echo $FebTotal['total'];?>, 
-								<?php echo $MarchTotal['total'];?>, 
-								<?php echo $AprilTotal['total'];?>, 
-								<?php echo $MayTotal['total'];?>, 
-								<?php echo $JuneTotal['total'];?>, 
-								<?php echo $JulyTotal['total'];?>,
-								<?php echo $AugTotal['total'];?>,
-								<?php echo $SepTotal['total'];?>,
-								<?php echo $OctTotal['total'];?>,
-								<?php echo $NovTotal['total'];?>,
-								<?php echo $DecTotal['total'];?>
+								<?php echo number_format(isset($JanTotal['total']) ? $JanTotal['total'] : 0,0,'.','');?>,
+								<?php echo number_format(isset($FebTotal['total']) ? $FebTotal['total'] : 0,0,'.','');?>, 
+								<?php echo number_format(isset($MarchTotal['total']) ? $MarchTotal['total'] : 0,0,'.','');?>, 
+								<?php echo number_format(isset($AprilTotal['total']) ? $AprilTotal['total'] : 0,0,'.','');?>, 
+								<?php echo number_format(isset($MayTotal['total']) ? $MayTotal['total'] : 0,0,'.','');?>, 
+								<?php echo number_format(isset($JuneTotal['total']) ? $JuneTotal['total'] : 0,0,'.','');?>, 
+								<?php echo number_format(isset($JulyTotal['total']) ? $JulyTotal['total'] : 0,0,'.','');?>,
+								<?php echo number_format(isset($AugTotal['total']) ? $AugTotal['total'] : 0,0,'.','');?>,
+								<?php echo number_format(isset($SepTotal['total']) ? $SepTotal['total'] : 0,0,'.','');?>,
+								<?php echo number_format(isset($OctTotal['total']) ? $OctTotal['total'] : 0,0,'.','');?>,
+								<?php echo number_format(isset($NovTotal['total']) ? $NovTotal['total'] : 0,0,'.','');?>,
+								<?php echo number_format(isset($DecTotal['total']) ? $DecTotal['total'] : 0,0,'.','');?>
 							]
 				        }
 				    ]
@@ -958,3 +942,14 @@
 				});
 	});	
 				</script>
+				
+		<script>
+		// Year selector change handler - reload page with selected year
+		$(document).ready(function() {
+			$('#yearSelector').on('change', function() {
+				var selectedYear = $(this).val();
+				var currentUrl = window.location.href.split('?')[0];
+				window.location.href = currentUrl + '?year=' + selectedYear;
+			});
+		});
+		</script>

@@ -31,7 +31,21 @@ class dashboard extends CI_Controller {
 		$header['roleResponsible'] = $this->top_model->get_responsibilities();
 		$data['msg'] ='';
 		//*****  View Loading  *****//
-        $yearrep = 2025;
+		
+		// Get available years and selected year
+		$availableYears = $this->my_model->get_available_years();
+		$selectedYearInput = $this->input->get('year') ? $this->input->get('year') : (isset($_POST['year']) ? $_POST['year'] : date('Y'));
+		$selectedYear = (int)$selectedYearInput; // Convert to integer for consistency
+		
+		// Validate selected year is in available years or use current year
+		if(empty($availableYears) || !in_array($selectedYear, $availableYears)) {
+			$selectedYear = (int)date('Y');
+		}
+		
+		$yearrep = $selectedYear;
+		$data['selected_year'] = $selectedYear;
+		$data['available_years'] = $availableYears;
+		
 		//$header['host'] = $this->comm_model->get_single_record();				
 		//$header['record_info'] = $this->top_model->get_last_login_details(1);
 		$this->load->view($this->headerPage,$header);
