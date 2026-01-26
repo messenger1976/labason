@@ -337,7 +337,7 @@
 						{ "data": 8, "orderable": true },
 						{ "data": 9, "orderable": false }
 					],
-					"order": [[3, 'asc']],
+					"order": [[6, 'asc'], [2, 'asc']],
 					"pageLength": 100,
 					"lengthMenu": [[10, 25, 50, 100], [10, 25, 50, 100]],
 					"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-12 hidden-xs'l>r>"+

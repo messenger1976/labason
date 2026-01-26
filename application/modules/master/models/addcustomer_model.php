@@ -701,6 +701,12 @@ class addcustomer_model extends CI_Model {
 		// Order by - use the order_column directly as it already contains table.column format
 		$this->db->order_by($order_column, $order_dir);
 		
+		// Always add secondary sort by id to ensure consistent ordering
+		// If already ordering by id, skip to avoid duplicate
+		if($order_column != 'tbl_addcustomer.id' && $order_column != $this->table_name.'.id') {
+			$this->db->order_by($this->table_name.'.id', 'asc');
+		}
+		
 		// Limit and offset
 		$this->db->limit($length, $start);
 		
