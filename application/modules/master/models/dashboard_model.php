@@ -272,5 +272,44 @@ class dashboard_model extends CI_Model {
 		return $result;
 	}
 	
+	/** Get distinct years from sales data **/
+	public function get_available_years() {
+		// Get all distinct years - handle both integer and string year columns
+		$this->db->select('year');
+		$this->db->from($this->table_customer_reading);
+		$this->db->where('year IS NOT NULL');
+		$this->db->group_by('year');
+		$query = $this->db->get();
+		$result = $query->result_array();
+		
+		// Extract years into a simple array and convert to integers for consistency
+		$years = array();
+		foreach($result as $row) {
+			if(isset($row['year'])) {
+				$year = trim($row['year']);
+				// Handle both string and integer years
+				if(is_numeric($year)) {
+					$yearInt = (int)$year;
+					// Only add valid years (between 1900 and 2100) and not zero
+					if($yearInt >= 1900 && $yearInt <= 2100 && !in_array($yearInt, $years)) {
+						$years[] = $yearInt;
+					}
+				}
+			}
+		}
+		
+		// Add current year if not already in the list
+		$currentYear = (int)date('Y');
+		if(!in_array($currentYear, $years)) {
+			$years[] = $currentYear;
+		}
+		
+		// Sort descending and remove duplicates
+		$years = array_unique($years);
+		rsort($years);
+		
+		return $years;
+	}
+	
 }
 ?>
