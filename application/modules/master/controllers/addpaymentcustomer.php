@@ -45,12 +45,189 @@ class addpaymentcustomer extends CI_Controller {
 			
 			$_SESSION['current_billingperiod'] = $data['current_billingperiod'][0]['bp_period_month'].' '.$data['current_billingperiod'][0]['bp_period_year'];
 		}
-		$data['record'] = $this->my_model->get_all_records($_SESSION['current_billingperiod']);	
+		// No longer loading all records - using server-side pagination instead
+		$data['record'] = array();
 		$data['amountrate'] = $this->my_model->get_amountrate();				
 		//$header['record_info'] = $this->top_model->get_last_login_details(1);
 		$data['billingperiod'] = $this->billingperiod_model->get_month_billingperiod_records();	
 		$this->load->view($this->headerPage,$header);
 		$this->load->view($this->listPage,$data);
+	}
+	
+	/** AJAX endpoint for DataTables server-side processing **/
+	public function get_datatable_data() {
+		// Set JSON header first
+		header('Content-Type: application/json');
+		
+		// Start output buffering to catch any errors
+		ob_start();
+		
+		try {
+			// Get DataTables parameters
+			$start = $this->input->post('start') ? intval($this->input->post('start')) : 0;
+			$length = $this->input->post('length') ? intval($this->input->post('length')) : 10;
+			$draw = $this->input->post('draw') ? intval($this->input->post('draw')) : 1;
+			
+			// Safely get search value
+			$search_post = $this->input->post('search');
+			$search = '';
+			if(is_array($search_post) && isset($search_post['value']) && !empty($search_post['value'])) {
+				$search = trim($search_post['value']);
+			}
+
+			// Billing period filter
+			$billing_period = '';
+			if(isset($_SESSION['current_billingperiod']) && $_SESSION['current_billingperiod'] != '') {
+				$billing_period = $_SESSION['current_billingperiod'];
+			}
+			
+			// Safely get order parameters
+			$order_post = $this->input->post('order');
+			$order_column_index = 2; // Default to Customer-Id column
+			$order_dir = 'desc';
+			if(is_array($order_post) && isset($order_post[0]) && is_array($order_post[0])) {
+				if(isset($order_post[0]['column'])) {
+					$order_column_index = intval($order_post[0]['column']);
+				}
+				if(isset($order_post[0]['dir'])) {
+					$order_dir = $order_post[0]['dir'];
+				}
+			}
+			
+			// Map column index to column name (matching the table structure)
+			$columns = array(
+				0 => 'tbl_addmetercustomer.id',  // Checkbox column
+				1 => 'tbl_addmetercustomer.id',  // S No
+				2 => 'tbl_addmetercustomer.customer_id',  // Customer-Id
+				3 => 'tbl_addcustomer.last_name',  // Name
+				4 => 'tbl_addmetercustomer.or_number',  // OR #
+				5 => 'tbl_addmetercustomer.total',  // Gross Amount
+				6 => 'tbl_addmetercustomer.leaking_amount',  // Leaking Discount
+				7 => 'tbl_addmetercustomer.vat_amount',  // VAT Discount
+				8 => 'tbl_addmetercustomer.grand_total',  // Net Amount
+				9 => 'tbl_addmetercustomer.date',  // Paid Date
+				10 => 'tbl_addmetercustomer.id'  // Action
+			);
+			$order_column = isset($columns[$order_column_index]) ? $columns[$order_column_index] : 'tbl_addmetercustomer.id';
+			
+			// Ensure model is loaded
+			if(!isset($this->my_model)) {
+				$this->load->model('addpaymentcustomer_model','my_model');
+			}
+			
+			// Get filtered and paginated records
+			$records = $this->my_model->get_paginated_records($start, $length, $search, $order_column, $order_dir, $billing_period);
+			$total_records = $this->my_model->get_total_count('', $billing_period);
+			$filtered_records = $this->my_model->get_total_count($search, $billing_period);
+			
+			// Format data for DataTables
+			$data = array();
+			$i = $start + 1;
+			foreach($records as $row) {
+				$row_id = isset($row['id']) ? $row['id'] : 0;
+				
+				$action_html = '<input type="hidden" name="customerid_'.$i.'" id="customerid_'.$i.'" value="'.(isset($row['customer_id']) ? $row['customer_id'] : '').'">
+								<input type="hidden" name="month_'.$i.'" id="month_'.$i.'" value="'.(isset($row['month']) ? $row['month'] : '').'">
+								<input type="hidden" name="year_'.$i.'" id="year_'.$i.'" value="'.(isset($row['year']) ? $row['year'] : '').'">
+								<input type="hidden" name="invoiceid_'.$i.'" id="invoiceid_'.$i.'" value="'.(isset($row['invoice_id']) ? $row['invoice_id'] : '').'">
+								<a href="#" title="Print">
+									<i class="print_button_new1 fa fa-print" id="print_button_new1'.$i.'" data-print-val-id="'.$i.'"></i>
+								</a>&nbsp;&nbsp;&nbsp;
+								<div class="visible-xs visible-sm hidden-md hidden-lg">
+									<div class="inline position-relative">
+										<button class="btn btn-minier btn-yellow dropdown-toggle" data-toggle="dropdown">
+											<i class="icon-caret-down icon-only bigger-120"></i>
+										</button>
+										
+										<ul class="dropdown-menu dropdown-only-icon dropdown-yellow pull-right dropdown-caret dropdown-close">
+											<li>
+												<a href="JavaScript:if(confirm(\'Confirm Delete?\')==true){window.location=\''.ADMIN_URL.'addpaymentcustomer/delete/'.$row_id.'\';}" class="tooltip-error" data-rel="tooltip" title="Delete">
+													<span class="red">
+														<img src="'.base_url().'images/favicon/delete.png">
+													</span>
+												</a>
+											</li>
+										</ul>
+									</div>
+								</div>';
+				
+				$data[] = array(
+					'<label>
+						<input type="checkbox" class="ace" name="delete_ids[]" id="delete_ids[]" value="'.$row_id.'" />
+						<span class="lbl"></span>
+					</label>',
+					$i++,
+					'<a href="'.ADMIN_URL.'addpaymentcustomer/get_monthly_customer_invoice/'.$row_id.'">'.stripslashes(isset($row['customer_id']) ? $row['customer_id'] : '').'</a>',
+					stripslashes((isset($row['last_name']) ? $row['last_name'] : '').', '.(isset($row['first_name']) ? $row['first_name'] : '').' '.(isset($row['middle_name']) ? $row['middle_name'] : '')),
+					stripslashes(isset($row['or_number']) ? sprintf('%07d',$row['or_number']) : ''),
+					'<div align="right">'.stripslashes(isset($row['total']) ? number_format($row['total'],2) : '0.00').'</div>',
+					'<div align="right">'.stripslashes(isset($row['leaking_amount']) ? number_format($row['leaking_amount'],2) : '0.00').'</div>',
+					'<div align="right">'.stripslashes(isset($row['vat_amount']) ? number_format($row['vat_amount'],2) : '0.00').'</div>',
+					'<div align="right">'.stripslashes(isset($row['grand_total']) ? number_format($row['grand_total'],2) : '0.00').'</div>',
+					isset($row['date']) ? date('d-m-Y',strtotime($row['date'])) : '',
+					$action_html
+				);
+			}
+			
+			// Clear any output that might have been generated
+			ob_clean();
+			
+			// Return JSON response
+			$output = array(
+				"draw" => $draw,
+				"recordsTotal" => $total_records,
+				"recordsFiltered" => $filtered_records,
+				"data" => $data
+			);
+			
+			echo json_encode($output);
+			ob_end_flush();
+			exit;
+			
+		} catch(Exception $e) {
+			// Clear any output
+			ob_clean();
+			
+			// Log the error for debugging
+			log_message('error', 'DataTables Error: ' . $e->getMessage());
+			log_message('error', 'DataTables Trace: ' . $e->getTraceAsString());
+			log_message('error', 'DataTables File: ' . $e->getFile() . ' Line: ' . $e->getLine());
+			
+			// Return error response
+			$draw = $this->input->post('draw') ? intval($this->input->post('draw')) : 1;
+			$output = array(
+				"draw" => $draw,
+				"recordsTotal" => 0,
+				"recordsFiltered" => 0,
+				"data" => array(),
+				"error" => "An error occurred: " . $e->getMessage()
+			);
+			
+			echo json_encode($output);
+			ob_end_flush();
+			exit;
+		} catch(Error $e) {
+			// Clear any output
+			ob_clean();
+			
+			// Catch PHP 7+ errors
+			log_message('error', 'DataTables PHP Error: ' . $e->getMessage());
+			log_message('error', 'DataTables Trace: ' . $e->getTraceAsString());
+			log_message('error', 'DataTables File: ' . $e->getFile() . ' Line: ' . $e->getLine());
+			
+			$draw = $this->input->post('draw') ? intval($this->input->post('draw')) : 1;
+			$output = array(
+				"draw" => $draw,
+				"recordsTotal" => 0,
+				"recordsFiltered" => 0,
+				"data" => array(),
+				"error" => "An error occurred: " . $e->getMessage()
+			);
+			
+			echo json_encode($output);
+			ob_end_flush();
+			exit;
+		}
 	}
 	
 	/** Add Function **/

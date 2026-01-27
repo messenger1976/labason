@@ -155,122 +155,21 @@
 											
 												<thead>			                
 													<tr>
-														<th data-hide="phone"><input type="checkbox" class="ace" name="delete_ids[]" id="delete_ids[]" value="<?php echo $row['id'];?>" /></th>
-														<th data-hide="phone">S No</th>
-														<th data-class="expand">Customer-Id</th>
-														<th data-hide="expand">Name</th>
-														
-														<th data-hide="expand">OR #</th>
-														<th data-hide="expand">Gross Amount</th>
-														<th data-hide="expand">Leaking Discount</th>	
-														<th data-hide="expand">VAT Discount</th>										
-														<th data-hide="expand">Net Amount</th>
-														
-														
-                                                        
-														
-														<th data-hide="expand">Paid Date</th>
-														<th data-hide="expand">Action</th>
+														<th><input type="checkbox" class="ace" /></th>
+														<th>S No</th>
+														<th>Customer-Id</th>
+														<th>Name</th>
+														<th>OR #</th>
+														<th>Gross Amount</th>
+														<th>Leaking Discount</th>	
+														<th>VAT Discount</th>										
+														<th>Net Amount</th>
+														<th>Paid Date</th>
+														<th>Action</th>
 													</tr>
 												</thead>
 												<tbody>
-												  <?php
-                                                    if(count($record) > 0){
-                                                        $i=1;
-                                                        foreach($record as $key => $row){
-															?>   
-													<tr>
-														<td><label>
-																<input type="checkbox" class="ace" name="delete_ids[]" id="delete_ids[]" value="<?php echo $row['id'];?>" />
-																<span class="lbl"></span>
-															</label>
-														</td>
-														<td><?php echo $i; ?></td>
-														<td><a href="<?php echo ADMIN_URL;?>addpaymentcustomer/get_monthly_customer_invoice/<?php echo $row['id']; ?>"><?php echo stripslashes($row['customer_id']); ?></a>
-														</td>
-													    <td><?php echo stripslashes($row['last_name'].', '.$row['first_name'].' '.$row['middle_name']); ?></td>
-														<!--<td><?php echo stripslashes($row['month'].' '.$row['year']); ?></td>-->
-														<td><?php echo stripslashes(sprintf('%07d',$row['or_number'])); ?></td>
-                                                        <!--<td><?php echo stripslashes($row['oldmeter']); ?></td>
-														<td><?php echo stripslashes($row['aftermeter']); ?></td>-->
-														<!--<?php $consumed_units=$row['aftermeter']-$row['oldmeter'];?>-->
-														<!--<td><?php echo stripslashes($row['consumedunits']); ?></td>-->
-														<td align="right"><?php echo stripslashes(number_format($row['total'],2)); ?></td>
-														<td align="right"><?php echo stripslashes(number_format($row['leaking_amount'],2)); ?></td>
-														<td align="right"><?php echo stripslashes(number_format($row['vat_amount'],2)); ?></td>
-														<td align="right"><?php echo stripslashes(number_format($row['grand_total'],2)); ?></td>
-														
-														<?php $total=$row['amount']+$row['balance']-$row['pay_amount'];?>
-														
-                                                        
-														<!--<td><span <?php if($row['status']== 1){ echo " class='label label-success arrowed-in arrowed-in-right'"; } elseif($row['status']== 0){ echo "class='label label-danger arrowed'"; } ?>><a href="JavaScript:if(confirm('Are you sure want to Chanage the Status?')==true){window.location='<?php echo ADMIN_URL;?>addpaymentcustomer/status/<?php echo $row['id']?>/<?php echo $row['status'];?>/<?php echo $row['customer_id'];?>';}" style="color:#FFF; text-decoration:none;"><?php if($row['status']== 1){ echo "Paid"; } elseif($row['status']== 0){ echo "Partial-Paid"; } ?></a></span></td>
-                                                        -->
-														<!--<td><span 
-														       <?php if($row['balance']== 0){ 
-														                 echo " class='label label-success arrowed-in arrowed-in-right'"; 
-																	} elseif($row['balance']!= 0){ 
-																	     echo "class='label label-danger arrowed'"; 
-																   } ?>>
-																   <?php if($row['balance']== 0){?>
-																	
-																	   <?php if($row['balance']== 0){ 
-																	           echo "Paid"; 
-																	   } ?>
-																  
-																   <?php }else {?>
-																   <a href="JavaScript:if(confirm('Are you sure want to Chanage the Status?')==true){
-																	     window.location='<?php echo ADMIN_URL;?>addpaymentcustomer/status/<?php echo $row['id']?>/<?php echo $row['balance'];?>/<?php echo $row['customer_id'];?>';
-																	   }" style="color:#FFF; text-decoration:none;">
-																	   <?php if($row['balance']== 0){ 
-																	           echo "Paid"; 
-																			 }elseif($row['status']!= 0){ 
-																			   echo "Partial-Paid"; 
-																	    } ?>
-																   </a>
-														           <?php }?>
-															</span>
-														</td>-->
-                                                        <td><?php echo date('d-m-Y',strtotime($row['date'])); ?></td>
-														<td>
-														    <input type="hidden" name="customerid_<?php echo $i;?>" id="customerid_<?php echo $i;?>" value = "<?php echo $row['customer_id'];?>">
-															<input type="hidden" name="month_<?php echo $i;?>" id="month_<?php echo $i;?>" value = "<?php echo $row['month'];?>">
-															<input type="hidden" name="year_<?php echo $i;?>" id="year_<?php echo $i;?>" value = "<?php echo $row['year'];?>">
-															<input type="hidden" name="invoiceid_<?php echo $i;?>" id="invoiceid_<?php echo $i;?>" value = "<?php echo $row['invoice_id'];?>">
-														    <!--<input class="print_button" id="print_button<?php echo $i;?>" data-print-val-id="<?php echo $i; ?>" type="button" name="print" value="Print">-->
-															<!--<a href="#" title="Print">
-																 <i class="print_button fa fa-print" id="print_button<?php echo $i;?>" data-print-val-id="<?php echo $i ?>"></i>
-																 </a>&nbsp;&nbsp;&nbsp;-->
-<a href="#" title="Print">
-																 <i class="print_button_new1 fa fa-print" id="print_button_new1<?php echo $i;?>" data-print-val-id="<?php echo $i ?>"></i>
-																 </a>&nbsp;&nbsp;&nbsp;
-															<!--<a href="#" title="Print New">
-																<i class="print_button_new fa fa-table" id="print_button_new<?php echo $i;?>" data-print-val-id="<?php echo $i ?>"></i>
-																 </a>
-																 <a href="#" title="Print New">
-																<i class="print_button_new1 fa fa-table" id="print_button_new1<?php echo $i;?>" data-print-val-id="<?php echo $i ?>"></i>
-																 </a>-->
-																<!--<a class="red" href="JavaScript:if(confirm('Confirm Delete?')==true){window.location='<?php echo ADMIN_URL;?>addpaymentcustomer/delete/<?php echo $row['id'];?>';}" title="Delete">
-																			<i class="fa fa-remove"></i>
-																</a>-->
-																<div class="visible-xs visible-sm hidden-md hidden-lg">
-																	<div class="inline position-relative">
-																		<button class="btn btn-minier btn-yellow dropdown-toggle" data-toggle="dropdown">
-																			<i class="icon-caret-down icon-only bigger-120"></i>
-																		</button>
-																		
-																		<ul class="dropdown-menu dropdown-only-icon dropdown-yellow pull-right dropdown-caret dropdown-close">
-																			<li>
-																				<a href="JavaScript:if(confirm('Confirm Delete?')==true){window.location='<?php echo ADMIN_URL;?>addpaymentcustomer/delete/<?php echo $row['id'];?>';}" class="tooltip-error" data-rel="tooltip" title="Delete">
-																					<span class="red">
-																						<img src="<?php echo base_url();?>images/favicon/delete.png">
-																					</span>
-																				</a>
-																			</li>
-																		</ul>
-																	</div>
-																</div></td>
-													</tr>
-														<?php $i++;} }?>	
+													<!-- Data will be loaded via AJAX -->
 												</tbody>
 											</table>
 											
@@ -310,12 +209,96 @@
 		</div>
 		<!-- END MAIN PANEL -->
 		
+		<!-- Loading Modal Overlay -->
+		<div id="datatable-loading-modal" style="display: none;">
+			<div class="loading-overlay">
+				<div class="loading-content">
+					<div class="loading-spinner">
+						<i class="fa fa-spinner fa-spin fa-4x"></i>
+					</div>
+					<div class="loading-text">
+						<h3>Loading data...</h3>
+						<p>Please wait while we fetch the records</p>
+					</div>
+				</div>
+			</div>
+		</div>
 
 		<?php include('footer.php');?>
 
 	</body>
 
 </html>
+<style>
+	/* Loading Modal Styles */
+	#datatable-loading-modal {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		z-index: 9999;
+		background-color: rgba(0, 0, 0, 0.7);
+		backdrop-filter: blur(2px);
+		display: none; /* Hidden by default, shown via JavaScript */
+	}
+	
+	.loading-overlay {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		width: 100%;
+		height: 100%;
+		min-height: 100vh;
+	}
+	
+	.loading-content {
+		background: #ffffff;
+		border-radius: 10px;
+		padding: 40px 60px;
+		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+		text-align: center;
+		min-width: 300px;
+		border: 3px solid #3498db;
+	}
+	
+	.loading-spinner {
+		margin-bottom: 20px;
+		color: #3498db;
+	}
+	
+	.loading-spinner .fa-spinner {
+		animation: spin 1s linear infinite;
+	}
+	
+	@keyframes spin {
+		0% { transform: rotate(0deg); }
+		100% { transform: rotate(360deg); }
+	}
+	
+	.loading-text h3 {
+		color: #2c3e50;
+		margin: 0 0 10px 0;
+		font-size: 24px;
+		font-weight: bold;
+	}
+	
+	.loading-text p {
+		color: #7f8c8d;
+		margin: 0;
+		font-size: 14px;
+	}
+	
+	/* Ensure table is visible but dimmed when loading */
+	.dataTables_wrapper {
+		position: relative;
+	}
+	
+	.dataTables_wrapper.processing {
+		opacity: 0.5;
+		pointer-events: none;
+	}
+</style>
 <!-- PAGE RELATED PLUGIN(S) -->
 		<script src="<?php echo base_url();?>js/plugin/datatables/jquery.dataTables.min.js"></script>
 		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.colVis.min.js"></script>
@@ -329,6 +312,10 @@
 		$(document).ready(function() {
 			
 			pageSetUp();
+			
+			// Show loading modal immediately on page load
+			$('#datatable-loading-modal').show();
+			$('.dataTables_wrapper').addClass('processing');
 			
 			/* // DOM Position key index //
 		
@@ -346,7 +333,7 @@
 			Also see: http://legacy.datatables.net/usage/features
 			*/	
 	
-			/* BASIC ;*/
+			/* BASIC - Server-side Processing */
 				var responsiveHelper_dt_basic = undefined;
 				var responsiveHelper_datatable_fixed_column = undefined;
 				var responsiveHelper_datatable_col_reorder = undefined;
@@ -356,14 +343,39 @@
 					tablet : 1024,
 					phone : 480
 				};
+				
+				var isInitialLoad = true;
 	
-				$('#dt_basic').dataTable({
+				var table = $('#dt_basic').DataTable({
+					"processing": true,
+					"serverSide": true,
+					"ajax": {
+						"url": "<?php echo ADMIN_URL;?>addpaymentcustomer/get_datatable_data",
+						"type": "POST"
+					},
+					"columns": [
+						{ "data": 0, "orderable": false },
+						{ "data": 1, "orderable": false },
+						{ "data": 2, "orderable": true },
+						{ "data": 3, "orderable": true },
+						{ "data": 4, "orderable": true },
+						{ "data": 5, "orderable": true },
+						{ "data": 6, "orderable": true },
+						{ "data": 7, "orderable": true },
+						{ "data": 8, "orderable": true },
+						{ "data": 9, "orderable": true },
+						{ "data": 10, "orderable": false }
+					],
+					"order": [[2, 'desc']],
+					"pageLength": 10,
+					"lengthMenu": [[10, 25, 50, 100], [10, 25, 50, 100]],
 					"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-12 hidden-xs'l>r>"+
 						"t"+
 						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
 					"autoWidth" : true,
 			        "oLanguage": {
-					    "sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
+					    "sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>',
+						"sProcessing": ""
 					},
 					"preDrawCallback" : function() {
 						// Initialize the responsive datatables helper once.
@@ -376,9 +388,34 @@
 					},
 					"drawCallback" : function(oSettings) {
 						responsiveHelper_dt_basic.respond();
+						// Hide loading modal after first data load
+						if (isInitialLoad) {
+							isInitialLoad = false;
+							setTimeout(function() {
+								$('#datatable-loading-modal').fadeOut(200);
+								$('.dataTables_wrapper').removeClass('processing');
+							}, 300);
+						}
 					}
 				});
-	
+				
+				// Show/hide loading modal based on processing state
+				table.on('processing.dt', function(e, settings, processing) {
+					if (processing) {
+						// Only fade in if not already visible (to avoid flicker on initial load)
+						if (!$('#datatable-loading-modal').is(':visible')) {
+							$('#datatable-loading-modal').fadeIn(200);
+						}
+						$('.dataTables_wrapper').addClass('processing');
+					} else {
+						// Only fade out if it's not the initial load
+						if (!isInitialLoad) {
+							$('#datatable-loading-modal').fadeOut(200);
+							$('.dataTables_wrapper').removeClass('processing');
+						}
+					}
+				});
+
 			/* END BASIC */
 			
 			/* COLUMN FILTER  */
@@ -499,18 +536,27 @@
 			$('#header_billingperiod').on('change', function(evt){
 				evt.preventDefault();
 				var header_billing_period = $(this).val();
-				//showSpinner();
+				// Show loading modal
+				$('#datatable-loading-modal').fadeIn(200);
+				$('.dataTables_wrapper').addClass('processing');
+				
 				$.ajax({
             		type : "POST",
 					url	: '<?php echo ADMIN_URL;?>addbillingperiod/updated_headerbillingperiod',
 					data	: "billing_period="+header_billing_period,
 					complete: function(data){
 						console.log(data);
-						//if(data=='success'){
+						// Reload the DataTable after billing period change
+						if(typeof table !== 'undefined') {
+							table.ajax.reload(null, false); // false = don't reset pagination
+						} else {
 							location.reload();
-							//window.location.replace(window.location.href);
-							//window.location.href = '<?php echo ADMIN_URL;?>addbillingperiod';
-						//}
+						}
+					},
+					error: function() {
+						// Hide loading modal on error
+						$('#datatable-loading-modal').fadeOut(200);
+						$('.dataTables_wrapper').removeClass('processing');
 					}
 				});
 

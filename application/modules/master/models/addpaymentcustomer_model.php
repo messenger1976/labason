@@ -865,6 +865,76 @@ class addpaymentcustomer_model extends CI_Model {
 		return $result;
 	}
 	
+	/** Server-side pagination: Get paginated records with filtering **/
+	public function get_paginated_records($start = 0, $length = 10, $search = '', $order_column = 'tbl_addmetercustomer.id', $order_dir = 'desc', $billing_period = '') {
+		$this->db->select($this->table_name.".*,SUM(".$this->table_name.".amount) as gross_amount,".$this->table_customername.".*,".$this->table_name.".id as id");
+		$this->db->from($this->table_name);
+		$this->db->join($this->table_customername, $this->table_name.".customer_id = ".$this->table_customername.".customer_id", 'left');
+		
+		// Apply billing period filter
+		if($billing_period != ''){
+			$billperiod = explode(' ',$billing_period);
+			$this->db->where($this->table_name.'.month',$billperiod[0]);
+			$this->db->where($this->table_name.'.year',$billperiod[1]);
+		}
+		
+		// Apply search filter
+		if($search != '') {
+			$search_escaped = $this->db->escape_like_str($search);
+			$this->db->where("(
+				".$this->table_name.".customer_id LIKE '%".$search_escaped."%' OR
+				".$this->table_customername.".first_name LIKE '%".$search_escaped."%' OR
+				".$this->table_customername.".middle_name LIKE '%".$search_escaped."%' OR
+				".$this->table_customername.".last_name LIKE '%".$search_escaped."%' OR
+				".$this->table_name.".or_number LIKE '%".$search_escaped."%' OR
+				".$this->table_name.".invoice_id LIKE '%".$search_escaped."%'
+			)", NULL, FALSE);
+		}
+		
+		// Order by
+		$this->db->order_by($order_column, $order_dir);
+		
+		// Group by invoice_id (as in original query)
+		$this->db->group_by($this->table_name.'.invoice_id');
+		
+		// Limit and offset
+		$this->db->limit($length, $start);
+		
+		$query = $this->db->get();
+		$result = $query->result_array();
+		return $result;
+	}
+	
+	/** Server-side pagination: Get total count with filtering **/
+	public function get_total_count($search = '', $billing_period = '') {
+		$this->db->select("COUNT(DISTINCT ".$this->table_name.".invoice_id) as total");
+		$this->db->from($this->table_name);
+		$this->db->join($this->table_customername, $this->table_name.".customer_id = ".$this->table_customername.".customer_id", 'left');
+		
+		// Apply billing period filter
+		if($billing_period != ''){
+			$billperiod = explode(' ',$billing_period);
+			$this->db->where($this->table_name.'.month',$billperiod[0]);
+			$this->db->where($this->table_name.'.year',$billperiod[1]);
+		}
+		
+		// Apply search filter
+		if($search != '') {
+			$search_escaped = $this->db->escape_like_str($search);
+			$this->db->where("(
+				".$this->table_name.".customer_id LIKE '%".$search_escaped."%' OR
+				".$this->table_customername.".first_name LIKE '%".$search_escaped."%' OR
+				".$this->table_customername.".middle_name LIKE '%".$search_escaped."%' OR
+				".$this->table_customername.".last_name LIKE '%".$search_escaped."%' OR
+				".$this->table_name.".or_number LIKE '%".$search_escaped."%' OR
+				".$this->table_name.".invoice_id LIKE '%".$search_escaped."%'
+			)", NULL, FALSE);
+		}
+		
+		$query = $this->db->get();
+		$result = $query->row_array();
+		return isset($result['total']) ? intval($result['total']) : 0;
+	}
 	
 }
 ?>
