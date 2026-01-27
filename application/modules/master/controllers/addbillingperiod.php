@@ -332,7 +332,9 @@ class addbillingperiod extends CI_Controller {
 		tbl_addcustomer_reading.year as billing_year,
 		tbl_addcustomer_reading.maintenance_fee,
 		tbl_addcustomer_reading.franchise_fee_percent,
-		tbl_addcustomer_reading.franchise_fee_amount
+		tbl_addcustomer_reading.franchise_fee_amount,
+		tbl_billing_period.bp_due_date as due_date,
+		tbl_billing_period.bp_disconnection_date as disconnection_date
        
         ");
 		$this->db->from("tbl_addcustomer_reading");
@@ -403,7 +405,9 @@ class addbillingperiod extends CI_Controller {
 		tbl_addcustomer_reading.year as billing_year,
 		tbl_addcustomer_reading.maintenance_fee,
 		tbl_addcustomer_reading.franchise_fee_percent,
-		tbl_addcustomer_reading.franchise_fee_amount
+		tbl_addcustomer_reading.franchise_fee_amount,
+		tbl_billing_period.bp_due_date as due_date,
+		tbl_billing_period.bp_disconnection_date as disconnection_date
        
         ");
 		$this->db->from("tbl_addcustomer_reading");
@@ -414,6 +418,7 @@ class addbillingperiod extends CI_Controller {
 		$this->db->join('tbl_addcustomer', 'tbl_addcustomer_reading.customer_id=tbl_addcustomer.customer_id','left');
 		$this->db->join('tbl_zone', 'tbl_addcustomer.zone=tbl_zone.id','left');
 		$this->db->join('tbl_classification', 'tbl_addcustomer.classification=tbl_classification.class_id','left');
+		$this->db->join('tbl_billing_period', 'tbl_addcustomer_reading.month=tbl_billing_period.bp_period_month AND tbl_addcustomer_reading.year=tbl_billing_period.bp_period_year AND tbl_addcustomer.zone=tbl_billing_period.bp_zone_id','left');
 		
 		if($billingmonth !='all' && $billingyear !='all'){
 			$this->db->where("tbl_addcustomer_reading.month",$billingmonth);
@@ -421,16 +426,16 @@ class addbillingperiod extends CI_Controller {
 		}
 		//$this->db->where("tbl_addmetercustomer.status",1);
 		
-		
-			
-		
+		// Debug: Uncomment the line below to see the SQL query
+		// $this->db->get(); echo $this->db->last_query(); exit;
 		
 		$this->db->order_by('tbl_addcustomer.last_name','ASC');
 		$this->db->order_by('tbl_addcustomer.first_name','ASC');
 		$query = $this->db->get();
 		$result = $query->result_array();
 		
-
+		// Debug: Uncomment to see first result
+		//echo '<pre>'; print_r($result[0] ?? 'No results'); exit;
 
 		echo json_encode($result);
 		//echo $result;
