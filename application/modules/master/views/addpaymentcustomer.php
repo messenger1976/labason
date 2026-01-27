@@ -369,6 +369,7 @@
 					"order": [[2, 'desc']],
 					"pageLength": 10,
 					"lengthMenu": [[10, 25, 50, 100], [10, 25, 50, 100]],
+					"searchDelay": 999999, // Disable auto-search on typing
 					"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-12 hidden-xs'l>r>"+
 						"t"+
 						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
@@ -397,6 +398,28 @@
 							}, 300);
 						}
 					}
+				});
+				
+				// Custom search handling: only search on Enter key or blur
+				var searchInput = $('.dataTables_filter input');
+				var searchTimeout = null;
+				
+				// Remove default search event handlers
+				searchInput.off('keyup.DT input.DT');
+				
+				// Handle Enter key press
+				searchInput.on('keypress', function(e) {
+					if (e.which === 13) { // Enter key
+						e.preventDefault();
+						var searchValue = $(this).val();
+						table.search(searchValue).draw();
+					}
+				});
+				
+				// Handle blur event (when input loses focus)
+				searchInput.on('blur', function() {
+					var searchValue = $(this).val();
+					table.search(searchValue).draw();
 				});
 				
 				// Show/hide loading modal based on processing state
