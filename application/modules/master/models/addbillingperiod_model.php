@@ -46,10 +46,12 @@ class addbillingperiod_model extends CI_Model {
     }
     /** In Function Get all records from select table **/
     public function get_month_billingperiod_records() {
-        $this->db->select("*,(Select month_name from ".$this->table_months." where ".$this->table_months.".month_id	= ".$this->table_billing_period.".bp_period_month ) as month_name");
+        $this->db->distinct();
+        $this->db->select("bp_period_month, bp_period_year, (Select month_name from ".$this->table_months." where ".$this->table_months.".month_id	= ".$this->table_billing_period.".bp_period_month ) as month_name");
 		$this->db->from($this->table_billing_period);
-        $this->db->group_by('bp_period_month','bo_period_year');
-		$this->db->order_by('bp_zone_id','asc');
+		$this->db->where("bp_status <> ",2);
+		$this->db->order_by('bp_period_year','desc');
+		$this->db->order_by('bp_period_month','asc');
 		$query = $this->db->get();
 		//echo $this->db->last_query();
 		$result = $query->result_array();
