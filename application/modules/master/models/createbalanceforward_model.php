@@ -231,17 +231,102 @@ class createbalanceforward_model extends CI_Model {
 		$customer_current_billing_data = currentbalance_forwarding_period($customer_data->customer_id,$bp_current_month,$bp_current_year);
 		
 		if($customer_current_billing_data && isset($customer_current_billing_data->id)){
+			/**
+			 * ARREARS COMPUTATION LOGIC
+			 * 
+			 * Arrears represent the outstanding balance that needs to be carried forward
+			 * to the next billing period. The computation depends on payment status:
+			 * 
+			 * CASE 1: INVOICE IS PAID (invoice_id exists and is not empty)
+			 *   - If the invoice has been paid, there are no outstanding balances
+			 *   - Set arrears to 0 (no balance to forward)
+			 * 
+			 * CASE 2: INVOICE IS UNPAID (invoice_id is NULL or empty)
+			 *   - If the invoice is unpaid, we need to forward the outstanding balance
+			 *   - Arrears = Current Period Penalty + Previous Period Arrears
+			 *   - This ensures cumulative arrears are properly tracked across billing periods
+			 */
+			
 			if($customer_current_billing_data->invoice_id!=NULL && $customer_current_billing_data->invoice_id!=''){
+				/**
+				 * INVOICE PAID - No arrears to forward
+				 * 
+				 * When an invoice is paid, all outstanding balances are cleared.
+				 * Therefore, no arrears should be carried forward to the next period.
+				 */
 				$arrears = 0;
 			}else{
-				$arrears = isset($customer_current_billing_data->penalty) ? $customer_current_billing_data->penalty : 0;
+				/**
+				 * INVOICE UNPAID - Calculate cumulative arrears
+				 * 
+				 * For unpaid invoices, we need to forward the total outstanding balance
+				 * which includes:
+				 * 
+				 * 1. Previous Arrears: Outstanding balance from previous billing periods
+				 *    - Retrieved from the 'arrears' field in the current billing period data
+				 *    - This represents cumulative unpaid amounts from earlier periods
+				 * 
+				 * 2. Current Penalty: Penalty amount for the current billing period
+				 *    - Retrieved from the 'penalty' field in the current billing period data
+				 *    - This represents the penalty applied to the current period's bill
+				 * 
+				 * Total Arrears = Current Penalty + Previous Arrears
+				 * 
+				 * This ensures that:
+				 * - Previous unpaid balances are not lost
+				 * - Current period penalties are included
+				 * - Cumulative arrears are accurately tracked
+				 */
+				
+				// Get previous arrears from the current billing period
+				// This represents outstanding balances from previous periods
+				$previous_arrears = isset($customer_current_billing_data->arrears) ? floatval($customer_current_billing_data->arrears) : 0;
+				
+				// Get current penalty for the current billing period
+				// This represents the penalty amount applied to the current period's bill
+				$current_penalty = isset($customer_current_billing_data->penalty) ? floatval($customer_current_billing_data->penalty) : 0;
+				
+				// Calculate total arrears: current penalty + previous arrears
+				// This total will be forwarded to the new billing period
+				$arrears = $current_penalty + $previous_arrears;
 			}
+			/**
+			 * STEP 4: CALCULATE MAINTENANCE FEE
+			 * 
+			 * Retrieve the maintenance fee from global settings.
+			 * This fee is applied to all customer bills regardless of consumption.
+			 */
 			$maintenance_fee = $this->get_maintenance_fee();
 			
-			// Calculate franchise fee
+			/**
+			 * STEP 5: CALCULATE FRANCHISE FEE
+			 * 
+			 * Franchise fee is calculated as a percentage of the bill amount.
+			 * The calculation differs for Senior Citizen (SC) accounts vs regular accounts:
+			 * 
+			 * BUSINESS RULE: Senior citizen discount (5%) only applies if consumption <= 30 cubic meters
+			 * 
+			 * - SC Accounts (account_type == 3) WITH consumption <= 30 cu.m.:
+			 *   Franchise fee is calculated on the bill amount AFTER senior citizen discount is applied
+			 * - SC Accounts (account_type == 3) WITH consumption > 30 cu.m.:
+			 *   Franchise fee is calculated on the full unit price (no discount applied)
+			 * - Regular Accounts: Franchise fee is calculated on the full unit price
+			 * 
+			 * Formula: Franchise Fee Amount = (Bill Amount × Franchise Fee Percentage) / 100
+			 */
+			
+			// Get franchise fee percentage from global settings
 			$franchise_fee_percentage = $this->get_franchise_fee_percentage();
-			$unit_price = isset($customer_current_billing_data->unit_price) ? $customer_current_billing_data->unit_price : 0;
-			$sc_discount = isset($customer_current_billing_data->sc_discount) ? $customer_current_billing_data->sc_discount : 0;
+			
+			// Get unit price and senior citizen discount from current billing data
+			$unit_price = isset($customer_current_billing_data->unit_price) ? floatval($customer_current_billing_data->unit_price) : 0;
+			$sc_discount = isset($customer_current_billing_data->sc_discount) ? floatval($customer_current_billing_data->sc_discount) : 0;
+			
+			// Calculate consumption from current billing period
+			// Consumption = Current Reading - Previous Reading
+			$current_reading = isset($customer_current_billing_data->reading) ? floatval($customer_current_billing_data->reading) : 0;
+			$previous_reading = isset($customer_current_billing_data->previous_reading) ? floatval($customer_current_billing_data->previous_reading) : 0;
+			$consumption = $current_reading - $previous_reading;
 			
 			// Get customer account type
 			$this->db->select('account_type');
@@ -251,11 +336,32 @@ class createbalanceforward_model extends CI_Model {
 			$customer_account = $customer_query->row();
 			$account_type = isset($customer_account->account_type) ? $customer_account->account_type : 0;
 			
-			if($account_type == 3){
-				// SC: compute after SC deduction
+			// Determine the bill amount base for franchise fee calculation
+			// Check if customer is Senior Citizen AND consumption is 30 cubic meters or below
+			if($account_type == 3 && $consumption <= 30){
+				/**
+				 * SENIOR CITIZEN ACCOUNT WITH CONSUMPTION <= 30 CUBIC METERS
+				 * 
+				 * For SC accounts with consumption <= 30 cu.m., franchise fee is calculated
+				 * on the bill amount AFTER the senior citizen discount has been applied.
+				 * This ensures the franchise fee is calculated on the actual amount billed
+				 * after the discount.
+				 * 
+				 * Business Rule: Senior citizens can only avail the 5% discount if their
+				 * consumption does not exceed 30 cubic meters per billing period.
+				 */
 				$bill_amount_for_franchise = $unit_price - $sc_discount;
 			} else {
-				// Non-SC: compute on unit price
+				/**
+				 * REGULAR ACCOUNT OR SENIOR CITIZEN WITH CONSUMPTION > 30 CUBIC METERS
+				 * 
+				 * For regular accounts OR senior citizens exceeding 30 cu.m. consumption,
+				 * franchise fee is calculated on the full unit price without any discount
+				 * adjustments.
+				 * 
+				 * Note: Senior citizens exceeding 30 cu.m. are treated as regular accounts
+				 * for franchise fee calculation purposes.
+				 */
 				$bill_amount_for_franchise = $unit_price;
 			}
 			$franchise_fee_amount = ($bill_amount_for_franchise * $franchise_fee_percentage) / 100;
