@@ -188,6 +188,21 @@
 		</div>
 		<!-- END MAIN PANEL -->
 		
+		<!-- Loading Modal Overlay -->
+		<div id="datatable-loading-modal" style="display: none;">
+			<div class="loading-overlay">
+				<div class="loading-content">
+					<div class="loading-spinner">
+						<i class="fa fa-spinner fa-spin fa-4x"></i>
+					</div>
+					<div class="loading-text">
+						<h3>Loading data...</h3>
+						<p>Please wait while we fetch the records</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		
 		<!-- Modal for Viewing Customer Details -->
 		<div class="modal fade" id="viewCustomerModal" tabindex="-1" role="dialog" aria-labelledby="viewCustomerModalLabel">
 			<div class="modal-dialog modal-lg" role="document">
@@ -274,6 +289,76 @@
 	</body>
 
 </html>
+<style>
+	/* Loading Modal Styles */
+	#datatable-loading-modal {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		z-index: 9999;
+		background-color: rgba(0, 0, 0, 0.7);
+		backdrop-filter: blur(2px);
+		display: none; /* Hidden by default, shown via JavaScript */
+	}
+	
+	.loading-overlay {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		width: 100%;
+		height: 100%;
+		min-height: 100vh;
+	}
+	
+	.loading-content {
+		background: #ffffff;
+		border-radius: 10px;
+		padding: 40px 60px;
+		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+		text-align: center;
+		min-width: 300px;
+		border: 3px solid #3498db;
+	}
+	
+	.loading-spinner {
+		margin-bottom: 20px;
+		color: #3498db;
+	}
+	
+	.loading-spinner .fa-spinner {
+		animation: spin 1s linear infinite;
+	}
+	
+	@keyframes spin {
+		0% { transform: rotate(0deg); }
+		100% { transform: rotate(360deg); }
+	}
+	
+	.loading-text h3 {
+		color: #2c3e50;
+		margin: 0 0 10px 0;
+		font-size: 24px;
+		font-weight: bold;
+	}
+	
+	.loading-text p {
+		color: #7f8c8d;
+		margin: 0;
+		font-size: 14px;
+	}
+	
+	/* Ensure table is visible but dimmed when loading */
+	.dataTables_wrapper {
+		position: relative;
+	}
+	
+	.dataTables_wrapper.processing {
+		opacity: 0.5;
+		pointer-events: none;
+	}
+</style>
 <!-- PAGE RELATED PLUGIN(S) -->
 		<script src="<?php echo base_url();?>js/plugin/datatables/jquery.dataTables.min.js"></script>
 		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.colVis.min.js"></script>
@@ -287,6 +372,10 @@
 		$(document).ready(function() {
 			
 			pageSetUp();
+			
+			// Show loading modal immediately on page load
+			$('#datatable-loading-modal').show();
+			$('.dataTables_wrapper').addClass('processing');
 			
 			/* // DOM Position key index //
 		
@@ -304,7 +393,7 @@
 			Also see: http://legacy.datatables.net/usage/features
 			*/	
 	
-			/* BASIC ;*/
+			/* BASIC - Server-side Processing */
 				var responsiveHelper_dt_basic = undefined;
 				var responsiveHelper_datatable_fixed_column = undefined;
 				var responsiveHelper_datatable_col_reorder = undefined;
@@ -314,6 +403,8 @@
 					tablet : 1024,
 					phone : 480
 				};
+				
+				var isInitialLoad = true;
 	
 				var table = $('#dt_basic').DataTable({
 					"processing": true,
@@ -340,13 +431,14 @@
 					"order": [[6, 'asc'], [2, 'asc']],
 					"pageLength": 100,
 					"lengthMenu": [[10, 25, 50, 100], [10, 25, 50, 100]],
+					"searchDelay": 999999, // Disable auto-search on typing
 					"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-12 hidden-xs'l>r>"+
 						"t"+
 						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
 					"autoWidth" : true,
 			        "oLanguage": {
 					    "sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>',
-						"sProcessing": "Loading data..."
+						"sProcessing": ""
 					},
 					"preDrawCallback" : function() {
 						// Initialize the responsive datatables helper once.
@@ -359,6 +451,53 @@
 					},
 					"drawCallback" : function(oSettings) {
 						responsiveHelper_dt_basic.respond();
+						// Hide loading modal after first data load
+						if (isInitialLoad) {
+							isInitialLoad = false;
+							setTimeout(function() {
+								$('#datatable-loading-modal').fadeOut(200);
+								$('.dataTables_wrapper').removeClass('processing');
+							}, 300);
+						}
+					}
+				});
+				
+				// Custom search handling: only search on Enter key or blur
+				var searchInput = $('.dataTables_filter input');
+				var searchTimeout = null;
+				
+				// Remove default search event handlers
+				searchInput.off('keyup.DT input.DT');
+				
+				// Handle Enter key press
+				searchInput.on('keypress', function(e) {
+					if (e.which === 13) { // Enter key
+						e.preventDefault();
+						var searchValue = $(this).val();
+						table.search(searchValue).draw();
+					}
+				});
+				
+				// Handle blur event (when input loses focus)
+				searchInput.on('blur', function() {
+					var searchValue = $(this).val();
+					table.search(searchValue).draw();
+				});
+				
+				// Show/hide loading modal based on processing state
+				table.on('processing.dt', function(e, settings, processing) {
+					if (processing) {
+						// Only fade in if not already visible (to avoid flicker on initial load)
+						if (!$('#datatable-loading-modal').is(':visible')) {
+							$('#datatable-loading-modal').fadeIn(200);
+						}
+						$('.dataTables_wrapper').addClass('processing');
+					} else {
+						// Only fade out if it's not the initial load
+						if (!isInitialLoad) {
+							$('#datatable-loading-modal').fadeOut(200);
+							$('.dataTables_wrapper').removeClass('processing');
+						}
 					}
 				});
 
