@@ -143,7 +143,7 @@
 											
 												<thead>			                
 													<tr>
-														<th data-hide="phone"><input type="checkbox" class="ace" name="delete_ids[]" id="delete_ids[]" value="<?php echo $row['id'];?>" /></th>
+														<th data-hide="phone"><input type="checkbox" class="ace" /></th>
 														<th data-hide="phone">S No</th>
 														<th data-class="expand">Billing Ref No</th>
 														<th data-class="expand">Customer-Id</th>
@@ -157,69 +157,7 @@
 													</tr>
 												</thead>
 												<tbody>
-												  <?php
-                                                    if(count($record) > 0){
-                                                        $i=1;
-                                                        foreach($record as $key => $row){ 
-                                                ?>   
-													<tr>
-														<td><label>
-																<input type="checkbox" class="ace" name="delete_ids[]" id="delete_ids[]" value="<?php echo $row['id'];?>" />
-																<span class="lbl"></span>
-															</label>
-														</td>
-														<td><?php echo $i; ?></td>
-														<td><?php echo stripslashes($row['refno']); ?></td>
-													    <td><?php echo stripslashes($row['customer_id']); ?></td>
-														<td><?php echo stripslashes($row['last_name'].', '.$row['first_name']); ?></td>
-														<td><?php echo stripslashes($row['previous_reading']); ?></td>
-                                                        <td><?php echo stripslashes($row['reading']); ?></td>
-														<td><?php echo stripslashes($row['consumed']); ?></td>
-														<td><?php echo stripslashes($row['month_name']).' '.$row['year']; ?></td>
-														<td>
-														<?php 
-														//if(isValidMySQLDate($row['date']))
-														if($row['date']!='')
-														{
-															echo date('d M Y',strtotime($row['date']));
-														}else{
-															echo '';
-														}
-														 
-														?></td>
-														<!--<td>
-															<div class="visible-md visible-lg hidden-sm hidden-xs action-buttons">
-															    <a class="green" href="<?php echo ADMIN_URL;?>addmetercustomerreading/edit/<?php echo $row['id']; ?>"  title="Edit">
-																	<i class="fa fa-edit"></i>
-																</a>
-																<a class="red" href="JavaScript:if(confirm('Confirm Delete?')==true){window.location='<?php echo ADMIN_URL;?>addmetercustomerreading/delete/<?php echo $row['id'];?>';}" title="Delete">
-																			<i class="fa fa-remove"></i>
-																</a>
-															</div>
-																<div class="visible-xs visible-sm hidden-md hidden-lg">
-																	<div class="inline position-relative">
-																		<button class="btn btn-minier btn-yellow dropdown-toggle" data-toggle="dropdown">
-																			<i class="icon-caret-down icon-only bigger-120"></i>
-																		</button>
-																		
-																		<ul class="dropdown-menu dropdown-only-icon dropdown-yellow pull-right dropdown-caret dropdown-close">
-																			<li>
-																			    <a href="<?php echo ADMIN_URL;?>addmetercustomerreading/edit/<?php echo $row['id']; ?>" class="tooltip-success" data-rel="tooltip" title="Edit">
-																					<span class="green">
-																						<img src="<?php echo base_url();?>images/favicon/document-edit.gif">
-																					</span>
-																				</a>
-																				<a href="JavaScript:if(confirm('Confirm Delete?')==true){window.location='<?php echo ADMIN_URL;?>addmetercustomerreading/delete/<?php echo $row['id'];?>';}" class="tooltip-error" data-rel="tooltip" title="Delete">
-																					<span class="red">
-																						<img src="<?php echo base_url();?>images/favicon/delete.png">
-																					</span>
-																				</a>
-																			</li>
-																		</ul>
-																	</div>
-																</div></td>-->
-													</tr>
-														<?php $i++;} }?>	
+													<!-- Data will be loaded via AJAX -->
 												</tbody>
 											</table>
 											
@@ -259,12 +197,96 @@
 		</div>
 		<!-- END MAIN PANEL -->
 		
+		<!-- Loading Modal Overlay -->
+		<div id="datatable-loading-modal" style="display: none;">
+			<div class="loading-overlay">
+				<div class="loading-content">
+					<div class="loading-spinner">
+						<i class="fa fa-spinner fa-spin fa-4x"></i>
+					</div>
+					<div class="loading-text">
+						<h3>Loading data...</h3>
+						<p>Please wait while we fetch the records</p>
+					</div>
+				</div>
+			</div>
+		</div>
 
 		<?php include('footer.php');?>
 
 	</body>
 
 </html>
+<style>
+	/* Loading Modal Styles */
+	#datatable-loading-modal {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		z-index: 9999;
+		background-color: rgba(0, 0, 0, 0.7);
+		backdrop-filter: blur(2px);
+		display: none; /* Hidden by default, shown via JavaScript */
+	}
+	
+	.loading-overlay {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		width: 100%;
+		height: 100%;
+		min-height: 100vh;
+	}
+	
+	.loading-content {
+		background: #ffffff;
+		border-radius: 10px;
+		padding: 40px 60px;
+		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+		text-align: center;
+		min-width: 300px;
+		border: 3px solid #3498db;
+	}
+	
+	.loading-spinner {
+		margin-bottom: 20px;
+		color: #3498db;
+	}
+	
+	.loading-spinner .fa-spinner {
+		animation: spin 1s linear infinite;
+	}
+	
+	@keyframes spin {
+		0% { transform: rotate(0deg); }
+		100% { transform: rotate(360deg); }
+	}
+	
+	.loading-text h3 {
+		color: #2c3e50;
+		margin: 0 0 10px 0;
+		font-size: 24px;
+		font-weight: bold;
+	}
+	
+	.loading-text p {
+		color: #7f8c8d;
+		margin: 0;
+		font-size: 14px;
+	}
+	
+	/* Ensure table is visible but dimmed when loading */
+	.dataTables_wrapper {
+		position: relative;
+	}
+	
+	.dataTables_wrapper.processing {
+		opacity: 0.5;
+		pointer-events: none;
+	}
+</style>
 <!-- PAGE RELATED PLUGIN(S) -->
 		<script src="<?php echo base_url();?>js/plugin/datatables/jquery.dataTables.min.js"></script>
 		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.colVis.min.js"></script>
@@ -278,6 +300,10 @@
 		$(document).ready(function() {
 			
 			pageSetUp();
+			
+			// Show loading modal immediately on page load
+			$('#datatable-loading-modal').show();
+			$('.dataTables_wrapper').addClass('processing');
 			
 			/* // DOM Position key index //
 		
@@ -295,7 +321,7 @@
 			Also see: http://legacy.datatables.net/usage/features
 			*/	
 	
-			/* BASIC ;*/
+			/* BASIC - Server-side Processing */
 				var responsiveHelper_dt_basic = undefined;
 				var responsiveHelper_datatable_fixed_column = undefined;
 				var responsiveHelper_datatable_col_reorder = undefined;
@@ -305,14 +331,39 @@
 					tablet : 1024,
 					phone : 480
 				};
+				
+				var isInitialLoad = true;
 	
-				$('#dt_basic').dataTable({
+				var table = $('#dt_basic').DataTable({
+					"processing": true,
+					"serverSide": true,
+					"ajax": {
+						"url": "<?php echo ADMIN_URL;?>addmetercustomerreading/get_datatable_data",
+						"type": "POST"
+					},
+					"columns": [
+						{ "data": 0, "orderable": false },
+						{ "data": 1, "orderable": false },
+						{ "data": 2, "orderable": true },
+						{ "data": 3, "orderable": true },
+						{ "data": 4, "orderable": true },
+						{ "data": 5, "orderable": true },
+						{ "data": 6, "orderable": true },
+						{ "data": 7, "orderable": true },
+						{ "data": 8, "orderable": true },
+						{ "data": 9, "orderable": true }
+					],
+					"order": [[0, 'desc']],
+					"pageLength": 100,
+					"lengthMenu": [[10, 25, 50, 100], [10, 25, 50, 100]],
+					"searchDelay": 999999, // Disable auto-search on typing
 					"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-12 hidden-xs'l>r>"+
 						"t"+
 						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
 					"autoWidth" : true,
 			        "oLanguage": {
-					    "sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
+					    "sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>',
+						"sProcessing": ""
 					},
 					"preDrawCallback" : function() {
 						// Initialize the responsive datatables helper once.
@@ -325,6 +376,70 @@
 					},
 					"drawCallback" : function(oSettings) {
 						responsiveHelper_dt_basic.respond();
+						// Hide loading modal after first data load
+						if (isInitialLoad) {
+							isInitialLoad = false;
+							setTimeout(function() {
+								$('#datatable-loading-modal').fadeOut(200);
+								$('.dataTables_wrapper').removeClass('processing');
+							}, 300);
+						}
+					},
+					"initComplete": function(settings, json) {
+						setupCustomSearch();
+					}
+				});
+				
+				// Function to set up custom search handlers
+				function setupCustomSearch() {
+					var searchInput = $('.dataTables_filter input');
+					
+					if(searchInput.length > 0 && !searchInput.data('custom-search-bound')) {
+						// Remove DataTables default search event handlers
+						searchInput.off('keyup.DT input.DT');
+						
+						// Handle Enter key press
+						searchInput.on('keypress.custom', function(e) {
+							if (e.which === 13) { // Enter key
+								e.preventDefault();
+								var searchValue = $(this).val();
+								table.search(searchValue).draw();
+								return false;
+							}
+						});
+						
+						// Handle blur event (when input loses focus)
+						searchInput.on('blur.custom', function() {
+							var searchValue = $(this).val();
+							table.search(searchValue).draw();
+						});
+						
+						// Mark as bound to prevent duplicate bindings
+						searchInput.data('custom-search-bound', true);
+					}
+				}
+				
+				// Set up handlers after table is drawn (in case search input is recreated)
+				table.on('draw.dt', function() {
+					// Reset the bound flag so we can rebind if input is recreated
+					$('.dataTables_filter input').removeData('custom-search-bound');
+					setupCustomSearch();
+				});
+				
+				// Show/hide loading modal based on processing state
+				table.on('processing.dt', function(e, settings, processing) {
+					if (processing) {
+						// Only fade in if not already visible (to avoid flicker on initial load)
+						if (!$('#datatable-loading-modal').is(':visible')) {
+							$('#datatable-loading-modal').fadeIn(200);
+						}
+						$('.dataTables_wrapper').addClass('processing');
+					} else {
+						// Only fade out if it's not the initial load
+						if (!isInitialLoad) {
+							$('#datatable-loading-modal').fadeOut(200);
+							$('.dataTables_wrapper').removeClass('processing');
+						}
 					}
 				});
 	
@@ -448,18 +563,27 @@
 			$('#header_billingperiod').on('change', function(evt){
 				evt.preventDefault();
 				var header_billing_period = $(this).val();
-				//showSpinner();
+				// Show loading modal
+				$('#datatable-loading-modal').fadeIn(200);
+				$('.dataTables_wrapper').addClass('processing');
+				
 				$.ajax({
             		type : "POST",
 					url	: '<?php echo ADMIN_URL;?>addbillingperiod/updated_headerbillingperiod',
 					data	: "billing_period="+header_billing_period,
 					complete: function(data){
 						console.log(data);
-						//if(data=='success'){
+						// Reload the DataTable after billing period change
+						if(typeof table !== 'undefined') {
+							table.ajax.reload(null, false); // false = don't reset pagination
+						} else {
 							location.reload();
-							//window.location.replace(window.location.href);
-							//window.location.href = '<?php echo ADMIN_URL;?>addbillingperiod';
-						//}
+						}
+					},
+					error: function() {
+						// Hide loading modal on error
+						$('#datatable-loading-modal').fadeOut(200);
+						$('.dataTables_wrapper').removeClass('processing');
 					}
 				});
 

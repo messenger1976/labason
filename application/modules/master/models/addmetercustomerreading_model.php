@@ -40,6 +40,87 @@ class addmetercustomerreading_model extends CI_Model {
 		$result = $query->result_array();
 		return $result;
     }
+	
+	/** Get paginated records for server-side DataTables **/
+	public function get_paginated_records($start = 0, $length = 100, $search = '', $order_column = 'tbl_addcustomer_reading.id', $order_dir = 'desc', $billing_period = '') {
+		$this->db->select($this->table_name.".*,".$this->table_months.".*,".$this->table_customer_type.".*,".$this->table_customername.".*,".$this->table_name.".customer_id as customer_id,".$this->table_name.".id as id, 
+		(Select id  from ".$this->table_generate_customer." where ".$this->table_generate_customer.".insert_month_id = ".$this->table_name.".id) as id_generate");
+		$this->db->from($this->table_name);
+		$this->db->join($this->table_customername, $this->table_customername.".customer_id = ".$this->table_name.".customer_id", 'left');
+		$this->db->join($this->table_months, $this->table_name.".month = ".$this->table_months.".month_id", 'left');
+		$this->db->join($this->table_customer_type, $this->table_customername.".account_type = ".$this->table_customer_type.".cust_type_id", 'left');
+		
+		// Apply billing period filter
+		if($billing_period != ''){
+			$billperiod = explode(' ', $billing_period);
+			if(count($billperiod) == 2) {
+				$this->db->where($this->table_name.'.month', $billperiod[0]);
+				$this->db->where($this->table_name.'.year', $billperiod[1]);
+			}
+		}
+		
+		// Apply search filter
+		if(!empty($search)) {
+			$search_escaped = $this->db->escape_like_str($search);
+			$this->db->where("(
+				".$this->table_name.".refno LIKE '%".$search_escaped."%' OR
+				".$this->table_name.".customer_id LIKE '%".$search_escaped."%' OR
+				".$this->table_customername.".first_name LIKE '%".$search_escaped."%' OR
+				".$this->table_customername.".last_name LIKE '%".$search_escaped."%' OR
+				".$this->table_name.".previous_reading LIKE '%".$search_escaped."%' OR
+				".$this->table_name.".reading LIKE '%".$search_escaped."%' OR
+				".$this->table_name.".consumed LIKE '%".$search_escaped."%'
+			)", NULL, FALSE);
+		}
+		
+		// Apply ordering
+		$this->db->order_by($order_column, $order_dir);
+		
+		// Apply pagination
+		if($length > 0) {
+			$this->db->limit($length, $start);
+		}
+		
+		$query = $this->db->get();
+		return $query->result_array();
+	}
+	
+	/** Get total count of records (with optional filters) **/
+	public function get_total_count($search = '', $billing_period = '') {
+		$this->db->select('COUNT('.$this->table_name.'.id) as total');
+		$this->db->from($this->table_name);
+		$this->db->join($this->table_customername, $this->table_customername.".customer_id = ".$this->table_name.".customer_id", 'left');
+		$this->db->join($this->table_months, $this->table_name.".month = ".$this->table_months.".month_id", 'left');
+		$this->db->join($this->table_customer_type, $this->table_customername.".account_type = ".$this->table_customer_type.".cust_type_id", 'left');
+		
+		// Apply billing period filter
+		if($billing_period != ''){
+			$billperiod = explode(' ', $billing_period);
+			if(count($billperiod) == 2) {
+				$this->db->where($this->table_name.'.month', $billperiod[0]);
+				$this->db->where($this->table_name.'.year', $billperiod[1]);
+			}
+		}
+		
+		// Apply search filter
+		if(!empty($search)) {
+			$search_escaped = $this->db->escape_like_str($search);
+			$this->db->where("(
+				".$this->table_name.".refno LIKE '%".$search_escaped."%' OR
+				".$this->table_name.".customer_id LIKE '%".$search_escaped."%' OR
+				".$this->table_customername.".first_name LIKE '%".$search_escaped."%' OR
+				".$this->table_customername.".last_name LIKE '%".$search_escaped."%' OR
+				".$this->table_name.".previous_reading LIKE '%".$search_escaped."%' OR
+				".$this->table_name.".reading LIKE '%".$search_escaped."%' OR
+				".$this->table_name.".consumed LIKE '%".$search_escaped."%'
+			)", NULL, FALSE);
+		}
+		
+		$query = $this->db->get();
+		$result = $query->row_array();
+		return isset($result['total']) ? intval($result['total']) : 0;
+	}
+	
 	/** Get maintenance fee from global settings **/
 	public function get_maintenance_fee() {
 		$this->db->select('value');
