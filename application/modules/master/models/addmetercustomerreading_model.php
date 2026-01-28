@@ -486,6 +486,27 @@ class addmetercustomerreading_model extends CI_Model {
 		return $result;
 	}
 	
+	/**
+	 * Update Meter Reading
+	 * 
+	 * Function: update_meterreading
+	 * Last Modified: January 29, 2026
+	 * Modified By: AI Assistant
+	 * 
+	 * Purpose: Updates customer meter reading and recalculates billing amounts including:
+	 *          - Consumption calculation (current_reading - previous_reading)
+	 *          - Unit price based on consumption and classification
+	 *          - Senior citizen discount (5% if account_type == 3 AND consumption <= 30 cubic meters)
+	 *          - Franchise fee (2% of bill amount)
+	 *          - Penalty calculation (10% if no special privilege)
+	 * 
+	 * Key Changes (January 29, 2026):
+	 * - Added consumption limit check (30 cubic meters) for senior citizen discount eligibility
+	 * - Updated franchise fee calculation to respect senior citizen discount policy
+	 * 
+	 * @param array $data Contains: refno, customer_id, previous_reading, current_reading, billing_month, billing_year, reading_date
+	 * @return string JSON response with success message
+	 */
 	public function update_meterreading($data){
 		if(($data['refno']!='' && $data['refno']!=null) && ($data['customer_id']!='' && $data['customer_id']!=null) && ($data['current_reading']!='0' && $data['current_reading']!='' && $data['current_reading']!=null) && ($data['previous_reading']!='0' && $data['previous_reading']!='' && $data['previous_reading']!=null)){
 			$customerinfo = $this->get_customer_info($data['customer_id']);
@@ -494,7 +515,21 @@ class addmetercustomerreading_model extends CI_Model {
 			$consumed = $data['current_reading']-$data['previous_reading'];
 			$cubicmeter_rate = $this->get_unit_price($consumed,$customerinfo[0]['classification']); // Get unit price
 			$discount = 0;
-			if($customerinfo[0]['account_type']==3){
+			/**
+			 * Senior Citizen Discount Calculation
+			 * Date Modified: January 29, 2026
+			 * Modified By: AI Assistant
+			 * 
+			 * Purpose: Apply senior citizen discount (5%) only if the customer is a senior citizen (account_type == 3)
+			 *          AND the consumption (difference between current_reading and previous_reading) is 30 cubic meters or less.
+			 * 
+			 * Reason: Business rule requirement - Senior citizens cannot avail discount if their consumption exceeds 30 cubic meters.
+			 *         This prevents abuse of the senior citizen discount privilege for excessive water consumption.
+			 * 
+			 * Previous Logic: Discount was applied to all senior citizens regardless of consumption amount.
+			 * New Logic: Discount is only applied when consumption <= 30 cubic meters.
+			 */
+			if($customerinfo[0]['account_type']==3 && $consumed <= 30){
 				$discount = ($cubicmeter_rate->per_unit * 5)/100;
 			}
 			
@@ -502,10 +537,25 @@ class addmetercustomerreading_model extends CI_Model {
 			$maintenance_fee = $this->get_single_record_refno($data['refno'])->maintenance_fee;
 			$total_amount += $maintenance_fee;
 			
-			// Calculate franchise fee: 2% of bill amount, after SC deduction if SC
+			/**
+			 * Franchise Fee Calculation
+			 * Date Modified: January 29, 2026
+			 * Modified By: AI Assistant
+			 * 
+			 * Purpose: Calculate franchise fee (2% of bill amount) based on customer type and consumption.
+			 *          For senior citizens with consumption <= 30 cubic meters, franchise fee is calculated 
+			 *          after applying the senior citizen discount. For all other cases, franchise fee is 
+			 *          calculated on the full unit price.
+			 * 
+			 * Reason: To ensure franchise fee calculation is consistent with the senior citizen discount policy.
+			 *         When senior citizens exceed 30 cubic meters consumption, they are treated as regular 
+			 *         customers for franchise fee calculation purposes.
+			 * 
+			 * Business Rule: Franchise fee = 2% of bill amount (after SC discount if applicable)
+			 */
 			$franchise_fee_percentage = $this->get_franchise_fee_percentage();
-			if($customerinfo[0]['account_type']==3){
-				// SC: compute after SC deduction
+			if($customerinfo[0]['account_type']==3 && $consumed <= 30){
+				// SC: compute after SC deduction (only if consumption <= 30 cubic meters)
 				$bill_amount_for_franchise = $cubicmeter_rate->per_unit - $discount;
 			} else {
 				// Non-SC: compute on unit price
