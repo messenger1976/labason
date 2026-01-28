@@ -6,7 +6,13 @@
 	.setStatus{
 		cursor: pointer;
 	}
-	
+	/* Fix Select2 dropdown z-index in modals */
+	.select2-dropdown {
+		z-index: 9999 !important;
+	}
+	.select2-container--open {
+		z-index: 9999 !important;
+	}
 	
 
 </style>
@@ -735,7 +741,34 @@
 			});
 
 
-			$('#customer_id').select2();
+			// Function to initialize Select2 properly for modals
+			function initCustomerSelect2() {
+				// Destroy existing Select2 instance if it exists
+				if ($('#customer_id').hasClass('select2-hidden-accessible')) {
+					$('#customer_id').select2('destroy');
+				}
+				// Initialize Select2 with proper configuration for modals
+				$('#customer_id').select2({
+					dropdownParent: $('#myModal'),
+					width: '100%',
+					placeholder: 'Type text to search...'
+				});
+			}
+			
+			// Initialize Select2 when modal is shown to fix search input issue
+			$('#myModal').on('shown.bs.modal', function () {
+				// Only initialize if customer dropdown is visible
+				if ($('#customer_id_div').is(':visible')) {
+					initCustomerSelect2();
+				}
+			});
+			
+			// Initialize Select2 on page load (will be reinitialized when modal opens)
+			$('#customer_id').select2({
+				width: '100%',
+				placeholder: 'Type text to search...'
+			});
+			
 			$('#customer_id').on('change', function(evt){
 				evt.preventDefault();
 				var customer_id = $(this).val().split('==>')[0];
@@ -837,6 +870,9 @@
 
 				$('#customer_id_div_text').hide();
 				$('#billing_period_div_text').hide();
+				
+				// Reset customer dropdown
+				$('#customer_id').val('').trigger('change');
             });
 
 			$(document).on('click', '.btn_edit', function(evt){
