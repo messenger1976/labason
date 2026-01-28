@@ -140,7 +140,7 @@
 																<div class="col-lg-12 controls">
 																	<div class="form-group">
 																		<span class="input-group-addon"><i class="icon-user"></i><strong>Customer-Id : <span style="color:red;font-weight: bold;">*</span></strong></span>
-																		<input  class="form-control"  type="text" id="customer_id" name="customer_id" value="<?php echo $customer_id; ?>" readonly required/>
+																		<input  class="form-control"  type="text" id="customer_id" name="customer_id" value="<?php echo $customer_id; ?>" required/>
 																		<?php echo form_error('customer_id'); ?>
 																		<span id="val_roll_img"></span>
 																	</div>		
@@ -744,28 +744,29 @@ $("#email_id").on('change', function(){
 	
 });
 
-$("#mobile1").on('change', function(){
-	var mobile = $(this).val();
-	if(mobile != ''){
-		$("#val_mobile1_img").removeAttr("class").text('').append('<img title="loading" src="<?php echo base_url();?>images/favicon/loading.gif">');
-	    
-		$.ajax({
-			type: 'POST',
-			url: '<?php echo ADMIN_URL;?>addcustomer/check_customer_mobile_1/'+mobile,
-			data:{ mobile_1:mobile},
-			success: function(data){
-				if(data=='true'){
-					$("#val_mobile1_img").text('').attr("class","label label-warning").text("Mobile '"+ mobile +" ' already exists try another !");
-				    $("#mobile1").val('').focus();
-				}else{
-					$("#val_mobile1_img").removeAttr("class").text('').attr("class","label label-success").text( "Mobile  '"+ mobile +" ' available !" );
-                }
-			}
-			
-		});
-	}
-	
-});
+// Mobile1 validation removed per request
+// $("#mobile1").on('change', function(){
+// 	var mobile = $(this).val();
+// 	if(mobile != ''){
+// 		$("#val_mobile1_img").removeAttr("class").text('').append('<img title="loading" src="<?php echo base_url();?>images/favicon/loading.gif">');
+// 	    
+// 		$.ajax({
+// 			type: 'POST',
+// 			url: '<?php echo ADMIN_URL;?>addcustomer/check_customer_mobile_1/'+mobile,
+// 			data:{ mobile_1:mobile},
+// 			success: function(data){
+// 				if(data=='true'){
+// 					$("#val_mobile1_img").text('').attr("class","label label-warning").text("Mobile '"+ mobile +" ' already exists try another !");
+// 				    $("#mobile1").val('').focus();
+// 				}else{
+// 					$("#val_mobile1_img").removeAttr("class").text('').attr("class","label label-success").text( "Mobile  '"+ mobile +" ' available !" );
+//                 }
+// 			}
+// 			
+// 		});
+// 	}
+// 	
+// });
 $("#mobile2").on('change', function(){
 	var mobile = $(this).val();
 	if(mobile != ''){
@@ -789,100 +790,100 @@ $("#mobile2").on('change', function(){
 	
 });
 
-$("#classification").on('change', function(){
-	var class_id = $("#classification").val();
-	if(class_id===''){
-		class_id='000';
-	}
-	var zone_id = $("#zone").val();
-	if(zone_id===''){
-		zone_id='000';
-	}
-	
-	var member_stat = $(membership_status).val();	
-	if(member_stat == 1){
-		
-		$.ajax({
-			type: 'POST',
-			url: '<?php echo ADMIN_URL;?>addcustomer/get_customer_id_generate/'+class_id+'/'+zone_id,
-			data:{ class_id:class_id,
-				zone_id:zone_id
-			},
-			success: function(data){
-				$('#customer_id').val(data);
-				//console.log(data);
-			}
-			
-		});
-	}
-	
-});
+// Classification change event handler removed per request
+// $("#classification").on('change', function(){
+// 	var class_id = $("#classification").val();
+// 	if(class_id===''){
+// 		class_id='000';
+// 	}
+// 	var zone_id = $("#zone").val();
+// 	if(zone_id===''){
+// 		zone_id='000';
+// 	}
+// 	
+// 	var member_stat = $(membership_status).val();	
+// 	if(member_stat == 1){
+// 		
+// 		$.ajax({
+// 			type: 'POST',
+// 			url: '<?php echo ADMIN_URL;?>addcustomer/get_customer_id_generate/'+class_id+'/'+zone_id,
+// 			data:{ class_id:class_id,
+// 				zone_id:zone_id
+// 			},
+// 			success: function(data){
+// 				$('#customer_id').val(data);
+// 				//console.log(data);
+// 			}
+// 			
+// 		});
+// 	}
+// 	
+// });
 
-$("#zone").on('change', function(){
-	var class_id = $("#classification").val();
-	if(class_id===''){
-		class_id='000';
-	}
-	var zone_id = $("#zone").val();
-	if(zone_id===''){
-		zone_id='000';
-	}
-	var member_stat = $(membership_status).val();	
-	if(member_stat == 1){
-		
-		$.ajax({
-			type: 'POST',
-			url: '<?php echo ADMIN_URL;?>addcustomer/get_customer_id_generate/'+class_id+'/'+zone_id,
-			data:{ class_id:class_id,
-				zone_id:zone_id
-			},
-			success: function(data){
-				$('#customer_id').val(data);
-				//console.log(data);
-			}
-			
-		});
-	}
-	
-});
+// Zone change event handler removed per request
+// $("#zone").on('change', function(){
+// 	var class_id = $("#classification").val();
+// 	if(class_id===''){
+// 		class_id='000';
+// 	}
+// 	var zone_id = $("#zone").val();
+// 	if(zone_id===''){
+// 		zone_id='000';
+// 	}
+// 	var member_stat = $(membership_status).val();	
+// 	if(member_stat == 1){
+// 		
+// 		$.ajax({
+// 			type: 'POST',
+// 			url: '<?php echo ADMIN_URL;?>addcustomer/get_customer_id_generate/'+class_id+'/'+zone_id,
+// 			data:{ class_id:class_id,
+// 				zone_id:zone_id
+// 			},
+// 			success: function(data){
+// 				$('#customer_id').val(data);
+// 				//console.log(data);
+// 			}
+// 			
+// 		});
+// 	}
+// 	
+// });
 
-$("#membership_status").on('change', function(evt){
-	evt.preventDefault();
-	var member_stat = $(this).val();
-	$('#customer_id').val('');
-	if(member_stat==1){
-		$('#customer_id').prop('readonly',true)
-
-		var class_id = $("#classification").val();
-
-		if(class_id===''){
-			class_id='000';
-		}
-		var zone_id = $("#zone").val();
-		if(zone_id===''){
-			zone_id='000';
-		}
-		
-		
-			
-		$.ajax({
-			type: 'POST',
-			url: '<?php echo ADMIN_URL;?>addcustomer/get_customer_id_generate/'+class_id+'/'+zone_id,
-			data:{ class_id:class_id,
-				zone_id:zone_id
-			},
-			success: function(data){
-				$('#customer_id').val(data);
-				//console.log(data);
-			}
-			
-		});
-		
-	}else{
-		$('#customer_id').prop('readonly',false)
-	}
-	
-});
+// Membership status change handler - auto-generation removed per request
+// $("#membership_status").on('change', function(evt){
+// 	evt.preventDefault();
+// 	var member_stat = $(this).val();
+// 	$('#customer_id').val('');
+// 	if(member_stat==1){
+//
+// 		var class_id = $("#classification").val();
+//
+// 		if(class_id===''){
+// 			class_id='000';
+// 		}
+// 		var zone_id = $("#zone").val();
+// 		if(zone_id===''){
+// 			zone_id='000';
+// 		}
+// 		
+// 		
+// 			
+// 		$.ajax({
+// 			type: 'POST',
+// 			url: '<?php echo ADMIN_URL;?>addcustomer/get_customer_id_generate/'+class_id+'/'+zone_id,
+// 			data:{ class_id:class_id,
+// 				zone_id:zone_id
+// 			},
+// 			success: function(data){
+// 				$('#customer_id').val(data);
+// 				//console.log(data);
+// 			}
+// 			
+// 		});
+// 		
+// 	}
+// 	
+// });
 
 $('#special_priviledge').on('change', function(){
 	if($(this).is(':checked')){

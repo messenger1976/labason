@@ -959,6 +959,23 @@ class addcustomer extends CI_Controller {
 
 	public function get_customer_id_generate($class_id,$zone_id){
 		
+		// Debug logging temporarily disabled per request.
+		//log_message('debug', 'Customer ID Generate - Class ID: ' . $class_id . ', Zone ID: ' . $zone_id);
+		//if($zone_id && $zone_id != '000' && $zone_id != ''){
+		//	$this->load->database();
+		//	$this->db->where('id', $zone_id);
+		//	$zone_check = $this->db->get('tbl_zone')->row();
+		//	if($zone_check){
+		//		log_message('debug', 'Zone found - Zone Name: ' . (isset($zone_check->zone) ? $zone_check->zone : 'N/A') . ', Zone Code: ' . (isset($zone_check->zone_code) ? $zone_check->zone_code : 'NULL/EMPTY'));
+		//	} else {
+		//		log_message('debug', 'Zone not found for ID: ' . $zone_id);
+		//	}
+		//}
+		//$generated_id = customer_id_generate($class_id,$zone_id);
+		//log_message('debug', 'Generated Customer ID: ' . $generated_id);
+		//echo $generated_id;
+		
+		// Original behavior:
 		echo customer_id_generate($class_id,$zone_id);
 	}
 	/** Status Change Function **/

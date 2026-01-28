@@ -323,6 +323,101 @@
 				}
 			});
 		}
+		
+		// Classification change event handler - auto-generation removed per request
+		// if($("#classification_modal").length) {
+		// 	$("#classification_modal").off('change').on('change', function(){
+		// 		var class_id = $("#classification_modal").val();
+		// 		if(class_id===''){
+		// 			class_id='000';
+		// 		}
+		// 		var zone_id = $("#zone_modal").val();
+		// 		if(zone_id===''){
+		// 			zone_id='000';
+		// 		}
+		// 		
+		// 		var member_stat = $("#membership_status_modal").val();	
+		// 		if(member_stat == 1){
+		// 			
+		// 			$.ajax({
+		// 				type: 'POST',
+		// 				url: '<?php echo ADMIN_URL;?>addcustomer/get_customer_id_generate/'+class_id+'/'+zone_id,
+		// 				data:{ class_id:class_id,
+		// 					zone_id:zone_id
+		// 				},
+		// 				success: function(data){
+		// 					$('#customer_id_modal').val(data);
+		// 				}
+		// 				
+		// 			});
+		// 		}
+		// 		
+		// 	});
+		// }
+		
+		// Zone change event handler - auto-generation removed per request
+		// if($("#zone_modal").length) {
+		// 	$("#zone_modal").off('change').on('change', function(){
+		// 		var class_id = $("#classification_modal").val();
+		// 		if(class_id===''){
+		// 			class_id='000';
+		// 		}
+		// 		var zone_id = $("#zone_modal").val();
+		// 		if(zone_id===''){
+		// 			zone_id='000';
+		// 		}
+		// 		var member_stat = $("#membership_status_modal").val();	
+		// 		if(member_stat == 1){
+		// 			
+		// 			$.ajax({
+		// 				type: 'POST',
+		// 				url: '<?php echo ADMIN_URL;?>addcustomer/get_customer_id_generate/'+class_id+'/'+zone_id,
+		// 				data:{ class_id:class_id,
+		// 					zone_id:zone_id
+		// 				},
+		// 				success: function(data){
+		// 					$('#customer_id_modal').val(data);
+		// 				}
+		// 				
+		// 			});
+		// 		}
+		// 		
+		// 	});
+		// }
+		
+		// Membership status change event handler - auto-generation removed per request
+		// if($("#membership_status_modal").length) {
+		// 	$("#membership_status_modal").off('change').on('change', function(evt){
+		// 		evt.preventDefault();
+		// 		var member_stat = $(this).val();
+		// 		
+		// 		if(member_stat==1){
+		// 			var class_id = $("#classification_modal").val();
+		//
+		// 			if(class_id===''){
+		// 				class_id='000';
+		// 			}
+		// 			var zone_id = $("#zone_modal").val();
+		// 			if(zone_id===''){
+		// 				zone_id='000';
+		// 			}
+		// 				
+		// 			$.ajax({
+		// 				type: 'POST',
+		// 				url: '<?php echo ADMIN_URL;?>addcustomer/get_customer_id_generate/'+class_id+'/'+zone_id,
+		// 				data:{ class_id:class_id,
+		// 					zone_id:zone_id
+		// 				},
+		// 				success: function(data){
+		// 					$('#customer_id_modal').val(data);
+		// 				}
+		// 				
+		// 			});
+		// 			
+		// 		}
+		// 		
+		// 	});
+		// }
 	}, 100);
 })();
 
