@@ -274,6 +274,137 @@ class addmetercustomerreading extends CI_Controller {
 		
 
 	}
+	/**
+	 * AJAX endpoint to save a new meter reading (insert into tbl_addcustomer_reading)
+	 * Expects POST data from the Add Billing Period modal.
+	 */
+	public function save_add(){
+		// Only accept POST
+		if($_SERVER['REQUEST_METHOD'] !== 'POST'){
+			echo 'invalid_request';
+			return;
+		}
+
+		// Basic required fields
+		$customer_id = $this->input->post('customer_id');
+		$billing_period = $this->input->post('billing_period'); // expected format YYYY-MM
+		$previous_reading = $this->input->post('previous_reading');
+		$current_reading = $this->input->post('current_reading');
+
+		if(empty($customer_id) || empty($billing_period) || $current_reading === null || $current_reading === ''){
+			echo 'missing_fields';
+			return;
+		}
+
+		// parse billing period to year and month number (expected format YYYY-MM)
+		$bp_parts = explode('-', $billing_period);
+		if (count($bp_parts) == 2) {
+			$year = intval($bp_parts[0]);
+			$month_num = intval($bp_parts[1]); // numeric month (1-12)
+		} else {
+			// fallback to current month/year
+			$year = intval(date('Y'));
+			$month_num = intval(date('m'));
+		}
+
+		// Map numeric month to tbl_months.month_id (ensure it exists in months table)
+		$month_row = $this->db->select('month_id')->from('tbl_months')->where('month_id', $month_num)->get()->row();
+		if ($month_row && isset($month_row->month_id)) {
+			$month = intval($month_row->month_id);
+		} else {
+			// if not found, fallback to numeric month value
+			$month = $month_num;
+		}
+
+		// Prevent duplicate for same customer + billing period
+		$this->db->select('*');
+		$this->db->from($this->table_name);
+		$this->db->where('customer_id', $customer_id);
+		$this->db->where('month', $month);
+		$this->db->where('year', $year);
+		$exists = $this->db->get()->num_rows();
+		if($exists > 0){
+			echo 'exists';
+			return;
+		}
+
+		// Get and format numeric values
+		$consumed = $this->input->post('consumed') !== null ? $this->input->post('consumed') : (floatval($current_reading) - floatval($previous_reading));
+		$current_bill = $this->input->post('current_bill');
+		$sc_discount = $this->input->post('sc_discount');
+		$arrears = $this->input->post('arrears');
+		$total_amount = $this->input->post('total_amount');
+		$penalty = $this->input->post('penalty');
+		$maintenance_fee = $this->input->post('maintenance_fee');
+		$franchise_fee_percent = $this->input->post('franchise_fee_percent');
+		$franchise_fee_amount = $this->input->post('franchise_fee_amount');
+		$reading_date = $this->input->post('reading_date');
+		$customer_status = $this->input->post('customer_status');
+
+		// Generate new refno based on doc series
+		$this->db->where('doc_name', 'BILLING');
+		$billing_number = $this->db->get('tbl_doc_series_number')->row();
+		$doc_num = 1;
+		if($billing_number && isset($billing_number->doc_series_num)){
+			$doc_num = $billing_number->doc_series_num + 1;
+		}
+
+		// Use default maintenance fee if not provided
+		if(empty($maintenance_fee)){
+			$maintenance_fee = $this->my_model->get_maintenance_fee();
+		}
+
+		// If franchise values not provided, compute a fallback using model helper
+		if(empty($franchise_fee_percent) || empty($franchise_fee_amount)){
+			$customerinfo = $this->my_model->get_customer_info($customer_id);
+			$account_type = isset($customerinfo[0]['account_type']) ? $customerinfo[0]['account_type'] : 0;
+			$franchise_fee_percentage = $this->my_model->get_franchise_fee_percentage();
+			if($account_type == 3){
+				$bill_base = floatval(str_replace(',', '', $current_bill)) - floatval(str_replace(',', '', $sc_discount));
+			} else {
+				$bill_base = floatval(str_replace(',', '', $current_bill));
+			}
+			$franchise_fee_amount = number_format((($bill_base * $franchise_fee_percentage) / 100), 2, '.', '');
+			$franchise_fee_percent = number_format($franchise_fee_percentage, 2, '.', '');
+		} else {
+			$franchise_fee_amount = number_format(floatval(str_replace(',', '', $franchise_fee_amount)), 2, '.', '');
+			$franchise_fee_percent = number_format(floatval(str_replace(',', '', $franchise_fee_percent)), 2, '.', '');
+		}
+
+		$set_data = array(
+			'customer_id' => trim($customer_id),
+			'previous_reading' => $previous_reading,
+			'reading' => $current_reading,
+			'consumed' => $consumed,
+			'unit_price' => $current_bill,
+			'sc_discount' => $sc_discount,
+			'penalty' => $penalty,
+			'amount' => $total_amount,
+			'arrears' => $arrears,
+			'month' => $month,
+			'year' => $year,
+			'date' => $reading_date,
+			'userid' => $this->session->userdata('userid'),
+			'username' => $this->session->userdata('username'),
+			'refno' => $doc_num,
+			'maintenance_fee' => $maintenance_fee,
+			'franchise_fee_percent' => $franchise_fee_percent,
+			'franchise_fee_amount' => $franchise_fee_amount,
+			'customer_status' => $customer_status
+		);
+
+		$inserted = $this->db->insert($this->table_name, $set_data);
+		if($inserted){
+			// update doc series counter
+			$update_counter_array = array('doc_series_num' => $doc_num);
+			$this->db->where('doc_name', 'BILLING');
+			$this->db->update('tbl_doc_series_number', $update_counter_array);
+			echo 'success';
+		}else{
+			echo 'error';
+		}
+		return;
+	}
 	public function edit($id=''){
 		$data['msg'] ='';
 		$header['roleResponsible'] = $this->top_model->get_responsibilities();

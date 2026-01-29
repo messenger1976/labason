@@ -126,6 +126,7 @@
 													</div>
 												</div>
 												<input type="submit" class="btn btn-primary" name="search" id="search" value="search" style="margin-bottom: 5px;">
+												<input type="button" class="btn btn-success" name="add_billing_period" id="add_billing_period" value="Add" style="margin-bottom: 5px; background-color:green; display:none;">
 												<input type="hidden" name="record_id"	id="record_id"/>
 												<input type="hidden" name="customer_id"	id="customer_id"/>
 												<input type="hidden" name="cust_type_id" id="cust_type_id"/>
@@ -326,6 +327,165 @@
 					</div><!-- /.modal-dialog -->
 				</div><!-- /.modal -->
 
+				<!-- Add Billing Period Modal -->
+				<div class="modal fade" id="addBillingModal" tabindex="-1" role="dialog" aria-labelledby="addBillingLabel" aria-hidden="true">
+					<div class="modal-dialog">
+						<div class="modal-content">
+							<div class="modal-header">
+								<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+									&times;
+								</button>
+								<h4 class="modal-title" id="addBillingLabel">Add Billing Period</h4>
+								<button type="button" class="btn btn-xs btn-warning pull-right" id="btn_edit_modal" style="margin-right:10px;">Edit</button>
+							</div>
+							<div class="modal-body">
+								<form id="frm_add_billing" name="frm_add_billing" action="" method="POST" class="form-horizontal">
+									<div class="row">
+										<div class="col-lg-12 controls">
+											<div class="form-group"> 
+												<span class="input-group-addon"><strong>Billing Period : </strong></span>
+												<select id="billing_period_select" name="billing_period_select" class="form-control" required>
+													<option value="">-- Select Billing Period --</option>
+													<?php
+														// show last 6 months as default options
+														for ($i = 0; $i < 6; $i++) {
+															$val = date('Y-m', strtotime("-$i month"));
+															$label = date('F Y', strtotime("-$i month"));
+															echo "<option value=\"{$val}\">{$label}</option>";
+														}
+													?>
+												</select>
+												<?php echo form_error('billing_period_select'); ?>
+											</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-lg-12 controls">
+											<div class="form-group"> 
+												<span class="input-group-addon"><strong>Previous Reading : </strong></span>
+												<input class="form-control" type="text" id="previous_reading_add" name="previous_reading_add" value="" required />
+												<?php echo form_error('previous_reading_add'); ?>
+											</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-lg-12 controls">
+											<div class="form-group"> 
+												<span class="input-group-addon"><strong>Current Reading : <i style="color:red;">*</i></strong></span>
+												<input class="form-control" type="text" id="current_reading_add" name="current_reading_add" required />
+												<?php echo form_error('current_reading_add'); ?>
+											</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-lg-12 controls">
+											<div class="form-group"> 
+												<span class="input-group-addon"><strong>Consumed : </strong></span>
+												<input class="form-control" type="text" id="consumed_add" name="consumed_add" style="background-color:white;" required>
+												<?php echo form_error('consumed_add'); ?>
+											</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-lg-12 controls">
+											<div class="form-group"> 
+												<span class="input-group-addon"><strong>Current Bill : </strong></span>
+												<input class="form-control" type="text" id="current_bill_add" name="current_bill_add" style="background-color:white;" required>
+												<?php echo form_error('current_bill_add'); ?>
+											</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-lg-12 controls">
+											<div class="form-group"> 
+												<span class="input-group-addon"><strong>WM Maintenance Fee : </strong></span>
+												<input class="form-control" type="text" id="maintenance_fee_add" name="maintenance_fee_add" style="background-color:white;" required>
+												<?php echo form_error('maintenance_fee_add'); ?>
+											</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-lg-12 controls">
+											<div class="form-group"> 
+												<span class="input-group-addon"><strong>Franchise Tax % : </strong></span>
+												<input class="form-control" type="text" id="franchise_fee_percent_add" name="franchise_fee_percent_add" style="background-color:white;" required>
+												<?php echo form_error('franchise_fee_percent_add'); ?>
+											</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-lg-12 controls">
+											<div class="form-group"> 
+												<span class="input-group-addon"><strong>Franchise Tax Amount : </strong></span>
+												<input class="form-control" type="text" id="franchise_fee_amount_add" name="franchise_fee_amount_add" style="background-color:white;" readonly required>
+												<?php echo form_error('franchise_fee_amount_add'); ?>
+											</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-lg-12 controls">
+											<div class="form-group"> 
+												<span class="input-group-addon"><strong>SC Discount : </strong></span>
+												<input class="form-control" type="text" id="sc_discount_add" name="sc_discount_add" style="background-color:white;" required>
+												<?php echo form_error('sc_discount_add'); ?>
+											</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-lg-12 controls">
+											<div class="form-group"> 
+												<span class="input-group-addon"><strong>Arrears : </strong></span>
+												<input class="form-control" type="text" id="arrears_add" name="arrears_add" style="background-color:white;" required>
+												<?php echo form_error('arrears_add'); ?>
+											</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-lg-12 controls">
+											<div class="form-group"> 
+												<span class="input-group-addon"><strong>Amt before due date : </strong></span>
+												<input class="form-control" type="text" id="total_amount_add" name="total_amount_add" style="background-color:white;" required>
+												<?php echo form_error('total_amount_add'); ?>
+											</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-lg-12 controls">
+											<div class="form-group"> 
+												<span class="input-group-addon"><strong>Amt after due date : </strong></span>
+												<input class="form-control" type="text" id="penalty_add" name="penalty_add" style="background-color:white;" required>
+												<?php echo form_error('penalty_add'); ?>
+											</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-lg-12 controls">
+											<div class="form-group"> 
+												<span class="input-group-addon"><strong>Reading date : </strong></span>
+												<input class="form-control" type="text" id="reading_date_add" name="reading_date_add" style="background-color:white;" required>
+												<?php echo form_error('reading_date_add'); ?>
+											</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-lg-12 controls">
+											<div class="form-group"> 
+												<span class="input-group-addon"><strong>Customer Status : </strong></span>
+												<input class="form-control" type="text" id="customer_status_add" name="customer_status_add" style="background-color:white;" required>
+												<?php echo form_error('customer_status_add'); ?>
+											</div>
+										</div>
+									</div>
+								</form>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+								<button type="button" class="btn btn-primary" id="save_billing_period">Save</button>
+							</div>
+						</div><!-- /.modal-content -->
+					</div><!-- /.modal-dialog -->
+				</div><!-- /.modal -->
+
 
 
 		<?php include('footer.php');?>
@@ -340,6 +500,8 @@
 		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.tableTools.min.js"></script>
 		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.bootstrap.min.js"></script>
 		<script src="<?php echo base_url();?>js/plugin/datatable-responsive/datatables.responsive.min.js"></script>
+		<!-- SweetAlert2 for nicer alerts -->
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 		<script type="text/javascript">
 		
 		// DO NOT REMOVE : GLOBAL FUNCTIONS!
@@ -542,7 +704,14 @@ function fun_calendor(field){
 } 
 $(document).ready(function(){
 	$('#search_box_id').select2();
-    
+
+	// Hide the Add Billing Period button and the datatable whenever the selected search item changes
+	$('#search_box_id').on('change', function(){
+		$('#add_billing_period').hide();
+		// remove any existing datatable HTML and hide the container
+		$('#customerDiv').empty().hide();
+	});
+
 	$('#search').on('click', function(evt){
 		evt.preventDefault();
 		let search_text = $("#search_box_id").val();
@@ -559,9 +728,19 @@ $(document).ready(function(){
 			data	: "customer_id="+id,
 			complete: function(data){
 				var op = data.responseText.trim();
-				//alert(op);
-				$("#customerDiv").html(op);
+				// insert returned HTML into the container and ensure it's visible
+				$("#customerDiv").html(op).show();
+
+				// hide spinner now that content is inserted
 				hideSpinner();
+
+				// If the returned content contains any table element (datatable),
+				// show the Add Billing Period button; otherwise hide it.
+				if ($("#customerDiv").find("table").length > 0) {
+					$("#add_billing_period").show();
+				} else {
+					$("#add_billing_period").hide();
+				}
 			}
 		});
 	});
@@ -690,7 +869,11 @@ $('#btn_save').on('click', function(evt){
 			} 
 		},
 		error: function () {
-			alert("An error occurred while processing data.");
+			if (typeof Swal !== 'undefined') {
+				Swal.fire({icon:'error', title:'Error', text: 'An error occurred while processing data.'});
+			} else {
+				alert("An error occurred while processing data.");
+			}
 		}
 	});
 });
@@ -778,11 +961,19 @@ $('#current_reading').on('blur', function() {
 				var unit_price = $('#current_bill').val();
 				
 				$("#amount_pay").val(amount_formatted(0));
-				alert("No Amount per cubic meter.");
+				if (typeof Swal !== 'undefined') {
+					Swal.fire({icon:'warning', title:'No Amount', text: 'No Amount per cubic meter.'});
+				} else {
+					alert("No Amount per cubic meter.");
+				}
 			}
 		},
 		error: function () {
-			alert("An error occurred while processing data.");
+			if (typeof Swal !== 'undefined') {
+				Swal.fire({icon:'error', title:'Error', text: 'An error occurred while processing data.'});
+			} else {
+				alert("An error occurred while processing data.");
+			}
 		}
 	});
 
@@ -829,3 +1020,199 @@ function amount_formatted(amount){
 	return formatted;
 }
 </script>	
+<script type="text/javascript">
+$(document).ready(function(){
+	// show Add Billing Period modal when button clicked
+	$('#add_billing_period').on('click', function(){
+		// clear previous values and enable inputs
+		$('#frm_add_billing')[0].reset();
+		$('#frm_add_billing').find('input,select').prop('disabled', false);
+		$('#btn_edit_modal').text('Edit');
+		$('#addBillingModal').modal('show');
+	});
+
+	// Reusable calculation for Add modal (same rules as edit)
+	function recalculateFranchiseFeeAndTotalsAdd() {
+		var unit_price = parseFloat($('#current_bill_add').val().replace(/,/g, '') || 0);
+		var maintenance_fee = parseFloat($('#maintenance_fee_add').val().replace(/,/g, '') || 0);
+		var multiprice = unit_price;
+		var discount = parseFloat($('#sc_discount_add').val().replace(/,/g, '') || 0);
+		var consumed = parseFloat($('#consumed_add').val() || 0);
+		var franchise_fee_percentage = parseFloat($('#franchise_fee_percent_add').val().replace(/,/g, '') || 0);
+		if (!franchise_fee_percentage || franchise_fee_percentage <= 0) {
+			franchise_fee_percentage = <?php echo isset($franchise_fee_percentage) ? floatval($franchise_fee_percentage) : '2.00'; ?>;
+			$('#franchise_fee_percent_add').val(franchise_fee_percentage);
+		}
+		var bill_amount_for_franchise;
+		if($('#cust_type_id').val()==3 && consumed <= 30){
+			bill_amount_for_franchise = multiprice - discount;
+		} else {
+			bill_amount_for_franchise = multiprice;
+		}
+		var franchise_fee_amount = (bill_amount_for_franchise * franchise_fee_percentage) / 100;
+		var total_amount = multiprice - discount;
+		total_amount += parseFloat(maintenance_fee);
+		total_amount += parseFloat(franchise_fee_amount);
+		if($('#franchise_fee_amount_add').length) {
+			$('#franchise_fee_amount_add').val(amount_formatted(franchise_fee_amount));
+		}
+		if($('#total_amount_add').length) {
+			$('#total_amount_add').val(amount_formatted(total_amount));
+		}
+		var amount_total_penalty = 0;
+		if($('#special_priviledge').val()==='0'){
+			amount_total_penalty = (total_amount * 10)/100;
+			amount_total_penalty = amount_total_penalty + total_amount;
+		}else{
+			amount_total_penalty = total_amount;
+		}
+		if($('#penalty_add').length) {
+			$('#penalty_add').val(amount_formatted(amount_total_penalty));
+		}
+	}
+
+	// Bind events on Add modal fields to trigger recalculation
+	$('#sc_discount_add, #franchise_fee_percent_add, #maintenance_fee_add').on('blur', function(){
+		recalculateFranchiseFeeAndTotalsAdd();
+	});
+
+	// When current reading in Add modal loses focus, compute consumed and get unit price
+	$('#current_reading_add').on('blur', function() {
+		var current_meter = $(this).val();
+		var previous_reading = $('#previous_reading_add').val() || 0;
+		var differences = parseFloat(current_meter || 0) - parseFloat(previous_reading || 0);
+		$("#consumed_add").val(differences);
+
+		const formData = new FormData();
+		formData.append("cubic_meter_reading", differences);
+		formData.append("customer_id", $('#customer_id').val());
+
+		$.ajax({
+			url: '<?php echo ADMIN_URL;?>addmetercustomerreading/get_cubic_meter_price/',
+			type: 'POST',
+			data: formData,
+			contentType: false,
+			processData: false,
+			success: function (response) {
+				const result = JSON.parse(response);
+				if (result.per_unit) {
+					$('#current_bill_add').val(amount_formatted(result.per_unit));
+					if(!$('#franchise_fee_percent_add').val() || $('#franchise_fee_percent_add').val() == '') {
+						var default_franchise_fee_percentage = <?php echo isset($franchise_fee_percentage) ? floatval($franchise_fee_percentage) : '2.00'; ?>;
+						$('#franchise_fee_percent_add').val(default_franchise_fee_percentage);
+					}
+					var unit_price = parseFloat($('#current_bill_add').val().replace(/,/g, ''));
+					var multiprice = unit_price;
+					var consumed = parseFloat($('#consumed_add').val() || 0);
+					if($('#cust_type_id').val()==3 && consumed <= 30){
+						var discount = (multiprice * 5)/100;
+						$('#sc_discount_add').val(amount_formatted(discount));
+					} else {
+						$('#sc_discount_add').val(amount_formatted(0));
+					}
+					recalculateFranchiseFeeAndTotalsAdd();
+				} else {
+					$('#current_bill_add').val(amount_formatted(0));
+					$("#amount_pay").val(amount_formatted(0));
+					if (typeof Swal !== 'undefined') {
+						Swal.fire({icon:'warning', title:'No Amount', text: 'No Amount per cubic meter.'});
+					} else {
+						alert("No Amount per cubic meter.");
+					}
+				}
+			},
+			error: function () {
+				if (typeof Swal !== 'undefined') {
+					Swal.fire({icon:'error', title:'Error', text: 'An error occurred while processing data.'});
+				} else {
+					alert("An error occurred while processing data.");
+				}
+			}
+		});
+	});
+
+	// Save button handler - insert into tbl_addcustomer_reading via controller
+	$('#save_billing_period').on('click', function(){
+		// Validate required inputs first (reuse earlier check)
+		var missingField = null;
+		$('#frm_add_billing').find('[required]').each(function(){
+			var $el = $(this);
+			var val = $el.val();
+			if (val === null || $.trim(val) === '') {
+				missingField = $el;
+				return false;
+			}
+		});
+		if (missingField) {
+			var msg = 'Please fill the "' + (missingField.prev('.input-group-addon').text().trim() || missingField.attr('name')) + '" field.';
+			if (typeof Swal !== 'undefined') {
+				Swal.fire({icon:'warning', title:'Validation', text: msg});
+			} else {
+				alert(msg);
+			}
+			missingField.focus();
+			return;
+		}
+
+		// Prepare FormData for insertion
+		const data = new FormData();
+		data.append('customer_id', $('#customer_id').val());
+		data.append('billing_period', $('#billing_period_select').val());
+		data.append('previous_reading', $('#previous_reading_add').val());
+		data.append('current_reading', $('#current_reading_add').val());
+		data.append('consumed', $('#consumed_add').val());
+		data.append('current_bill', $('#current_bill_add').val());
+		data.append('sc_discount', $('#sc_discount_add').val());
+		data.append('arrears', $('#arrears_add').val());
+		data.append('total_amount', $('#total_amount_add').val());
+		data.append('penalty', $('#penalty_add').val());
+		data.append('maintenance_fee', $('#maintenance_fee_add').val());
+		data.append('franchise_fee_percent', $('#franchise_fee_percent_add').val());
+		data.append('franchise_fee_amount', $('#franchise_fee_amount_add').val());
+		data.append('reading_date', $('#reading_date_add').val());
+		data.append('customer_status', $('#customer_status_add').val());
+		data.append('add', 'add');
+
+		$.ajax({
+			url: '<?php echo ADMIN_URL;?>addmetercustomerreading/save_add',
+			type: 'POST',
+			data: data,
+			contentType: false,
+			processData: false,
+			success: function(response){
+				// expecting 'success' on successful insert
+				if (response && response.trim() === 'success') {
+					if (typeof Swal !== 'undefined') {
+						Swal.fire({icon:'success', title:'Saved', text: 'Billing period successfully added.'});
+					}
+					$('#addBillingModal').modal('hide');
+					$('#search').trigger('click');
+				} else {
+					var msg = response || 'An error occurred while saving.';
+					if (typeof Swal !== 'undefined') {
+						Swal.fire({icon:'error', title:'Error', text: msg});
+					} else {
+						alert(msg);
+					}
+				}
+			},
+			error: function(){
+				if (typeof Swal !== 'undefined') {
+					Swal.fire({icon:'error', title:'Error', text: 'An error occurred while processing data.'});
+				} else {
+					alert("An error occurred while processing data.");
+				}
+			}
+		});
+	});
+
+	// Optional Edit button inside modal (toggles editable state)
+	$('#btn_edit_modal').on('click', function(){
+		// toggle disabled state of inputs
+		var inputs = $('#frm_add_billing').find('input, select');
+		var disabled = inputs.prop('disabled');
+		inputs.prop('disabled', !disabled);
+		$(this).text(disabled ? 'Edit' : 'Lock');
+	});
+});
+</script>
