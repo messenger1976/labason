@@ -355,7 +355,7 @@
 					},
 					"columns": [
 						{ "data": 0, "orderable": false },
-						{ "data": 1, "orderable": false },
+						{ "data": 1, "orderable": true },
 						{ "data": 2, "orderable": true },
 						{ "data": 3, "orderable": true },
 						{ "data": 4, "orderable": true },
@@ -366,7 +366,7 @@
 						{ "data": 9, "orderable": true },
 						{ "data": 10, "orderable": false }
 					],
-					"order": [[9, 'desc']],
+					"order": [[1, 'desc']],
 					"pageLength": 10,
 					"lengthMenu": [[10, 25, 50, 100], [10, 25, 50, 100]],
 					"searchDelay": 999999, // Disable auto-search on typing

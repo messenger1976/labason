@@ -188,6 +188,7 @@
 						<td></td>
 						<td></td>
 						<td></td>
+						<td></td>
 						<th align="right"><input type="text" name="checkbox_cal" id="checkbox_cal" value = "0" style="text-align:right;float:right;" readonly></th>
 					    <th><input class="total_pay" id="total_pay"  type="button" name="total_pay" value="Total Pay" ></th>
 						
