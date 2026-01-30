@@ -73,8 +73,18 @@ class addmetercustomerreading extends CI_Controller {
 				$search = trim($search_post['value']);
 			}
 
-			// Billing period filter: get from session
-			$billing_period = isset($_SESSION['current_billingperiod']) ? $_SESSION['current_billingperiod'] : '';
+			// Billing period filter - from POST (dropdown) or $_SESSION - filters SQL for performance
+			$billing_period = trim($this->input->post('billing_period') ?: '');
+			if($billing_period === '' && isset($_SESSION['current_billingperiod']) && $_SESSION['current_billingperiod'] !== '') {
+				$billing_period = trim($_SESSION['current_billingperiod']);
+			}
+			// Fallback: use current billing period when both empty
+			if($billing_period === '') {
+				$current_bp = $this->comm_model->get_billingperiod_record();
+				if(!empty($current_bp) && isset($current_bp[0]['bp_period_month']) && isset($current_bp[0]['bp_period_year'])) {
+					$billing_period = $current_bp[0]['bp_period_month'].' '.$current_bp[0]['bp_period_year'];
+				}
+			}
 			
 			// Safely get order parameters
 			$order_post = $this->input->post('order');

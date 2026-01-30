@@ -50,9 +50,9 @@ class addmetercustomerreading_model extends CI_Model {
 		$this->db->join($this->table_months, $this->table_name.".month = ".$this->table_months.".month_id", 'left');
 		$this->db->join($this->table_customer_type, $this->table_customername.".account_type = ".$this->table_customer_type.".cust_type_id", 'left');
 		
-		// Apply billing period filter
+		// Apply billing period filter (from $_SESSION['current_billingperiod']) - reduces rows scanned for performance
 		if($billing_period != ''){
-			$billperiod = explode(' ', $billing_period);
+			$billperiod = explode(' ', trim($billing_period));
 			if(count($billperiod) == 2) {
 				$this->db->where($this->table_name.'.month', $billperiod[0]);
 				$this->db->where($this->table_name.'.year', $billperiod[1]);
@@ -93,9 +93,9 @@ class addmetercustomerreading_model extends CI_Model {
 		$this->db->join($this->table_months, $this->table_name.".month = ".$this->table_months.".month_id", 'left');
 		$this->db->join($this->table_customer_type, $this->table_customername.".account_type = ".$this->table_customer_type.".cust_type_id", 'left');
 		
-		// Apply billing period filter
+		// Apply billing period filter (from $_SESSION['current_billingperiod']) - reduces rows scanned for performance
 		if($billing_period != ''){
-			$billperiod = explode(' ', $billing_period);
+			$billperiod = explode(' ', trim($billing_period));
 			if(count($billperiod) == 2) {
 				$this->db->where($this->table_name.'.month', $billperiod[0]);
 				$this->db->where($this->table_name.'.year', $billperiod[1]);

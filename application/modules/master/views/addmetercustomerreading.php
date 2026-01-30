@@ -339,7 +339,12 @@
 					"serverSide": true,
 					"ajax": {
 						"url": "<?php echo ADMIN_URL;?>addmetercustomerreading/get_datatable_data",
-						"type": "POST"
+						"type": "POST",
+						"data": function(d) {
+							// Pass selected billing period with every request for filtering
+							d.billing_period = $('#header_billingperiod').val() || '';
+							return d;
+						}
 					},
 					"columns": [
 						{ "data": 0, "orderable": false },
