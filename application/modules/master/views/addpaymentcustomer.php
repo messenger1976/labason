@@ -366,7 +366,7 @@
 						{ "data": 9, "orderable": true },
 						{ "data": 10, "orderable": false }
 					],
-					"order": [[2, 'desc']],
+					"order": [[9, 'desc']],
 					"pageLength": 10,
 					"lengthMenu": [[10, 25, 50, 100], [10, 25, 50, 100]],
 					"searchDelay": 999999, // Disable auto-search on typing
