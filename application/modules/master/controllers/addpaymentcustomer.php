@@ -89,7 +89,7 @@ class addpaymentcustomer extends CI_Controller {
 			
 			// Safely get order parameters
 			$order_post = $this->input->post('order');
-			$order_column_index = 9; // Default to Date Paid column
+			$order_column_index = 1; // Default to id column (tbl_addmetercustomer.id) desc
 			$order_dir = 'desc';
 			if(is_array($order_post) && isset($order_post[0]) && is_array($order_post[0])) {
 				if(isset($order_post[0]['column'])) {
