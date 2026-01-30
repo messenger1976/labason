@@ -871,7 +871,7 @@ class addpaymentcustomer_model extends CI_Model {
 		$this->db->from($this->table_name);
 		$this->db->join($this->table_customername, $this->table_name.".customer_id = ".$this->table_customername.".customer_id", 'left');
 		
-		// Apply billing period filter
+		// Apply billing period filter (from $_SESSION['current_billingperiod']) - reduces rows scanned for performance
 		if($billing_period != ''){
 			$billperiod = explode(' ',$billing_period);
 			$this->db->where($this->table_name.'.month',$billperiod[0]);
@@ -911,7 +911,7 @@ class addpaymentcustomer_model extends CI_Model {
 		$this->db->from($this->table_name);
 		$this->db->join($this->table_customername, $this->table_name.".customer_id = ".$this->table_customername.".customer_id", 'left');
 		
-		// Apply billing period filter
+		// Apply billing period filter (from $_SESSION['current_billingperiod']) - reduces rows scanned for performance
 		if($billing_period != ''){
 			$billperiod = explode(' ',$billing_period);
 			$this->db->where($this->table_name.'.month',$billperiod[0]);

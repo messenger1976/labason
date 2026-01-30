@@ -75,10 +75,16 @@ class addpaymentcustomer extends CI_Controller {
 				$search = trim($search_post['value']);
 			}
 
-			// Billing period filter
+			// Billing period filter (always apply to speed up query - filter by session or default current period)
 			$billing_period = '';
 			if(isset($_SESSION['current_billingperiod']) && $_SESSION['current_billingperiod'] != '') {
 				$billing_period = $_SESSION['current_billingperiod'];
+			}
+			if($billing_period == '') {
+				$current_bp = $this->comm_model->get_billingperiod_record();
+				if(!empty($current_bp) && isset($current_bp[0])) {
+					$billing_period = $current_bp[0]['bp_period_month'].' '.$current_bp[0]['bp_period_year'];
+				}
 			}
 			
 			// Safely get order parameters
