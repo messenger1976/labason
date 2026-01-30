@@ -633,7 +633,7 @@ $(document).on('click','.print_button_new1',function(e){
 	if(customer != '' && month != '' && year != ''){
 				var url = '<?php echo ADMIN_URL;?>addpaymentcustomer/monthly_receipt_ver1/'+customer+'/'+month+'/'+year+'/'+invoice_id;
 				//var url = '<?php echo ADMIN_URL;?>addpaymentcustomer/monthlyreceipt/'+customer;
-				window.open( url , "popupWindow", "width=1024,height=600,scrollbars=yes");	
+				window.open( url , "popupWindow", "width=1800,height=600,scrollbars=yes");	
 	}
 	
 });

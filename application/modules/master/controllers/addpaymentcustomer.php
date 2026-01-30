@@ -1251,320 +1251,563 @@ public function monthly_receipt_ver1($customer,$month,$year,$invoice_id) {
 	$html = <<<EOD
 	<!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Service Invoice with Two Receipts</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Official Water Bill Receipt</title>
     <style>
-        /* General Body Styles */
+      :root {
+        --blue: #2f4f9f;
+        --red: #c62828;
+        --line: #2f4f9f;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 24px;
+        font-family: Arial, Helvetica, sans-serif;
+        color: var(--blue);
+        background: #fff;
+      }
+
+      .sheet {
+        display: flex;
+        gap: 24px;
+        align-items: stretch;
+      }
+
+      .receipt {
+        flex: 1;
+        border: 2px solid var(--line);
+        padding: 14px 16px 18px;
+        min-height: 760px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      .header {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 6px;
+      }
+
+      .logo {
+        width: 64px;
+        height: 64px;
+        border: 2px solid var(--line);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        font-size: 9px;
+        font-weight: bold;
+        line-height: 1.1;
+        padding: 4px;
+		
+      }
+
+      .header-text {
+        flex: 1;
+        text-align: center;
+        font-weight: bold;
+        line-height: 1.2;
+      }
+
+      .header-text .title {
+        font-size: 18px;
+        letter-spacing: 1px;
+      }
+
+      .header-text .sub {
+        font-size: 12px;
+        font-weight: normal;
+      }
+
+      .receipt-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin: 8px 0 6px;
+        font-weight: bold;
+      }
+
+      .receipt-meta .label {
+        font-size: 14px;
+      }
+
+      .receipt-meta .number {
+        font-size: 22px;
+        color: var(--red);
+        letter-spacing: 1px;
+      }
+
+      .box {
+        border: 2px solid var(--line);
+        margin-top: 8px;
+      }
+
+      .box-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 8px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .box-row:last-child {
+        border-bottom: none;
+      }
+
+      .box-label {
+        min-width: 120px;
+        font-size: 12px;
+        text-transform: uppercase;
+      }
+
+      .fill-line {
+        flex: 1;
+        /*border-bottom: 1px solid var(--line);*/
+        height: 12px;
+      }
+
+      .amounts {
+        display: flex;
+        gap: 24px;
+        margin-top: 10px;
+      }
+
+      .amount-col {
+        flex: 1;
+      }
+
+      .amount-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 6px 0;
+        font-size: 12px;
+        text-transform: uppercase;
+      }
+
+      .amount-row .line {
+        flex: 1;
+        border-bottom: 1px solid var(--line);
+        height: 12px;
+      }
+
+      .total-row {
+        font-weight: bold;
+      }
+
+      .notice-row {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        margin-top: 8px;
+      }
+
+      .notice-box {
+        border: 2px solid var(--line);
+        padding: 6px 10px;
+        font-size: 10px;
+        text-align: center;
+        max-width: 210px;
+        line-height: 1.3;
+      }
+
+      .signature-box {
+        border: 2px solid var(--line);
+        display: grid;
+        grid-template-rows: repeat(3, 1fr);
+        width: 260px;
+      }
+
+      .signature-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .signature-row:last-child {
+        border-bottom: none;
+      }
+
+      .signature-label {
+        padding: 4px 6px;
+        font-size: 11px;
+        text-transform: uppercase;
+        border-right: 1px solid var(--line);
+      }
+
+      .signature-line {
+        border-left: none;
+      }
+
+      .received-payment {
+        margin-top: 12px;
+        font-size: 12px;
+        text-transform: uppercase;
+      }
+
+      .signature-lines {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 12px;
+        font-size: 10px;
+      }
+
+      .signature-line-block {
+        width: 44%;
+        text-align: center;
+      }
+
+      .signature-line-block .line {
+        border-bottom: 1px solid var(--line);
+        height: 12px;
+        margin-bottom: 2px;
+      }
+
+      .footer {
+        font-size: 9px;
+        line-height: 1.3;
+        margin-top: 10px;
+      }
+
+      .footer-top {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .copy-label {
+        text-align: right;
+        font-weight: bold;
+        margin-top: 4px;
+        font-size: 10px;
+        text-transform: uppercase;
+      }
+
+      @media print {
         body {
-            font-family: Arial, sans-serif;
-            margin: 0px; /* Adjust as needed for overall page margins */
-            display: flex;
-            justify-content: space-around;
-            gap: 0px;
-            width: 8.7in;
-		    height: 263.5mm; 
+          padding: 0;
         }
 
-        /* Individual Receipt Column Styles */
-        .receipt-column {
-            width: 50%; /* Each column takes roughly half the page width */
-            border: 1px solid #ccc;
-            padding: 15px;
-            box-sizing: border-box;
-            background-color: #f9f9f9;
+        .sheet {
+          gap: 12px;
         }
-
-        /* Header Styling */
-        .receipt-header {
-            text-align: left;
-            margin-bottom: 15px;
-            line-height: .4em;
-        }
-        .receipt-header h2 {
-            margin: 0;
-            color: #333;
-        }
-
-        /* Info Section Styling */
-        .receipt-info {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            font-size: 0.9em;
-        }
-        .receipt-info div {
-            flex: 1;
-        }
-        .receipt-info .align-right {
-            text-align: right;
-        }
-
-        /* Item Table Styling */
-        .item-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 15px;
-        }
-        .item-table th, .item-table td {
-            border: 0px solid #eee;
-            /*padding: 8px;*/
-            text-align: left;
-            font-size: 0.9em;
-        }
-        .item-table th {
-            /*background-color: #e2e2e2;*/
-        }
-
-        /* Total Section Styling */
-        .total-section {
-            text-align: right;
-            margin-top: 10px;
-            font-size: 1em;
-        }
-        .total-section p {
-            margin: 5px 0;
-        }
-        .total-section .grand-total {
-            /*font-weight: bold;
-            font-size: 1.1em;*/
-            color: #000;
-        }
-
-        /* Notes Section Styling */
-        .notes-section {
-            margin-top: 20px;
-            font-size: 0.8em;
-            color: #555;
-            border-top: 1px dashed #ccc;
-            padding-top: 10px;
-        }
-        .amount-words{
-                line-height: 1em;
-                padding-left: .2in;
-                height: 2em;
-                margin-bottom: .8em;
-            }
-
-        /* Print-Specific Styles for Letter Paper */
-        @media print {
-            /* Set the page size to Letter */
-            @page {
-                size: Letter;  /*Specifies standard Letter paper (8.5in x 11in) */
-                margin: 0in; /* Default margins for the printed page */
-                width: 8.5in;
-		        height: 263.5mm; 
-                /* Define the bleed area */
-                
-            }
-
-            body {
-                margin: .7in -0.5in 0in 0in; /* Remove body margin for print to let @page margin control */
-                flex-direction: row;
-                justify-content: space-between;
-                gap: 0;
-                width: 8.5in;
-		        height: 263.5mm; 
-            }
-            .receipt-column {
-                border: none;
-                padding: 0.2in;
-                width: 50%; /* Slightly adjust width for print to fill space better */
-                page-break-inside: avoid;
-                font-size: 0.75em; /* Slightly smaller font for more content if space is tight */
-            }
-            .receipt-header {
-                text-align: left;
-                line-height: .4em;
-                padding-left: .85in;
-                
-            }
-
-            .amount-words{
-                font-family: 'Courier New', Courier, monospace;
-                line-height: 1em;
-                padding-left: .2in;
-                height: 3em;
-                margin-bottom: .8em;
-                letter-spacing: -0.5px;
-            }
-            .item-table {
-                width: 100%;
-                border: 0px solid black;
-                margin-bottom: 15px;
-            }
-            /* Optional: Adjust font sizes slightly for print if needed */
-            .item-table th, .item-table td, .notes-section, .receipt-info {
-                font-family: 'Courier New', Courier, monospace;
-                letter-spacing: -0.5px;
-                /*font-size: 0.79em;  Slightly smaller font for more content if space is tight */
-            }
-            .total-section {
-                position: absolute;
-                top: 2.4in;
-                font-weight: normal;
-                font-family: 'Courier New', Courier, monospace;
-                font-size: 1em;
-                color: #000;
-                line-height:.5em;
-                letter-spacing: -0.5px;
-				width: .65in;
-            }
-            .remark-section {
-                position: absolute;
-                top: 2.4in;
-                font-weight: normal;
-                font-family: 'Courier New', Courier, monospace;
-                font-size: 1em;
-                color: #000;
-                line-height:1em;
-                letter-spacing: -0.5px;
-            }
-            .date-section {
-                position: absolute;
-                top: 3.3in;
-                font-weight: normal;
-                font-family: 'Courier New', Courier, monospace;
-                font-size: 1em;
-                color: #000;
-                line-height:1em;
-                letter-spacing: -0.5px;
-            }
-            .cashier-section {
-                position: absolute;
-                top: 3.3in;
-                font-weight: normal;
-                font-family: 'Courier New', Courier, monospace;
-                font-size: 1em;
-                color: #000;
-                line-height:1em;
-                letter-spacing: -0.5px;
-            }
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
+    <div class="sheet">
+      <section class="receipt">
+        <div>
+          <div class="header">
+            <div class="logo">
+              <img src="{$base_url}/img/pmroxas-logo.png" alt="Logo" style="width: 100%; height: 100%;">
+            </div>
+            <div class="header-text">
+              <div class="title">LABASON WATER DISTRICT</div>
+              <div class="sub">Brgy. Imelda, Labason, Zamboanga del Norte, Philippines</div>
+              <div class="sub">NON-VAT REG. TIN 269-102-147-000</div>
+            </div>
+          </div>
 
-    <div class="receipt-column">
-        <div class="receipt-header">
-            <p>$first_name $middle_name $last_name</p>
-            <p>$address</p>
-            <p>$customer_id</p>
-        </div>
-        <div class="amount-words">
-            <p>$amountinwords</p>
-        </div>
-        
+          <div class="receipt-meta">
+            <div class="label">OFFICIAL WATER BILL RECEIPT</div>
+            <div class="label">No. <span class="number">$or_number</span></div>
+          </div>
 
-        <table class="item-table">
-            $detailspayment
+          <div class="box">
+            <div class="box-row">
+              <div class="box-label">RECEIVED FROM :</div>
+              <div class="fill-line">$first_name $middle_name $last_name</div>
+            </div>
+            <div class="box-row">
+              <div class="box-label">ADDRESS :</div>
+              <div class="fill-line">$address</div>
+            </div>
+            <div class="box-row">
+              <div class="box-label">ACCOUNT NO. :</div>
+              <div class="fill-line">$customer_id</div>
+            </div>
+          </div>
 
-            <!--<tr>
-                    <td style="width: 75%;">March 2025</td>
-                    <td style="width: 5%;">15</td>
-                    
-                    <td style="text-align: right;">100.00</td>
-                </tr>
-                <tr>
-                    <td>April 2025</td>
-                    <td>1</td>
-                    
-                    <td style="text-align: right;">150.00</td>
-                </tr>
-                <tr>
-                    <td>May 2025</td>
-                    <td>1</td>
-                    
-                    <td style="text-align: right;">150.00</td>
-                </tr>-->
-        </table>
+          <div class="box">
+            <div class="box-row">
+              <div class="box-label">AMOUNT IN WORDS :</div>
+              <div class="fill-line">$amountinwords</div>
+            </div>
+          </div>
 
-        <div class="total-section" style="left:3.4in;">
-            <p>0.00</p>
-            <p>$leaking_amount</p>
-            <p>$vat_amount</p>
-            <p class="grand-total">$grand_total</p>
+          <div class="amounts">
+            <div class="amount-col">
+              <div class="amount-row">
+                CURRENT AMOUNT :
+                <span class="line">$amount</span>
+              </div>
+              <div class="amount-row">
+                ARREARS :
+                <span class="line">$arrears</span>
+              </div>
+              <div class="amount-row">
+                SURCHARGE :
+                <span class="line"></span>
+              </div>
+              <div class="amount-row">
+                SC/PWD DISCOUNT :
+                <span class="line">$sc_discount</span>
+              </div>
+              <div class="amount-row total-row">
+                TOTAL AMOUNT :
+                <span class="line">$grand_total</span>
+              </div>
+            </div>
+            <div class="amount-col">
+              <div class="amount-row">
+                AMOUNT TENDERED :
+                <span class="line">$pay_amount</span>
+              </div>
+              <div class="amount-row">
+                AMOUNT PAID :
+                <span class="line">$total</span>
+              </div>
+              <div class="amount-row">
+                CHANGE :
+                <span class="line">$balance</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="notice-row">
+            <div class="notice-box">
+              THIS RECEIPT IS NOT VALID UNLESS<br />
+              SIGNED BY OUR TELLER
+            </div>
+            <div class="signature-box">
+              <div class="signature-row">
+                <div class="signature-label">SR. CITIZEN TIN</div>
+                <div class="signature-line"></div>
+              </div>
+              <div class="signature-row">
+                <div class="signature-label">OSCA/PWD ID NO.</div>
+                <div class="signature-line"></div>
+              </div>
+              <div class="signature-row">
+                <div class="signature-label">CARDHOLDER'S SIG</div>
+                <div class="signature-line"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="received-payment">RECEIVED PAYMENT</div>
+          <div class="signature-lines">
+            <div class="signature-line-block">
+              <div class="line">$datefor</div>
+              DATE
+            </div>
+            <div class="signature-line-block">
+              <div class="line"></div>
+              TELLER
+            </div>
+          </div>
         </div>
 
-        <div class="remark-section">
-            <!--<p>Note:<br/>
-                Penalty=50/SC=57/Leaking=567 - May 2025
+        <div class="footer">
+          <div class="footer-top">
+            <div>
+              20 Boxes (1x) 0180001-0300000
+              <br />
+              BIR Authority to Print No. 091AU202200000211
+              <br />
+              Date Issued: 06-27-2022 Valid until: 06-26-2027
+            </div>
+            <div>
+              Edwin S. Villaver - Optima Typographics
+              <br />
+              Near Gaisano Grand Sitio Ibaba Basak, Lapu-Lapu City
+              <br />
+              Tel. No. 505 2662 Telefax No. 232 2887
+              <br />
+              TIN: 149-755-518-000 VAT
+              <br />
+              Printer's Accreditation No. 080MP201900000037
+              <br />
+              Date Issued 09 May 2019
+              <br />
+              LOOSELEAF Permit No. L00R-091-03052018-00002
+            </div>
+          </div>
+          <div class="copy-label">OFFICE COPY</div>
+          <div>
+            THIS DOCUMENT IS NOT VALID FOR CLAIMING INPUT TAXES
+            <br />
+            THIS OFFICIAL WATER BILL RECEIPT SHALL BE VALID FOR (5) YEARS FROM THE DATE OF ATP.
+          </div>
+        </div>
+      </section>
 
-            </p>-->
-            
+      <section class="receipt">
+        <div>
+          <div class="header">
+            <div class="logo">
+             <img src="{$base_url}/img/pmroxas-logo.png" alt="Logo" style="width: 100%; height: 100%;">
+            </div>
+            <div class="header-text">
+              <div class="title">LABASON WATER DISTRICT</div>
+              <div class="sub">Brgy. Imelda, Labason, Zamboanga del Norte, Philippines</div>
+              <div class="sub">NON-VAT REG. TIN 269-102-147-000</div>
+            </div>
+          </div>
+
+          <div class="receipt-meta">
+            <div class="label">OFFICIAL WATER BILL RECEIPT</div>
+            <div class="label">No. <span class="number">$or_number</span></div>
+          </div>
+
+          <div class="box">
+            <div class="box-row">
+              <div class="box-label">RECEIVED FROM :</div>
+              <div class="fill-line">$first_name $middle_name $last_name</div>
+            </div>
+            <div class="box-row">
+              <div class="box-label">ADDRESS :</div>
+              <div class="fill-line">$address</div>
+            </div>
+            <div class="box-row">
+              <div class="box-label">ACCOUNT NO. :</div>
+              <div class="fill-line">$customer_id</div>
+            </div>
+          </div>
+
+          <div class="box">
+            <div class="box-row">
+              <div class="box-label">AMOUNT IN WORDS :</div>
+              <div class="fill-line">$amountinwords</div>
+            </div>
+          </div>
+
+          <div class="amounts">
+            <div class="amount-col">
+              <div class="amount-row">
+                CURRENT AMOUNT :
+                <span class="line">$amount</span>
+              </div>
+              <div class="amount-row">
+                ARREARS :
+                <span class="line">$arrears</span>
+              </div>
+              <div class="amount-row">
+                SURCHARGE :
+                <span class="line">$surcharge</span>
+              </div>
+              <div class="amount-row">
+                SC/PWD DISCOUNT :
+                <span class="line">$sc_discount</span>
+              </div>
+              <div class="amount-row total-row">
+                TOTAL AMOUNT :
+                <span class="line">$grand_total</span>
+              </div>
+            </div>
+            <div class="amount-col">
+              <div class="amount-row">
+                AMOUNT TENDERED :
+                <span class="line">$pay_amount</span>
+              </div>
+              <div class="amount-row">
+                AMOUNT PAID :
+                <span class="line">$total</span>
+              </div>
+              <div class="amount-row">
+                CHANGE :
+                <span class="line">$balance</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="notice-row">
+            <div class="notice-box">
+              THIS RECEIPT IS NOT VALID UNLESS<br />
+              SIGNED BY OUR TELLER
+            </div>
+            <div class="signature-box">
+              <div class="signature-row">
+                <div class="signature-label">SR. CITIZEN TIN</div>
+                <div class="signature-line"></div>
+              </div>
+              <div class="signature-row">
+                <div class="signature-label">OSCA/PWD ID NO.</div>
+                <div class="signature-line"></div>
+              </div>
+              <div class="signature-row">
+                <div class="signature-label">CARDHOLDER'S SIG</div>
+                <div class="signature-line"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="received-payment">RECEIVED PAYMENT</div>
+          <div class="signature-lines">
+            <div class="signature-line-block">
+              <div class="line">$datefor</div>
+              DATE
+            </div>
+            <div class="signature-line-block">
+              <div class="line"></div>
+              TELLER
+            </div>
+          </div>
         </div>
-        <div class="date-section" style="left:.55in;">
-            $datefor            
+
+        <div class="footer">
+          <div class="footer-top">
+            <div>
+              20 Boxes (1x) 0180001-0300000
+              <br />
+              BIR Authority to Print No. 091AU202200000211
+              <br />
+              Date Issued: 06-27-2022 Valid until: 06-26-2027
+            </div>
+            <div>
+              Edwin S. Villaver - Optima Typographics
+              <br />
+              Near Gaisano Grand Sitio Ibaba Basak, Lapu-Lapu City
+              <br />
+              Tel. No. 505 2662 Telefax No. 232 2887
+              <br />
+              TIN: 149-755-518-000 VAT
+              <br />
+              Printer's Accreditation No. 080MP201900000037
+              <br />
+              Date Issued 09 May 2019
+              <br />
+              LOOSELEAF Permit No. L00R-091-03052018-00002
+            </div>
+          </div>
+          <div class="copy-label">CONSUMER COPY</div>
+          <div>
+            THIS DOCUMENT IS NOT VALID FOR CLAIMING INPUT TAXES
+            <br />
+            THIS OFFICIAL WATER BILL RECEIPT SHALL BE VALID FOR (5) YEARS FROM THE DATE OF ATP.
+          </div>
         </div>
-        <div class="cashier-section" style="left:1.5in;">
-            <!--Herald Felisilda-->            
-        </div>
+      </section>
     </div>
-
-    <div class="receipt-column">
-        <div class="receipt-header">
-            <p>$first_name $middle_name $last_name</p>
-            <p>$address</p>
-            <p>$customer_id</p>
-        </div>
-        <div class="amount-words" style="padding-right: .2in;">
-            <p>$amountinwords</p>
-        </div>
-        
-
-        <table class="item-table" style="width: 95%;">
-            
-            <tbody>
-			$detailspayment
-                <!--<tr>
-                    <td style="width: 75%;">March 2025</td>
-                    <td style="width: 5%;">15</td>
-                    
-                    <td style="text-align: right;">100.00</td>
-                </tr>
-                <tr>
-                    <td>April 2025</td>
-                    <td>1</td>
-                    
-                    <td style="text-align: right;">150.00</td>
-                </tr>
-                <tr>
-                    <td>May 2025</td>
-                    <td>1</td>
-                    
-                    <td style="text-align: right;">150.00</td>
-                </tr>-->
-            </tbody>
-        </table>
-
-        
-        <div class="total-section" style="left:7.45in;">
-            <p>0.00</p>
-            <p>$leaking_amount</p>
-            <p>$vat_amount</p>
-            <p class="grand-total">$grand_total</p>
-        </div>
-        <div class="remark-section">
-           <!--<p>Note:<br/>
-                Penalty=50/SC=57/Leaking=567 - May 2025
-
-            </p>-->
-            
-        </div>
-        <div class="date-section">
-            $datefor            
-        </div>
-        <div class="cashier-section" style="left:5.5in;">
-            <!--Herald Felisilda   -->         
-        </div>
-        
-    </div>
-<script type="text/javascript">
-		window.print();
-	</script>
-</body>
+  </body>
 </html>
+<script type="text/javascript">
+  window.print();
+</script>
+
+
 EOD;
 	echo $html;
 //output the HTML content
