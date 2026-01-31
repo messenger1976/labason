@@ -313,6 +313,66 @@ class database_backup extends CI_Controller {
 		redirect($this->listPage_redirect);
 	}
 
+	/**
+	 * Split SQL content into individual statements.
+	 * Only splits on semicolons that are outside string literals (single/double quoted or backtick),
+	 * so that semicolons inside data (e.g. company name, text) do not break statements.
+	 */
+	private function split_sql_statements($sql) {
+		$queries = array();
+		$len = strlen($sql);
+		$current = '';
+		$in_string = false;
+		$string_char = null;
+		$i = 0;
+		while ($i < $len) {
+			$c = $sql[$i];
+			if ($in_string) {
+				$current .= $c;
+				// Escaped quote: \' or \" or ''
+				if ($c === '\\' && $i + 1 < $len && ($sql[$i + 1] === $string_char || $sql[$i + 1] === '\\')) {
+					$current .= $sql[$i + 1];
+					$i += 2;
+					continue;
+				}
+				if ($c === "'" && $string_char === "'" && $i + 1 < $len && $sql[$i + 1] === "'") {
+					$current .= $sql[$i + 1];
+					$i += 2;
+					continue;
+				}
+				if ($c === $string_char) {
+					$in_string = false;
+					$string_char = null;
+				}
+				$i++;
+				continue;
+			}
+			if ($c === "'" || $c === '"' || $c === '`') {
+				$in_string = true;
+				$string_char = $c;
+				$current .= $c;
+				$i++;
+				continue;
+			}
+			if ($c === ';') {
+				$q = trim($current);
+				if ($q !== '') {
+					$queries[] = $q;
+				}
+				$current = '';
+				$i++;
+				continue;
+			}
+			$current .= $c;
+			$i++;
+		}
+		$q = trim($current);
+		if ($q !== '') {
+			$queries[] = $q;
+		}
+		return $queries;
+	}
+
 	/** Restore Backup Function **/
 	public function restore($id){ 
 		$header['roleResponsible'] = $this->top_model->get_responsibilities();
@@ -333,8 +393,8 @@ class database_backup extends CI_Controller {
 			// Read SQL file
 			$sql = file_get_contents($backup['filepath']);
 			
-			// Split SQL into individual queries
-			$queries = explode(';', $sql);
+			// Split SQL into individual queries (only on ; outside string literals)
+			$queries = $this->split_sql_statements($sql);
 			
 			// Execute each query
 			$this->db->trans_start();
