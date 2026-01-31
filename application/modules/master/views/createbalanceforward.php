@@ -223,51 +223,55 @@
 			});
 			
 			function startBatchProcessing(billingperiodforward, currentbillingperiod, zone_id){
-				// Clear previous batch
-				$.ajax({
-					url: "<?php echo base_url();?>master/createbalanceforward/clearbatch",
-					type: "POST"
-				});
-				
 				// Show progress bar
 				$('#progressBarDiv').show();
 				$('#balanceForwardResultsDiv').html('');
 				updateProgressBar(0, 0, '', '');
 				
-				// Initialize batch processing
+				// Clear previous batch first, then initialize (avoid session race)
 				$.ajax({
-					url: "<?php echo base_url();?>master/createbalanceforward/processbalanceforward", 
+					url: "<?php echo base_url();?>master/createbalanceforward/clearbatch",
 					type: "POST",
-					data: {
-						billingperiodforward: billingperiodforward,
-						currentbillingperiod: currentbillingperiod,
-						zone_listing: zone_id
-					},
-					dataType: 'json',
-					success: function(response){
-						if(response.success){
-							// Start processing batches
-							processNextBatch();
-						}else{
+					dataType: 'json'
+				}).always(function() {
+					// Initialize batch processing after clear (success or fail)
+					$.ajax({
+						url: "<?php echo base_url();?>master/createbalanceforward/processbalanceforward",
+						type: "POST",
+						data: {
+							billingperiodforward: billingperiodforward,
+							currentbillingperiod: currentbillingperiod,
+							zone_listing: zone_id
+						},
+						dataType: 'json',
+						success: function(response){
+							if(response && response.success){
+								processNextBatch();
+							} else {
+								Swal.fire({
+									icon: 'error',
+									title: 'Error',
+									text: (response && response.message) ? response.message : 'Failed to start batch processing.',
+									confirmButtonColor: '#3085d6'
+								});
+								$('#progressBarDiv').hide();
+							}
+						},
+						error: function(xhr, status, error){
+							var msg = 'An error occurred while initializing batch processing.';
+							try {
+								if (xhr.responseJSON && xhr.responseJSON.message) msg = xhr.responseJSON.message;
+								else if (xhr.responseText) msg = xhr.responseText.substring(0, 200);
+							} catch (e) {}
 							Swal.fire({
 								icon: 'error',
 								title: 'Error',
-								text: response.message,
+								text: msg,
 								confirmButtonColor: '#3085d6'
 							});
 							$('#progressBarDiv').hide();
 						}
-					},
-					error: function(xhr, status, error){
-						console.log(error);
-						Swal.fire({
-							icon: 'error',
-							title: 'Error',
-							text: 'An error occurred while initializing batch processing.',
-							confirmButtonColor: '#3085d6'
-						});
-						$('#progressBarDiv').hide();
-					}
+					});
 				});
 			}
 			
@@ -341,9 +345,15 @@
 					url	: '<?php echo base_url();?>master/createbalanceforward/getbalanceforwardresults',
 					data	: "billingperiodforward="+billingperiodforward+"&zone_listing="+zone_id,
 					complete: function(data){
-						var op = data.responseText.trim();
-						$("#balanceForwardResultsDiv").html(op);
-						setTimeout(hideSpinner, 1000);
+						try {
+							var op = data.responseText.trim();
+							$("#balanceForwardResultsDiv").html(op);
+						} catch (e) {
+							console.error('Error loading balance forward results:', e);
+							$("#balanceForwardResultsDiv").html('<div class="alert alert-danger">Failed to load results. Please try again.</div>');
+						} finally {
+							setTimeout(hideSpinner, 500);
+						}
 					}
 				});
 			}

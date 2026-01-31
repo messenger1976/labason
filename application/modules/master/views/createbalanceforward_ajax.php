@@ -166,7 +166,7 @@
 													<?php  $i++;} ?>
                                                     <?php } else { ?>
 													<tr>
-														<td colspan="11" style="text-align:center;">No records found</td>
+														<td style="text-align:center;">No records found</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
 													</tr>
 													<?php } ?>
 												</tbody>

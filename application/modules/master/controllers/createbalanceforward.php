@@ -48,9 +48,18 @@ class createbalanceforward extends CI_Controller {
 		// Initialize batch processing
 		header('Content-Type: application/json');
 		
-		$billperiodforward = explode(' ',$this->input->post('billingperiodforward'));
-		$currentbillingperiod = explode(' ',$this->input->post('currentbillingperiod'));
+		$billperiodforward_str = $this->input->post('billingperiodforward');
+		$currentbillingperiod_str = $this->input->post('currentbillingperiod');
 		$zone_listing = $this->input->post('zone_listing');
+		
+		$billperiodforward = $billperiodforward_str ? explode(' ', trim($billperiodforward_str), 2) : array();
+		$currentbillingperiod = $currentbillingperiod_str ? explode(' ', trim($currentbillingperiod_str), 2) : array();
+		
+		if (count($billperiodforward) < 2 || count($currentbillingperiod) < 2 || $zone_listing === null || $zone_listing === '') {
+			echo json_encode(array('success' => false, 'message' => 'Invalid or missing billing period or zone. Please select Current Billing Period, Next Billing Period, and Zone.'));
+			return;
+		}
+		
 		$billperiodforward_month = $billperiodforward[0];
 		$billperiodforward_year = $billperiodforward[1];
 		$currentbillingperiod_month = $currentbillingperiod[0];
