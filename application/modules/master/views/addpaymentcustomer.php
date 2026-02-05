@@ -637,4 +637,19 @@ $(document).on('click','.print_button_new1',function(e){
 	}
 	
 });
+
+$(document).on('click','.print_button_new2',function(e){
+	var buttonid = $(this).attr('id');
+	var paybtnid = $(this).data('print-val-id');
+	
+    var customer = $('#customerid_'+paybtnid).val();
+	var month = $('#month_'+paybtnid).val();
+	var year = $('#year_'+paybtnid).val();
+	var invoice_id = $('#invoiceid_'+paybtnid).val();
+	if(customer != '' && month != '' && year != ''){
+				var url = '<?php echo ADMIN_URL;?>addpaymentcustomer/monthly_receipt_ver2/'+customer+'/'+month+'/'+year+'/'+invoice_id;
+				window.open( url , "popupWindow", "width=1800,height=600,scrollbars=yes");	
+	}
+	
+});
 </script>		
