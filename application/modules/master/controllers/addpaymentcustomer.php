@@ -2622,7 +2622,7 @@ public function monthly_receipt_ver2($customer,$month,$year,$invoice_id) {
             }
 
             body {
-                margin: .7in -0.5in 0in 0in; /* Remove body margin for print to let @page margin control */
+                margin: .5in -0.5in 0in 0in; /* Remove body margin for print to let @page margin control */
                 flex-direction: row;
                 justify-content: space-between;
                 gap: 0;
@@ -2648,7 +2648,7 @@ public function monthly_receipt_ver2($customer,$month,$year,$invoice_id) {
                 line-height: 1em;
                 padding-left: .2in;
                 height: 3em;
-                margin-bottom: .8em;
+                margin-bottom: .5em;
                 letter-spacing: -0.5px;
             }
             .item-table {
@@ -2720,46 +2720,6 @@ public function monthly_receipt_ver2($customer,$month,$year,$invoice_id) {
             <p>$amountinwords</p>
         </div>
         
-
-		<!--<div class="amounts">
-            <div class="amount-col">
-              <div class="amount-row">
-                CURRENT AMOUNT :
-                <span class="line">$amount</span>
-              </div>
-              <div class="amount-row">
-                ARREARS :
-                <span class="line">$arrears</span>
-              </div>
-              <div class="amount-row">
-                SURCHARGE :
-                <span class="line">$surcharge</span>
-              </div>
-              <div class="amount-row">
-                SC/PWD DISCOUNT :
-                <span class="line">$sc_discount</span>
-              </div>
-              <div class="amount-row total-row">
-                TOTAL AMOUNT :
-                <span class="line">$grand_total</span>
-              </div>
-            </div>
-            <div class="amount-col">
-              <div class="amount-row">
-                AMOUNT TENDERED :
-                <span class="line">$pay_amount</span>
-              </div>
-              <div class="amount-row">
-                AMOUNT PAID :
-                <span class="line">$total</span>
-              </div>
-              <div class="amount-row">
-                CHANGE :
-                <span class="line">$balance</span>
-              </div>
-            </div>
-          </div>-->
-
 
 
        <table class="item-table">
