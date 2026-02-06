@@ -25,9 +25,10 @@
 		tbl_addcustomer_reading.amount as reading_amount, 
 		tbl_addcustomer_reading.sc_discount as sc_discount,
 		SUM(tbl_addcustomer_reading.maintenance_fee) as total_wmmf,
-		SUM(CASE WHEN (tbl_addmetercustomer.amount - tbl_addcustomer_reading.unit_price - tbl_addcustomer_reading.maintenance_fee) <= 0 THEN 0 ELSE tbl_addmetercustomer.amount - tbl_addcustomer_reading.unit_price - tbl_addcustomer_reading.maintenance_fee END) AS total_penalty,
-		SUM(CASE WHEN (tbl_addmetercustomer.amount - tbl_addcustomer_reading.unit_price - tbl_addcustomer_reading.maintenance_fee) <= 0 THEN tbl_addcustomer_reading.unit_price ELSE 0 END) AS current_amount,
-		SUM(CASE WHEN (tbl_addmetercustomer.amount - tbl_addcustomer_reading.unit_price - tbl_addcustomer_reading.maintenance_fee) <= 0 THEN 0 ELSE tbl_addcustomer_reading.unit_price END) AS arrears_amount,
+		SUM(tbl_addcustomer_reading.franchise_fee_amount) as total_franchise_fee,
+		SUM(CASE WHEN (tbl_addmetercustomer.amount - tbl_addcustomer_reading.unit_price - tbl_addcustomer_reading.maintenance_fee - tbl_addcustomer_reading.franchise_fee_amount) <= 0 THEN 0 ELSE tbl_addmetercustomer.amount - tbl_addcustomer_reading.unit_price - tbl_addcustomer_reading.maintenance_fee - tbl_addcustomer_reading.franchise_fee_amount END) AS total_penalty,
+		SUM(CASE WHEN (tbl_addmetercustomer.amount - tbl_addcustomer_reading.unit_price - tbl_addcustomer_reading.maintenance_fee - tbl_addcustomer_reading.franchise_fee_amount) <= 0 THEN tbl_addcustomer_reading.unit_price ELSE 0 END) AS current_amount,
+		SUM(CASE WHEN (tbl_addmetercustomer.amount - tbl_addcustomer_reading.unit_price - tbl_addcustomer_reading.maintenance_fee - tbl_addcustomer_reading.franchise_fee_amount) <= 0 THEN 0 ELSE tbl_addcustomer_reading.unit_price END) AS arrears_amount,
 		tbl_addmetercustomer.*');
 		$this->db->from('tbl_addmetercustomer');
 		$this->db->join('tbl_addcustomer', 'tbl_addmetercustomer.customer_id = tbl_addcustomer.customer_id');
