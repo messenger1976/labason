@@ -565,17 +565,14 @@
 
 		/**
 		 * Compute All Billing Amounts
-		 * Date Modified: January 29, 2026
-		 * Modified By: AI Assistant
+		 * Date Modified: February 6, 2026
 		 * 
 		 * Purpose: Calculate all billing amounts including unit price, senior citizen discount, 
 		 *          maintenance fee, franchise fee, and penalty based on meter readings.
 		 * 
-		 * Key Changes (January 29, 2026):
-		 * - Added consumption limit check (30 cubic meters) for senior citizen discount eligibility
-		 * - Updated franchise fee calculation to respect senior citizen discount policy
-		 * 
-		 * Business Rule: Senior citizen discount (5%) only applies if consumption <= 30 cubic meters
+		 * Business Rules:
+		 * - Senior citizen discount (5%) only applies if consumption <= 30 cubic meters
+		 * - Franchise tax is ALWAYS based on current bill; SC discount applied when computing total
 		 */
 		function compute_all(){
 			var current_meter = $('#current_reading').val();
@@ -639,30 +636,15 @@
 						total_amount+=maintenance_fee;
 						
 						/**
-						 * Franchise Fee Calculation
-						 * Date Modified: January 29, 2026
-						 * Modified By: AI Assistant
+						 * Franchise Fee Calculation - Based on Current Bill
+						 * Date Modified: February 6, 2026
 						 * 
-						 * Purpose: Calculate franchise fee (2% of bill amount) based on customer type and consumption.
-						 *          For senior citizens with consumption <= 30 cubic meters, franchise fee is calculated 
-						 *          after applying the senior citizen discount. For all other cases, franchise fee is 
-						 *          calculated on the full unit price.
-						 * 
-						 * Reason: To ensure franchise fee calculation is consistent with the senior citizen discount policy.
-						 *         When senior citizens exceed 30 cubic meters consumption, they are treated as regular 
-						 *         customers for franchise fee calculation purposes.
-						 * 
-						 * Business Rule: Franchise fee = 2% of bill amount (after SC discount if applicable)
+						 * Business Rule: Franchise tax is ALWAYS computed on the current bill amount.
+						 *               Senior citizen discount (if applicable) is applied when computing
+						 *               the total, but franchise tax is based on the current bill before any discount.
 						 */
 						var franchise_fee_percentage = <?php echo isset($franchise_fee_percentage) ? floatval($franchise_fee_percentage) : '2.00'; ?>;
-						var bill_amount_for_franchise;
-						if($('#cust_type_id').val()==3 && consumed <= 30){
-							// SC: compute after SC deduction (only if consumption <= 30 cubic meters)
-							bill_amount_for_franchise = multiprice - discount;
-						} else {
-							// Non-SC or SC with consumption > 30: compute on unit price
-							bill_amount_for_franchise = multiprice;
-						}
+						var bill_amount_for_franchise = multiprice;  // Always use current bill for franchise tax
 						var franchise_fee_amount = (bill_amount_for_franchise * franchise_fee_percentage) / 100;
 						total_amount += parseFloat(franchise_fee_amount);
 						$('#franchise_fee').val(amount_formatted(franchise_fee_amount));
