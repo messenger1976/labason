@@ -106,6 +106,7 @@
 															<div  class="pull-right" style="padding-right:20px;">
 																<input type="submit" class="btn btn-primary" name="search" id="search" value="search" onclick="getaddcustomer_paid();" style="margin-bottom: 5px;">
 																<a id="printtopdf" class="btn btn-sm btn-warning" style="margin-bottom: 5px;">Print</a>
+																<a id="exporttoexcel" class="btn btn-sm btn-success" style="margin-bottom: 5px;">Export to Excel</a>
 															
 															</div>
 														</legend>
@@ -469,6 +470,23 @@ $(document).ready(function(){
 			alert("Popup was blocked! Please allow popups for this site.");
 		}
 
+	});
+
+	$('#exporttoexcel').on('click',function(evt){
+		evt.preventDefault();
+		var zone = $("#zone").val();
+		var preparedby = $("#preparedby").val();
+		var verifiedby = $("#verifiedby").val();
+		var approvedby = $("#approvedby").val();
+		var fromdate = $("#fromdate").val();
+		
+		if(fromdate == ''){
+			alert("Please select a transaction date first.");
+			return;
+		}
+		
+		// Redirect to export URL
+		window.location.href = "<?php echo ADMIN_URL;?>adddailyreport/exporttoexcel/"+fromdate+'/'+zone+'/'+preparedby+'/'+verifiedby+'/'+approvedby;
 	});
 });
 

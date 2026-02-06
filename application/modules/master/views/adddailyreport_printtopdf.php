@@ -62,7 +62,6 @@
 					<th  style="text-align:right;" data-hide="phone">Total Amount Collected</th>
 					<th  style="text-align:right;" data-hide="phone">Current</th>
 					<th  style="text-align:right;" data-hide="phone">Arrears</th>
-                    <th  style="text-align:right;" data-hide="phone">Previous Year</th>
 					<th style="text-align:right;">WMMF</th>
                     <th style="text-align:right;">Penalty</th>
                     <th style="text-align:right;">SC Disc</th>
@@ -70,6 +69,7 @@
                     <th style="text-align:right;">A/R-Leaking</th>
                     <th style="text-align:right;">A/R-Leaking Balance</th>
                     <th style="text-align:right;">VAT</th>
+                    <th style="text-align:right;">Franchise Tax</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -84,12 +84,13 @@
                         $grand_total_ar_leaking =0;
                         $grand_total_ar_leaking_balance =0;
                         $grand_total_sc =0;
+                        $grand_total_franchise_fee =0;
                         foreach($zone as $key => $row){ 
 				?>                                            
 					<tr>
 						<td></td>
 						<td><b><?php echo stripslashes($row['zone']); ?></b></td>
-						<td colspan="8"></td>
+						<td colspan="12"></td>
 					</tr>
                 <?php
                 $mysql_transdate = date('Y-m-d',strtotime($trans_date));
@@ -105,6 +106,7 @@
                  $total_ar_leaking_zone = 0;
                  $total_ar_leaking_balance_zone = 0;
                  $total_sc_zone = 0;
+                 $total_franchise_fee_zone = 0;
 
                  foreach($get_dailytrans as $key => $gdailytrans){ 
                     //$gross_total = $gdailytrans['grand_total'] + $gdailytrans['vat_amount'];
@@ -134,7 +136,6 @@
                     <td align="right">'.number_format($gdailytrans['grand_total'],2).'</td>
                     <td align="right">'.number_format( $gdailytrans['current_amount'],2).'</td>
                     <td align="right">'.number_format( $gdailytrans['arrears_amount'],2).'</td>
-					<td align="right">'.number_format( $prev_year,2).'</td>
                     <td align="right">'. number_format($gdailytrans['total_wmmf'],2).'</td>
                     <td align="right">'. number_format($gdailytrans['total_penalty'],2).'</td>
                     <td align="right">'.number_format($gdailytrans['sc_discount'],2).'</td>
@@ -142,6 +143,7 @@
                     <td align="right">'.number_format($ar_leaking['leaking_total_amount'],2).'</td>
                     <td align="right">'.number_format($ar_leaking['leaking_balance'],2).'</td>
                     <td align="right">'.number_format($gdailytrans['vat_amount'],2).'</td>
+                    <td align="right">'.number_format(isset($gdailytrans['total_franchise_fee']) ? $gdailytrans['total_franchise_fee'] : 0,2).'</td>
                     ';
                     echo '</tr>';
                     $total_grand_zone += $gdailytrans['grand_total'];
@@ -154,11 +156,11 @@
                     $total_sc_zone +=$gdailytrans['sc_discount'];
 					$total_ar_leaking_zone+=$ar_leaking['leaking_total_amount'];
 					$total_ar_leaking_balance_zone+=$ar_leaking['leaking_balance'];
+					$total_franchise_fee_zone += isset($gdailytrans['total_franchise_fee']) ? $gdailytrans['total_franchise_fee'] : 0;
                  }
                  echo '<tr><td></td><th>TOTAL</th><th style="text-align:right">'.number_format($total_grand_zone,2).'</th>
                  <th style="text-align:right">'.number_format($total_current_zone,2).'</th>
                  <th style="text-align:right">'.number_format($total_arrears_zone,2).'</th>
-                 <th style="text-align:right">0.00</th>
                  <th style="text-align:right">'.number_format($total_wmmf_zone,2).'</th>
                  <th style="text-align:right">'.number_format($total_penalty_zone,2).'</th>
                  <th style="text-align:right">'.number_format($total_sc_zone,2).'</th>
@@ -166,6 +168,7 @@
                  <th style="text-align:right">'.number_format($total_ar_leaking_zone,2).'</th>
                  <th style="text-align:right">'.number_format($total_ar_leaking_balance_zone,2).'</th>
                  <th style="text-align:right">'.number_format($total_vat_zone,2).'</th>
+                 <th style="text-align:right">'.number_format($total_franchise_fee_zone,2).'</th>
                  </tr>';
                 ?>
 				<?php  
@@ -180,6 +183,7 @@
                     $grand_total_sc += $total_sc_zone;
             		$grand_total_ar_leaking += $total_ar_leaking_zone;
 					$grand_total_ar_leaking_balance+=$total_ar_leaking_balance_zone;
+					$grand_total_franchise_fee += $total_franchise_fee_zone;
                 } 
                 ?>
                  <?php } ?>
@@ -189,7 +193,7 @@
                 <tr>
 					<td></td>
 					<td><b>LEAKING A/R PAYMENT REPORT</b></td>
-					<td colspan="11"></td>
+					<td colspan="12"></td>
 				</tr>
 				
 
@@ -205,10 +209,10 @@
 					<td>'.$gdailytrans1['leakingledgerdetails_source_type'].'#'.$gdailytrans1['leakingledgerdetails_or_number'].'</td>
 					<td>'.$gdailytrans1['last_name'].', '.$gdailytrans1['first_name'].'</td>
 					<td  style="text-align:right">'.number_format($gdailytrans1['leakingledgerdetails_amount'],2).'</td>
-					<td colspan=6></td>
+					<td colspan=5></td>
 					<td style="text-align:right">'.number_format($gdailytrans1['leaking_total_amount'],2).'</td>
 					<td style="text-align:right">'.number_format($gdailytrans1['leakingledgerdetails_balance'],2).'</td>
-					<td></td>
+					<td colspan=4></td>
 					</tr>';
 					$total_leaking_ar+=$gdailytrans1['leakingledgerdetails_amount'];
 				}
@@ -234,8 +238,6 @@
                     <th style="text-align:right"><?php echo number_format($cr,2);?></th>
                     <th style="text-align:right"><?php echo number_format($grand_total_current,2);?></th>
 					<th style="text-align:right"><?php echo number_format($grand_total_arrears,2);?></th>
-					<th style="text-align:right">0.00</th>
-					
 					<th style="text-align:right"><?php echo number_format($grand_total_wmmf,2);?></th>
 					
 					<th style="text-align:right"><?php echo number_format($grand_total_penalty,2);?></th>
@@ -244,6 +246,7 @@
                     <th style="text-align:right"><?php echo number_format($grand_total_ar_leaking,2);?></th>
                     <th style="text-align:right"><?php echo number_format($grand_total_ar_leaking_balance,2);?></th>
                     <th style="text-align:right"><?php echo number_format($grand_total_vat,2);?></th>
+                    <th style="text-align:right"><?php echo number_format($grand_total_franchise_fee,2);?></th>
 				</tr>
                 
                
