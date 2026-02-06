@@ -2687,7 +2687,7 @@ public function monthly_receipt_ver2($customer,$month,$year,$invoice_id) {
             }
             .date-section {
                 position: absolute;
-                top: 3.3in;
+                top: 2.7in;
                 font-weight: normal;
                 font-family: 'Courier New', Courier, monospace;
                 font-size: 1em;
@@ -2697,7 +2697,7 @@ public function monthly_receipt_ver2($customer,$month,$year,$invoice_id) {
             }
             .cashier-section {
                 position: absolute;
-                top: 3.3in;
+                top: 2.7in;
                 font-weight: normal;
                 font-family: 'Courier New', Courier, monospace;
                 font-size: 1em;
