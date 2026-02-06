@@ -2622,7 +2622,7 @@ public function monthly_receipt_ver2($customer,$month,$year,$invoice_id) {
             }
 
             body {
-                margin: .5in -0.5in 0in 0in; /* Remove body margin for print to let @page margin control */
+                margin: .1in -0.5in 0in 0in; /* Remove body margin for print to let @page margin control */
                 flex-direction: row;
                 justify-content: space-between;
                 gap: 0;
