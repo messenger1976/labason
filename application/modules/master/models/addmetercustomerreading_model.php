@@ -490,19 +490,14 @@ class addmetercustomerreading_model extends CI_Model {
 	 * Update Meter Reading
 	 * 
 	 * Function: update_meterreading
-	 * Last Modified: January 29, 2026
-	 * Modified By: AI Assistant
+	 * Last Modified: February 6, 2026
 	 * 
 	 * Purpose: Updates customer meter reading and recalculates billing amounts including:
 	 *          - Consumption calculation (current_reading - previous_reading)
 	 *          - Unit price based on consumption and classification
 	 *          - Senior citizen discount (5% if account_type == 3 AND consumption <= 30 cubic meters)
-	 *          - Franchise fee (2% of bill amount)
+	 *          - Franchise fee: ALWAYS based on current bill; SC discount applied when computing total
 	 *          - Penalty calculation (10% if no special privilege)
-	 * 
-	 * Key Changes (January 29, 2026):
-	 * - Added consumption limit check (30 cubic meters) for senior citizen discount eligibility
-	 * - Updated franchise fee calculation to respect senior citizen discount policy
 	 * 
 	 * @param array $data Contains: refno, customer_id, previous_reading, current_reading, billing_month, billing_year, reading_date
 	 * @return string JSON response with success message
@@ -538,29 +533,18 @@ class addmetercustomerreading_model extends CI_Model {
 			$total_amount += $maintenance_fee;
 			
 			/**
-			 * Franchise Fee Calculation
-			 * Date Modified: January 29, 2026
-			 * Modified By: AI Assistant
+			 * Franchise Fee Calculation - Based on Current Bill
+			 * Date Modified: February 6, 2026
 			 * 
-			 * Purpose: Calculate franchise fee (2% of bill amount) based on customer type and consumption.
-			 *          For senior citizens with consumption <= 30 cubic meters, franchise fee is calculated 
-			 *          after applying the senior citizen discount. For all other cases, franchise fee is 
-			 *          calculated on the full unit price.
+			 * Business Rule: Franchise tax is ALWAYS computed on the current bill amount (unit_price).
+			 *               Senior citizen discount (if applicable) is applied to the bill when
+			 *               calculating the total, but franchise tax is based on the current bill
+			 *               before any discount.
 			 * 
-			 * Reason: To ensure franchise fee calculation is consistent with the senior citizen discount policy.
-			 *         When senior citizens exceed 30 cubic meters consumption, they are treated as regular 
-			 *         customers for franchise fee calculation purposes.
-			 * 
-			 * Business Rule: Franchise fee = 2% of bill amount (after SC discount if applicable)
+			 * Total = current_bill - senior_citizen_discount + maintenance_fee + franchise_fee_amount
 			 */
 			$franchise_fee_percentage = $this->get_franchise_fee_percentage();
-			if($customerinfo[0]['account_type']==3 && $consumed <= 30){
-				// SC: compute after SC deduction (only if consumption <= 30 cubic meters)
-				$bill_amount_for_franchise = $cubicmeter_rate->per_unit - $discount;
-			} else {
-				// Non-SC: compute on unit price
-				$bill_amount_for_franchise = $cubicmeter_rate->per_unit;
-			}
+			$bill_amount_for_franchise = $cubicmeter_rate->per_unit;  // Always use current bill for franchise tax
 			$franchise_fee_amount = ($bill_amount_for_franchise * $franchise_fee_percentage) / 100;
 			$total_amount += $franchise_fee_amount;
 			
