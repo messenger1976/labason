@@ -2736,7 +2736,7 @@ public function monthly_receipt_ver2($customer,$month,$year,$invoice_id) {
                     <td style="text-align: right;">$total</td>
                 </tr>
                 <tr>
-                    <td style="width: 50%;text-align: right;">$surcharge</td>
+                    <td style="width: 50%;text-align: right;">$leaking_amount</td>
                     
                     
                     <td style="text-align: right;">$balance</td>
@@ -2801,7 +2801,7 @@ public function monthly_receipt_ver2($customer,$month,$year,$invoice_id) {
                     <td style="text-align: right;">$total</td>
                 </tr>
                 <tr>
-                    <td style="width: 50%;text-align: right;">$surcharge</td>
+                    <td style="width: 50%;text-align: right;">$leaking_amount</td>
                     
                     
                     <td style="text-align: right;">$balance</td>
