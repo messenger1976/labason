@@ -96,17 +96,25 @@ class or_correction_model extends CI_Model {
 		$dt_date = new DateTime('now', new DateTimeZone("Asia/Manila"));
 		$trans_date = $dt_date->format("Y-m-d H:i:s");
 		$newdate = date('Y-m-d',strtotime($this->input->post('newdate')));
+		
+		// Update main meter customer record, including edited OR amount
 		$set_data = array(
-		                'date' => $newdate, 
-						'or_number' => sprintf('%07d',$this->input->post('or_number')),
-					  	'update_date_time' => $trans_date,
-						
-					);
+			'date' => $newdate,
+			'or_number' => sprintf('%07d',$this->input->post('or_number')),
+			'grand_total' => $this->input->post('grand_total'),
+			'update_date_time' => $trans_date,
+		);
 		$this->db->where('or_number',$old_or);
 		$result = $this->db->update($this->table_meter, $set_data); 
 		
+		// Update related reading records (no amount change needed here)
+		$set_data_reading = array(
+			'date' => $newdate,
+			'or_number' => sprintf('%07d',$this->input->post('or_number')),
+			'update_date_time' => $trans_date,
+		);
 		$this->db->where('or_number',$old_or);
-		$result = $this->db->update($this->table_meter_reading, $set_data); 
+		$result = $this->db->update($this->table_meter_reading, $set_data_reading); 
 		
 		return $result;
 	}

@@ -150,7 +150,7 @@
 															<div class="col-lg-6 controls">
 																<div class="form-group">
 																	<span class="input-group-addon"><i class="icon-user"></i><strong>OR Amount : </strong></span>
-																	<input  class="form-control"  id="grand_total" name="grand_total" value="<?php echo $record['grand_total']; ?>" readonly/>
+																	<input  class="form-control"  id="grand_total" name="grand_total" value="<?php echo $record['grand_total']; ?>" />
 																	<?php echo form_error('grand_total'); ?>
 																</div>
 															</div>
