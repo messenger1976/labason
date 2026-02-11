@@ -190,8 +190,24 @@ class leakingentry_model extends CI_Model {
 	
   	/** In Function Delete records for select table **/
 	public function delete_record($id){
+		// Start transaction
+		$this->db->trans_start();
+		
+		// Delete ledger details first (foreign key constraint)
 		$this->db->where('leaking_id',$id);
-		$result = $this->db->delete($this->table_name); 
+		$this->db->delete($this->table_leaking_ledger_details);
+		
+		// Delete main leaking entry
+		$this->db->where('leaking_id',$id);
+		$result = $this->db->delete($this->table_name);
+		
+		// Complete transaction
+		$this->db->trans_complete();
+		
+		if ($this->db->trans_status() === FALSE) {
+			return false;
+		}
+		
 		return $result;
 	}
 	
