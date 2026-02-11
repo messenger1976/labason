@@ -15,7 +15,7 @@
 				<!-- breadcrumb -->
 				<ol class="breadcrumb">
 					<li><a href="<?php echo ADMIN_URL;?>">Home</a></li>
-					<li><a href="<?php echo ADMIN_URL;?>adddailyreport/">Daily Report Bills</a></li>
+					<li><a href="<?php echo ADMIN_URL;?>adddailyreportnogrouping/">Daily Report - No Grouping</a></li>
 					<li>search</li>
 				</ol>
 				
@@ -27,7 +27,7 @@
 
 				<div class="row">
 					<div class="col-xs-12 col-sm-7 col-md-7 col-lg-4">
-						<h1 class="page-title txt-color-blueDark"><i class="glyphicon glyphicon-search"></i>Search <span>>  Daily Report Bills </span></h1>
+						<h1 class="page-title txt-color-blueDark"><i class="glyphicon glyphicon-search"></i>Search <span>>  Daily Report - No Grouping </span></h1>
 					</div>
 					<div class="col-xs-12 col-sm-5 col-md-5 col-lg-8">
 						<ul id="sparks" class="">
@@ -102,7 +102,7 @@
 											
 											<fieldset>
 														<legend>
-															Daily Report Bills -Search 
+															Daily Report - No Grouping - Search 
 															<div  class="pull-right" style="padding-right:20px;">
 																<input type="submit" class="btn btn-primary" name="search" id="search" value="search" onclick="getaddcustomer_paid();" style="margin-bottom: 5px;">
 																<a id="printtopdf" class="btn btn-sm btn-warning" style="margin-bottom: 5px;">Print</a>
@@ -118,27 +118,7 @@
 																</div>
 															</div>
 														</div>
-														<!--<div class="form-group col-lg-6">
-															<div class="col-lg-12 controls">
-																<div class="form-group">
-																	<span class="input-group-addon"><i class="icon-user"></i><strong>To-Date:</strong></span>
-																	<input class="form-control"  type="text" id="todate" name="todate"  placeholder="DD-MM-YYYY" value="" required>
-																</div>
-															</div>
-														</div>-->
-                                                        <div class="form-group col-lg-6">
-															<div class="col-lg-12 controls">
-																<div class="form-group">
-																	<span class="input-group-addon"><i class="icon-user"></i><strong> Zone:</strong></span>
-																	<select class="form-control" name="zone" id="zone" required>
-																		<option value="0">--All--</option>
-																		<?php foreach($zone as $key => $value){ ?>
-																		<option value="<?php echo $value['id'];?>"><?php echo $value['zone'];?></option>
-																		<?php } ?>
-																	</select>
-																</div>
-															</div>
-														</div>
+														<!-- Zone dropdown removed - always shows all zones without grouping -->
 														<div class="form-group col-lg-6">
 															<div class="col-lg-12 controls">
 																<div class="form-group">
@@ -374,7 +354,7 @@
 				//   https://datatables.net/extensions/tabletools/button_options
 				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-6 hidden-xs'T>r>"+
 						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-sm-6 col-xs-12'p>>",
+						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
 				"oLanguage": {
 					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
 				},		
@@ -454,14 +434,12 @@ $(document).ready(function(){
 
 	$('#printtopdf').on('click',function(evt){
 		evt.preventDefault();
-		var zone = $("#zone").val();
 		var preparedby = $("#preparedby").val();
 		var verifiedby = $("#verifiedby").val();
 		var approvedby = $("#approvedby").val();
 		var fromdate = $("#fromdate").val();
-		var grouping = $("#grouping").is(':checked') ? 1 : 0;
 		const popup = window.open(
-			"adddailyreport/printtopdf/"+fromdate+'/'+zone+'/'+preparedby+'/'+verifiedby+'/'+approvedby+'/'+grouping, // URL to display 
+			"adddailyreportnogrouping/printtopdf/"+fromdate+'/'+preparedby+'/'+verifiedby+'/'+approvedby, // URL to display (no zone parameter)
 			"PopupWindowPrint", // Name of the window
 			"width=1200,height=600,resizable=yes,scrollbars=yes" // Window settings
 		);
@@ -475,20 +453,18 @@ $(document).ready(function(){
 
 	$('#exporttoexcel').on('click',function(evt){
 		evt.preventDefault();
-		var zone = $("#zone").val();
 		var preparedby = $("#preparedby").val();
 		var verifiedby = $("#verifiedby").val();
 		var approvedby = $("#approvedby").val();
 		var fromdate = $("#fromdate").val();
-		var grouping = $("#grouping").is(':checked') ? 1 : 0;
 		
 		if(fromdate == ''){
 			alert("Please select a transaction date first.");
 			return;
 		}
 		
-		// Redirect to export URL
-		window.location.href = "<?php echo ADMIN_URL;?>adddailyreport/exporttoexcel/"+fromdate+'/'+zone+'/'+preparedby+'/'+verifiedby+'/'+approvedby+'/'+grouping;
+		// Redirect to export URL (no zone parameter)
+		window.location.href = "<?php echo ADMIN_URL;?>adddailyreportnogrouping/exporttoexcel/"+fromdate+'/'+preparedby+'/'+verifiedby+'/'+approvedby;
 	});
 });
 
@@ -498,18 +474,16 @@ $(document).ready(function(){
 	
 		function getaddcustomer_paid(){
 			
-			var zone = $("#zone").val();
 			var fromdate = $("#fromdate").val();
-			var grouping = $("#grouping").is(':checked') ? 1 : 0;
 			//var preparedby = $("#preparedby").val();
 			//var todate = $("#todate").val();
 			
 			$.ajax({
 				
 				type : "POST",
-				url	: '<?php echo ADMIN_URL;?>adddailyreport/getadddailyreportsearch',
-				//data	: "customer_type="+customer_type+"&zone="+zone+"&fromdate="+fromdate+"&todate="+todate+",
-				data	: "fromdate="+fromdate+"&zone="+zone+"&grouping="+grouping,
+				url	: '<?php echo ADMIN_URL;?>adddailyreportnogrouping/getadddailyreportsearch',
+				// No zone parameter - always gets all zones without grouping
+				data	: "fromdate="+fromdate,
 				complete: function(data){
 					var op = data.responseText.trim();
 					//alert(op);
@@ -521,4 +495,3 @@ $(document).ready(function(){
 		
 	
 </script>
-

@@ -18,7 +18,7 @@
 	
 	/** In Function Get all records from select table **/
     
-	 public function get_metercustomer_records($from,$zone=''){
+	 public function get_metercustomer_records($from,$zone='',$grouping=1){
 		$this->db->select('tbl_addcustomer.customer_id, tbl_addcustomer.customer_type, tbl_addcustomer.first_name,tbl_addcustomer.last_name,tbl_addcustomer.middle_name,
 		(SELECT zone FROM tbl_zone WHERE tbl_zone.id='.$this->table_name.'.zone) as zone, 
 		(SELECT employee_name FROM '.$this->table_users.' WHERE '.$this->table_users.'.id='.$this->table_meter.'.userid) as user,
@@ -35,12 +35,17 @@
 		$this->db->join('tbl_addcustomer_reading', 'tbl_addmetercustomer.customer_id = tbl_addcustomer_reading.customer_id and tbl_addmetercustomer.month=tbl_addcustomer_reading.month and tbl_addmetercustomer.year=tbl_addmetercustomer.year','left');
 		$this->db->where('tbl_addmetercustomer.date',$from);
 		//$this->db->where('tbl_addmetercustomer.date <=',$to);
-		if($zone!=0 || $zone=''){
+		if($zone!=0 && $zone!=''){
 			$this->db->where('tbl_addcustomer.zone',$zone);
 		}
 		
-		$this->db->order_by('last_name','asc');
-		$this->db->order_by('first_name','asc');
+		// Order by OR number if grouping is disabled, otherwise by name
+		if($grouping == 0 || $grouping == ''){
+			$this->db->order_by('tbl_addmetercustomer.or_number','asc');
+		} else {
+			$this->db->order_by('last_name','asc');
+			$this->db->order_by('first_name','asc');
+		}
 		$this->db->group_by('invoice_id');
 		$query = $this->db->get();
 		$result = $query->result_array();

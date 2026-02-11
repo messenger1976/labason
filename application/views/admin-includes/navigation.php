@@ -216,6 +216,11 @@
 								<a href="<?php echo ADMIN_URL;?>adddailyreport"> <span class="menu-item-parent">Daily Report</span></a>
 							</li>	
 							<?php } ?>
+							<?php if((array_key_exists('adddailyreport',$roleResponsible) && ($roleResponsible['adddailyreport'] == 1)) || ($this->session->userdata('usertype') == 'admin') || ($this->session->userdata('usertype') == 'subadmin') ){ ?>
+							<li class="<?php if($this->uri->segment(2)=='adddailyreportnogrouping') echo 'active';?>">
+								<a href="<?php echo ADMIN_URL;?>adddailyreportnogrouping"> <span class="menu-item-parent">Daily Report - No Grouping</span></a>
+							</li>	
+							<?php } ?>
 
 							<?php if((array_key_exists('adddailyreport',$roleResponsible) && ($roleResponsible['adddailyreport'] == 1)) || ($this->session->userdata('usertype') == 'admin') || ($this->session->userdata('usertype') == 'subadmin') ){ ?>
 							<li class="<?php if($this->uri->segment(2)=='reports' && $this->uri->segment(3)=='monthly_billing_report') echo 'active';?>">
