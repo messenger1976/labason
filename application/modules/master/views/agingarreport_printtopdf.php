@@ -43,13 +43,17 @@
 
 echo 'As of '.$asofdate;?><br/>
 <?php 
-if($status==1){
+if($status==='99' || $status===''){
+	echo 'All Members';
+}elseif($status==='1'){
 	echo 'Active Members';
-}elseif($status== 2){
+}elseif($status==='2'){
 	echo 'Disconnected Members';
-}elseif($status== 0){
+}elseif($status==='0'){
 	echo 'Inactive Members';
 }
+
+
 ?>
 </h6>
 <div class="row">

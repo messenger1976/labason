@@ -106,7 +106,7 @@
 															<div  class="pull-right" style="padding-right:20px;">
 																<input type="submit" class="btn btn-primary" name="search" id="search" value="search" style="margin-bottom: 5px;">
 																<a id="printtopdf" class="btn btn-sm btn-warning" style="margin-bottom: 5px;">Print</a>
-															
+																<a id="exporttoexcel" class="btn btn-sm btn-success" style="margin-bottom: 5px;">Export to Excel</a>
 															</div>
 														</legend>
 														<div class="form-group col-lg-6">
@@ -492,6 +492,26 @@
                 alert("Popup was blocked! Please allow popups for this site.");
             }
 
+        });
+
+        $('#exporttoexcel').on('click',function(evt){
+            evt.preventDefault();
+            var zone = $("#zone").val();
+            var preparedby = $("#preparedby").val();
+            var verifiedby = $("#verifiedby").val();
+            var approvedby = $("#approvedby").val();
+            var billingperiod = $("#billingperiod").val();
+            var status = $("#status").val();
+
+            if(billingperiod===''){
+                billingperiod=0;
+            }
+            if(status===''){
+                status=99;
+            }
+            
+            // Redirect to export function
+            window.location.href = "<?php echo ADMIN_URL;?>reports/exporttoexcel/"+encodeURIComponent(billingperiod)+'/'+status+'/'+zone+'/'+preparedby+'/'+verifiedby+'/'+approvedby;
         });
 
         $('#search').on('click', function(evt){

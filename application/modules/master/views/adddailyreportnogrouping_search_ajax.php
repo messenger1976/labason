@@ -34,7 +34,7 @@
                         <td><?php echo sprintf('%07d', $row['or_number']); ?></td>
                         <td><?php echo stripslashes($row['zone']); ?></td>
                         <td><?php echo stripslashes($row['last_name'] . ', ' . $row['first_name'] . ' ' . $row['middle_name']); ?></td>
-                        <td><?php $date = isset($row['date']) ? stripslashes($row['date']) : ''; echo $date ? date('d-m-Y', strtotime($date)) : ''; ?></td>
+                        <td><?php $date = isset($row['date']) ? stripslashes($row['date']) : ''; echo $date ? date('m/d/Y', strtotime($date)) : ''; ?></td>
                         <td align='right'><?php echo stripslashes(number_format(isset($row['grand_total']) ? $row['grand_total'] : 0, 2)); ?></td>
                         <td><?php echo isset($row['user']) && $row['user']!='' ? $row['user'] : 'Admin'; ?></td>
                     </tr>

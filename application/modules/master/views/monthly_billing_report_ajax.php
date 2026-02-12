@@ -104,12 +104,12 @@
 						?></td>
 						<td><?php 
 						 
-						echo date('d-m-Y', strtotime($date)); 
+						echo date('m/d/Y', strtotime($date)); 
 						?></td>
 						<!--<td><?php echo stripslashes($row['invoice_id']); ?></td>-->
 						<td><?php 
 						if($pdate!=''){
-							echo date('d-m-Y', strtotime($pdate));  
+							echo date('m/d/Y', strtotime($pdate));  
 						}else{
 							//echo $current_date;
 						}

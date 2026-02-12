@@ -34,7 +34,7 @@
 						<td><?php echo stripslashes($row['zone']); ?></td>
 						<td><?php echo stripslashes($row['name']); ?></td>																												
 						<!--<td><?php echo stripslashes($row['gender']); ?></td>-->
-						<td><?php $date = stripslashes($row['date']); echo date('d-m-Y', strtotime($date)); ?></td>
+						<td><?php $date = stripslashes($row['date']); echo date('m/d/Y', strtotime($date)); ?></td>
 						
 						<td align='right'><?php echo stripslashes(number_format($row['grand_total'],2)); ?></td>
 						<td><?php echo $row['user']!=''?$row['user']:'Admin'; ?></td>
@@ -75,7 +75,7 @@
 						<td>Monthlycustomer</td>
 						<td><?php echo stripslashes($row['name']); ?></td>																												
 						<!--<td><?php echo stripslashes($row['gender']); ?></td>-->
-						<td><?php $date = stripslashes($row['date']); echo date('d-m-Y', strtotime($date)); ?></td>
+						<td><?php $date = stripslashes($row['date']); echo date('m/d/Y', strtotime($date)); ?></td>
 						<td>0</td>
 						<td><?php echo stripslashes($row['paidamount']); ?></td>
 						<td><?php echo stripslashes($row['']); ?></td>
@@ -115,7 +115,7 @@
 						<td>Salary</td>
 						<td><?php echo stripslashes($row['name']); ?></td>																												
 						<!--<td><?php echo stripslashes($row['gender']); ?></td>-->
-						<td><?php $date = stripslashes($row['date']); echo date('d-m-Y', strtotime($date)); ?></td>
+						<td><?php $date = stripslashes($row['date']); echo date('m/d/Y', strtotime($date)); ?></td>
 						<td><?php echo stripslashes($row['amount']); ?></td>
 						<td>0</td>
 						<td><?php echo stripslashes($row['']); ?></td>
@@ -156,7 +156,7 @@
 						<td>Expense</td>
 						<td><?php echo stripslashes($row['expensestype_name']); ?></td>																												
 						<!--<td><?php echo stripslashes($row['gender']); ?></td>-->
-						<td><?php $date = stripslashes($row['date']); echo date('d-m-Y', strtotime($date)); ?></td>
+						<td><?php $date = stripslashes($row['date']); echo date('m/d/Y', strtotime($date)); ?></td>
 						<td><?php echo stripslashes($row['total']); ?></td>
 						<td>0</td>
 						<td><?php echo stripslashes($row['']); ?></td>

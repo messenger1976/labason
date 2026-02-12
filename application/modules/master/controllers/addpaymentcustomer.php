@@ -173,7 +173,7 @@ class addpaymentcustomer extends CI_Controller {
 					'<div align="right">'.stripslashes(isset($row['leaking_amount']) ? number_format($row['leaking_amount'],2) : '0.00').'</div>',
 					'<div align="right">'.stripslashes(isset($row['vat_amount']) ? number_format($row['vat_amount'],2) : '0.00').'</div>',
 					'<div align="right">'.stripslashes(isset($row['grand_total']) ? number_format($row['grand_total'],2) : '0.00').'</div>',
-					isset($row['date']) ? date('d-m-Y',strtotime($row['date'])) : '',
+					isset($row['date']) ? date('m/d/Y',strtotime($row['date'])) : '',
 					$action_html
 				);
 			}
@@ -2488,7 +2488,7 @@ public function monthly_receipt_ver2($customer,$month,$year,$invoice_id) {
 	$city = strtoupper(trim($city));
 	$state = strtoupper(trim($state));
 	$curdate = date('Y-m-d');
-	$datefor = date('d-m-Y', strtotime($tdate));
+	$datefor = date('m/d/Y', strtotime($tdate));
 	$panalty_msg ='<span style="font-size:9px;line-height:8px;"><br/>';
 	if($amount !== $reading_amount){
 		if($maintenance_fee>0.00){
