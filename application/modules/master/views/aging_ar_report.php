@@ -106,7 +106,7 @@
 															<div  class="pull-right" style="padding-right:20px;">
 																<button type="submit" class="btn btn-sm btn-primary" name="display" id="display" style="margin-bottom: 5px;">Display</button>
 																<button id="printtopdf" class="btn btn-sm btn-warning" style="margin-bottom: 5px;">Print</button>
-															
+																<a id="exporttoexcel" class="btn btn-sm btn-success" style="margin-bottom: 5px;">Export to Excel</a>
 															</div>
 														</legend>
 														<div class="form-group col-lg-6">
@@ -449,6 +449,7 @@ $(document).ready(function(){
 		evt.preventDefault();
 		var zone = $("#zone").val();
 		var status = $("#status").val();
+		status = status == '' ? '99' : status;
 		var preparedby = $("#preparedby").val();
 		var verifiedby = $("#verifiedby").val();
 		var approvedby = $("#approvedby").val();
@@ -464,6 +465,25 @@ $(document).ready(function(){
 			alert("Popup was blocked! Please allow popups for this site.");
 		}
 
+	});
+
+	$('#exporttoexcel').on('click',function(evt){
+		evt.preventDefault();
+		var zone = $("#zone").val();
+		var status = $("#status").val();
+		status = status == '' ? '99' : status; // Match print function behavior
+		var preparedby = $("#preparedby").val();
+		var verifiedby = $("#verifiedby").val();
+		var approvedby = $("#approvedby").val();
+		var asofdate = $("#asofdate").val();
+		
+		if(asofdate === ''){
+			alert("Please select As of Date");
+			return false;
+		}
+		
+		// Redirect to export function - match print function URL format exactly
+		window.location.href = "<?php echo ADMIN_URL;?>reports/agingexporttoexcel/"+asofdate+'/'+zone+'/'+status+'/'+preparedby+'/'+verifiedby+'/'+approvedby;
 	});
 
     $('#display').on('click', function(evt){
