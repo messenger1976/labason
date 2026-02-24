@@ -648,11 +648,12 @@
 						var franchise_fee_amount = (bill_amount_for_franchise * franchise_fee_percentage) / 100;
 						total_amount += parseFloat(franchise_fee_amount);
 						$('#franchise_fee').val(amount_formatted(franchise_fee_amount));
+						// Penalty: 10% applied to (current_bill - sc_discount) only, then add maintenance + franchise
 						amount_total_penalty = 0;
-						//console.log('SP:'+$('#special_priviledge').val());
 						if($('#special_priviledge').val()==='0'){
-							amount_total_penalty = (total_amount * 10)/100;
-							amount_total_penalty = amount_total_penalty + total_amount;
+							var penalty_base = multiprice - discount;  // current_bill - sc_discount
+							amount_total_penalty = (penalty_base * 10) / 100;
+							amount_total_penalty = amount_total_penalty + penalty_base + maintenance_fee + franchise_fee_amount;
 						}else{
 							amount_total_penalty = total_amount;
 						}

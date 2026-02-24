@@ -794,11 +794,12 @@ function recalculateFranchiseFeeAndTotals() {
 		$('#franchise_fee_amount').val(amount_formatted(franchise_fee_amount));
 	}
 	
-	// Calculate penalty
+	// Calculate penalty: 10% applied to (current_bill - sc_discount) only, then add maintenance + franchise
 	var amount_total_penalty = 0;
 	if($('#special_priviledge').val()==='0'){
-		amount_total_penalty = (total_amount * 10)/100;
-		amount_total_penalty = amount_total_penalty + total_amount;
+		var penalty_base = multiprice - discount;  // current_bill - sc_discount
+		amount_total_penalty = (penalty_base * 10) / 100;
+		amount_total_penalty = amount_total_penalty + penalty_base + maintenance_fee + franchise_fee_amount;
 	}else{
 		amount_total_penalty = total_amount;
 	}
@@ -1043,10 +1044,12 @@ $(document).ready(function(){
 		if($('#total_amount_add').length) {
 			$('#total_amount_add').val(amount_formatted(total_amount));
 		}
+		// Calculate penalty: 10% applied to (current_bill - sc_discount) only, then add maintenance + franchise
 		var amount_total_penalty = 0;
 		if($('#special_priviledge').val()==='0'){
-			amount_total_penalty = (total_amount * 10)/100;
-			amount_total_penalty = amount_total_penalty + total_amount;
+			var penalty_base = multiprice - discount;  // current_bill - sc_discount
+			amount_total_penalty = (penalty_base * 10) / 100;
+			amount_total_penalty = amount_total_penalty + penalty_base + maintenance_fee + franchise_fee_amount;
 		}else{
 			amount_total_penalty = total_amount;
 		}
