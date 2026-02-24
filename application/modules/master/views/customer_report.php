@@ -123,6 +123,14 @@
                                                             </div>
                                                         
                                                         </div>
+														<div class="form-group col-lg-6">
+															<div class="col-lg-12 controls">
+																<div class="form-group">
+																	<span class="input-group-addon"><i class="icon-user"></i><strong> Special Priviledge:</strong></span>
+																	<input class="form-check" value="1" type="checkbox" name="special_priviledge" id="special_priviledge">
+																</div>
+															</div>
+														</div>
                                                         <div class="form-group col-lg-6">
 															<div class="col-lg-12 controls">
 																<div class="form-group">
@@ -465,6 +473,7 @@
             var verifiedby = $("#verifiedby").val();
             var approvedby = $("#approvedby").val();
             var status = $("#status").val();
+			var specialPriviledge = $("#special_priviledge").is(":checked") ? 1 : 0;
 
             if(status===''){
                 status=99;
@@ -485,7 +494,7 @@
                 return false;
             }
             // Use current protocol to avoid mixed content issues
-            var printUrl = window.location.protocol + '//' + window.location.host + '/master/reports/customerprinttopdf/'+status+'/'+zone+'/'+preparedby+'/'+verifiedby+'/'+approvedby;
+			var printUrl = window.location.protocol + '//' + window.location.host + '/master/reports/customerprinttopdf/'+status+'/'+zone+'/'+preparedby+'/'+verifiedby+'/'+approvedby+'/'+specialPriviledge;
             const popup = window.open(
                 printUrl, // URL to display 
                 "PopupWindowPrint", // Name of the window
@@ -506,6 +515,7 @@
             var verifiedby = $("#verifiedby").val();
             var approvedby = $("#approvedby").val();
             var status = $("#status").val();
+			var specialPriviledge = $("#special_priviledge").is(":checked") ? 1 : 0;
 
             if(status===''){
                 status=99;
@@ -515,13 +525,14 @@
             }
             
             // Redirect to export function
-            window.location.href = "<?php echo ADMIN_URL;?>reports/customerexporttoexcel/"+status+'/'+zone+'/'+preparedby+'/'+verifiedby+'/'+approvedby;
+			window.location.href = "<?php echo ADMIN_URL;?>reports/customerexporttoexcel/"+status+'/'+zone+'/'+preparedby+'/'+verifiedby+'/'+approvedby+'/'+specialPriviledge;
         });
 
         $('#search').on('click', function(evt){
             evt.preventDefault();
             var zone = $("#zone").val();
             var status = $("#status").val();
+			var specialPriviledge = $("#special_priviledge").is(":checked") ? 1 : 0;
 
             // Show loading indicator
             $("#paidcustomerDiv").html('<div class="alert alert-info">Loading...</div>');
@@ -531,7 +542,7 @@
             $.ajax({
                 type    : "POST",
                 url	    : ajaxUrl,
-                data	: "zone="+zone+'&status='+status,
+				data	: "zone="+zone+'&status='+status+'&special_priviledge='+specialPriviledge,
                 success: function(response){
                     if(response && typeof response === 'string' && response.trim().length > 0){
                         $("#paidcustomerDiv").html(response.trim());

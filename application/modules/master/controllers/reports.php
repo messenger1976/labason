@@ -156,12 +156,12 @@ class reports extends CI_Controller {
 		$this->load->view($this->printtopdfPage,$data);
 	}
 
-	public function customerprinttopdf($status,$zone='',$preparedby='',$verifiedby='',$approvedby=''){
+	public function customerprinttopdf($status,$zone='',$preparedby='',$verifiedby='',$approvedby='',$special_priviledge=''){
 		//$header['roleResponsible'] = $this->top_model->get_responsibilities();
 		//$data['zone'] = $this->my_model->get_zone($zone);
 		$data['zone'] = $this->my_model->get_zone($zone);
         $data['status'] = ($status=='99')?'':$status;
-		$data['record'] = $this->report_model->get_customer_report_records($zone,$data['status']);
+		$data['record'] = $this->report_model->get_customer_report_records($zone,$data['status'],$special_priviledge);
 		$data['preparedby'] = $this->my_model->get_employee($preparedby);
 		$data['verifiedby'] = $this->my_model->get_employee($verifiedby);
 		$data['approvedby'] = $this->my_model->get_employee($approvedby);
@@ -581,6 +581,7 @@ class reports extends CI_Controller {
 				
 				$zone = $this->input->post('zone');
 				$status = $this->input->post('status');
+				$special_priviledge = $this->input->post('special_priviledge');
 				
 				// Convert zone to integer, default to 0 if empty
 				$zone = ($zone === '' || $zone === null) ? 0 : (int)$zone;
@@ -598,7 +599,7 @@ class reports extends CI_Controller {
 				}
 				
 				// Get records
-				$data['record'] = $this->report_model->get_customer_report_records($zone,$status);
+				$data['record'] = $this->report_model->get_customer_report_records($zone,$status,$special_priviledge);
 				
 				// If no records, set empty array
 				if(!isset($data['record']) || !is_array($data['record'])){
@@ -622,7 +623,7 @@ class reports extends CI_Controller {
 			}
 	}
 
-	public function customerexporttoexcel($status='',$zone='',$preparedby='',$verifiedby='',$approvedby=''){
+	public function customerexporttoexcel($status='',$zone='',$preparedby='',$verifiedby='',$approvedby='',$special_priviledge=''){
 		// Suppress error display to prevent output before headers
 		@ini_set('display_errors', 0);
 		error_reporting(0);
@@ -656,7 +657,7 @@ class reports extends CI_Controller {
 		}
 		
 		// Get records
-		$records = $this->report_model->get_customer_report_records($zone, $status);
+		$records = $this->report_model->get_customer_report_records($zone, $status, $special_priviledge);
 		
 		// Get zone data
 		$zones = $this->my_model->get_zone($zone);
@@ -674,6 +675,7 @@ class reports extends CI_Controller {
 		} elseif($status == '2'){
 			$status_display = 'Disconnected';
 		}
+		$special_display = ($special_priviledge === '1' || $special_priviledge === 1) ? 'Yes' : 'All';
 		
 		// Prepare export data array
 		$export_data = array();
@@ -682,6 +684,7 @@ class reports extends CI_Controller {
 		$export_data[] = array('CUSTOMER REPORT');
 		$export_data[] = array('Zone: ' . $zone_name);
 		$export_data[] = array('Status: ' . $status_display);
+		$export_data[] = array('Special Priviledge: ' . $special_display);
 		$export_data[] = array(''); // Empty row
 		
 		// Add column headers

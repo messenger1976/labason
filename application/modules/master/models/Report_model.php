@@ -126,7 +126,7 @@ class Report_model extends CI_Model {
 		$result = $query->result_array();
 		return $result;
 	}
-	public function get_customer_report_records($zone,$status=''){
+	public function get_customer_report_records($zone,$status='',$special_priviledge=''){
 		// Use the same pattern as addcustomer_model for compatibility
 		$this->db->select($this->table_name.'.customer_id, '.$this->table_name.'.first_name, '.$this->table_name.'.last_name, '.$this->table_name.'.middle_name, '.$this->table_name.'.address, '.$this->table_name.'.status, 
 		(SELECT zone FROM '.$this->table_zone.' WHERE '.$this->table_zone.'.id = '.$this->table_name.'.zone) as zone_name,
@@ -140,6 +140,9 @@ class Report_model extends CI_Model {
 		}
         if($status !== '' && $status !== null && $status !== false && $status !== '99'){
 			$this->db->where($this->table_name.'.status',$status);
+		}
+		if($special_priviledge === '1' || $special_priviledge === 1){
+			$this->db->where($this->table_name.'.special_priviledge',1);
 		}
 		
 		$this->db->order_by($this->table_name.'.last_name','asc');
