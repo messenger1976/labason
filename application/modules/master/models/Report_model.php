@@ -213,6 +213,67 @@ class Report_model extends CI_Model {
 		$result = $query->result_array();
 		return $result;
 	}
+
+	/**
+	 * Get daily income for a given month/year (meter + monthly customers).
+	 * Returns array: 'daily' => [day => amount], 'total' => float, 'days_in_month' => int
+	 * Date in DB is stored as Y-m-d (see addpaymentcustomer_model insert).
+	 */
+	public function get_monthly_income_daily($month, $year) {
+		$month = (int) $month;
+		$year = (int) $year;
+		$start_ymd = $year . '-' . str_pad($month, 2, '0', STR_PAD_LEFT) . '-01';
+		$end_ymd = date('Y-m-t', strtotime($start_ymd));
+		$days_in_month = (int) date('t', strtotime($start_ymd));
+
+		$daily = array();
+		for ($d = 1; $d <= 31; $d++) {
+			$daily[$d] = 0;
+		}
+
+		// Meter customers: date column is Y-m-d, use pay_amount or grand_total as amount
+		$this->db->select('DAY(date) as day_num, SUM(COALESCE(grand_total, pay_amount, amount, 0)) as amt', FALSE);
+		$this->db->from($this->table_meter);
+		$this->db->where('date >=', $start_ymd);
+		$this->db->where('date <=', $end_ymd);
+		$this->db->group_by('date');
+		$qm = $this->db->get();
+		if ($qm && $qm->num_rows() > 0) {
+			foreach ($qm->result_array() as $row) {
+				$day = isset($row['day_num']) ? (int) $row['day_num'] : 0;
+				if ($day >= 1 && $day <= 31) {
+					$daily[$day] += (float) $row['amt'];
+				}
+			}
+		}
+
+		// Monthly customers
+		$this->db->select('DAY(date) as day_num, SUM(COALESCE(paidamount, 0)) as amt', FALSE);
+		$this->db->from($this->table_monthly);
+		$this->db->where('date >=', $start_ymd);
+		$this->db->where('date <=', $end_ymd);
+		$this->db->group_by('date');
+		$qy = $this->db->get();
+		if ($qy && $qy->num_rows() > 0) {
+			foreach ($qy->result_array() as $row) {
+				$day = isset($row['day_num']) ? (int) $row['day_num'] : 0;
+				if ($day >= 1 && $day <= 31) {
+					$daily[$day] += (float) $row['amt'];
+				}
+			}
+		}
+
+		$total = 0;
+		for ($d = 1; $d <= $days_in_month; $d++) {
+			$total += isset($daily[$d]) ? (float) $daily[$d] : 0;
+		}
+
+		return array(
+			'daily' => $daily,
+			'total' => $total,
+			'days_in_month' => $days_in_month
+		);
+	}
 	
 }
 ?>

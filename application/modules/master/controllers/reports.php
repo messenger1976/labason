@@ -9,6 +9,8 @@ class reports extends CI_Controller {
     public $leakingARreportPage = 'leaking_ar_report';
     public $monthlyBillingReportPage = 'monthly_billing_report';		   //*****  View page   *****//
     public $customerReportPage = 'customer_report';		   //*****  View page   *****//
+    public $monthlyIncomeReportAnalyticPage = 'monthly_income_report_analytic';  //*****  View page   *****//
+    public $monthlyIncomeReportPrintPage = 'monthly_income_report_printtopdf';
 	public $searchPage ='adddaily_search _ajax';
     public $monthlybillingreport_ajaxPage ='monthly_billing_report_ajax';
     public $customerreport_ajaxPage ='customer_report_ajax';
@@ -128,6 +130,84 @@ class reports extends CI_Controller {
 		//$header['record_info'] = $this->top_model->get_last_login_details(1);
 		$this->load->view($this->headerPage,$header);
 		$this->load->view($this->leakingARreportPage,$data);
+	}
+
+	public function monthly_income_report_analytic(){ 		 //*****  View Loading  *****//
+		$header['roleResponsible'] = $this->top_model->get_responsibilities();
+		$data['employee'] = $this->my_model->get_employee();
+		$this->load->view($this->headerPage,$header);
+		$this->load->view($this->monthlyIncomeReportAnalyticPage,$data);
+	}
+
+	public function getmonthlyincomereportanalytic(){
+		$month = $this->input->post('month');
+		$year = $this->input->post('year');
+		if (empty($month) || empty($year)) {
+			$days_in_month = (int) date('t', mktime(0, 0, 0, (int)$month, 1, (int)$year));
+			if ($days_in_month < 28) $days_in_month = 31;
+			$this->_json_response(array('daily' => array(), 'total' => 0, 'days_in_month' => $days_in_month));
+			return;
+		}
+		$result = $this->report_model->get_monthly_income_daily($month, $year);
+		$this->_json_response($result);
+	}
+
+	private function _json_response($data) {
+		while (ob_get_level()) { @ob_end_clean(); }
+		header('Content-Type: application/json; charset=utf-8');
+		echo json_encode($data, JSON_NUMERIC_CHECK);
+	}
+
+	/** Print/PDF: Monthly Income Report Analytic - opens in new window for printing */
+	public function monthly_income_report_printtopdf($month, $year) {
+		$month = (int) $month;
+		$year = (int) $year;
+		if ($month < 1 || $month > 12 || $year < 2000 || $year > 2100) {
+			show_error('Invalid month or year.');
+			return;
+		}
+		$data = $this->report_model->get_monthly_income_daily($month, $year);
+		$mn = getMonthName($month);
+		$data['month_name'] = isset($mn[0]) ? $mn[0]->month_name : date('F', mktime(0,0,0,$month,1));
+		$data['month'] = $month;
+		$data['year'] = $year;
+		$this->load->view($this->monthlyIncomeReportPrintPage, $data);
+	}
+
+	/** Export to Excel: Monthly Income Report Analytic */
+	public function monthly_income_exporttoexcel($month, $year) {
+		$month = (int) $month;
+		$year = (int) $year;
+		if ($month < 1 || $month > 12 || $year < 2000 || $year > 2100) {
+			show_error('Invalid month or year.');
+			return;
+		}
+		@ini_set('display_errors', 0);
+		error_reporting(0);
+		while (ob_get_level()) { @ob_end_clean(); }
+		if (headers_sent($file, $line)) {
+			die("Headers already sent in $file on line $line.");
+		}
+		$this->load->helper('excel');
+		$result = $this->report_model->get_monthly_income_daily($month, $year);
+		$daily = $result['daily'];
+		$total = (float) $result['total'];
+		$days_in_month = (int) $result['days_in_month'];
+		$mn = getMonthName($month);
+		$month_name = isset($mn[0]) ? $mn[0]->month_name : date('F', mktime(0,0,0,$month,1));
+		$export_data = array();
+		$export_data[] = array('MONTHLY INCOME REPORT ANALYTIC');
+		$export_data[] = array($month_name . ' ' . $year);
+		$export_data[] = array('');
+		$export_data[] = array('Day', 'Income');
+		for ($d = 1; $d <= $days_in_month; $d++) {
+			$amt = isset($daily[$d]) ? (float) $daily[$d] : 0;
+			$export_data[] = array($d, number_format($amt, 2));
+		}
+		$export_data[] = array('');
+		$export_data[] = array('TOTAL', number_format($total, 2));
+		$filename = 'Monthly_Income_Report_' . $month_name . '_' . $year . '_' . date('d-m-Y') . '.xls';
+		array_to_excel($export_data, $filename);
 	}
 
 	public function printtopdf($billingperiod,$status,$zone='',$preparedby='',$verifiedby='',$approvedby=''){
