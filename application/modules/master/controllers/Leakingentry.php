@@ -190,4 +190,9 @@ class Leakingentry extends CI_Controller{
 		//exit;
 		$this->load->view($this->leaking_soa_statement,$data);
 	}
+
+	/** Open Billing Adjustment / Labason forms in new window and trigger print dialog */
+	public function print_forms($leaking_id = null){
+		$this->load->view('leakingentry_print_forms');
+	}
 }

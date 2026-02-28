@@ -260,6 +260,11 @@
 																		<img src="<?php echo base_url();?>images/favicon/ledger.png">
 																	</span>
 																</a>
+														<a href="<?php echo ADMIN_URL;?>Leakingentry/print_forms/<?php echo $row['leaking_id'];?>" target="_blank" class="tooltip-success" data-rel="tooltip" title="Print Forms">
+																	<span class="orange">
+																		<i class="fa fa-print"></i>
+																	</span>
+																</a>
 													</td>
 
 														
