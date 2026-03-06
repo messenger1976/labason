@@ -231,12 +231,14 @@ class Report_model extends CI_Model {
 			$daily[$d] = 0;
 		}
 
-		// Meter customers: date column is Y-m-d, use pay_amount or grand_total as amount
-		$this->db->select('DAY(date) as day_num, SUM(COALESCE(grand_total, pay_amount, amount, 0)) as amt', FALSE);
+		// Meter customers: date column is Y-m-d, use pay_amount or grand_total as amount.
+		// Group by invoice_id so each payment is counted once (matches Daily Report which groups by invoice_id).
+		// Use MAX() so duplicate invoice_id rows (if any) contribute only one amount per payment.
+		$this->db->select('DAY(date) as day_num, invoice_id, MAX(COALESCE(grand_total, pay_amount, amount, 0)) as amt', FALSE);
 		$this->db->from($this->table_meter);
 		$this->db->where('date >=', $start_ymd);
 		$this->db->where('date <=', $end_ymd);
-		$this->db->group_by('date');
+		$this->db->group_by(array('date', 'invoice_id'));
 		$qm = $this->db->get();
 		if ($qm && $qm->num_rows() > 0) {
 			foreach ($qm->result_array() as $row) {
