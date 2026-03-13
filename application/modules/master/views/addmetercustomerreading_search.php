@@ -294,6 +294,17 @@
                                             </div>
                                         </div>
                                     </div>
+									<div class="row">
+										<div class="col-lg-12 controls">
+											<div class="form-group">
+												<span class="input-group-addon"><strong>Compute Penalty : </strong></span>
+												<div style="padding:10px 12px; border:1px solid #ddd; border-top:0;">
+													<label style="margin-right:20px;"><input type="radio" name="compute_penalty" value="1" checked> Yes</label>
+													<label><input type="radio" name="compute_penalty" value="0"> No</label>
+												</div>
+											</div>
+										</div>
+									</div>
                                     <div class="row">
                                         <div class="col-lg-12 controls">
                                             <div class="form-group"> 
@@ -796,7 +807,8 @@ function recalculateFranchiseFeeAndTotals() {
 	
 	// Calculate penalty: 10% applied to (current_bill - sc_discount) only, then add maintenance + franchise
 	var amount_total_penalty = 0;
-	if($('#special_priviledge').val()==='0'){
+	var compute_penalty = $('input[name="compute_penalty"]:checked').val() || '1';
+	if($('#special_priviledge').val()==='0' && compute_penalty === '1'){
 		var penalty_base = multiprice - discount;  // current_bill - sc_discount
 		amount_total_penalty = (penalty_base * 10) / 100;
 		amount_total_penalty = amount_total_penalty + penalty_base + maintenance_fee + franchise_fee_amount;
@@ -834,6 +846,7 @@ $('#btn_save').on('click', function(evt){
 	formData.append("franchise_fee_amount", $('#franchise_fee_amount').val());
 	formData.append("reading_date", $('#reading_date').val());
 	formData.append("customer_status", $('#customer_status').val());
+	formData.append("compute_penalty", $('input[name="compute_penalty"]:checked').val() || '1');
 	formData.append("edit", 'edit');
 
 	$.ajax({
@@ -874,6 +887,10 @@ $('#franchise_fee_percent').on('blur', function(evt){
 
 $('#maintenance_fee').on('blur', function(evt){
 	evt.preventDefault();
+	recalculateFranchiseFeeAndTotals();
+});
+
+$('input[name="compute_penalty"]').on('change', function(){
 	recalculateFranchiseFeeAndTotals();
 });
 
