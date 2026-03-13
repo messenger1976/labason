@@ -90,6 +90,7 @@
 														data-account_type="<?php echo stripslashes($row['account_type']); ?>"
 														data-special_priviledge="<?php echo stripslashes($row['special_priviledge']); ?>"
 														data-customer_status="<?php echo stripslashes($row['customer_status']); ?>"
+																			data-compute_penalty="<?php echo isset($row['compute_penalty']) ? (int)$row['compute_penalty'] : 1; ?>"
                                                         data-toggle="modal" data-target="#myModal"><i class="fa fa-edit"></i> Edit</a></td>
 														<div class="visible-xs visible-sm hidden-md hidden-lg">
 																<div class="inline position-relative">
@@ -313,6 +314,7 @@
 				let account_type = $(this).data("account_type");
 				let special_priviledge = $(this).data("special_priviledge");
 				let customer_status = $(this).data("customer_status");
+				let compute_penalty = $(this).data("compute_penalty");
 				
                 // Set modal fields
 				$("#record_id").val(id);
@@ -332,6 +334,11 @@
 				$("#cust_type_id").val(account_type);
 				$("#special_priviledge").val(special_priviledge);
 				$("#customer_status").val(customer_status);
+				if(String(compute_penalty) === '0'){
+					$('input[name="compute_penalty"][value="0"]').prop('checked', true);
+				}else{
+					$('input[name="compute_penalty"][value="1"]').prop('checked', true);
+				}
                 console.log($("#reading_date").val());
                 // Show the modal
                 //$("#editModal").modal("show");

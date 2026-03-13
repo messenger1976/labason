@@ -53,8 +53,9 @@
 								$year = stripslashes($row['year']);
 								$due_date = $row['bp_due_date']; 
 								$special_priviledge = $row['special_priviledge'];
+								$compute_penalty = isset($row['compute_penalty']) ? (int)$row['compute_penalty'] : 1;
 								$cur_date = date("Y-m-d");
-								if($special_priviledge==0){
+								if($special_priviledge==0 && $compute_penalty==1){
 									if($cur_date>$due_date){
 										$balance = $row['penalty']; 
 										$penalty = $row['penalty'] - $row['amount'];
@@ -83,13 +84,16 @@
 									?>   
 								<input type="checkbox" name="checkbox[]" id="<?php echo $i;?>" value="<?php echo  $i;?>" class="my_check" > 
 								<?php }else{
-										$trans_date = date('M j, Y',strtotime($record_reading[0]['trans_date']));
+										$trans_date_raw = $record_reading[0]['trans_date'];
+										$trans_date = date('M j, Y',strtotime($trans_date_raw));
 										$or_number_paid = $record_reading[0]['or_number'];
-										$due_date = strtotime('M j, Y',$due_date);
+										$due_date_ts = strtotime($due_date);
+										$trans_date_ts = strtotime($trans_date_raw);
+										$compute_penalty = isset($record_reading[0]['compute_penalty']) ? (int)$record_reading[0]['compute_penalty'] : 1;
 										
 
-										if($special_priviledge==0){
-											if($trans_date>$due_date){
+										if($special_priviledge==0 && $compute_penalty==1){
+											if($trans_date_ts>$due_date_ts){
 												//$balance = $row['penalty']; 
 												$balance = $record_reading[0]['amount'];
 												$penalty = $balance - $unit_price;
@@ -124,6 +128,7 @@
 									<input type="hidden" name="due_date_<?php echo $i;?>" id="due_date_<?php echo $i;?>" value = "<?php echo $row['bp_due_date'];?>">
 									<input type="hidden" name="special_priviledge_<?php echo $i;?>" id="special_priviledge_<?php echo $i;?>" value = "<?php echo $row['special_priviledge'];?>">
 									<input type="hidden" name="base_amount_<?php echo $i;?>" id="base_amount_<?php echo $i;?>" value = "<?php echo $row['amount'];?>">
+									<input type="hidden" name="compute_penalty_<?php echo $i;?>" id="compute_penalty_<?php echo $i;?>" value = "<?php echo isset($compute_penalty) ? $compute_penalty : 1;?>">
 								</td>
 								<td><?php echo date('M j, Y',strtotime($row['bp_due_date'])); ?>
 								<td align="center"><?php echo stripslashes($row['previous_reading']); ?>
