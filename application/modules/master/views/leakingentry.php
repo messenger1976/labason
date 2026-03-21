@@ -230,6 +230,9 @@
 																data-current_bill="<?php echo $row['unit_price'];?>"
 																data-sc_discount="<?php echo $row['sc_discount'];?>"
 																data-arrears="<?php echo $row['arrears'];?>"
+																data-maintenance_fee="<?php echo $row['maintenance_fee'];?>"
+																data-franchise_fee_percent="<?php echo $row['franchise_fee_percent'];?>"
+																data-franchise_fee_amount="<?php echo $row['franchise_fee_amount'];?>"
 																data-total_amount="<?php echo $row['amount'];?>"
 																data-penalty="<?php echo $row['penalty'];?>"
 																data-reading_date="<?php echo $row['date'];?>"
@@ -440,6 +443,33 @@
                                             </div>
                                         </div>
                                     </div>
+									<div class="row">
+										<div class="col-lg-12 controls">
+											<div class="form-group"> 
+												<span class="input-group-addon"><strong>WM Maintenance Fee : </strong></span>
+												<input class="form-control" type="text" id="maintenance_fee" name="maintenance_fee" style="background-color:yellow;" readonly>
+												<?php echo form_error('maintenance_fee'); ?>
+											</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-lg-12 controls">
+											<div class="form-group"> 
+												<span class="input-group-addon"><strong>Franchise Tax % : </strong></span>
+												<input class="form-control" type="text" id="franchise_fee_percent" name="franchise_fee_percent" style="background-color:yellow;" readonly>
+												<?php echo form_error('franchise_fee_percent'); ?>
+											</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-lg-12 controls">
+											<div class="form-group"> 
+												<span class="input-group-addon"><strong>Franchise Tax Amount : </strong></span>
+												<input class="form-control" type="text" id="franchise_fee_amount" name="franchise_fee_amount" style="background-color:yellow;" readonly>
+												<?php echo form_error('franchise_fee_amount'); ?>
+											</div>
+										</div>
+									</div>
                                     <div class="row">
                                         <div class="col-lg-12 controls">
                                             <div class="form-group"> 
@@ -841,6 +871,9 @@
 								$('#current_bill').val(response.unit_price);
 								$('#sc_discount').val(response.sc_discount);
 								$('#arrears').val(response.arrears);
+								$('#maintenance_fee').val(response.maintenance_fee);
+								$('#franchise_fee_percent').val(response.franchise_fee_percent);
+								$('#franchise_fee_amount').val(response.franchise_fee_amount);
 								$('#total_amount').val(response.amount);
 								$('#penalty').val(response.penalty);
 								$('#reading_date').val(response.date);
@@ -875,6 +908,9 @@
 
 				$('#customer_id_div_text').hide();
 				$('#billing_period_div_text').hide();
+				$('#maintenance_fee').val('0.00');
+				$('#franchise_fee_percent').val('0.00');
+				$('#franchise_fee_amount').val('0.00');
 				
 				// Reset customer dropdown
 				$('#customer_id').val('').trigger('change');
@@ -894,6 +930,9 @@
 				$current_bill = $(this).data('current_bill');
 				$sc_discount = $(this).data('sc_discount');
 				$arrears = $(this).data('arrears');
+				$maintenance_fee = $(this).data('maintenance_fee');
+				$franchise_fee_percent = $(this).data('franchise_fee_percent');
+				$franchise_fee_amount = $(this).data('franchise_fee_amount');
 				$total_amount = $(this).data('total_amount');
 				$penalty = $(this).data('penalty');
 				$reading_date = $(this).data('reading_date');
@@ -925,6 +964,9 @@
 				$('#current_bill').val($current_bill);
 				$('#sc_discount').val($sc_discount);
 				$('#arrears').val($arrears);
+				$('#maintenance_fee').val($maintenance_fee);
+				$('#franchise_fee_percent').val($franchise_fee_percent);
+				$('#franchise_fee_amount').val($franchise_fee_amount);
 				$('#total_amount').val($total_amount);
 				$('#penalty').val($penalty);
 				$('#reading_date').val($reading_date);
@@ -1064,6 +1106,23 @@
 			var leakval = $('#leaking_percent').val();
 			if(leakval){
 				$('#btn_save').prop('disabled', false);
+				var btnMode = $('#btn_save').val();
+				if(btnMode === 'add'){
+					var duedate = $('#due_date').val();
+					var paymentdate = $('#payment_date').val();
+					var date1 = parseDmyString(duedate);
+					var date2 = parseDmyString(paymentdate);
+					var amountBeforeDue = parseFloat(String($('#total_amount').val() || '0').replace(/,/g, ''));
+					var amountAfterDue = parseFloat(String($('#penalty').val() || '0').replace(/,/g, ''));
+					var currentBill = date2 <= date1 ? amountBeforeDue : amountAfterDue;
+					$('#gross_amount').val(currentBill.toFixed(2));
+					var addLeakingDisc = (currentBill * leakval)/100;
+					var addBillAmount = currentBill - addLeakingDisc;
+					if(addBillAmount < 0){ addBillAmount = 0; }
+					$('#leaking_amount').val(addLeakingDisc.toFixed(2));
+					$('#bill_amount').val(addBillAmount.toFixed(2));
+					return;
+				}
 				var duedate = $('#due_date').val();
 				var paymentdate = $('#payment_date').val();
 				var special_priviledge = $('#special_priviledge').val();
@@ -1074,12 +1133,14 @@
 					$('#gross_amount').val($('#penalty').val());
 					var leakingdisc =($('#penalty').val() * leakval)/100;
 					var billamount = $('#penalty').val() - leakingdisc;
+					if(billamount < 0){ billamount = 0; }
 					$('#leaking_amount').val(leakingdisc.toFixed(2));
 					$('#bill_amount').val(billamount.toFixed(2));
 				}else{
 					$('#gross_amount').val($('#total_amount').val());
 					var leakingdisc =($('#total_amount').val() * leakval)/100;
 					var billamount = $('#total_amount').val() - leakingdisc;
+					if(billamount < 0){ billamount = 0; }
 					$('#leaking_amount').val(leakingdisc.toFixed(2));
 					$('#bill_amount').val(billamount.toFixed(2));
 				}
