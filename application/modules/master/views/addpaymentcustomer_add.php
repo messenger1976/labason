@@ -161,7 +161,9 @@
 																	<div class="form-group" style="width: 100%;">
 																		<label class="col-md-5 control-label" for="or_num" style="text-align:right;"> OR/SI # : (<span style="color:red;font-style:italic;">*</span>)</label>
 																		<div class="col-md-7">
-																			<input type="text" class="form-control text-input" id="or_num" name="or_num" value="<?php echo $this->input->post('or_num'); ?>" required/>
+																			<input type="text" class="form-control text-input" id="or_num" name="or_num" value="<?php echo $this->input->post('or_num'); ?>" required autocomplete="off" title="Editable. Must be unique for your teller; validated when you change the value and again on save."/>
+																			<small class="help-block">Suggested next number loads automatically; you may change it. Duplicates for your login are not allowed.</small>
+																			<small id="or_num_feedback" class="help-block" style="color:#a94442;"></small>
 																			<?php echo form_error('or_num'); ?>
 																		</div>
 																	</div>
@@ -670,6 +672,10 @@ $(document).ready(function(){
 		evt.preventDefault();
 		$('#myModalPay').modal('hide');
 	});
+
+	$('#myModalPay').on('hidden.bs.modal', function() {
+		$(this).removeData('skipTransdatePenaltyRecalc');
+	});
 });
 
 $('#btn_search_box').on('click', function(evt) {
@@ -728,6 +734,8 @@ $('#btn_search_box').on('click', function(evt) {
 
 
 $(document).on('click','.pay_button',function(e){
+	// Single-row Unpaid: bill amount already includes server-side penalty; do not re-derive from transaction date
+	$('#myModalPay').data('skipTransdatePenaltyRecalc', true);
 	$('#myModalPay').modal('show');
 	$('#hideclass').show();
 	$(".pay_setting_1").show();
@@ -799,7 +807,8 @@ $(document).on('click','.pay_button',function(e){
 		type: 'POST',
 		url: '<?php echo ADMIN_URL;?>addpaymentcustomer/get_or_number/',
 		success: function(data) {
-			$('#or_num').val(data);
+			$('#or_num').val($.trim(data));
+			runOrNumberRemoteCheck(true);
 		}
 	});
 
@@ -876,6 +885,7 @@ $(document).on('click','.total_pay',function(e){
 	$("#total_setting_1").hide();
 	$("#total_setting_2").show();
 	$("#total_settin_pay").show();
+	$('#myModalPay').data('skipTransdatePenaltyRecalc', false);
 	$('#myModalPay').modal('show');
 	$("#hideclass").show();
 	$(".pay_setting_1").hide();
@@ -899,7 +909,8 @@ $(document).on('click','.total_pay',function(e){
 		type: 'POST',
 		url: '<?php echo ADMIN_URL;?>addpaymentcustomer/get_or_number/',
 		success: function(data) {
-			$('#or_num').val(data);
+			$('#or_num').val($.trim(data));
+			runOrNumberRemoteCheck(true);
 		}
 	});
 
@@ -1007,6 +1018,48 @@ $('#leaking_balance').on('blur', function() {
 
 
 
+function parseOrSiDigits(val) {
+	var d = String(val || '').replace(/\D/g, '');
+	var n = parseInt(d, 10);
+	return (isNaN(n) || n < 1) ? 0 : n;
+}
+
+function markOrNumValidity(ok, msg) {
+	var $g = $('#or_num').closest('.form-group');
+	var $fb = $('#or_num_feedback');
+	$('#or_num').data('or-valid', ok ? '1' : '0');
+	$fb.text(msg || '');
+	$g.removeClass('has-error');
+	if (!ok && msg) {
+		$g.addClass('has-error');
+	}
+}
+
+function runOrNumberRemoteCheck(asyncFlag) {
+	var n = parseOrSiDigits($('#or_num').val());
+	if (n <= 0) {
+		markOrNumValidity(false, 'Enter a valid OR/SI number (digits only).');
+		return $.Deferred().reject().promise();
+	}
+	return $.ajax({
+		type: 'POST',
+		url: '<?php echo ADMIN_URL; ?>addpaymentcustomer/check_or_number/' + n,
+		async: asyncFlag !== false
+	}).done(function(data) {
+		if (String(data) === '1') {
+			markOrNumValidity(false, 'This OR/SI # is already used for your teller account.');
+		} else {
+			markOrNumValidity(true, '');
+		}
+	}).fail(function() {
+		markOrNumValidity(false, 'Could not validate OR/SI. Try again.');
+	});
+}
+
+$(document).on('blur', '#or_num', function() {
+	runOrNumberRemoteCheck(true);
+});
+
 $('#pay_amount').on('blur', function() {
 	var change_amount = $("#grand_total").val() - $(this).val();
 	$('#change_amount').val(change_amount.toFixed(2));
@@ -1022,8 +1075,6 @@ $('#pay_amount').on('blur', function() {
 
 $('#add').on('click',function(evt){
 	var pay_amount = parseFloat($('#pay_amount').val());
-	var ornumber = parseInt($('#or_num').val());
-	var res_checkor=0;
 	var leaking_id = $('#leaking_id').val();
 
 	if(leaking_id!='' && pay_amount<=0){
@@ -1050,28 +1101,41 @@ $('#add').on('click',function(evt){
 		
 	}
 
-
+	var orN = parseOrSiDigits($('#or_num').val());
+	if (orN <= 0) {
+		evt.preventDefault();
+		markOrNumValidity(false, 'Enter a valid OR/SI number (digits only).');
+		$.smallBox({
+			title : "OR/SI #",
+			content : "Enter a valid OR/SI number.",
+			color : "#D30000",
+			timeout: 8000,
+			icon : "fa fa-exclamation swing animated"
+		});
+		return false;
+	}
+	var orDup = false;
 	$.ajax({
 		type: 'POST',
-		url: '<?php echo ADMIN_URL;?>addpaymentcustomer/check_or_number/'+ornumber,
-		async:false,
-		success: function(data) {
-			if(data==1){
-				evt.preventDefault();
-				//alert('OR Number already Exist.');
-				$.smallBox({
-					title : "OR/SI NUMBER field error",
-					content : "OR/SI Number already Exist",
-					color : "#D30000",
-					timeout: 8000,
-					icon : "fa fa-exclamation swing animated"
-				});
-			}
-		}
+		url: '<?php echo ADMIN_URL; ?>addpaymentcustomer/check_or_number/' + orN,
+		async: false,
+		success: function(data) { orDup = (String(data) === '1'); }
 	});
-		
-	
+	if (orDup) {
+		evt.preventDefault();
+		markOrNumValidity(false, 'This OR/SI # is already used for your teller account.');
+		$.smallBox({
+			title : "OR/SI NUMBER",
+			content : "This OR/SI number is already used for your teller account.",
+			color : "#D30000",
+			timeout: 8000,
+			icon : "fa fa-exclamation swing animated"
+		});
+		return false;
+	}
+	markOrNumValidity(true, '');
 
+	
 	
 	
 	
@@ -1123,8 +1187,6 @@ $('#total_add').on('click',function(evt){
 	*/
 
 	var pay_amount = parseFloat($('#pay_amount').val());
-	var ornumber = parseInt($('#or_num').val());
-	var res_checkor=0;
 
 	if(pay_amount<=0){
 		
@@ -1139,25 +1201,40 @@ $('#total_add').on('click',function(evt){
 		evt.preventDefault();
 	}
 
-
+	var orNb = parseOrSiDigits($('#or_num').val());
+	if (orNb <= 0) {
+		evt.preventDefault();
+		markOrNumValidity(false, 'Enter a valid OR/SI number (digits only).');
+		$.smallBox({
+			title : "OR/SI #",
+			content : "Enter a valid OR/SI number.",
+			color : "#D30000",
+			timeout: 8000,
+			icon : "fa fa-exclamation swing animated"
+		});
+		return false;
+	}
+	var orDupB = false;
 	$.ajax({
 		type: 'POST',
-		url: '<?php echo ADMIN_URL;?>addpaymentcustomer/check_or_number/'+ornumber,
-		async:false,
-		success: function(data) {
-			if(data==1){
-				$.smallBox({
-					title : "OR/SI NUMBER field error",
-					content : "OR/SI Number already Exist",
-					color : "#D30000",
-					timeout: 8000,
-					icon : "fa fa-exclamation swing animated"
-				});
-				evt.preventDefault();
-				//alert('OR Number already Exist.');
-			}
-		}
+		url: '<?php echo ADMIN_URL; ?>addpaymentcustomer/check_or_number/' + orNb,
+		async: false,
+		success: function(data) { orDupB = (String(data) === '1'); }
 	});
+	if (orDupB) {
+		evt.preventDefault();
+		markOrNumValidity(false, 'This OR/SI # is already used for your teller account.');
+		$.smallBox({
+			title : "OR/SI NUMBER",
+			content : "This OR/SI number is already used for your teller account.",
+			color : "#D30000",
+			timeout: 8000,
+			icon : "fa fa-exclamation swing animated"
+		});
+		return false;
+	}
+	markOrNumValidity(true, '');
+
 });
 
 $("#transdate").datepicker({
@@ -1177,6 +1254,9 @@ $("#transdate").datepicker({
 
 // Function to recalculate penalty based on transaction date
 function recalculatePenaltyIfNeeded() {
+	if ($('#myModalPay').data('skipTransdatePenaltyRecalc')) {
+		return parseFloat($("#paid_total_amount").val() || 0);
+	}
 	var trans_date = $('#transdate').val();
 	var due_date = $('#due_date').val();
 	var special_priviledge = $('#special_priviledge').val();
@@ -1212,6 +1292,9 @@ function recalculatePenaltyIfNeeded() {
 
 // Recalculate penalty when transaction date changes
 $('#transdate').on('blur change', function() {
+	if ($('#myModalPay').data('skipTransdatePenaltyRecalc')) {
+		return;
+	}
 	var leaking_balance = parseFloat($('#leaking_balance').val() || 0);
 	var vat_amount = parseFloat($('#vat_amount').val() || 0);
 	var leaking_amount = parseFloat($('#leaking_amount').val() || 0);

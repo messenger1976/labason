@@ -89,7 +89,8 @@ class responsibilities extends CI_Controller
 				'admin' => 'Admin',
 				'adddailyreport' => 'Daily Reports',
 				'leakingentry' => 'Leaking Entry',
-				'database_backup' => 'Database Backup'
+				'database_backup' => 'Database Backup',
+				'manual_or_series' => 'Manual OR Series'
 				);
 	}
 

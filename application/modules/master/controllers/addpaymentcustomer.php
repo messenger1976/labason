@@ -258,7 +258,7 @@ class addpaymentcustomer extends CI_Controller {
 				$this->session->set_flashdata('msg_succ', 'Inserted Successfully...');
 				redirect($this->listPage_redirect);
 			}else{
-				$data['msg'] = "Not Inserted...";
+				$this->session->set_flashdata('msg_succ', 'Not inserted: OR/SI # may already be used, invalid, or payment allocation failed.');
 				redirect($this->listPage_redirect);
 			}
 
@@ -267,35 +267,25 @@ class addpaymentcustomer extends CI_Controller {
 		
 		if($this->input->post('total_add') != ''){
 			    $insert_ids = $this->input->post('checkbox');
-				
-				/*if (isset($_POST['checkbox']) && is_array($_POST['checkbox'])) {
-					$items = $_POST['items']; // Retrieve the array
-				
-					// Iterate and display each item
-					foreach ($items as $index => $item) {
-						echo "Item " . ($index + 1) . ": " . htmlspecialchars($item) . "<br>";
-					}
-				} else {
-					echo "No items were submitted.";
-				}*/
-
-
-				//$insert_ids = $_POST['checkbox'];
-				//echo 'Hello';
-				//print_r($_POST);
-				//print_r($insert_ids);
-				//exit;
-				for($i=0;$i<count($insert_ids);$i++){
-					
-					$result = $this->my_model->add_record_multiple($insert_ids[$i]);
+				$uid = (int) $this->session->userdata('userid');
+				$posted_or = (int) $this->input->post('or_num');
+				if ($posted_or <= 0) {
+					$this->session->set_flashdata('msg_succ', 'Invalid OR/SI number.');
+					redirect($this->listPage_redirect);
 				}
-				
-				//$result = $this->my_model->add_transaction();
+				if ($this->my_model->is_or_number_taken($posted_or)) {
+					$this->session->set_flashdata('msg_succ', 'OR/SI number already exists for this teller.');
+					redirect($this->listPage_redirect);
+				}
+				for($i=0;$i<count($insert_ids);$i++){
+					$result = $this->my_model->add_record_multiple($insert_ids[$i], $posted_or);
+				}
 				if($result){
+					$this->my_model->sync_or_series_max_after_posted($uid, $posted_or);
 					$this->session->set_flashdata('msg_succ', 'Inserted Successfully...');
 					redirect($this->listPage_redirect);
 				}else{
-					$data['msg'] = "Not Inserted...";
+					$this->session->set_flashdata('msg_succ', 'Not inserted: one or more payment lines failed.');
 					redirect($this->listPage_redirect);
 				}
 			}
@@ -603,20 +593,9 @@ class addpaymentcustomer extends CI_Controller {
 	}
 
 	public function get_or_number(){ 
-	
-		
-		$this->db->select("*");
-		$this->db->from('tbl_doc_series_number');
-		$this->db->where("doc_id",1);
-		
-		$query = $this->db->get();
-		$result = $query->result_array();
-
-		//extract($result);
-		//print_r($result);
-		$new_or_number = $result[0]['doc_series_num'] + 1;
-		echo sprintf('%07d',$new_or_number); 
-		 
+		$uid = (int) $this->session->userdata('userid');
+		$n = $this->my_model->get_or_preview_for_user($uid);
+		echo sprintf('%07d', $n);
    	}
 	   public function get_leaking_balance(){ 
 	
@@ -660,19 +639,19 @@ class addpaymentcustomer extends CI_Controller {
    	}
 
 public function check_or_number($or_number){ 
-	
-		
 	$this->db->select("id");
 	$this->db->from('tbl_addmetercustomer');
-	$this->db->where("CAST(or_number AS UNSIGNED)=",$or_number);
-
+	$this->db->where("CAST(or_number AS UNSIGNED)=", (int) $or_number);
+	$uid = $this->session->userdata('userid');
+	if ($uid !== null && $uid !== '' && (int) $uid > 0) {
+		$this->db->where('userid', (int) $uid);
+	}
 	$query = $this->db->get();
 	if ($query->num_rows() > 0) {
-		echo 1; // Value found
+		echo 1;
 	} else {
-		echo 0; // Value not found
+		echo 0;
 	}
-	 
 }
 
 public function monthlyreceipt($customer,$month,$year) {
