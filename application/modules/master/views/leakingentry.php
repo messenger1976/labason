@@ -1106,6 +1106,7 @@
 			var leakval = $('#leaking_percent').val();
 			if(leakval){
 				$('#btn_save').prop('disabled', false);
+				var discountBase = parseFloat(String($('#current_bill').val() || '0').replace(/,/g, ''));
 				var btnMode = $('#btn_save').val();
 				if(btnMode === 'add'){
 					var duedate = $('#due_date').val();
@@ -1116,7 +1117,7 @@
 					var amountAfterDue = parseFloat(String($('#penalty').val() || '0').replace(/,/g, ''));
 					var currentBill = date2 <= date1 ? amountBeforeDue : amountAfterDue;
 					$('#gross_amount').val(currentBill.toFixed(2));
-					var addLeakingDisc = (currentBill * leakval)/100;
+					var addLeakingDisc = (discountBase * leakval)/100;
 					var addBillAmount = currentBill - addLeakingDisc;
 					if(addBillAmount < 0){ addBillAmount = 0; }
 					$('#leaking_amount').val(addLeakingDisc.toFixed(2));
@@ -1131,14 +1132,14 @@
 				 console.log('special Previous:'+special_priviledge);
 				if(date1 < date2 && special_priviledge==0){
 					$('#gross_amount').val($('#penalty').val());
-					var leakingdisc =($('#penalty').val() * leakval)/100;
+					var leakingdisc = (discountBase * leakval)/100;
 					var billamount = $('#penalty').val() - leakingdisc;
 					if(billamount < 0){ billamount = 0; }
 					$('#leaking_amount').val(leakingdisc.toFixed(2));
 					$('#bill_amount').val(billamount.toFixed(2));
 				}else{
 					$('#gross_amount').val($('#total_amount').val());
-					var leakingdisc =($('#total_amount').val() * leakval)/100;
+					var leakingdisc = (discountBase * leakval)/100;
 					var billamount = $('#total_amount').val() - leakingdisc;
 					if(billamount < 0){ billamount = 0; }
 					$('#leaking_amount').val(leakingdisc.toFixed(2));
