@@ -19,10 +19,190 @@ class addpaymentcustomer_model extends CI_Model {
 	public $table_leaking_ledger ='tbl_leaking_ledger';
 	public $table_leaking_ledger_details ='tbl_leaking_ledger_details';
 
+	/** Set by controller when posting multiple payments in one batch (one OR for all lines). */
+	public $batch_or_number = null;
+
 	// Autoloading a system library usin constructor method
 	public function __construct() {
         parent::__construct();
     }
+
+	/**
+	 * Highest OR number already recorded for this teller (for seeding a new series row).
+	 */
+	private function max_or_for_user($user_id) {
+		$user_id = (int) $user_id;
+		if ($user_id <= 0) {
+			return 0;
+		}
+		$this->db->select_max('or_number', 'm');
+		$this->db->where('userid', $user_id);
+		$r = $this->db->get($this->table_name)->row();
+		if ($r && isset($r->m) && $r->m !== null && $r->m !== '') {
+			return (int) $r->m;
+		}
+		return 0;
+	}
+
+	/**
+	 * Ensure tbl_doc_series_number has an OR row for this teller (doc_name=OR, teller_user_id).
+	 * Seeds doc_series_num from max(or_number) for that user so numbering continues after migration.
+	 */
+	public function ensure_or_series_row($user_id) {
+		$user_id = (int) $user_id;
+		if ($user_id <= 0) {
+			return false;
+		}
+		if (!$this->db->field_exists('teller_user_id', $this->table_doc_series_number)) {
+			return false;
+		}
+		$this->db->where('doc_name', 'OR');
+		$this->db->where('teller_user_id', $user_id);
+		$q = $this->db->get($this->table_doc_series_number);
+		if ($q->num_rows() > 0) {
+			return true;
+		}
+		$seed = $this->max_or_for_user($user_id);
+		$insert = array(
+			'doc_name' => 'OR',
+			'doc_series_num' => $seed,
+			'teller_user_id' => $user_id,
+		);
+		if (!$this->db->insert($this->table_doc_series_number, $insert)) {
+			$this->db->where('doc_name', 'OR');
+			$this->db->where('teller_user_id', $user_id);
+			return $this->db->get($this->table_doc_series_number)->num_rows() > 0;
+		}
+		return true;
+	}
+
+	/**
+	 * Next OR for display (non-atomic). Uses teller-specific series when column exists.
+	 */
+	public function get_or_preview_for_user($user_id) {
+		$user_id = (int) $user_id;
+		if ($user_id <= 0 || !$this->db->field_exists('teller_user_id', $this->table_doc_series_number)) {
+			$this->db->select('doc_series_num');
+			$this->db->from($this->table_doc_series_number);
+			$this->db->where('doc_id', 1);
+			$row = $this->db->get()->row_array();
+			$n = isset($row['doc_series_num']) ? (int) $row['doc_series_num'] + 1 : 1;
+			return $n;
+		}
+		$this->ensure_or_series_row($user_id);
+		$this->db->select('doc_series_num');
+		$this->db->from($this->table_doc_series_number);
+		$this->db->where('doc_name', 'OR');
+		$this->db->where('teller_user_id', $user_id);
+		$row = $this->db->get()->row_array();
+		if (!$row) {
+			return 1;
+		}
+		return (int) $row['doc_series_num'] + 1;
+	}
+
+	/**
+	 * Atomically reserve the next OR for this teller (standalone transaction).
+	 * Used for batch payments where several rows share one OR.
+	 */
+	public function allocate_next_or_atomic($user_id) {
+		$user_id = (int) $user_id;
+		if (!$this->db->field_exists('teller_user_id', $this->table_doc_series_number) || $user_id <= 0) {
+			$this->db->trans_begin();
+			$q = $this->db->query(
+				'SELECT doc_id, doc_series_num FROM ' . $this->table_doc_series_number . ' WHERE doc_id = 1 FOR UPDATE'
+			);
+			$row = $q->row();
+			if (!$row) {
+				$this->db->trans_rollback();
+				return false;
+			}
+			$next = (int) $row->doc_series_num + 1;
+			$this->db->where('doc_id', 1);
+			$this->db->update($this->table_doc_series_number, array('doc_series_num' => $next));
+			if ($this->db->trans_status() === false) {
+				$this->db->trans_rollback();
+				return false;
+			}
+			$this->db->trans_commit();
+			return $next;
+		}
+		$this->db->trans_begin();
+		$this->ensure_or_series_row($user_id);
+		$q = $this->db->query(
+			'SELECT doc_id, doc_series_num FROM ' . $this->table_doc_series_number . ' WHERE doc_name = ? AND teller_user_id = ? FOR UPDATE',
+			array('OR', $user_id)
+		);
+		$row = $q->row();
+		if (!$row) {
+			$this->db->trans_rollback();
+			return false;
+		}
+		$next = (int) $row->doc_series_num + 1;
+		$this->db->where('doc_id', (int) $row->doc_id);
+		$this->db->update($this->table_doc_series_number, array('doc_series_num' => $next));
+		if ($this->db->trans_status() === false) {
+			$this->db->trans_rollback();
+			return false;
+		}
+		$this->db->trans_commit();
+		return $next;
+	}
+
+	/**
+	 * True if this OR is already used for the current teller (same rules as check_or_number).
+	 */
+	public function is_or_number_taken($or_number) {
+		$or_number = (int) $or_number;
+		if ($or_number <= 0) {
+			return true;
+		}
+		$this->db->select('id');
+		$this->db->from($this->table_name);
+		$this->db->where('CAST(or_number AS UNSIGNED)=', $or_number);
+		$uid = $this->session->userdata('userid');
+		if ($uid !== null && $uid !== '' && (int) $uid > 0) {
+			$this->db->where('userid', (int) $uid);
+		}
+		$q = $this->db->get();
+		return $q->num_rows() > 0;
+	}
+
+	/**
+	 * After manual/batch save, keep doc_series_num at least as high as the OR used (no full transaction).
+	 */
+	public function sync_or_series_max_after_posted($user_id, $posted_or) {
+		$posted_or = (int) $posted_or;
+		$user_id = (int) $user_id;
+		if ($posted_or <= 0) {
+			return false;
+		}
+		if ($this->db->field_exists('teller_user_id', $this->table_doc_series_number) && $user_id > 0) {
+			$this->ensure_or_series_row($user_id);
+			$this->db->select('doc_id, doc_series_num');
+			$this->db->from($this->table_doc_series_number);
+			$this->db->where('doc_name', 'OR');
+			$this->db->where('teller_user_id', $user_id);
+			$row = $this->db->get()->row();
+			if (!$row) {
+				return false;
+			}
+			$new_max = max((int) $row->doc_series_num, $posted_or);
+			$this->db->where('doc_id', (int) $row->doc_id);
+			return $this->db->update($this->table_doc_series_number, array('doc_series_num' => $new_max));
+		}
+		$this->db->select('doc_id, doc_series_num');
+		$this->db->from($this->table_doc_series_number);
+		$this->db->where('doc_id', 1);
+		$row = $this->db->get()->row();
+		if (!$row) {
+			return false;
+		}
+		$new_max = max((int) $row->doc_series_num, $posted_or);
+		$this->db->where('doc_id', 1);
+		return $this->db->update($this->table_doc_series_number, array('doc_series_num' => $new_max));
+	}
+
 	    // to get all ledgers
 	public function fetchLedger(){
 		$this->db->select("*");
@@ -377,7 +557,7 @@ class addpaymentcustomer_model extends CI_Model {
   	/** In Function Add records for select table **/
 	public function add_record(){  //print_r($this->input->post);exit;
 		$id = trim($this->input->post('customer_id'));
-		$getData=$this->my_model->select_getoldmeter($id);
+		$getData=$this->select_getoldmeter($id);
 		$trans_date = strtotime($this->input->post('transdate'));
 		$leaking_id = $this->input->post('leaking_id');
 		$leaking_balance_prev_bal = $this->input->post('leaking_balance');
@@ -428,6 +608,44 @@ class addpaymentcustomer_model extends CI_Model {
 			//}
 			
 		}
+
+		$user_id = (int) $this->session->userdata('userid');
+		$posted_or = (int) $this->input->post('or_num');
+		if ($posted_or <= 0) {
+			return false;
+		}
+
+		$this->db->trans_begin();
+
+		$series_row = null;
+		if ($this->db->field_exists('teller_user_id', $this->table_doc_series_number) && $user_id > 0) {
+			if (!$this->ensure_or_series_row($user_id)) {
+				$this->db->trans_rollback();
+				return false;
+			}
+			$q = $this->db->query(
+				'SELECT doc_id, doc_series_num FROM ' . $this->table_doc_series_number . ' WHERE doc_name = ? AND teller_user_id = ? FOR UPDATE',
+				array('OR', $user_id)
+			);
+			$series_row = $q->row();
+		} else {
+			$q = $this->db->query(
+				'SELECT doc_id, doc_series_num FROM ' . $this->table_doc_series_number . ' WHERE doc_id = 1 FOR UPDATE'
+			);
+			$series_row = $q->row();
+		}
+		if (!$series_row) {
+			$this->db->trans_rollback();
+			return false;
+		}
+
+		if ($this->is_or_number_taken($posted_or)) {
+			$this->db->trans_rollback();
+			return false;
+		}
+
+		$or_num = $posted_or;
+
 	    $set_data = array(
 			'customer_id' => trim($id),
 			'ledger_id' => $this->input->post('ledger_id'),
@@ -445,7 +663,7 @@ class addpaymentcustomer_model extends CI_Model {
 			'month' => $this->input->post('month'),
 			'year' => $this->input->post('year'),
 			'status' => $this->input->post('status_id'),
-			'or_number' => $this->input->post('or_num'),
+			'or_number' => $or_num,
 			'vat_percent' => $this->input->post('vat_percent'),
 			'vat_amount' => $this->input->post('vat_amount'),
 			'leaking_percent' => $this->input->post('leaking_percent'),
@@ -460,19 +678,17 @@ class addpaymentcustomer_model extends CI_Model {
 			'username' => $this->session->userdata('username'),
 		);
 		$result = $this->db->insert($this->table_name, $set_data); //print_r($result1); exit;
+		if (!$result) {
+			$this->db->trans_rollback();
+			return false;
+		}
 		// save data(first entry) on transaction table
 		$lastId = $this->db->insert_id(); 
-
-		$set_data3 = array(
-			'doc_series_num' => $this->input->post('or_num'),
-		);
-		$this->db->where('doc_id',1);
-		$this->db->update($this->table_doc_series_number, $set_data3); //print_r($result2); //exit;
 
 		$set_data4 = array(
 			'customer_billing_id' => $lastId,
 			'status' => 1,
-			'or_number' => $this->input->post('or_num'),
+			'or_number' => $or_num,
 		);
 		$this->db->where('customer_id',trim($id));
 		$this->db->where('month',$this->input->post('month'));
@@ -512,7 +728,7 @@ class addpaymentcustomer_model extends CI_Model {
 
 			$set_data6 = array(
 				'leaking_id' => $leaking_id,
-				'leakingledgerdetails_or_number' => $this->input->post('or_num'),
+				'leakingledgerdetails_or_number' => $or_num,
 				'leakingledgerdetails_amount' => $pay_amount,
 				'leakingledgerdetails_transdate' => date('Y-m-d',$trans_date),
 				'leakingledgerdetails_created_datetime' => date('Y-m-d H:i:s'),
@@ -552,7 +768,7 @@ class addpaymentcustomer_model extends CI_Model {
 
 				$set_data6 = array(
 					'leaking_id' => $leaking_id,
-					'leakingledgerdetails_or_number' => $this->input->post('or_num'),
+					'leakingledgerdetails_or_number' => $or_num,
 					'leakingledgerdetails_amount' => $pay_amount,
 					'leakingledgerdetails_transdate' => date('Y-m-d',$trans_date),
 					'leakingledgerdetails_created_datetime' => date('Y-m-d H:i:s'),
@@ -560,12 +776,22 @@ class addpaymentcustomer_model extends CI_Model {
 				$result2 = $this->db->insert($this->table_leaking_ledger_details, $set_data6); //print_r($result2); //exit;
 			}
 		}
-		
+
+		if ($this->db->trans_status() === false || !$result || !$result2) {
+			$this->db->trans_rollback();
+			return false;
+		}
+
+		$new_series = max((int) $series_row->doc_series_num, (int) $posted_or);
+		$this->db->where('doc_id', (int) $series_row->doc_id);
+		$this->db->update($this->table_doc_series_number, array('doc_series_num' => $new_series));
+
+		$this->db->trans_commit();
 		return $result2;
 	}
 	
 	/** In Function Add records for select table **/
-	public function add_record_multiple($id){
+	public function add_record_multiple($id, $or_num = null){
 		$trans_date = strtotime($this->input->post('transdate'));
 		$allamount = $this->input->post('paid_total_amount');
 		
@@ -587,7 +813,14 @@ class addpaymentcustomer_model extends CI_Model {
 		$year =  $_POST['year_'.$id];
 		$status = $_POST['status_'.$id];
 		//$date = date('Y-m-d');
-		$create_date_time = date('Y-m-d H:i:s');				 
+		$create_date_time = date('Y-m-d H:i:s');
+
+		if ($or_num === null || $or_num === '') {
+			$or_num = $this->batch_or_number;
+		}
+		if ($or_num === null || $or_num === '') {
+			$or_num = (int) $this->input->post('or_num');
+		}
 			
 		$set_data = array(
 			'customer_id' => $customer_id,
@@ -606,7 +839,7 @@ class addpaymentcustomer_model extends CI_Model {
 			'month' => $month,
 			'year' => $year,
 			'status' => $status,
-			'or_number' => $this->input->post('or_num'),
+			'or_number' => $or_num,
 			'vat_percent' => $this->input->post('vat_percent'),
 			'vat_amount' => $this->input->post('vat_amount'),
 			'leaking_percent' => $this->input->post('leaking_percent'),
@@ -623,7 +856,7 @@ class addpaymentcustomer_model extends CI_Model {
 		$set_data4 = array(
 			'customer_billing_id' => $lastId,
 			'status' => 1,
-			'or_number' => $this->input->post('or_num'),
+			'or_number' => $or_num,
 		);
 		$this->db->where('customer_id',trim($customer_id));
 		$this->db->where('month',$month);

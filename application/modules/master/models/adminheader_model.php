@@ -53,6 +53,7 @@ class adminheader_model extends CI_Model {
 				'leakingentry' => 'Leaking Entry',
 				'database_backup' => 'Database Backup',
 				'mobile_notifications' => 'Mobile Notifications',
+				'manual_or_series' => 'Manual OR Series',
 				);
 	}
 
@@ -135,6 +136,7 @@ class adminheader_model extends CI_Model {
 				'technicalsearch' => 'Technical Problems View',
 				'web_settings' => 'Admin Address',
 				'admin' => 'Admin',
+				'manual_or_series' => 'Manual OR Series',
 			);
 	}
 

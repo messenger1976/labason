@@ -314,7 +314,8 @@
 								   <?php if($this->uri->segment(2)=='classification_category'){echo 'active open';}?>
 								   <?php if($this->uri->segment(2)=='classification'){echo 'active open';}?>
 								   <?php if($this->uri->segment(2)=='amountrate'){echo 'active open';}?>
-								   <?php if($this->uri->segment(2)=='Leakingentrycorrection'){echo 'active open';}?>">
+								   <?php if($this->uri->segment(2)=='Leakingentrycorrection'){echo 'active open';}?>
+								   <?php if($this->uri->segment(2)=='manual_or_series'){echo 'active open';}?>">
 						<a href="#"><i class="fa fa-lg fa-fw fa-user"></i> <span class="menu-item-parent">Admin</span></a>
 						<ul>
 
@@ -357,6 +358,11 @@
 							<?php if((array_key_exists('database_backup',$roleResponsible) && ($roleResponsible['database_backup'] == 1 || (is_array($roleResponsible['database_backup']) && count($roleResponsible['database_backup']) > 0)) ) || ($this->session->userdata('usertype') == 'admin')){ ?>
 								<li class="<?php if($this->uri->segment(2)=='database_backup') echo 'active';?>">
 									<a href="<?php echo ADMIN_URL;?>database_backup/"><i class="fa fa-database"></i> Database Backup</a>
+								</li>
+							<?php } ?>
+							<?php if((array_key_exists('manual_or_series',$roleResponsible) && ($roleResponsible['manual_or_series'] == 1 || (is_array($roleResponsible['manual_or_series']) && count($roleResponsible['manual_or_series']) > 0)) ) || ($this->session->userdata('usertype') == 'admin')){ ?>
+								<li class="<?php if($this->uri->segment(2)=='manual_or_series') echo 'active';?>">
+									<a href="<?php echo ADMIN_URL;?>manual_or_series/"><i class="fa fa-list-ol"></i> Manual OR Series</a>
 								</li>
 							<?php } ?>
 							<li class="<?php if($this->uri->segment(2)=='classification_category') echo 'active';?>">
