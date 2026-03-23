@@ -142,6 +142,23 @@
 														<div class="form-group col-lg-6">
 															<div class="col-lg-12 controls">
 																<div class="form-group">
+																	<span class="input-group-addon"><i class="icon-user"></i><strong> Cashier/User:</strong></span>
+																	<select class="form-control" name="cashier" id="cashier">
+																		<option value="0">--All--</option>
+																		<?php if(isset($cashier_list) && count($cashier_list) > 0){ ?>
+																			<?php foreach($cashier_list as $cashier){ ?>
+																				<option value="<?php echo $cashier['id'];?>">
+																					<?php echo strtoupper($cashier['employee_name']);?><?php echo $cashier['username']!=''?' ('.$cashier['username'].')':'';?>
+																				</option>
+																			<?php } ?>
+																		<?php } ?>
+																	</select>
+																</div>
+															</div>
+														</div>
+														<div class="form-group col-lg-6">
+															<div class="col-lg-12 controls">
+																<div class="form-group">
 																	<span class="input-group-addon"><i class="icon-user"></i><strong> Prepared by:</strong></span>
 																	<select class="form-control" name="preparedby" id="preparedby" required>
 																		
@@ -455,13 +472,14 @@ $(document).ready(function(){
 	$('#printtopdf').on('click',function(evt){
 		evt.preventDefault();
 		var zone = $("#zone").val();
+		var cashier = $("#cashier").val();
 		var preparedby = $("#preparedby").val();
 		var verifiedby = $("#verifiedby").val();
 		var approvedby = $("#approvedby").val();
 		var fromdate = $("#fromdate").val();
 		var grouping = $("#grouping").is(':checked') ? 1 : 0;
 		const popup = window.open(
-			"adddailyreport/printtopdf/"+fromdate+'/'+zone+'/'+preparedby+'/'+verifiedby+'/'+approvedby+'/'+grouping, // URL to display 
+			"adddailyreport/printtopdf/"+fromdate+'/'+zone+'/'+preparedby+'/'+verifiedby+'/'+approvedby+'/'+grouping+'/'+cashier, // URL to display 
 			"PopupWindowPrint", // Name of the window
 			"width=1200,height=600,resizable=yes,scrollbars=yes" // Window settings
 		);
@@ -476,6 +494,7 @@ $(document).ready(function(){
 	$('#exporttoexcel').on('click',function(evt){
 		evt.preventDefault();
 		var zone = $("#zone").val();
+		var cashier = $("#cashier").val();
 		var preparedby = $("#preparedby").val();
 		var verifiedby = $("#verifiedby").val();
 		var approvedby = $("#approvedby").val();
@@ -488,7 +507,7 @@ $(document).ready(function(){
 		}
 		
 		// Redirect to export URL
-		window.location.href = "<?php echo ADMIN_URL;?>adddailyreport/exporttoexcel/"+fromdate+'/'+zone+'/'+preparedby+'/'+verifiedby+'/'+approvedby+'/'+grouping;
+		window.location.href = "<?php echo ADMIN_URL;?>adddailyreport/exporttoexcel/"+fromdate+'/'+zone+'/'+preparedby+'/'+verifiedby+'/'+approvedby+'/'+grouping+'/'+cashier;
 	});
 });
 
@@ -499,6 +518,7 @@ $(document).ready(function(){
 		function getaddcustomer_paid(){
 			
 			var zone = $("#zone").val();
+			var cashier = $("#cashier").val();
 			var fromdate = $("#fromdate").val();
 			var grouping = $("#grouping").is(':checked') ? 1 : 0;
 			//var preparedby = $("#preparedby").val();
@@ -509,7 +529,7 @@ $(document).ready(function(){
 				type : "POST",
 				url	: '<?php echo ADMIN_URL;?>adddailyreport/getadddailyreportsearch',
 				//data	: "customer_type="+customer_type+"&zone="+zone+"&fromdate="+fromdate+"&todate="+todate+",
-				data	: "fromdate="+fromdate+"&zone="+zone+"&grouping="+grouping,
+				data	: "fromdate="+fromdate+"&zone="+zone+"&grouping="+grouping+"&cashier="+cashier,
 				complete: function(data){
 					var op = data.responseText.trim();
 					//alert(op);
