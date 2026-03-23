@@ -18,7 +18,7 @@
 	
 	/** In Function Get all records from select table **/
     
-	 public function get_metercustomer_records($from,$zone='',$grouping=1){
+	 public function get_metercustomer_records($from,$zone='',$grouping=1,$cashier=0){
 		$this->db->select('tbl_addcustomer.customer_id, tbl_addcustomer.customer_type, tbl_addcustomer.first_name,tbl_addcustomer.last_name,tbl_addcustomer.middle_name,
 		(SELECT zone FROM tbl_zone WHERE tbl_zone.id='.$this->table_name.'.zone) as zone, 
 		(SELECT employee_name FROM '.$this->table_users.' WHERE '.$this->table_users.'.id='.$this->table_meter.'.userid) as user,
@@ -38,6 +38,9 @@
 		if($zone!=0 && $zone!=''){
 			$this->db->where('tbl_addcustomer.zone',$zone);
 		}
+		if($cashier != 0 && $cashier != ''){
+			$this->db->where('tbl_addmetercustomer.userid', (int)$cashier);
+		}
 		
 		// Order by OR number if grouping is disabled, otherwise by name
 		if($grouping == 0 || $grouping == ''){
@@ -50,6 +53,18 @@
 		$query = $this->db->get();
 		$result = $query->result_array();
 		return $result;
+	}
+
+	public function get_cashiers($cashier_id = 0){
+		$this->db->select('id, employee_name, username');
+		$this->db->from($this->table_users);
+		$this->db->where('status', '1');
+		if($cashier_id != 0){
+			$this->db->where('id', (int)$cashier_id);
+		}
+		$this->db->order_by('employee_name', 'asc');
+		$query = $this->db->get();
+		return $query->result_array();
 	}
 	
 	public function get_zone($zone_id=0) {

@@ -40,6 +40,18 @@
     <div style="text-align: center;"><img src="<?php echo site_url();?>images/mroxas-logo-report.jpg" height="80px"/></div>
 <h3 style="text-align: center;">DAILY COLLECTION REPORT</h3>
 <h6 style="text-align: center;"><?php echo $trans_date;?></h6>
+<?php if(isset($cashier) && (int)$cashier > 0){ ?>
+<?php
+	$cashier_label = 'Filtered by Cashier/User';
+	if(isset($cashier_info[0]['employee_name']) && $cashier_info[0]['employee_name'] != ''){
+		$cashier_label = 'Filtered by Cashier/User: '.strtoupper($cashier_info[0]['employee_name']);
+		if(isset($cashier_info[0]['username']) && $cashier_info[0]['username'] != ''){
+			$cashier_label .= ' ('.$cashier_info[0]['username'].')';
+		}
+	}
+?>
+<h6 style="text-align: center;"><?php echo $cashier_label; ?></h6>
+<?php } ?>
 <div class="row">
 	<div class="col-lg-12 col-sm-12 col-xs-12 col-md-12">
 		<?php
@@ -95,7 +107,7 @@
                 <?php
                 $mysql_transdate = date('Y-m-d',strtotime($trans_date));
 				$current_billing_period_year = date('Y',strtotime($trans_date));
-                 $get_dailytrans = $this->my_model->get_metercustomer_records($mysql_transdate,$row['id']);
+                 $get_dailytrans = $this->my_model->get_metercustomer_records($mysql_transdate,$row['id'], isset($grouping) ? (int)$grouping : 1, isset($cashier) ? (int)$cashier : 0);
                  $total_grand_zone = 0;
                  $total_current_zone = 0;
 				 $total_arrears_zone = 0;

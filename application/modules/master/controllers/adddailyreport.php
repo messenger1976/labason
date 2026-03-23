@@ -29,23 +29,27 @@ class adddailyreport extends CI_Controller {
 		$header['roleResponsible'] = $this->top_model->get_responsibilities();
 		$data['zone'] = $this->customer_model->get_zone();
 		$data['employee'] = $this->my_model->get_employee();
+		$data['cashier_list'] = $this->my_model->get_cashiers();
 		//$header['record_info'] = $this->top_model->get_last_login_details(1);
 		$this->load->view($this->headerPage,$header);
 		$this->load->view($this->listPage,$data);
 	}
 
-	public function printtopdf($trans_date,$zone='',$preparedby='',$verifiedby='',$approvedby=''){
+	public function printtopdf($trans_date,$zone='',$preparedby='',$verifiedby='',$approvedby='',$grouping=1,$cashier=0){
 		$header['roleResponsible'] = $this->top_model->get_responsibilities();
 		$data['zone'] = $this->my_model->get_zone($zone);
 		$data['trans_date'] = date('M d, Y', strtotime($trans_date));
 		$data['preparedby'] = $this->my_model->get_employee($preparedby);
 		$data['verifiedby'] = $this->my_model->get_employee($verifiedby);
 		$data['approvedby'] = $this->my_model->get_employee($approvedby);
+		$data['grouping'] = (int)$grouping;
+		$data['cashier'] = (int)$cashier;
+		$data['cashier_info'] = $this->my_model->get_cashiers((int)$cashier);
 		//$this->load->view($this->headerPage,$header);
 		$this->load->view($this->printtopdfPage,$data);
 	}
 
-	public function exporttoexcel($trans_date,$zone='',$preparedby='',$verifiedby='',$approvedby=''){
+	public function exporttoexcel($trans_date,$zone='',$preparedby='',$verifiedby='',$approvedby='',$grouping=1,$cashier=0){
 		// Suppress error display to prevent output before headers
 		@ini_set('display_errors', 0);
 		error_reporting(0);
@@ -144,7 +148,7 @@ class adddailyreport extends CI_Controller {
 				$export_data[] = array('', stripslashes($row['zone']), '', '', '', '', '', '', '', '', '', '', '', '');
 				
 				// Get daily transactions for this zone
-				$get_dailytrans = $this->my_model->get_metercustomer_records($mysql_transdate, $row['id']);
+				$get_dailytrans = $this->my_model->get_metercustomer_records($mysql_transdate, $row['id'], $grouping, $cashier);
 				
 				// Initialize zone totals
 				$total_grand_zone = 0;
@@ -364,12 +368,14 @@ class adddailyreport extends CI_Controller {
 				}
 				if($this->input->post('fromdate') !=''){
 					$zone = $this->input->post('zone');
+					$cashier = (int)$this->input->post('cashier');
 					$fromdate = $this->input->post('fromdate');
 					$todate = $this->input->post('todate');
+					$grouping = $this->input->post('grouping');
 					$from = date('Y-m-d', strtotime($fromdate));
 					//$to = date('Y-m-d', strtotime($todate));
 					
-					$data['record'] = $this->my_model->get_metercustomer_records($from,$zone);
+					$data['record'] = $this->my_model->get_metercustomer_records($from,$zone,$grouping,$cashier);
 					//$data['monthly'] = $this->my_model->get_monthycustomer_records($from,$to,$type);
 					//$data['payroll'] = $this->my_model->get_payrol_records($from,$to,$type);
 					//$data['expense'] = $this->my_model->get_expense_records($from,$to,$type);
