@@ -54,8 +54,9 @@
 								$due_date = $row['bp_due_date']; 
 								$special_priviledge = $row['special_priviledge'];
 								$compute_penalty = isset($row['compute_penalty']) ? (int)$row['compute_penalty'] : 1;
+								$consumed = isset($row['consumed']) ? (float)$row['consumed'] : 0;
 								$cur_date = date("Y-m-d");
-								if($special_priviledge==0 && $compute_penalty==1){
+								if($consumed >= 0 && $special_priviledge==0 && $compute_penalty==1){
 									if($cur_date>$due_date){
 										$balance = $row['penalty']; 
 										$penalty = $row['penalty'] - $row['amount'];
@@ -92,7 +93,7 @@
 										$compute_penalty = isset($record_reading[0]['compute_penalty']) ? (int)$record_reading[0]['compute_penalty'] : 1;
 										
 
-										if($special_priviledge==0 && $compute_penalty==1){
+										if($consumed >= 0 && $special_priviledge==0 && $compute_penalty==1){
 											if($trans_date_ts>$due_date_ts){
 												//$balance = $row['penalty']; 
 												$balance = $record_reading[0]['amount'];
