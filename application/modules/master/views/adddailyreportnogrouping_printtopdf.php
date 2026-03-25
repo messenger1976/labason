@@ -32,7 +32,8 @@
 		<![endif]-->
         <style>
             @media print {
-                @page { size: A4 portrait; margin: 8mm; }
+                /* Long bond paper: 8.5" x 13" */
+                @page { size: 8.5in 13in portrait; margin: 8mm; }
                 html, body { width: 100%; }
                 body { margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             }
