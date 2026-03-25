@@ -31,6 +31,25 @@
 		<script src="<?php echo site_url();?>/assets/js/respond.min.js"></script>
 		<![endif]-->
         <style>
+            @media print {
+                /* Long bond paper: 8.5" x 13" */
+                @page { size: 8.5in 13in portrait; margin: 8mm; }
+                html, body { width: 100%; }
+                body { margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            }
+            body { font-size: 9px; }
+            h3 { margin: 6px 0 2px; }
+            h6 { margin: 2px 0; }
+            .table-responsive { overflow: visible !important; }
+            table.table { width: 100%; table-layout: fixed; }
+            table.table th, table.table td { padding: 2px 3px; vertical-align: top; }
+            table.table th { font-size: 9px; }
+            table.table td { font-size: 9px; }
+            /* Wrap headers; keep numeric cells aligned; allow names to wrap */
+            table.table th { white-space: normal; word-break: break-word; line-height: 1.1; }
+            table.table td { word-break: break-word; }
+            table.table td:nth-child(2) { white-space: normal; }
+            table.table td:not(:nth-child(2)) { white-space: nowrap; }
             .table>tbody>tr>td{
                 padding: 5px;
             }
@@ -66,6 +85,20 @@
 	 <div class="table-responsive" >
 	 
         <table  class="table" style="font-size:smaller;" cellpadding="0">
+            <colgroup>
+                <col style="width:10%">
+                <col style="width:17%">
+                <col style="width:8%">
+                <col style="width:8%">
+                <col style="width:8%">
+                <col style="width:7%">
+                <col style="width:7%">
+                <col style="width:7%">
+                <col style="width:7%">
+                <col style="width:7%">
+                <col style="width:7%">
+                <col style="width:7%">
+            </colgroup>
 			<thead>
 				<tr>
 					<th data-hide="phone">OR #</th>
@@ -80,7 +113,6 @@
                     <th style="text-align:right;">Leaking Disc</th>
                     <th style="text-align:right;">A/R-Leaking</th>
                     <th style="text-align:right;">A/R-Leaking Balance</th>
-                    <th style="text-align:right;">VAT</th>
                     <th style="text-align:right;">Franchise Tax</th>
 				</tr>
 			</thead>
@@ -91,7 +123,6 @@
                         $grand_total_current = 0;
                         $grand_total_penalty =0;
 						$grand_total_wmmf =0;
-                        $grand_total_vat =0;
                         $grand_total_leaking =0;
                         $grand_total_ar_leaking =0;
                         $grand_total_ar_leaking_balance =0;
@@ -102,7 +133,7 @@
 					<tr>
 						<td></td>
 						<td><b><?php echo stripslashes($row['zone']); ?></b></td>
-						<td colspan="12"></td>
+						<td colspan="10"></td>
 					</tr>
                 <?php
                 $mysql_transdate = date('Y-m-d',strtotime($trans_date));
@@ -113,7 +144,6 @@
 				 $total_arrears_zone = 0;
                  $total_penalty_zone = 0;
                  $total_wmmf_zone = 0;
-                 $total_vat_zone = 0;
                  $total_leaking_zone = 0;
                  $total_ar_leaking_zone = 0;
                  $total_ar_leaking_balance_zone = 0;
@@ -154,7 +184,6 @@
                     <td align="right">'.number_format($gdailytrans['leaking_amount'],2).'</td>
                     <td align="right">'.number_format($ar_leaking['leaking_total_amount'],2).'</td>
                     <td align="right">'.number_format($ar_leaking['leaking_balance'],2).'</td>
-                    <td align="right">'.number_format($gdailytrans['vat_amount'],2).'</td>
                     <td align="right">'.number_format(isset($gdailytrans['total_franchise_fee']) ? $gdailytrans['total_franchise_fee'] : 0,2).'</td>
                     ';
                     echo '</tr>';
@@ -163,7 +192,6 @@
 					$total_arrears_zone += $gdailytrans['arrears_amount'];
                     $total_wmmf_zone += $gdailytrans['total_wmmf'];
                     $total_penalty_zone += $gdailytrans['total_penalty'];
-                    $total_vat_zone += $gdailytrans['vat_amount'];
                     $total_leaking_zone +=$gdailytrans['leaking_amount'];
                     $total_sc_zone +=$gdailytrans['sc_discount'];
 					$total_ar_leaking_zone+=$ar_leaking['leaking_total_amount'];
@@ -179,7 +207,6 @@
                  <th style="text-align:right">'.number_format($total_leaking_zone,2).'</th>
                  <th style="text-align:right">'.number_format($total_ar_leaking_zone,2).'</th>
                  <th style="text-align:right">'.number_format($total_ar_leaking_balance_zone,2).'</th>
-                 <th style="text-align:right">'.number_format($total_vat_zone,2).'</th>
                  <th style="text-align:right">'.number_format($total_franchise_fee_zone,2).'</th>
                  </tr>';
                 ?>
@@ -190,7 +217,6 @@
                     $grand_total_arrears += $total_arrears_zone; 
                     $grand_total_wmmf += $total_wmmf_zone;
                     $grand_total_penalty += $total_penalty_zone;
-                    $grand_total_vat += $total_vat_zone;
                     $grand_total_leaking += $total_leaking_zone;
                     $grand_total_sc += $total_sc_zone;
             		$grand_total_ar_leaking += $total_ar_leaking_zone;
@@ -205,7 +231,7 @@
                 <tr>
 					<td></td>
 					<td><b>LEAKING A/R PAYMENT REPORT</b></td>
-					<td colspan="12"></td>
+					<td colspan="10"></td>
 				</tr>
 				
 
@@ -221,16 +247,15 @@
 					<td>'.$gdailytrans1['leakingledgerdetails_source_type'].'#'.$gdailytrans1['leakingledgerdetails_or_number'].'</td>
 					<td>'.$gdailytrans1['last_name'].', '.$gdailytrans1['first_name'].'</td>
 					<td  style="text-align:right">'.number_format($gdailytrans1['leakingledgerdetails_amount'],2).'</td>
-					<td colspan=5></td>
+					<td colspan="6"></td>
 					<td style="text-align:right">'.number_format($gdailytrans1['leaking_total_amount'],2).'</td>
 					<td style="text-align:right">'.number_format($gdailytrans1['leakingledgerdetails_balance'],2).'</td>
-					<td colspan=4></td>
+					<td></td>
 					</tr>';
 					$total_leaking_ar+=$gdailytrans1['leakingledgerdetails_amount'];
 				}
 
 				echo '<tr><td></td><th>TOTAL</th><th style="text-align:right">'.number_format($total_leaking_ar,2).'</th>
-                 <th style="text-align:right"></th>
                  <th style="text-align:right"></th>
                  <th style="text-align:right"></th>
                  <th style="text-align:right"></th>
@@ -257,7 +282,6 @@
                     <th style="text-align:right"><?php echo number_format($grand_total_leaking,2);?></th>
                     <th style="text-align:right"><?php echo number_format($grand_total_ar_leaking,2);?></th>
                     <th style="text-align:right"><?php echo number_format($grand_total_ar_leaking_balance,2);?></th>
-                    <th style="text-align:right"><?php echo number_format($grand_total_vat,2);?></th>
                     <th style="text-align:right"><?php echo number_format($grand_total_franchise_fee,2);?></th>
 				</tr>
                 
