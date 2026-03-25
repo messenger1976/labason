@@ -31,6 +31,24 @@
 		<script src="<?php echo site_url();?>/assets/js/respond.min.js"></script>
 		<![endif]-->
         <style>
+            @media print {
+                @page { size: A4 portrait; margin: 8mm; }
+                html, body { width: 100%; }
+                body { margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            }
+            body { font-size: 9px; }
+            h3 { margin: 6px 0 2px; }
+            h6 { margin: 2px 0; }
+            .table-responsive { overflow: visible !important; }
+            table.table { width: 100%; table-layout: fixed; }
+            table.table th, table.table td { padding: 2px 3px; vertical-align: top; }
+            table.table th { font-size: 9px; }
+            table.table td { font-size: 9px; }
+            /* Wrap headers; keep numeric cells aligned; allow names to wrap */
+            table.table th { white-space: normal; word-break: break-word; line-height: 1.1; }
+            table.table td { word-break: break-word; }
+            table.table td:nth-child(2) { white-space: normal; }
+            table.table td:not(:nth-child(2)) { white-space: nowrap; }
             .table>tbody>tr>td{
                 padding: 5px;
             }
@@ -54,6 +72,20 @@
 	 <div class="table-responsive" >
 	 
         <table  class="table" style="font-size:smaller;" cellpadding="0">
+            <colgroup>
+                <col style="width:10%">
+                <col style="width:17%">
+                <col style="width:8%">
+                <col style="width:8%">
+                <col style="width:8%">
+                <col style="width:7%">
+                <col style="width:7%">
+                <col style="width:7%">
+                <col style="width:7%">
+                <col style="width:7%">
+                <col style="width:7%">
+                <col style="width:7%">
+            </colgroup>
 			<thead>
 				<tr>
 					<th data-hide="phone">OR #</th>
@@ -68,7 +100,6 @@
                     <th style="text-align:right;">Leaking Disc</th>
                     <th style="text-align:right;">A/R-Leaking</th>
                     <th style="text-align:right;">A/R-Leaking Balance</th>
-                    <th style="text-align:right;">VAT</th>
                     <th style="text-align:right;">Franchise Tax</th>
 				</tr>
 			</thead>
@@ -80,7 +111,6 @@
                     $grand_total_arrears = 0;
                     $grand_total_penalty =0;
                     $grand_total_wmmf =0;
-                    $grand_total_vat =0;
                     $grand_total_leaking =0;
                     $grand_total_ar_leaking =0;
                     $grand_total_ar_leaking_balance =0;
@@ -113,7 +143,6 @@
                             <td align="right">'.number_format($gdailytrans['leaking_amount'],2).'</td>
                             <td align="right">'.number_format(isset($ar_leaking['leaking_total_amount']) ? $ar_leaking['leaking_total_amount'] : 0,2).'</td>
                             <td align="right">'.number_format(isset($ar_leaking['leaking_balance']) ? $ar_leaking['leaking_balance'] : 0,2).'</td>
-                            <td align="right">'.number_format($gdailytrans['vat_amount'],2).'</td>
                             <td align="right">'.number_format(isset($gdailytrans['total_franchise_fee']) ? $gdailytrans['total_franchise_fee'] : 0,2).'</td>
                             ';
                             echo '</tr>';
@@ -123,7 +152,6 @@
                             $grand_total_arrears += $gdailytrans['arrears_amount'];
                             $grand_total_wmmf += $gdailytrans['total_wmmf'];
                             $grand_total_penalty += $gdailytrans['total_penalty'];
-                            $grand_total_vat += $gdailytrans['vat_amount'];
                             $grand_total_leaking += $gdailytrans['leaking_amount'];
                             $grand_total_sc += $gdailytrans['sc_discount'];
                             $grand_total_ar_leaking += isset($ar_leaking['leaking_total_amount']) ? $ar_leaking['leaking_total_amount'] : 0;
@@ -132,7 +160,7 @@
                         }
                     } else {
                         // No records found
-                        echo '<tr><td colspan="13" style="text-align:center; padding:20px;">No records found for the selected date: ' . htmlspecialchars($trans_date) . '</td></tr>';
+                        echo '<tr><td colspan="12" style="text-align:center; padding:20px;">No records found for the selected date: ' . htmlspecialchars($trans_date) . '</td></tr>';
                     }
                 ?>
 
@@ -140,7 +168,7 @@
                 <tr>
 					<td></td>
 					<td><b>LEAKING A/R PAYMENT REPORT</b></td>
-					<td colspan="12"></td>
+					<td colspan="10"></td>
 				</tr>
 				
 
@@ -157,10 +185,10 @@
 					<td>'.$gdailytrans1['leakingledgerdetails_source_type'].'#'.$gdailytrans1['leakingledgerdetails_or_number'].'</td>
 					<td>'.$gdailytrans1['last_name'].', '.$gdailytrans1['first_name'].'</td>
 					<td  style="text-align:right">'.number_format($gdailytrans1['leakingledgerdetails_amount'],2).'</td>
-					<td colspan=5></td>
+					<td colspan="6"></td>
 					<td style="text-align:right">'.number_format($gdailytrans1['leaking_total_amount'],2).'</td>
 					<td style="text-align:right">'.number_format($gdailytrans1['leakingledgerdetails_balance'],2).'</td>
-					<td colspan=4></td>
+					<td></td>
 					</tr>';
 					$total_leaking_ar+=$gdailytrans1['leakingledgerdetails_amount'];
 				}
@@ -193,7 +221,6 @@
                     <th style="text-align:right"><?php echo number_format($grand_total_leaking,2);?></th>
                     <th style="text-align:right"><?php echo number_format($grand_total_ar_leaking,2);?></th>
                     <th style="text-align:right"><?php echo number_format($grand_total_ar_leaking_balance,2);?></th>
-                    <th style="text-align:right"><?php echo number_format($grand_total_vat,2);?></th>
                     <th style="text-align:right"><?php echo number_format($grand_total_franchise_fee,2);?></th>
 				</tr>
                 
