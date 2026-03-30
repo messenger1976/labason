@@ -24,15 +24,39 @@
 		(SELECT employee_name FROM '.$this->table_users.' WHERE '.$this->table_users.'.id='.$this->table_meter.'.userid) as user,
 		tbl_addcustomer_reading.amount as reading_amount, 
 		tbl_addcustomer_reading.sc_discount as sc_discount,
+		tbl_billing_period.bp_due_date as due_date,
 		SUM(tbl_addcustomer_reading.maintenance_fee) as total_wmmf,
 		SUM(tbl_addcustomer_reading.franchise_fee_amount) as total_franchise_fee,
 		SUM(CASE WHEN (tbl_addmetercustomer.amount - tbl_addcustomer_reading.unit_price - tbl_addcustomer_reading.maintenance_fee - tbl_addcustomer_reading.franchise_fee_amount) <= 0 THEN 0 ELSE tbl_addmetercustomer.amount - tbl_addcustomer_reading.unit_price - tbl_addcustomer_reading.maintenance_fee - tbl_addcustomer_reading.franchise_fee_amount END) AS total_penalty,
-		SUM(CASE WHEN (tbl_addmetercustomer.amount - tbl_addcustomer_reading.unit_price - tbl_addcustomer_reading.maintenance_fee - tbl_addcustomer_reading.franchise_fee_amount) <= 0 THEN tbl_addcustomer_reading.unit_price ELSE 0 END) AS current_amount,
-		SUM(CASE WHEN (tbl_addmetercustomer.amount - tbl_addcustomer_reading.unit_price - tbl_addcustomer_reading.maintenance_fee - tbl_addcustomer_reading.franchise_fee_amount) <= 0 THEN 0 ELSE tbl_addcustomer_reading.unit_price END) AS arrears_amount,
+		SUM(
+			CASE
+				WHEN tbl_billing_period.bp_due_date IS NOT NULL
+					AND MONTH(tbl_addmetercustomer.date) = MONTH(tbl_billing_period.bp_due_date)
+					AND YEAR(tbl_addmetercustomer.date) = YEAR(tbl_billing_period.bp_due_date)
+				THEN tbl_addcustomer_reading.unit_price
+				WHEN tbl_billing_period.bp_due_date IS NULL
+					AND (tbl_addmetercustomer.amount - tbl_addcustomer_reading.unit_price - tbl_addcustomer_reading.maintenance_fee - tbl_addcustomer_reading.franchise_fee_amount) <= 0
+				THEN tbl_addcustomer_reading.unit_price
+				ELSE 0
+			END
+		) AS current_amount,
+		SUM(
+			CASE
+				WHEN tbl_billing_period.bp_due_date IS NOT NULL
+					AND (MONTH(tbl_addmetercustomer.date) <> MONTH(tbl_billing_period.bp_due_date)
+						OR YEAR(tbl_addmetercustomer.date) <> YEAR(tbl_billing_period.bp_due_date))
+				THEN tbl_addcustomer_reading.unit_price
+				WHEN tbl_billing_period.bp_due_date IS NULL
+					AND (tbl_addmetercustomer.amount - tbl_addcustomer_reading.unit_price - tbl_addcustomer_reading.maintenance_fee - tbl_addcustomer_reading.franchise_fee_amount) > 0
+				THEN tbl_addcustomer_reading.unit_price
+				ELSE 0
+			END
+		) AS arrears_amount,
 		tbl_addmetercustomer.*');
 		$this->db->from('tbl_addmetercustomer');
 		$this->db->join('tbl_addcustomer', 'tbl_addmetercustomer.customer_id = tbl_addcustomer.customer_id');
 		$this->db->join('tbl_addcustomer_reading', 'tbl_addmetercustomer.customer_id = tbl_addcustomer_reading.customer_id and tbl_addmetercustomer.month=tbl_addcustomer_reading.month and tbl_addmetercustomer.year=tbl_addmetercustomer.year','left');
+		$this->db->join('tbl_billing_period', 'tbl_billing_period.bp_id = tbl_addcustomer_reading.bp_id', 'left');
 		$this->db->where('tbl_addmetercustomer.date',$from);
 		//$this->db->where('tbl_addmetercustomer.date <=',$to);
 		if($zone!=0 && $zone!=''){
