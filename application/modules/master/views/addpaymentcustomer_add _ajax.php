@@ -195,7 +195,10 @@
 						<td></td>
 						<td></td>
 						<td></td>
-						<th align="right"><input type="text" name="checkbox_cal" id="checkbox_cal" value = "0" style="text-align:right;float:right;" readonly></th>
+						<th align="right">
+							<input type="text" name="checkbox_cal" id="checkbox_cal" value="0" style="text-align:right;float:right;" readonly>
+							<input type="hidden" name="checkbox_cal_bill" id="checkbox_cal_bill" value="0">
+						</th>
 					    <th><input class="total_pay" id="total_pay"  type="button" name="total_pay" value="Total Pay" ></th>
 						
 					</tr>	
@@ -237,13 +240,19 @@ $('.my_check').change(function () {
 	var id = $(this).attr('id');
 	var presentVal = parseFloat($('#prsentamount_' + id).val());
 	var val = parseFloat($('#checkbox_cal').val());
+	var billVal = parseFloat($('#unit_price_' + id).val());
+	var bill_total = parseFloat($('#checkbox_cal_bill').val());
     if ($(this).is(':checked')) {
 		val+=presentVal;
 		$('#checkbox_cal').val(val.toFixed(2));
+		bill_total+=billVal;
+		$('#checkbox_cal_bill').val(bill_total.toFixed(2));
 		//$('.total_pay').prop("disabled", false); // Element(s) are now enabled.
 	} else {
 		val-=presentVal;
 		$('#checkbox_cal').val(val.toFixed(2));
+		bill_total-=billVal;
+		$('#checkbox_cal_bill').val(bill_total.toFixed(2));
 		//$('.total_pay').prop("disabled", true); // Element(s) are now enabled.
 	}	
 });
