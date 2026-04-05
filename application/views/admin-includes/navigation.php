@@ -208,7 +208,7 @@
 
 
 
-					<li class="<?php if($this->uri->segment(2)=='reports'){echo 'active open';}?>">
+					<li class="<?php if($this->uri->segment(2)=='reports' || $this->uri->segment(2)=='customerbalancemonitor'){echo 'active open';}?>">
 						<a href="#"><i class="fa fa-lg fa-fw fa-pencil-square-o"></i> <span class="menu-item-parent">Reports</span></a>
 						<ul>
 							<?php if((array_key_exists('adddailyreport',$roleResponsible) && ($roleResponsible['adddailyreport'] == 1)) || ($this->session->userdata('usertype') == 'admin') || ($this->session->userdata('usertype') == 'subadmin') ){ ?>
@@ -239,6 +239,13 @@
 								<a href="<?php echo ADMIN_URL;?>reports/aging_ar_report"> <span class="menu-item-parent">Aging A/R Report</span></a>
 							</li>	
 							<?php } ?>
+
+							<?php if((array_key_exists('customerbalancemonitor',$roleResponsible) && ($roleResponsible['customerbalancemonitor'] == 1)) || ($this->session->userdata('usertype') == 'admin') ){ ?>
+							<li class="<?php if($this->uri->segment(2)=='customerbalancemonitor') echo 'active';?>">
+								<a href="<?php echo ADMIN_URL;?>customerbalancemonitor"> <span class="menu-item-parent">Customer balance monitor</span></a>
+							</li>	
+							<?php } ?>
+
 							<?php if((array_key_exists('adddailyreport',$roleResponsible) && ($roleResponsible['adddailyreport'] == 1)) || ($this->session->userdata('usertype') == 'admin') || ($this->session->userdata('usertype') == 'subadmin') ){ ?>
 							<li class="<?php if($this->uri->segment(2)=='reports' && $this->uri->segment(3)=='monthly_income_report_analytic') echo 'active';?>">
 								<a href="<?php echo ADMIN_URL;?>reports/monthly_income_report_analytic"> <span class="menu-item-parent">Monthly Income Report Analytic</span></a>

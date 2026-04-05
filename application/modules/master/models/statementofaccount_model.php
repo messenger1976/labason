@@ -360,6 +360,97 @@ class statementofaccount_model extends CI_Model {
 		// Current billing balance = Total Debit - Total Credit
 		return $total_debit - $total_credit;
 	}
+
+	/**
+	 * Active billing period for a zone (same idea as meter reading: bp_status = 1).
+	 * If multiple rows exist, uses latest year then month.
+	 */
+	public function get_active_billing_period_for_zone($zone_id) {
+		$zone_id = (int) $zone_id;
+		if ($zone_id <= 0) {
+			return null;
+		}
+		$this->db->select('bp_id, bp_period_month, bp_period_year');
+		$this->db->from($this->table_billing_period);
+		$this->db->where('bp_zone_id', $zone_id);
+		$this->db->where('bp_status', 1);
+		$this->db->order_by('bp_period_year', 'desc');
+		$this->db->order_by('bp_period_month', 'desc');
+		$this->db->limit(1);
+		$query = $this->db->get();
+		if ($query->num_rows() === 0) {
+			return null;
+		}
+		return $query->row_array();
+	}
+
+	/**
+	 * True if ledger period key "month_year" matches bp_period_month / bp_period_year.
+	 */
+	private function _ledger_period_key_matches($key, $period_month, $period_year) {
+		if ($key === '' || $key === null) {
+			return false;
+		}
+		$parts = explode('_', (string) $key, 2);
+		if (count($parts) !== 2) {
+			return false;
+		}
+		return (int) $parts[0] === (int) $period_month && (int) $parts[1] === (int) $period_year;
+	}
+
+	/**
+	 * Statement-of-account balance but omitting the customer's current (active) billing period:
+	 * - Drops billing lines for that period (month/year of active bp for customer's zone).
+	 * - Drops payment lines that apply only to that period (single OR line item for that month/year).
+	 * If no active period is found for the zone, returns full get_current_balance().
+	 */
+	public function get_current_balance_excluding_active_billing_period($customer_id = '') {
+		if ($customer_id === '') {
+			return 0;
+		}
+		$this->db->select('zone');
+		$this->db->from($this->table_customer);
+		$this->db->where('customer_id', $customer_id);
+		$cq = $this->db->get();
+		if ($cq->num_rows() === 0) {
+			return 0;
+		}
+		$zone_id = (int) $cq->row()->zone;
+		$bp = $this->get_active_billing_period_for_zone($zone_id);
+		if ($bp === null) {
+			return $this->get_current_balance($customer_id);
+		}
+		$cur_m = (int) $bp['bp_period_month'];
+		$cur_y = (int) $bp['bp_period_year'];
+
+		$ledger_entries = $this->get_customer_ledger($customer_id);
+		$total_debit = 0;
+		$total_credit = 0;
+
+		foreach ($ledger_entries as $entry) {
+			$type = isset($entry['type']) ? $entry['type'] : '';
+			if ($type === 'billing') {
+				$raw = isset($entry['raw_data']) && is_array($entry['raw_data']) ? $entry['raw_data'] : array();
+				$m = isset($raw['month']) ? (int) $raw['month'] : 0;
+				$y = isset($raw['year']) ? (int) $raw['year'] : 0;
+				if ($m === $cur_m && $y === $cur_y) {
+					continue;
+				}
+			} elseif ($type === 'payment') {
+				$bp_data = isset($entry['billing_periods_data']) && is_array($entry['billing_periods_data']) ? $entry['billing_periods_data'] : array();
+				if (count($bp_data) === 1) {
+					$only_key = key($bp_data);
+					if ($this->_ledger_period_key_matches($only_key, $cur_m, $cur_y)) {
+						continue;
+					}
+				}
+			}
+			$total_debit += isset($entry['debit']) ? floatval($entry['debit']) : 0;
+			$total_credit += isset($entry['credit']) ? floatval($entry['credit']) : 0;
+		}
+
+		return $total_debit - $total_credit;
+	}
 	
 	/** Get customer password for validation **/
 	public function get_customer_password($customer_id='') {

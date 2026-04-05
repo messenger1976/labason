@@ -90,7 +90,8 @@ class responsibilities extends CI_Controller
 				'adddailyreport' => 'Daily Reports',
 				'leakingentry' => 'Leaking Entry',
 				'database_backup' => 'Database Backup',
-				'manual_or_series' => 'Manual OR Series'
+				'manual_or_series' => 'Manual OR Series',
+				'customerbalancemonitor' => 'Customer Balance Monitor'
 				);
 	}
 
