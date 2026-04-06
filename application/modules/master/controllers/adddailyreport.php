@@ -183,6 +183,24 @@ class adddailyreport extends CI_Controller {
 							}
 						}
 					}
+
+					// If billing period is already arrears, do not break down penalty:
+					// move penalty into arrears and set penalty column to 0.
+					$is_billing_period_arrears = false;
+					if(isset($gdailytrans['due_date']) && $gdailytrans['due_date'] != ''){
+						$pay_ts = strtotime($gdailytrans['date']);
+						$due_ts = strtotime($gdailytrans['due_date']);
+						if($pay_ts && $due_ts){
+							$is_billing_period_arrears = (date('m', $pay_ts) != date('m', $due_ts)) || (date('Y', $pay_ts) != date('Y', $due_ts));
+						}
+					}
+
+					$display_arrears_amount = $gdailytrans['arrears_amount'];
+					$display_penalty_amount = $gdailytrans['total_penalty'];
+					if($is_billing_period_arrears){
+						$display_arrears_amount = $display_arrears_amount + $display_penalty_amount;
+						$display_penalty_amount = 0;
+					}
 					
 					// Add transaction row
 					$export_data[] = array(
@@ -190,10 +208,10 @@ class adddailyreport extends CI_Controller {
 						$gdailytrans['last_name'] . ', ' . $gdailytrans['first_name'] . ' ' . $gdailytrans['middle_name'],
 						number_format($gdailytrans['grand_total'], 2),
 						number_format($gdailytrans['current_amount'], 2),
-						number_format($gdailytrans['arrears_amount'], 2),
+						number_format($display_arrears_amount, 2),
 						number_format($prev_year, 2),
 						number_format($gdailytrans['total_wmmf'], 2),
-						number_format($gdailytrans['total_penalty'], 2),
+						number_format($display_penalty_amount, 2),
 						number_format(isset($gdailytrans['sc_discount']) ? $gdailytrans['sc_discount'] : 0, 2),
 						number_format(isset($gdailytrans['leaking_amount']) ? $gdailytrans['leaking_amount'] : 0, 2),
 						number_format(isset($ar_leaking['leaking_total_amount']) ? $ar_leaking['leaking_total_amount'] : 0, 2),
@@ -205,9 +223,9 @@ class adddailyreport extends CI_Controller {
 					// Accumulate zone totals
 					$total_grand_zone += $gdailytrans['grand_total'];
 					$total_current_zone += $gdailytrans['current_amount'];
-					$total_arrears_zone += $gdailytrans['arrears_amount'];
+					$total_arrears_zone += $display_arrears_amount;
 					$total_wmmf_zone += $gdailytrans['total_wmmf'];
-					$total_penalty_zone += $gdailytrans['total_penalty'];
+					$total_penalty_zone += $display_penalty_amount;
 					$total_vat_zone += isset($gdailytrans['vat_amount']) ? $gdailytrans['vat_amount'] : 0;
 					$total_leaking_zone += isset($gdailytrans['leaking_amount']) ? $gdailytrans['leaking_amount'] : 0;
 					$total_sc_zone += isset($gdailytrans['sc_discount']) ? $gdailytrans['sc_discount'] : 0;
