@@ -186,6 +186,7 @@ class adddailyreport extends CI_Controller {
 
 					// If billing period is already arrears, do not break down penalty:
 					// move penalty into arrears and set penalty column to 0.
+					//This is updated for livesite
 					$is_billing_period_arrears = false;
 					if(isset($gdailytrans['due_date']) && $gdailytrans['due_date'] != ''){
 						$pay_ts = strtotime($gdailytrans['date']);
