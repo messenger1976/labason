@@ -1,7 +1,7 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 class adddailyreportnogrouping extends CI_Controller {
 	// Declare globle variable here
-	
+	//This is updated for livesite
 	public $headerPage = '../../views/admin-includes/header'; 
 	
 	

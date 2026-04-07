@@ -165,7 +165,7 @@
 
 					$prev_year = get_customer_unpaid_records($gdailytrans['customer_id'],'12',$current_billing_period_year-1);
                     //$prev_year = 600;
-
+					//This is added for update to livesite
 					// If billing period is already arrears, do not break down penalty:
 					// move penalty amount into arrears column and show 0 on penalty column.
 					$is_billing_period_arrears = false;
