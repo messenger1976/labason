@@ -133,11 +133,12 @@
                                 }
                             }
 
-							// If billing period is already arrears, do not break down penalty:
-							// move penalty amount into arrears column and show 0 on penalty column.
-							//This is updated for livesite
+							$penalty_val = (float)$gdailytrans['total_penalty'];
+							$arrears_val = (float)$gdailytrans['arrears_amount'];
 							$is_billing_period_arrears = false;
-							if(isset($gdailytrans['due_date']) && $gdailytrans['due_date'] != ''){
+							if($penalty_val > 0 && $arrears_val > 0){
+								$is_billing_period_arrears = true;
+							} elseif($penalty_val > 0 && isset($gdailytrans['due_date']) && $gdailytrans['due_date'] != ''){
 								$pay_ts = strtotime($gdailytrans['date']);
 								$due_ts = strtotime($gdailytrans['due_date']);
 								if($pay_ts && $due_ts){
