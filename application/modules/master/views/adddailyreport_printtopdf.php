@@ -1,3 +1,4 @@
+<!-- build: penalty-in-arrears 2026-04-12 -->
 <html lang="en">
 <head>
 		<meta charset="utf-8" />
@@ -165,11 +166,15 @@
 
 					$prev_year = get_customer_unpaid_records($gdailytrans['customer_id'],'12',$current_billing_period_year-1);
                     //$prev_year = 600;
-					//This is added for update to livesite
 					// If billing period is already arrears, do not break down penalty:
-					// move penalty amount into arrears column and show 0 on penalty column.
+					// move penalty into arrears and show 0 on penalty column.
+					// Use arrears_amount from the query when > 0 (matches SQL; works if due_date is NULL on some servers).
+					$penalty_val = (float)$gdailytrans['total_penalty'];
+					$arrears_val = (float)$gdailytrans['arrears_amount'];
 					$is_billing_period_arrears = false;
-					if(isset($gdailytrans['due_date']) && $gdailytrans['due_date'] != ''){
+					if($penalty_val > 0 && $arrears_val > 0){
+						$is_billing_period_arrears = true;
+					} elseif($penalty_val > 0 && isset($gdailytrans['due_date']) && $gdailytrans['due_date'] != ''){
 						$pay_ts = strtotime($gdailytrans['date']);
 						$due_ts = strtotime($gdailytrans['due_date']);
 						if($pay_ts && $due_ts){
