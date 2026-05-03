@@ -15,6 +15,8 @@ class reports extends CI_Controller {
     public $monthlybillingreport_ajaxPage ='monthly_billing_report_ajax';
     public $customerreport_ajaxPage ='customer_report_ajax';
 	public $agingARreport_ajaxPage ='aging_ar_report_ajax';
+	public $customerPaymentMonitoringPage = 'customer_payment_monitoring_report';
+	public $customerpaymentmonitoring_ajaxPage = 'customer_payment_monitoring_report_ajax';
 	public $printtopdfPage ='monthlybillingreport_printtopdf';
 	public $customerprinttopdfPage ='customerreport_printtopdf';
 	public $agingprinttopdfPage ='agingarreport_printtopdf';
@@ -62,6 +64,7 @@ class reports extends CI_Controller {
 		// Log errors to CodeIgniter's log file
 		log_message('debug', 'Reports controller initialized'); 				
 		$this->load->model('adminheader_model','top_model');
+		$this->load->model('statementofaccount_model', 'soa_model');
     }
 	public function index(){ 		 //*****  View Loading  *****//
 		$header['roleResponsible'] = $this->top_model->get_responsibilities();
@@ -121,6 +124,13 @@ class reports extends CI_Controller {
 		//$header['record_info'] = $this->top_model->get_last_login_details(1);
 		$this->load->view($this->headerPage,$header);
 		$this->load->view($this->agingARreportPage,$data);
+	}
+
+	public function customer_payment_monitoring_report() {
+		$header['roleResponsible'] = $this->top_model->get_responsibilities();
+		$data['zone'] = $this->customer_model->get_zone();
+		$this->load->view($this->headerPage, $header);
+		$this->load->view($this->customerPaymentMonitoringPage, $data);
 	}
 
 	public function leaking_ar_report(){ 		 //*****  View Loading  *****//
@@ -863,6 +873,165 @@ class reports extends CI_Controller {
             
             $this->load->view($this->agingARreport_ajaxPage,$data);
 				
+	}
+
+	/**
+	 * AJAX: Customer Payment Monitoring search (neutral URL — paths containing "payment" are often blocked by extensions, yielding HTTP 0).
+	 */
+	public function getcpmonsearch() {
+		$this->_customer_payment_monitoring_search_ajax();
+	}
+
+	/** Legacy alias; prefer getcpmonsearch for new clients. */
+	public function getcustomerpaymentmonitoringsearch() {
+		$this->_customer_payment_monitoring_search_ajax();
+	}
+
+	private function _customer_payment_monitoring_search_ajax() {
+		try {
+			$zone = $this->input->get_post('zone');
+			$status = $this->input->get_post('status');
+			$offset = $this->input->get_post('offset');
+			$zone = ($zone === '' || $zone === null) ? 0 : (int) $zone;
+			if ($status === '99' || $status === '' || $status === null) {
+				$status = '';
+			}
+			$offset = ($offset === '' || $offset === null) ? 0 : (int) $offset;
+			if ($offset < 0) {
+				$offset = 0;
+			}
+			$limit = 100;
+			$total = $this->report_model->count_customer_payment_monitoring_records($zone, $status);
+			$rows = $this->report_model->get_customer_payment_monitoring_records($zone, $status, $limit, $offset);
+			$arrears_cache = array();
+			foreach ($rows as &$row) {
+				$cid = isset($row['customer_id']) ? $row['customer_id'] : '';
+				if ($cid === '') {
+					$row['arrears'] = 0;
+					continue;
+				}
+				if (!array_key_exists($cid, $arrears_cache)) {
+					$arrears_cache[$cid] = (float) $this->soa_model->get_current_balance_excluding_active_billing_period($cid);
+				}
+				$row['arrears'] = $arrears_cache[$cid];
+			}
+			unset($row);
+			$data['record'] = $rows;
+			$data['total_count'] = $total;
+			$data['offset'] = $offset;
+			$data['limit'] = $limit;
+			$data['has_more'] = ($offset + count($rows)) < $total;
+			$this->load->view($this->customerpaymentmonitoring_ajaxPage, $data);
+		} catch (Throwable $e) {
+			log_message('error', 'customer_payment_monitoring_search_ajax: ' . $e->getMessage() . ' @ ' . $e->getFile() . ':' . $e->getLine());
+			$this->output->set_status_header(500);
+			echo '<div class="alert alert-danger"><strong>Report could not load.</strong><br>'
+				. htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8')
+				. '<br><small>Details are in the application log.</small></div>';
+		}
+	}
+
+	/**
+	 * Export CPM report (neutral URL; delegates to export_customer_payment_monitoring_excel).
+	 */
+	public function export_cpmon_excel($zone = 0, $status = '99') {
+		$this->export_customer_payment_monitoring_excel($zone, $status);
+	}
+
+	/**
+	 * Export full Customer Payment Monitoring report (same filters as on-screen; batched DB reads of 100 rows).
+	 * URL: reports/export_customer_payment_monitoring_excel/{zone}/{status} — use status 99 for All.
+	 */
+	public function export_customer_payment_monitoring_excel($zone = 0, $status = '99') {
+		@ini_set('display_errors', 0);
+		error_reporting(0);
+		set_time_limit(600);
+		ini_set('memory_limit', '512M');
+		while (ob_get_level()) {
+			@ob_end_clean();
+		}
+		if (headers_sent($file, $line)) {
+			die("Headers already sent in $file on line $line. Cannot send Excel file.");
+		}
+		$this->load->helper('excel');
+		$zone = (int) $zone;
+		$status_filter = ($status === '99' || $status === '' || $status === null) ? '' : (string) $status;
+		$zones = $this->my_model->get_zone($zone);
+		$zone_name = 'All Zones';
+		if ($zone > 0 && is_array($zones) && count($zones) > 0 && isset($zones[0]['zone'])) {
+			$zone_name = $zones[0]['zone'];
+		}
+		$status_display = 'All statuses';
+		if ($status_filter === '1') {
+			$status_display = 'Active';
+		} elseif ($status_filter === '0') {
+			$status_display = 'Inactive';
+		} elseif ($status_filter === '2') {
+			$status_display = 'Disconnected';
+		}
+		$export_data = array();
+		$export_data[] = array('CUSTOMER PAYMENT MONITORING REPORT');
+		$export_data[] = array('Payments included: posted date in the calendar month immediately before the zone active billing period (when set).');
+		$export_data[] = array('Zone: ' . $zone_name);
+		$export_data[] = array('Customer status: ' . $status_display);
+		$export_data[] = array('Exported: ' . date('Y-m-d H:i:s'));
+		$export_data[] = array('');
+		$export_data[] = array(
+			'SN #',
+			'Customer ID',
+			'Customer Name',
+			'Address',
+			'Zone',
+			'OR number',
+			'# billing periods',
+			'Billing Period Paid',
+			'Total Amount Paid',
+			'Arrears'
+		);
+		$arrears_cache = array();
+		$index = 0;
+		$offset = 0;
+		$page_size = 100;
+		while (true) {
+			$batch = $this->report_model->get_customer_payment_monitoring_records($zone, $status_filter, $page_size, $offset);
+			if (!is_array($batch) || count($batch) === 0) {
+				break;
+			}
+			foreach ($batch as $row) {
+				$index++;
+				$cid = isset($row['customer_id']) ? $row['customer_id'] : '';
+				if ($cid !== '' && !array_key_exists($cid, $arrears_cache)) {
+					$arrears_cache[$cid] = (float) $this->soa_model->get_current_balance_excluding_active_billing_period($cid);
+				}
+				$ar = ($cid !== '' && array_key_exists($cid, $arrears_cache)) ? $arrears_cache[$cid] : 0;
+				$name = trim(
+					(isset($row['last_name']) ? stripslashes($row['last_name']) : '') . ', ' .
+					(isset($row['first_name']) ? stripslashes($row['first_name']) : '') . ' ' .
+					(isset($row['middle_name']) ? stripslashes($row['middle_name']) : '')
+				);
+				$export_data[] = array(
+					$index,
+					isset($row['customer_id']) ? stripslashes($row['customer_id']) : '',
+					$name,
+					isset($row['address']) ? stripslashes($row['address']) : '',
+					isset($row['zone_name']) ? stripslashes($row['zone_name']) : '',
+					isset($row['or_number']) ? stripslashes((string) $row['or_number']) : '',
+					isset($row['period_count']) ? (int) $row['period_count'] : 0,
+					isset($row['billing_periods_paid']) ? stripslashes($row['billing_periods_paid']) : '',
+					isset($row['total_paid']) ? number_format((float) $row['total_paid'], 2, '.', '') : '0.00',
+					number_format($ar, 2, '.', '')
+				);
+			}
+			$offset += $page_size;
+			if (count($batch) < $page_size) {
+				break;
+			}
+		}
+		if ($index === 0) {
+			$export_data[] = array('No records found for the selected filters.');
+		}
+		$filename = 'Customer_Payment_Monitoring_' . preg_replace('/[^A-Za-z0-9_-]+/', '_', $zone_name) . '_' . date('Y-m-d') . '.xls';
+		array_to_excel($export_data, $filename);
 	}
 
 	public function agingexporttoexcel($asofdate='',$zone='',$status='',$preparedby='',$verifiedby='',$approvedby=''){
