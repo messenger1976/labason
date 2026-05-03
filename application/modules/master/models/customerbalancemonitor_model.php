@@ -11,12 +11,7 @@ class customerbalancemonitor_model extends CI_Model {
 	/**
 	 * Customer list with same filters as Customer Report (zone, status, special privilege).
 	 */
-	public function get_customers($zone, $status = '', $special_privilege = 0) {
-		$this->db->select($this->table_name.'.customer_id, '.$this->table_name.'.zone, '.$this->table_name.'.first_name, '.$this->table_name.'.last_name, '.$this->table_name.'.middle_name, '.$this->table_name.'.address, '.$this->table_name.'.status,
-		(SELECT zone FROM '.$this->table_zone.' WHERE '.$this->table_zone.'.id = '.$this->table_name.'.zone) as zone_name,
-		(SELECT class_name FROM '.$this->table_classification.' WHERE '.$this->table_classification.'.class_id = '.$this->table_name.'.classification) as classification_name');
-		$this->db->from($this->table_name);
-
+	private function apply_customer_filters($zone, $status = '', $special_privilege = 0) {
 		$zone = (int) $zone;
 		if ($zone != 0) {
 			$this->db->where($this->table_name.'.zone', $zone);
@@ -27,9 +22,32 @@ class customerbalancemonitor_model extends CI_Model {
 		if ((int) $special_privilege === 1) {
 			$this->db->where($this->table_name.'.special_priviledge', 1);
 		}
+	}
+
+	public function count_customers($zone, $status = '', $special_privilege = 0) {
+		$this->db->from($this->table_name);
+		$this->apply_customer_filters($zone, $status, $special_privilege);
+		$query = $this->db->get();
+		if ($this->db->_error_number() != 0) {
+			log_message('error', 'customerbalancemonitor_model count_customers: ' . $this->db->_error_message());
+			return 0;
+		}
+		return (int) $query->num_rows();
+	}
+
+	public function get_customers($zone, $status = '', $special_privilege = 0, $limit = null, $offset = 0) {
+		$this->db->select($this->table_name.'.customer_id, '.$this->table_name.'.zone, '.$this->table_name.'.first_name, '.$this->table_name.'.last_name, '.$this->table_name.'.middle_name, '.$this->table_name.'.address, '.$this->table_name.'.status,
+		(SELECT zone FROM '.$this->table_zone.' WHERE '.$this->table_zone.'.id = '.$this->table_name.'.zone) as zone_name,
+		(SELECT class_name FROM '.$this->table_classification.' WHERE '.$this->table_classification.'.class_id = '.$this->table_name.'.classification) as classification_name');
+		$this->db->from($this->table_name);
+
+		$this->apply_customer_filters($zone, $status, $special_privilege);
 
 		$this->db->order_by($this->table_name.'.last_name', 'asc');
 		$this->db->order_by($this->table_name.'.first_name', 'asc');
+		if ($limit !== null) {
+			$this->db->limit((int) $limit, (int) $offset);
+		}
 
 		$query = $this->db->get();
 		if ($this->db->_error_number() != 0) {

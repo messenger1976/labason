@@ -168,40 +168,127 @@
 			var status = $("#status").val();
 			var special_privilege = $("#special_privilege").is(':checked') ? 1 : 0;
 			var only_with_balance = $("#only_with_balance").is(':checked') ? 1 : 0;
+			var batchOffset = 0;
+			var rowIndex = 1;
+			var grandTotal = 0;
+			var totalRows = 0;
+			var isDone = false;
 
-			$("#resultDiv").html('<div class="alert alert-info">Loading balances (this may take a while)…</div>');
+			$("#resultDiv").html(
+				'<div id="balanceProgress" class="alert alert-info">Loading balances in batches of 100...</div>' +
+				'<div class="row"><div class="col-lg-12 col-sm-12 col-xs-12 col-md-12">' +
+				'<p id="balanceGrandTotal" class="text-right" style="font-size:15px; margin-bottom:10px;"><strong>Sum of displayed balances (excl. active billing period):</strong> <span class="txt-color-blueDark">0.00</span></p>' +
+				'</div></div>' +
+				'<div class="table-responsive">' +
+				'<table id="balance_monitor_table" class="table table-bordered table-striped">' +
+				'<thead><tr><th data-hide="phone">#</th><th data-hide="phone">Customer ID</th><th data-hide="phone">Name</th><th data-hide="phone">Address</th><th data-hide="phone">Zone</th><th class="text-right">Balance (SOA excl. current period)</th><th data-hide="phone">Statement</th></tr></thead>' +
+				'<tbody></tbody></table></div>'
+			);
 
-			$.ajax({
-				type: "POST",
-				url: "<?php echo ADMIN_URL;?>customerbalancemonitor/search",
-				data: {
-					zone: zone,
-					status: status,
-					special_privilege: special_privilege,
-					only_with_balance: only_with_balance
-				},
-				success: function(response) {
-					if (response && typeof response === 'string' && response.trim().length > 0) {
-						$("#resultDiv").html(response.trim());
-						var $tbl = $('#balance_monitor_table');
-						if ($.fn.dataTable && $tbl.length && $tbl.find('tbody tr td[colspan]').length === 0) {
-							$tbl.dataTable({
-								"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-12 hidden-xs'l>r>t<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
-								"autoWidth": true,
-								"order": [[5, "desc"]],
-								"oLanguage": {
-									"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-								}
-							});
-						}
-					} else {
-						$("#resultDiv").html('<div class="alert alert-warning">No data found.</div>');
-					}
-				},
-				error: function(xhr) {
-					$("#resultDiv").html('<div class="alert alert-danger"><strong>Error loading data.</strong> Status: ' + (xhr ? xhr.status : '') + '</div>');
+			var $tbody = $("#balance_monitor_table tbody");
+			var $progress = $("#balanceProgress");
+			var $grandTotal = $("#balanceGrandTotal span");
+
+			function updateProgressLabel(done, nextOffset, total) {
+				var totalText = (typeof total === 'number' && total >= 0) ? total : '?';
+				if (done) {
+					$progress.removeClass('alert-info').addClass('alert-success').text('Done. Loaded ' + totalRows + ' displayed records.');
+				} else {
+					$progress.text('Processing records ' + nextOffset + ' of ' + totalText + '...');
 				}
-			});
+			}
+
+			function appendRows(rows) {
+				$.each(rows, function(_, row) {
+					var fullName = $.trim((row.first_name || '') + ' ' + (row.middle_name || '') + ' ' + (row.last_name || ''));
+					var balance = parseFloat(row.total_balance || 0);
+					var balanceClass = '';
+					if (balance > 0.005) {
+						balanceClass = 'text-danger';
+					} else if (balance < -0.005) {
+						balanceClass = 'text-success';
+					}
+
+					var $tr = $('<tr/>');
+					$tr.append($('<td/>').text(rowIndex));
+					$tr.append($('<td/>').text(row.customer_id || ''));
+					$tr.append($('<td/>').text(fullName));
+					$tr.append($('<td/>').text(row.address || ''));
+					$tr.append($('<td/>').text(row.zone_name || ''));
+					$tr.append($('<td/>').addClass('text-right').addClass(balanceClass).text(balance.toFixed(2)));
+					$tr.append($('<td/>').append(
+						$('<a/>', {
+							'href': row.statement_url || '#',
+							'target': '_blank',
+							'rel': 'noopener',
+							'class': 'btn btn-xs btn-default',
+							'text': 'Open SOA'
+						})
+					));
+					$tbody.append($tr);
+					rowIndex++;
+					totalRows++;
+				});
+			}
+
+			function finishTable() {
+				if (totalRows === 0) {
+					$tbody.append('<tr><td colspan="7" class="text-center">No records found</td></tr>');
+				}
+				var $tbl = $('#balance_monitor_table');
+				if ($.fn.dataTable && $tbl.length && totalRows > 0) {
+					if ($.fn.DataTable && $.fn.DataTable.isDataTable('#balance_monitor_table')) {
+						$tbl.DataTable().destroy();
+					}
+					$tbl.dataTable({
+						"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-12 hidden-xs'l>r>t<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
+						"autoWidth": true,
+						"order": [[5, "desc"]],
+						"oLanguage": {
+							"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
+						}
+					});
+				}
+			}
+
+			function fetchNextBatch() {
+				$.ajax({
+					type: "POST",
+					url: "<?php echo ADMIN_URL;?>customerbalancemonitor/search_batch",
+					dataType: "json",
+					data: {
+						zone: zone,
+						status: status,
+						special_privilege: special_privilege,
+						only_with_balance: only_with_balance,
+						batch_offset: batchOffset
+					},
+					success: function(response) {
+						if (!response || response.ok !== true || !$.isArray(response.rows)) {
+							$("#resultDiv").html('<div class="alert alert-danger"><strong>Error loading data.</strong> Invalid server response.</div>');
+							return;
+						}
+
+						appendRows(response.rows);
+						grandTotal += parseFloat(response.batch_balance_sum || 0);
+						$grandTotal.text(grandTotal.toFixed(2));
+						batchOffset = parseInt(response.next_offset, 10) || batchOffset;
+						isDone = response.done === true;
+						updateProgressLabel(isDone, batchOffset, parseInt(response.total, 10));
+
+						if (isDone) {
+							finishTable();
+							return;
+						}
+						fetchNextBatch();
+					},
+					error: function(xhr) {
+						$("#resultDiv").html('<div class="alert alert-danger"><strong>Error loading data.</strong> Status: ' + (xhr ? xhr.status : '') + '</div>');
+					}
+				});
+			}
+
+			fetchNextBatch();
 		});
 	});
 </script>
