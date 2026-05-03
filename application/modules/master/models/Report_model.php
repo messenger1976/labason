@@ -276,6 +276,143 @@ class Report_model extends CI_Model {
 			'days_in_month' => $days_in_month
 		);
 	}
+
+	/**
+	 * Inner grouped SQL: multi-period payments (same OR) with all lines strictly before active billing period.
+	 * Payment posting date (p.date) must fall in the calendar month immediately before the zone's active billing period month (when an active period exists).
+	 * @param int $zone 0 = all
+	 * @param string $status '' or '99' = all; else tbl_addcustomer.status
+	 * @return array sql string, params array
+	 */
+	private function _customer_payment_monitoring_inner_sql($zone, $status) {
+		$zone = (int) $zone;
+		$status = ($status === '99' || $status === null || $status === false) ? '' : (string) $status;
+		$params = array();
+		$where = array('(p.or_number IS NOT NULL AND TRIM(CAST(p.or_number AS CHAR)) <> \'\')');
+		if ($zone > 0) {
+			$where[] = 'c.zone = ?';
+			$params[] = $zone;
+		}
+		if ($status !== '') {
+			$where[] = 'c.status = ?';
+			$params[] = $status;
+		}
+		$pdate = 'COALESCE(STR_TO_DATE(TRIM(CAST(p.date AS CHAR)), \'%Y-%m-%d\'), STR_TO_DATE(TRIM(CAST(p.date AS CHAR)), \'%d-%m-%Y\'))';
+		$where[] = '(
+			curbp.bp_id IS NULL
+			OR (
+				' . $pdate . ' IS NOT NULL
+				AND YEAR(' . $pdate . ') = (CASE WHEN curbp.bp_period_month > 1 THEN curbp.bp_period_year ELSE curbp.bp_period_year - 1 END)
+				AND MONTH(' . $pdate . ') = (CASE WHEN curbp.bp_period_month > 1 THEN curbp.bp_period_month - 1 ELSE 12 END)
+			)
+		)';
+		$where_sql = implode(' AND ', $where);
+		$sql = "SELECT
+			p.customer_id,
+			p.or_number,
+			MAX(c.first_name) AS first_name,
+			MAX(c.last_name) AS last_name,
+			MAX(c.middle_name) AS middle_name,
+			MAX(c.address) AS address,
+			MAX(z.zone) AS zone_name,
+			COUNT(DISTINCT CONCAT(CAST(p.month AS CHAR), '-', CAST(p.year AS CHAR))) AS period_count,
+			GROUP_CONCAT(DISTINCT CONCAT(LPAD(CAST(p.month AS UNSIGNED), 2, '0'), '/', CAST(p.year AS UNSIGNED)) SEPARATOR ', ') AS billing_periods_paid,
+			SUM(COALESCE(
+				NULLIF(CAST(p.pay_amount AS DECIMAL(18,4)), 0),
+				NULLIF(CAST(p.total AS DECIMAL(18,4)), 0),
+				CAST(IFNULL(p.amount, 0) AS DECIMAL(18,4))
+			)) AS total_paid
+		FROM tbl_addmetercustomer p
+		INNER JOIN tbl_addcustomer c ON c.customer_id = p.customer_id
+		LEFT JOIN tbl_zone z ON z.id = c.zone
+		LEFT JOIN (
+			SELECT bp.bp_zone_id, bp.bp_period_month, bp.bp_period_year, bp.bp_id
+			FROM tbl_billing_period bp
+			INNER JOIN (
+				SELECT bp_zone_id, MAX(bp_period_year * 100 + bp_period_month) AS mk
+				FROM tbl_billing_period
+				WHERE bp_status = 1
+				GROUP BY bp_zone_id
+			) mx ON mx.bp_zone_id = bp.bp_zone_id
+				AND (bp.bp_period_year * 100 + bp.bp_period_month) = mx.mk
+			WHERE bp.bp_status = 1
+		) curbp ON curbp.bp_zone_id = c.zone
+		WHERE " . $where_sql . "
+		GROUP BY p.customer_id, p.or_number
+		HAVING COUNT(DISTINCT CONCAT(CAST(p.month AS CHAR), '-', CAST(p.year AS CHAR))) >= 2
+		AND SUM(CASE WHEN curbp.bp_id IS NULL THEN 0
+			WHEN (CAST(p.year AS UNSIGNED) * 100 + CAST(p.month AS UNSIGNED)) >= (curbp.bp_period_year * 100 + curbp.bp_period_month) THEN 1
+			ELSE 0 END) = 0";
+		return array('sql' => $sql, 'params' => $params);
+	}
+
+	/** Sort comma-separated mm/yyyy values chronologically */
+	private function _sort_billing_periods_paid_csv($csv) {
+		if ($csv === null || $csv === '') {
+			return '';
+		}
+		$parts = array_map('trim', explode(',', (string) $csv));
+		$parsed = array();
+		foreach ($parts as $p) {
+			if ($p !== '' && preg_match('/^(\d{1,2})\/(\d{4})$/', $p, $m)) {
+				$y = (int) $m[2];
+				$mo = (int) $m[1];
+				$parsed[] = array('k' => $y * 100 + $mo, 's' => str_pad((string) $mo, 2, '0', STR_PAD_LEFT) . '/' . $y);
+			}
+		}
+		if (count($parsed) === 0) {
+			return (string) $csv;
+		}
+		usort($parsed, function ($a, $b) {
+			return $a['k'] - $b['k'];
+		});
+		return implode(', ', array_column($parsed, 's'));
+	}
+
+	public function count_customer_payment_monitoring_records($zone, $status = '') {
+		$inner = $this->_customer_payment_monitoring_inner_sql($zone, $status);
+		$sql = 'SELECT COUNT(*) AS cnt FROM (' . $inner['sql'] . ') t';
+		$q = $this->db->query($sql, $inner['params']);
+		if (!$q || $this->db->_error_number() != 0) {
+			log_message('error', 'count_customer_payment_monitoring: ' . $this->db->_error_message());
+			return 0;
+		}
+		$row = $q->row_array();
+		return isset($row['cnt']) ? (int) $row['cnt'] : 0;
+	}
+
+	public function get_customer_payment_monitoring_records($zone, $status = '', $limit = 100, $offset = 0) {
+		$limit = (int) $limit;
+		$offset = (int) $offset;
+		if ($limit < 1) {
+			$limit = 100;
+		}
+		if ($limit > 100) {
+			$limit = 100;
+		}
+		if ($offset < 0) {
+			$offset = 0;
+		}
+		$inner = $this->_customer_payment_monitoring_inner_sql($zone, $status);
+		$this->db->query('SET SESSION group_concat_max_len = 16384');
+		$sql = 'SELECT * FROM (' . $inner['sql'] . ') t
+			ORDER BY t.zone_name ASC, t.last_name ASC, t.first_name ASC, CAST(t.or_number AS UNSIGNED) ASC
+			LIMIT ' . (int) $limit . ' OFFSET ' . (int) $offset;
+		$params = $inner['params'];
+		$q = $this->db->query($sql, $params);
+		if (!$q || $this->db->_error_number() != 0) {
+			log_message('error', 'get_customer_payment_monitoring: ' . $this->db->_error_message());
+			return array();
+		}
+		$rows = $q->result_array();
+		foreach ($rows as &$r) {
+			if (isset($r['billing_periods_paid'])) {
+				$r['billing_periods_paid'] = $this->_sort_billing_periods_paid_csv($r['billing_periods_paid']);
+			}
+		}
+		unset($r);
+		return $rows;
+	}
 	
 }
 ?>
