@@ -21,6 +21,9 @@ class reports extends CI_Controller {
 	public $customerprinttopdfPage ='customerreport_printtopdf';
 	public $agingprinttopdfPage ='agingarreport_printtopdf';
 	public $leakingarreport ='leakingarreport_printtopdf';
+	public $arrearsMonitoringPage = 'arrears_monitoring_report';
+	public $arrearsmonitoring_ajaxPage = 'arrears_monitoring_report_ajax';
+	public $arrearsmonitoringprinttopdfPage = 'arrearsmonitoring_printtopdf';
 	public function __construct() {
         parent::__construct();
         $this->load->model('addbillingperiod_model','billingperiod_model');   //*****    Model Loading     *****//	
@@ -124,6 +127,14 @@ class reports extends CI_Controller {
 		//$header['record_info'] = $this->top_model->get_last_login_details(1);
 		$this->load->view($this->headerPage,$header);
 		$this->load->view($this->agingARreportPage,$data);
+	}
+
+	public function arrears_monitoring_report(){ 		 //*****  View Loading  *****//
+		$header['roleResponsible'] = $this->top_model->get_responsibilities();
+		$data['zone'] = $this->customer_model->get_zone();
+		$data['employee'] = $this->my_model->get_employee();
+		$this->load->view($this->headerPage,$header);
+		$this->load->view($this->arrearsMonitoringPage,$data);
 	}
 
 	public function customer_payment_monitoring_report() {
@@ -876,6 +887,35 @@ class reports extends CI_Controller {
 	}
 
 	/**
+	 * AJAX search handler for the Arrears Monitoring report.
+	 * Same filters as Aging A/R Report; renders the slim 6-column ajax view.
+	 */
+	public function getarrearsmonitoringsearch()
+	{
+		$data['msg'] = '';
+
+		$zone     = $this->input->post('zone');
+		$asofdate = $this->input->post('asofdate');
+		$status   = $this->input->post('status');
+
+		$data['record'] = $this->report_model->get_arrears_monitoring_records($asofdate, $zone, $status);
+
+		$this->load->view($this->arrearsmonitoring_ajaxPage, $data);
+	}
+
+	public function updatearrearsmonitoring()
+	{
+		while (ob_get_level()) { @ob_end_clean(); }
+		header('Content-Type: application/json; charset=utf-8');
+
+		$customer_id = $this->input->post('customer_id');
+		$aging_amount = $this->input->post('aging_amount');
+
+		$result = $this->report_model->update_current_period_arrears($customer_id, $aging_amount);
+		echo json_encode($result, JSON_NUMERIC_CHECK);
+	}
+
+	/**
 	 * AJAX: Customer Payment Monitoring search (neutral URL — paths containing "payment" are often blocked by extensions, yielding HTTP 0).
 	 */
 	public function getcpmonsearch() {
@@ -1261,6 +1301,171 @@ class reports extends CI_Controller {
 		// Export to Excel (exit is handled in array_to_excel function)
 		array_to_excel($export_data, $filename);
 	}
-	
+
+	/**
+	 * Print/PDF view for the Arrears Monitoring report.
+	 * URL: reports/arrearsmonitoringprinttopdf/{asofdate}/{zone}/{status}/{preparedby}/{verifiedby}/{approvedby}
+	 */
+	public function arrearsmonitoringprinttopdf($asofdate, $zone, $status, $preparedby = '', $verifiedby = '', $approvedby = ''){
+		$data['zone']        = $this->my_model->get_zone($zone);
+		$data['asofdate']    = $asofdate;
+		$data['status']      = ($status == '99') ? '' : $status;
+		$data['preparedby']  = $this->my_model->get_employee($preparedby);
+		$data['verifiedby']  = $this->my_model->get_employee($verifiedby);
+		$data['approvedby']  = $this->my_model->get_employee($approvedby);
+
+		$this->load->view($this->arrearsmonitoringprinttopdfPage, $data);
+	}
+
+	/**
+	 * Excel export for the Arrears Monitoring report.
+	 * URL: reports/arrearsmonitoringexporttoexcel/{asofdate}/{zone}/{status}/{preparedby}/{verifiedby}/{approvedby}
+	 */
+	public function arrearsmonitoringexporttoexcel($asofdate = '', $zone = '', $status = '', $preparedby = '', $verifiedby = '', $approvedby = ''){
+		@ini_set('display_errors', 0);
+		error_reporting(0);
+		set_time_limit(600);
+		ini_set('memory_limit', '512M');
+
+		while (ob_get_level()) {
+			@ob_end_clean();
+		}
+
+		if (headers_sent($file, $line)) {
+			die("Headers already sent in $file on line $line. Cannot send Excel file.");
+		}
+
+		$this->load->helper('excel');
+
+		$status = ($status == '99') ? '' : $status;
+
+		$zones = $this->my_model->get_zone($zone);
+		if (!is_array($zones)) {
+			$zones = array();
+		}
+
+		$status_display = '';
+		if ($status === '99' || $status === '') {
+			$status_display = 'All Members';
+		} elseif ($status === '1') {
+			$status_display = 'Active Members';
+		} elseif ($status === '2') {
+			$status_display = 'Disconnected Members';
+		} elseif ($status === '0') {
+			$status_display = 'Inactive Members';
+		}
+
+		$export_data = array();
+		$export_data[] = array('ARREARS MONITORING REPORT');
+		$export_data[] = array('As of ' . $asofdate);
+		$export_data[] = array($status_display);
+		$export_data[] = array('');
+
+		$export_data[] = array(
+			'SN #',
+			'Customer ID',
+			'Customer Name',
+			'Meter Number',
+			'Zone',
+			'Aging Amount',
+			'Current Billing Period Arrears'
+		);
+
+		$grand_total_aging   = 0;
+		$grand_total_arrears = 0;
+		$index = 0;
+
+		if (count($zones) > 0) {
+			foreach ($zones as $key => $zone_row) {
+				$export_data[] = array(
+					'',
+					stripslashes($zone_row['zone']),
+					'', '', '', '', ''
+				);
+
+				$rows = $this->report_model->get_arrears_monitoring_records($asofdate, $zone_row['id'], $status);
+				if (!is_array($rows)) {
+					$rows = array();
+				}
+
+				$zone_total_aging   = 0;
+				$zone_total_arrears = 0;
+
+				foreach ($rows as $key2 => $row) {
+					$index++;
+					$customer_name = stripslashes(trim($row['last_name']) . ', ' . trim($row['first_name']) . ' ' . trim($row['middle_name']));
+					$aging_amount  = isset($row['total_balance']) ? (float) $row['total_balance'] : 0;
+					$current_arr   = isset($row['current_arrears']) ? (float) $row['current_arrears'] : 0;
+
+					$export_data[] = array(
+						$index,
+						stripslashes($row['customer_id']),
+						$customer_name,
+						stripslashes($row['meter_number']),
+						stripslashes($row['zone']),
+						number_format($aging_amount, 2),
+						number_format($current_arr, 2)
+					);
+
+					$zone_total_aging   += $aging_amount;
+					$zone_total_arrears += $current_arr;
+
+					$grand_total_aging   += $aging_amount;
+					$grand_total_arrears += $current_arr;
+				}
+
+				$export_data[] = array(
+					'', '', '',
+					'TOTAL',
+					'',
+					number_format($zone_total_aging, 2),
+					number_format($zone_total_arrears, 2)
+				);
+			}
+		}
+
+		$export_data[] = array(
+			'', '', '',
+			'GRAND TOTAL',
+			'',
+			number_format($grand_total_aging, 2),
+			number_format($grand_total_arrears, 2)
+		);
+
+		// Signature section (same layout as Aging A/R export)
+		$preparedby_data = $this->my_model->get_employee($preparedby);
+		$verifiedby_data = $this->my_model->get_employee($verifiedby);
+		$approvedby_data = $this->my_model->get_employee($approvedby);
+
+		$export_data[] = array('');
+		$export_data[] = array('Prepared by:', '', 'Verified by:', '', '', '', '');
+		$export_data[] = array('');
+		$export_data[] = array('');
+		$export_data[] = array('');
+		$export_data[] = array('');
+		if (isset($preparedby_data[0]) && isset($verifiedby_data[0])) {
+			$preparedby_name = $preparedby_data[0]['first_name'] . ' ' . $preparedby_data[0]['middle_name'] . ' ' . $preparedby_data[0]['last_name'];
+			$verifiedby_name = $verifiedby_data[0]['first_name'] . ' ' . $verifiedby_data[0]['middle_name'] . ' ' . $verifiedby_data[0]['last_name'];
+			$export_data[] = array(strtoupper($preparedby_name), '', strtoupper($verifiedby_name), '', '', '', '');
+			$export_data[] = array($preparedby_data[0]['jobtitle'], '', $verifiedby_data[0]['jobtitle'], '', '', '', '');
+		}
+		$export_data[] = array('');
+		$export_data[] = array('');
+		$export_data[] = array('');
+		$export_data[] = array('Approved by:', '', '', '', '', '', '');
+		$export_data[] = array('');
+		$export_data[] = array('');
+		$export_data[] = array('');
+		if (isset($approvedby_data[0])) {
+			$approvedby_name = $approvedby_data[0]['first_name'] . ' ' . $approvedby_data[0]['middle_name'] . ' ' . $approvedby_data[0]['last_name'];
+			$export_data[] = array(strtoupper($approvedby_name), '', 'Date/Time printed: ' . date('Y-m-d H:i:s'), '', '', '', '');
+			$export_data[] = array($approvedby_data[0]['jobtitle'], '', '', '', '', '', '');
+		}
+		$export_data[] = array('');
+
+		$filename = 'Arrears_Monitoring_Report_' . str_replace([' ', '/'], '_', $asofdate) . '_' . date('d-m-Y') . '.xls';
+		array_to_excel($export_data, $filename);
+	}
+
 }
 ?>

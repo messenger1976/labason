@@ -215,6 +215,139 @@ class Report_model extends CI_Model {
 	}
 
 	/**
+	 * Arrears Monitoring report records.
+	 *
+	 * Returns the same customer set and Aging Amount (`total_balance`) as
+	 * get_aging_ar_report_records(), plus `current_arrears` which is the
+	 * `arrears` value stored on the customer's reading row for their
+	 * ACTIVE billing period (latest bp_status = 1 row in their zone).
+	 *
+	 * Used to compare the cumulative aging total against the arrears amount
+	 * carried forward into the current period.
+	 */
+	public function get_arrears_monitoring_records($asofdate, $zone, $status){
+		$asofdate = date('Y-m-d', strtotime($asofdate));
+
+		$sql_query_zone   = '';
+		$sql_query_status = '';
+		$bind = array(
+			$asofdate, $asofdate, $asofdate, $asofdate,
+			$asofdate, $asofdate, $asofdate
+		);
+
+		if($zone != 0){
+			$sql_query_zone = ' AND tbl_addcustomer.zone=?';
+			$bind[] = $zone;
+		}
+		if($status != ''){
+			$sql_query_status = ' AND tbl_addcustomer.status=?';
+			$bind[] = $status;
+		}
+
+		$sql_query = "SELECT tbl_addcustomer.customer_id,
+		tbl_addcustomer.last_name,
+		tbl_addcustomer.first_name,
+		tbl_addcustomer.middle_name,
+		tbl_addcustomer.meter_number,
+		tbl_billing_period.bp_end_date AS reading_date,
+		(SELECT zone FROM tbl_zone WHERE tbl_zone.id = tbl_addcustomer.zone) AS zone,
+
+		SUM(tbl_addcustomer_reading.penalty) AS total_balance,
+		SUM(CASE WHEN DATEDIFF(?, tbl_billing_period.bp_due_date) BETWEEN 0 AND 30 THEN tbl_addcustomer_reading.penalty ELSE 0 END) AS current,
+		SUM(CASE WHEN DATEDIFF(?, tbl_billing_period.bp_due_date) BETWEEN 31 AND 60 THEN tbl_addcustomer_reading.penalty ELSE 0 END) AS `30-days`,
+		SUM(CASE WHEN DATEDIFF(?, tbl_billing_period.bp_due_date) BETWEEN 61 AND 90 THEN tbl_addcustomer_reading.penalty ELSE 0 END) AS `60-days`,
+		SUM(CASE WHEN DATEDIFF(?, tbl_billing_period.bp_due_date) BETWEEN 91 AND 120 THEN tbl_addcustomer_reading.penalty ELSE 0 END) AS `90-days`,
+		SUM(CASE WHEN DATEDIFF(?, tbl_billing_period.bp_due_date) BETWEEN 121 AND 150 THEN tbl_addcustomer_reading.penalty ELSE 0 END) AS `120-days`,
+		SUM(CASE WHEN DATEDIFF(?, tbl_billing_period.bp_due_date) > 151 THEN tbl_addcustomer_reading.amount ELSE 0 END) AS `150-DaysUp`,
+
+		(
+			SELECT cr2.arrears
+			FROM tbl_addcustomer_reading cr2
+			INNER JOIN tbl_billing_period bp2 ON bp2.bp_id = cr2.bp_id
+			WHERE cr2.customer_id = tbl_addcustomer.customer_id
+			  AND bp2.bp_status   = 1
+			  AND bp2.bp_zone_id  = tbl_addcustomer.zone
+			ORDER BY bp2.bp_period_year DESC, bp2.bp_period_month DESC
+			LIMIT 1
+		) AS current_arrears
+
+		FROM tbl_addcustomer_reading
+		INNER JOIN tbl_addcustomer ON tbl_addcustomer_reading.customer_id = tbl_addcustomer.customer_id
+		LEFT JOIN tbl_billing_period ON tbl_addcustomer_reading.bp_id = tbl_billing_period.bp_id
+		LEFT JOIN tbl_addmetercustomer ON tbl_addcustomer_reading.customer_id = tbl_addmetercustomer.customer_id
+			AND tbl_addcustomer_reading.month = tbl_addmetercustomer.month
+			AND tbl_addcustomer_reading.year  = tbl_addmetercustomer.year
+		LEFT JOIN tbl_classification ON tbl_addcustomer.classification = tbl_classification.class_id
+		LEFT JOIN tbl_classification_category ON tbl_classification.class_cat_id = tbl_classification_category.class_cat_id
+		WHERE tbl_addmetercustomer.invoice_id IS NULL
+		  AND tbl_addcustomer_reading.reading <> ''
+		  AND tbl_billing_period.bp_due_date < ?
+		  $sql_query_zone $sql_query_status
+		GROUP BY tbl_addcustomer.`customer_id`
+		ORDER BY tbl_addcustomer.last_name ASC, tbl_addcustomer.first_name ASC";
+
+		$query  = $this->db->query($sql_query, $bind);
+		$result = $query->result_array();
+		return $result ? $result : array();
+	}
+
+	/**
+	 * Update current billing period arrears for a customer using aging amount.
+	 * Returns array(success, message, current_arrears).
+	 */
+	public function update_current_period_arrears($customer_id, $aging_amount){
+		$customer_id = trim((string) $customer_id);
+		if ($customer_id === '') {
+			return array('success' => false, 'message' => 'Customer ID is required.');
+		}
+
+		$this->db->select('zone');
+		$this->db->from('tbl_addcustomer');
+		$this->db->where('customer_id', $customer_id);
+		$cq = $this->db->get();
+		if (!$cq || $cq->num_rows() === 0) {
+			return array('success' => false, 'message' => 'Customer not found.');
+		}
+		$zone_id = (int) $cq->row()->zone;
+
+		$this->db->select('bp_id');
+		$this->db->from('tbl_billing_period');
+		$this->db->where('bp_zone_id', $zone_id);
+		$this->db->where('bp_status', 1);
+		$this->db->order_by('bp_period_year', 'DESC');
+		$this->db->order_by('bp_period_month', 'DESC');
+		$this->db->limit(1);
+		$bpq = $this->db->get();
+		if (!$bpq || $bpq->num_rows() === 0) {
+			return array('success' => false, 'message' => 'No active billing period found for customer zone.');
+		}
+		$bp_id = (int) $bpq->row()->bp_id;
+
+		$this->db->where('customer_id', $customer_id);
+		$this->db->where('bp_id', $bp_id);
+		$this->db->update('tbl_addcustomer_reading', array('arrears' => (float) $aging_amount));
+		if ($this->db->_error_number() != 0) {
+			return array('success' => false, 'message' => 'Failed to update arrears.');
+		}
+
+		$this->db->select('arrears');
+		$this->db->from('tbl_addcustomer_reading');
+		$this->db->where('customer_id', $customer_id);
+		$this->db->where('bp_id', $bp_id);
+		$this->db->limit(1);
+		$rq = $this->db->get();
+		if (!$rq || $rq->num_rows() === 0) {
+			return array('success' => false, 'message' => 'Updated row not found after update.');
+		}
+
+		return array(
+			'success' => true,
+			'message' => 'Arrears updated successfully.',
+			'current_arrears' => (float) $rq->row()->arrears
+		);
+	}
+
+	/**
 	 * Get daily income for a given month/year (meter + monthly customers).
 	 * Returns array: 'daily' => [day => amount], 'total' => float, 'days_in_month' => int
 	 * Date in DB is stored as Y-m-d (see addpaymentcustomer_model insert).
