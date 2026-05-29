@@ -197,9 +197,9 @@ class addcustomer_model extends CI_Model {
 		//$customer_id  = 'WT'.$brcE;
 		$date_installed = strtotime($this->input->post('date_installed'));
 
-		$doc_num = explode('-',$this->input->post('customer_id'));
+		$doc_parts = explode('-', $this->input->post('customer_id'));
 		$update_counter_array = array( 
-			'doc_series_num' => $doc_num[2]
+			'doc_series_num' => end($doc_parts)
 		);
 		$C5 = &get_instance();
 		$C5->db->where('doc_name', 'MEMBER');

@@ -140,7 +140,7 @@
 																<div class="col-lg-12 controls">
 																	<div class="form-group">
 																		<span class="input-group-addon"><i class="icon-user"></i><strong>Customer-Id : <span style="color:red;font-weight: bold;">*</span></strong></span>
-																		<input  class="form-control"  type="text" id="customer_id" name="customer_id" value="<?php echo $customer_id; ?>" required/>
+																		<input  class="form-control"  type="text" id="customer_id" name="customer_id" value="<?php echo $customer_id; ?>" readonly required/>
 																		<?php echo form_error('customer_id'); ?>
 																		<span id="val_roll_img"></span>
 																	</div>		
@@ -687,14 +687,52 @@ $(document).ready(function(){
 		nextText: '',
 		prevText: '',
 		numberOfMonths: [1, 1],
-		//defaultDate: new Date(curDate),
-		//minDate: curDate,
-		//maxDate: ''
+		onSelect: function() {
+			regenerateCustomerId();
+		}
 	});
 	
 });
 </script>
 <script>
+var lockedCustomerSeries = '<?php
+	$customer_id_parts = explode('-', $customer_id);
+	echo end($customer_id_parts);
+?>';
+
+function regenerateCustomerId() {
+	var member_stat = $("#membership_status").val();
+	if(member_stat != 1){
+		return;
+	}
+	var class_id = $("#classification").val();
+	if(class_id === ''){
+		class_id = '000';
+	}
+	var zone_id = $("#zone").val();
+	if(zone_id === ''){
+		zone_id = '000';
+	}
+	var date_installed = $("#date_installed").val() || '';
+
+	$.ajax({
+		type: 'POST',
+		url: '<?php echo ADMIN_URL;?>addcustomer/get_customer_id_generate/'+class_id+'/'+zone_id,
+		data: {
+			class_id: class_id,
+			zone_id: zone_id,
+			date_installed: date_installed,
+			preserve_series: lockedCustomerSeries
+		},
+		success: function(data){
+			$('#customer_id').val(data);
+		}
+	});
+}
+
+$("#classification").on('change', regenerateCustomerId);
+$("#zone").on('change', regenerateCustomerId);
+
 $("#customer_id").on('change',function(){
 	var customer = $(this).val();
 	if(customer!=''){
@@ -789,65 +827,6 @@ $("#mobile2").on('change', function(){
 	}
 	
 });
-
-// Classification change event handler removed per request
-// $("#classification").on('change', function(){
-// 	var class_id = $("#classification").val();
-// 	if(class_id===''){
-// 		class_id='000';
-// 	}
-// 	var zone_id = $("#zone").val();
-// 	if(zone_id===''){
-// 		zone_id='000';
-// 	}
-// 	
-// 	var member_stat = $(membership_status).val();	
-// 	if(member_stat == 1){
-// 		
-// 		$.ajax({
-// 			type: 'POST',
-// 			url: '<?php echo ADMIN_URL;?>addcustomer/get_customer_id_generate/'+class_id+'/'+zone_id,
-// 			data:{ class_id:class_id,
-// 				zone_id:zone_id
-// 			},
-// 			success: function(data){
-// 				$('#customer_id').val(data);
-// 				//console.log(data);
-// 			}
-// 			
-// 		});
-// 	}
-// 	
-// });
-
-// Zone change event handler removed per request
-// $("#zone").on('change', function(){
-// 	var class_id = $("#classification").val();
-// 	if(class_id===''){
-// 		class_id='000';
-// 	}
-// 	var zone_id = $("#zone").val();
-// 	if(zone_id===''){
-// 		zone_id='000';
-// 	}
-// 	var member_stat = $(membership_status).val();	
-// 	if(member_stat == 1){
-// 		
-// 		$.ajax({
-// 			type: 'POST',
-// 			url: '<?php echo ADMIN_URL;?>addcustomer/get_customer_id_generate/'+class_id+'/'+zone_id,
-// 			data:{ class_id:class_id,
-// 				zone_id:zone_id
-// 			},
-// 			success: function(data){
-// 				$('#customer_id').val(data);
-// 				//console.log(data);
-// 			}
-// 			
-// 		});
-// 	}
-// 	
-// });
 
 // Membership status change handler - auto-generation removed per request
 // $("#membership_status").on('change', function(evt){
