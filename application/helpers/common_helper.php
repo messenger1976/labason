@@ -521,81 +521,58 @@ if(!function_exists("isValidMySQLDate")){
     }
 }
 
-if(!function_exists("customer_id_generate")){
-    function customer_id_generate($class_code='000', $zone_code='000') {
-        // NOTE: validation/guards temporarily disabled per request.
-        //if($class_code!=='000' && $class_code!==''){
-        //    $CI1 = &get_instance();
-        //    $CI1->db->where('class_id', $class_code);
-        //    $classification = $CI1->db->get('tbl_classification')->row();
-        //    if($classification && isset($classification->class_code)){
-        //        $class_code = $classification->class_code;
-        //    } else {
-        //        $class_code = '000';
-        //    }
-        //} else {
-        //    $class_code = '000';
-        //}
-       
-        // NOTE: validation/guards temporarily disabled per request.
-        //if($zone_code!=='000' && $zone_code!==''){
-        //    $CI2 = &get_instance();
-        //    $CI2->db->where('id', $zone_code);
-        //    $zone = $CI2->db->get('tbl_zone')->row();
-        //    if($zone && isset($zone->zone_code) && $zone->zone_code != '' && $zone->zone_code != null){
-        //        $zone_code = trim($zone->zone_code);
-        //    } else {
-        //        log_message('warning', 'Zone code not found for zone_id: ' . $zone_code . '. Zone exists: ' . ($zone ? 'Yes' : 'No'));
-        //        $zone_code = '000';
-        //    }
-        //} else {
-        //    $zone_code = '000';
-        //}
-        //
-        //// Ensure zone_code is never empty
-        //if(empty($zone_code) || $zone_code == ''){
-        //    $zone_code = '000';
-        //}
-        
-        // Original behavior (no validation/guards):
-        if($class_code!=='000'){
-            $CI1 = &get_instance();
-            $CI1->db->where('class_id', $class_code);
-            $classification = $CI1->db->get('tbl_classification')->row();
-            $class_code = $classification->class_code;
+if(!function_exists("customer_id_year_yy")){
+    function customer_id_year_yy($date_installed = '') {
+        $date_installed = trim($date_installed);
+        if($date_installed !== '' && preg_match('/^(\d{1,2})-(\d{1,2})-(\d{2,4})$/', $date_installed, $matches)){
+            $year = $matches[3];
+            return strlen($year) === 2 ? $year : substr($year, -2);
         }
-       
-        if($zone_code!=='000'){
-            $CI2 = &get_instance();
-            $CI2->db->where('id', $zone_code);
-            $zone = $CI2->db->get('tbl_zone')->row();
-            $zone_code = $zone->zone_code;
+        if($date_installed !== ''){
+            $timestamp = strtotime(str_replace('/', '-', $date_installed));
+            if($timestamp !== false){
+                return date('y', $timestamp);
+            }
         }
-        
+        return date('y');
+    }
+}
 
-        // NOTE: validation/guards temporarily disabled per request.
-        //$CI3 = &get_instance();
-        //$CI3->db->where('doc_name', 'MEMBER');
-        //$member_number = $CI3->db->get('tbl_doc_series_number')->row();
-        //if($member_number && isset($member_number->doc_series_num)){
-        //    $doc_num = $member_number->doc_series_num+1;
-        //} else {
-        //    $doc_num = 1;
-        //}
-        //
-        //// Ensure all segments have valid values
-        //$class_code = empty($class_code) ? '000' : trim($class_code);
-        //$zone_code = empty($zone_code) ? '000' : trim($zone_code);
-        //
-        //return $class_code.'-'.$zone_code.'-'.sprintf('%05d',$doc_num);
-        
-        // Original behavior:
-        $CI3 = &get_instance();
-        $CI3->db->where('doc_name', 'MEMBER');
-        $member_number = $CI3->db->get('tbl_doc_series_number')->row();
-        $doc_num = $member_number->doc_series_num+1;
-        
-        return $class_code.'-'.$zone_code.'-'.sprintf('%05d',$doc_num);
+if(!function_exists("customer_id_generate")){
+    function customer_id_generate($class_id='000', $zone_id='000', $date_installed='', $preserve_series='') {
+        $class_code = '00';
+        $zone_code = '00';
+
+        if($class_id !== '000' && $class_id !== ''){
+            $CI1 = &get_instance();
+            $CI1->db->where('class_id', $class_id);
+            $classification = $CI1->db->get('tbl_classification')->row();
+            if($classification && isset($classification->class_code)){
+                $class_code = sprintf('%02d', (int)$classification->class_code);
+            }
+        }
+
+        if($zone_id !== '000' && $zone_id !== ''){
+            $CI2 = &get_instance();
+            $CI2->db->where('id', $zone_id);
+            $zone = $CI2->db->get('tbl_zone')->row();
+            if($zone && isset($zone->zone_code) && $zone->zone_code !== ''){
+                $zone_code = sprintf('%02d', (int)$zone->zone_code);
+            }
+        }
+
+        $year_yy = customer_id_year_yy($date_installed);
+
+        if($preserve_series !== '' && $preserve_series !== null){
+            $doc_num = (int)$preserve_series;
+        } else {
+            $CI3 = &get_instance();
+            $CI3->db->where('doc_name', 'MEMBER');
+            $member_number = $CI3->db->get('tbl_doc_series_number')->row();
+            $doc_num = $member_number ? ((int)$member_number->doc_series_num + 1) : 1;
+        }
+
+        return $zone_code.'-'.$class_code.'-'.$year_yy.'-'.sprintf('%05d', $doc_num);
     }
 }
 

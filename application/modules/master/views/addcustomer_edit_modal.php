@@ -30,7 +30,7 @@
 				<div class="col-lg-12 controls">
 					<div class="form-group">
 						<span class="input-group-addon"><i class="icon-chevron-down"></i><strong>Customer-Id :</strong></span>
-						<input class="form-control" type="text" id="customer_id_modal" name="customer_id" value="<?php echo $record['customer_id']; ?>" required/>
+						<input class="form-control" type="text" id="customer_id_modal" name="customer_id" value="<?php echo $record['customer_id']; ?>" readonly required/>
 					</div>
 				</div>
 			</div>
@@ -311,6 +311,9 @@
 				nextText: '',
 				prevText: '',
 				numberOfMonths: [1, 1],
+				onSelect: function() {
+					regenerateCustomerIdModal();
+				}
 			});
 		}
 		
@@ -323,103 +326,51 @@
 				}
 			});
 		}
-		
-		// Classification change event handler - auto-generation removed per request
-		// if($("#classification_modal").length) {
-		// 	$("#classification_modal").off('change').on('change', function(){
-		// 		var class_id = $("#classification_modal").val();
-		// 		if(class_id===''){
-		// 			class_id='000';
-		// 		}
-		// 		var zone_id = $("#zone_modal").val();
-		// 		if(zone_id===''){
-		// 			zone_id='000';
-		// 		}
-		// 		
-		// 		var member_stat = $("#membership_status_modal").val();	
-		// 		if(member_stat == 1){
-		// 			
-		// 			$.ajax({
-		// 				type: 'POST',
-		// 				url: '<?php echo ADMIN_URL;?>addcustomer/get_customer_id_generate/'+class_id+'/'+zone_id,
-		// 				data:{ class_id:class_id,
-		// 					zone_id:zone_id
-		// 				},
-		// 				success: function(data){
-		// 					$('#customer_id_modal').val(data);
-		// 				}
-		// 				
-		// 			});
-		// 		}
-		// 		
-		// 	});
-		// }
-		
-		// Zone change event handler - auto-generation removed per request
-		// if($("#zone_modal").length) {
-		// 	$("#zone_modal").off('change').on('change', function(){
-		// 		var class_id = $("#classification_modal").val();
-		// 		if(class_id===''){
-		// 			class_id='000';
-		// 		}
-		// 		var zone_id = $("#zone_modal").val();
-		// 		if(zone_id===''){
-		// 			zone_id='000';
-		// 		}
-		// 		var member_stat = $("#membership_status_modal").val();	
-		// 		if(member_stat == 1){
-		// 			
-		// 			$.ajax({
-		// 				type: 'POST',
-		// 				url: '<?php echo ADMIN_URL;?>addcustomer/get_customer_id_generate/'+class_id+'/'+zone_id,
-		// 				data:{ class_id:class_id,
-		// 					zone_id:zone_id
-		// 				},
-		// 				success: function(data){
-		// 					$('#customer_id_modal').val(data);
-		// 				}
-		// 				
-		// 			});
-		// 		}
-		// 		
-		// 	});
-		// }
-		
-		// Membership status change event handler - auto-generation removed per request
-		// if($("#membership_status_modal").length) {
-		// 	$("#membership_status_modal").off('change').on('change', function(evt){
-		// 		evt.preventDefault();
-		// 		var member_stat = $(this).val();
-		// 		
-		// 		if(member_stat==1){
-		// 			var class_id = $("#classification_modal").val();
-		//
-		// 			if(class_id===''){
-		// 				class_id='000';
-		// 			}
-		// 			var zone_id = $("#zone_modal").val();
-		// 			if(zone_id===''){
-		// 				zone_id='000';
-		// 			}
-		// 				
-		// 			$.ajax({
-		// 				type: 'POST',
-		// 				url: '<?php echo ADMIN_URL;?>addcustomer/get_customer_id_generate/'+class_id+'/'+zone_id,
-		// 				data:{ class_id:class_id,
-		// 					zone_id:zone_id
-		// 				},
-		// 				success: function(data){
-		// 					$('#customer_id_modal').val(data);
-		// 				}
-		// 				
-		// 			});
-		// 			
-		// 		}
-		// 		
-		// 	});
-		// }
+
+		if($("#classification_modal").length) {
+			$("#classification_modal").off('change').on('change', regenerateCustomerIdModal);
+		}
+
+		if($("#zone_modal").length) {
+			$("#zone_modal").off('change').on('change', regenerateCustomerIdModal);
+		}
 	}, 100);
 })();
+
+var originalCustomerSeriesModal = '<?php
+	$customer_id_parts = explode('-', $record['customer_id']);
+	echo end($customer_id_parts);
+?>';
+
+function regenerateCustomerIdModal() {
+	var member_stat = $("#membership_status_modal").val();
+	if(member_stat != 1){
+		return;
+	}
+	var class_id = $("#classification_modal").val();
+	if(class_id === ''){
+		class_id = '000';
+	}
+	var zone_id = $("#zone_modal").val();
+	if(zone_id === ''){
+		zone_id = '000';
+	}
+	var date_installed = $("#date_installed_modal").val() || '';
+
+	$.ajax({
+		type: 'POST',
+		url: '<?php echo ADMIN_URL;?>addcustomer/get_customer_id_generate/'+class_id+'/'+zone_id,
+		data: {
+			class_id: class_id,
+			zone_id: zone_id,
+			date_installed: date_installed,
+			preserve_series: originalCustomerSeriesModal
+		},
+		success: function(data){
+			$('#customer_id_modal').val(data);
+		}
+	});
+}
 
 function fun_calendor_modal(field){
 	$("#"+field).focus();

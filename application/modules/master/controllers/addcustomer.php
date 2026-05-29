@@ -399,7 +399,7 @@ class addcustomer extends CI_Controller {
 		//$header['host'] = $this->comm_model->get_single_record();				
 		//$header['record_info'] = $this->top_model->get_last_login_details(1);
 		$data['account'] = $this->my_model->accountgroup();
-		$data['customer_id'] = customer_id_generate();
+		$data['customer_id'] = customer_id_generate('000', '000', date('d-m-Y'));
 		
 		//print_r($data['customer_id']);exit;
 		$this->load->view($this->headerPage,$this->head);
@@ -958,25 +958,9 @@ class addcustomer extends CI_Controller {
 	}	
 
 	public function get_customer_id_generate($class_id,$zone_id){
-		
-		// Debug logging temporarily disabled per request.
-		//log_message('debug', 'Customer ID Generate - Class ID: ' . $class_id . ', Zone ID: ' . $zone_id);
-		//if($zone_id && $zone_id != '000' && $zone_id != ''){
-		//	$this->load->database();
-		//	$this->db->where('id', $zone_id);
-		//	$zone_check = $this->db->get('tbl_zone')->row();
-		//	if($zone_check){
-		//		log_message('debug', 'Zone found - Zone Name: ' . (isset($zone_check->zone) ? $zone_check->zone : 'N/A') . ', Zone Code: ' . (isset($zone_check->zone_code) ? $zone_check->zone_code : 'NULL/EMPTY'));
-		//	} else {
-		//		log_message('debug', 'Zone not found for ID: ' . $zone_id);
-		//	}
-		//}
-		//$generated_id = customer_id_generate($class_id,$zone_id);
-		//log_message('debug', 'Generated Customer ID: ' . $generated_id);
-		//echo $generated_id;
-		
-		// Original behavior:
-		echo customer_id_generate($class_id,$zone_id);
+		$date_installed = $this->input->post('date_installed');
+		$preserve_series = $this->input->post('preserve_series');
+		echo customer_id_generate($class_id, $zone_id, $date_installed, $preserve_series);
 	}
 	/** Status Change Function **/
 	/*public function contactStatus($id,$status){
