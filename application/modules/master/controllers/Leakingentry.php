@@ -193,6 +193,25 @@ class Leakingentry extends CI_Controller{
 
 	/** Open Billing Adjustment / Labason forms in new window and trigger print dialog */
 	public function print_forms($leaking_id = null){
-		$this->load->view('leakingentry_print_forms');
+		if (empty($leaking_id)) {
+			show_error('Invalid leaking entry.');
+		}
+		$data['record'] = $this->my_model->get_soa_header_statement($leaking_id);
+		if (empty($data['record'])) {
+			show_error('Leaking entry not found.');
+		}
+		$data['customer_info'] = $this->customer_model->get_single_record_by_customer_id($data['record']['leaking_customer_id']);
+		$data['customer_reading'] = $this->my_model->get_meterreading_refno($data['record']['leaking_refno']);
+		$end_year = !empty($data['customer_reading']['year']) ? $data['customer_reading']['year'] : null;
+		$end_month = !empty($data['customer_reading']['month']) ? $data['customer_reading']['month'] : null;
+		$data['billing_history'] = $this->my_model->get_recent_billing_records(
+			$data['record']['leaking_customer_id'],
+			3,
+			$end_year,
+			$end_month
+		);
+		$data['form_no'] = str_pad($leaking_id, 5, '0', STR_PAD_LEFT);
+		$data['ledger_details'] = $this->my_model->get_ledger_details_records($leaking_id);
+		$this->load->view('leakingentry_print_forms', $data);
 	}
 }
