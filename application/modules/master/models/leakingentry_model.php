@@ -315,6 +315,27 @@ class leakingentry_model extends CI_Model {
 		$result = $this->db->get()->row_array();
 		return $result;
 	}
+
+	/** Last N billing periods for a customer up to and including the given period (for print forms). */
+	public function get_recent_billing_records($customer_id, $limit = 3, $end_year = null, $end_month = null) {
+		$this->db->select($this->table_customer_meter_reading.'.*, tbl_months.month_name');
+		$this->db->from($this->table_customer_meter_reading);
+		$this->db->join('tbl_months', $this->table_customer_meter_reading.'.month = tbl_months.month_id', 'left');
+		$this->db->where($this->table_customer_meter_reading.'.customer_id', $customer_id);
+		$this->db->where($this->table_customer_meter_reading.'.reading !=', '0');
+		$this->db->where($this->table_customer_meter_reading.'.reading !=', '');
+		if ($end_year !== null && $end_month !== null) {
+			$this->db->where('('.$this->table_customer_meter_reading.'.year < '.(int)$end_year
+				.' OR ('.$this->table_customer_meter_reading.'.year = '.(int)$end_year
+				.' AND '.$this->table_customer_meter_reading.'.month <= '.(int)$end_month.'))', null, false);
+		}
+		$this->db->order_by($this->table_customer_meter_reading.'.year', 'DESC');
+		$this->db->order_by($this->table_customer_meter_reading.'.month', 'DESC');
+		$this->db->limit((int)$limit);
+		$query = $this->db->get();
+		$result = $query->result_array();
+		return array_reverse($result);
+	}
 	
 }
 
