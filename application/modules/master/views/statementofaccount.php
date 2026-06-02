@@ -3,13 +3,48 @@
 		<div class="row no-print action-buttons" style="margin-bottom: 20px;">
 			<div class="col-xs-12 col-sm-12">
 				<div class="btn-group-mobile">
-					<button class="btn btn-primary btn-block-mobile" onclick="window.print()"><i class="fa fa-print"></i> Print</button>
+					<button type="button" class="btn btn-primary btn-block-mobile" id="printStatementBtn"><i class="fa fa-print"></i> Print</button>
 					<button class="btn btn-warning btn-block-mobile" id="resetPasswordBtn"><i class="fa fa-key"></i> Reset Password</button>
 					<a href="<?php echo base_url();?>master/statementofaccount/search" class="btn btn-default btn-block-mobile"><i class="fa fa-arrow-left"></i> Back to Search</a>
 				</div>
 			</div>
 		</div>
 		
+		<?php
+			$printed_at = date('Y-m-d H:i:s');
+			$prepared_name = 'MISHELLE P. MONDARTE';
+			$prepared_title = 'Industrial Relations Management Officer C / Billing Officer';
+			$verified_name = 'DARYL JAY T. VILLARIN';
+			$verified_title = 'Administrative/General Services Officer B / HRMO/FO/BO';
+			$approved_name = 'ENGR. ANASTACIA T. ROMANILLOS, CE';
+			$approved_title = 'General Manager';
+
+			if (isset($preparedby[0])) {
+				$prepared_name = trim($preparedby[0]['first_name'].' '.$preparedby[0]['middle_name'].' '.$preparedby[0]['last_name']);
+				$prepared_title = isset($preparedby[0]['jobtitle']) ? $preparedby[0]['jobtitle'] : $prepared_title;
+			}
+			if (isset($verifiedby[0])) {
+				$verified_name = trim($verifiedby[0]['first_name'].' '.$verifiedby[0]['middle_name'].' '.$verifiedby[0]['last_name']);
+				$verified_title = isset($verifiedby[0]['jobtitle']) ? $verifiedby[0]['jobtitle'] : $verified_title;
+			}
+			if (isset($approvedby[0])) {
+				$approved_name = trim($approvedby[0]['first_name'].' '.$approvedby[0]['middle_name'].' '.$approvedby[0]['last_name']);
+				$approved_title = isset($approvedby[0]['jobtitle']) ? $approvedby[0]['jobtitle'] : $approved_title;
+			}
+		?>
+
+		<!-- Report Header (logo same as other reports) -->
+		<div class="report-header">
+			<div class="report-logo">
+				<img src="<?php echo site_url();?>images/mroxas-logo-report.jpg" height="80px" alt="Labason Water District Logo">
+			</div>
+			<div class="report-title">STATEMENT OF ACCOUNT</div>
+			<div class="report-subtitle">
+				Customer ID: <?php echo htmlspecialchars($customer_info['customer_id'], ENT_QUOTES, 'UTF-8'); ?>
+				&nbsp; | &nbsp; Date/Time printed: <?php echo htmlspecialchars($printed_at, ENT_QUOTES, 'UTF-8'); ?>
+			</div>
+		</div>
+
 		<!-- Card Design -->
 		<div class="row">
 			<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
@@ -70,11 +105,12 @@
 									</div>
 								</div>
 								
-								<!-- Ledger Table -->
+								<!-- Ledger Table (screen: DataTables) -->
 								<div class="row">
 									<div class="col-md-12">
-										<div class="table-responsive" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
-											<table class="table table-striped table-bordered table-hover" id="ledger_table" style="width: 100%; min-width: 800px;">
+										<div class="ledger-screen-only">
+										<div class="table-responsive ledger-print-area" id="ledger_print_fit" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+											<table class="table table-striped table-bordered table-hover" id="ledger_table">
 												<thead>
 													<tr>
 														<th style="text-align: center;">Date</th>
@@ -151,6 +187,30 @@
 												<?php } ?>
 											</table>
 										</div>
+										</div>
+										<!-- Print-only ledger (no DataTables — reliable in Firefox) -->
+										<div class="ledger-print-only" id="ledger_print_only_wrap" aria-hidden="true"></div>
+									</div>
+								</div>
+
+								<!-- Signatures (layout based on Leakingentry print_forms last page) -->
+								<div class="signature-block page-break-inside-avoid">
+									<div class="sig-row">
+										<div class="sig-item">
+											<div class="sig-label">Prepared by:</div>
+											<div class="sig-line"><?php echo htmlspecialchars(strtoupper($prepared_name), ENT_QUOTES, 'UTF-8'); ?></div>
+											<div class="sig-title"><?php echo htmlspecialchars($prepared_title, ENT_QUOTES, 'UTF-8'); ?></div>
+										</div>
+										<div class="sig-item">
+											<div class="sig-label">Verified Correct:</div>
+											<div class="sig-line"><?php echo htmlspecialchars(strtoupper($verified_name), ENT_QUOTES, 'UTF-8'); ?></div>
+											<div class="sig-title"><?php echo htmlspecialchars($verified_title, ENT_QUOTES, 'UTF-8'); ?></div>
+										</div>
+										<div class="sig-item">
+											<div class="sig-label">Approved:</div>
+											<div class="sig-line"><?php echo htmlspecialchars(strtoupper($approved_name), ENT_QUOTES, 'UTF-8'); ?></div>
+											<div class="sig-title"><?php echo htmlspecialchars($approved_title, ENT_QUOTES, 'UTF-8'); ?></div>
+										</div>
 									</div>
 								</div>
 								
@@ -222,7 +282,7 @@
 			phone : 480
 		};
 
-		$('#ledger_table').dataTable({
+		var ledgerDataTable = $('#ledger_table').dataTable({
 			"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-12 hidden-xs'l>r>"+
 				"t"+
 				"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
@@ -260,7 +320,88 @@
 				}
 			}
 		});
-		
+
+		var soaSavedPageLength = 25;
+
+		function soaBuildPrintLedgerTable() {
+			var $src = $('#ledger_table');
+			var $wrap = $('#ledger_print_only_wrap');
+			if (!$src.length || !$wrap.length) {
+				return;
+			}
+
+			var $clone = $src.clone(false);
+			$clone.attr('id', 'ledger_table_print');
+			$clone.removeClass('dataTable no-footer');
+			$clone.addClass('soa-ledger-print table table-striped table-bordered');
+
+			$clone.find('th, td').each(function() {
+				$(this).removeAttr('style').removeAttr('data-order');
+			});
+			$clone.find('tbody tr').removeClass('odd even');
+
+			var $ths = $clone.find('thead th');
+			if ($ths.length >= 6) {
+				$ths.eq(0).text('Date');
+				$ths.eq(1).text('Ref');
+				$ths.eq(2).text('Description');
+				$ths.eq(3).text('Debit');
+				$ths.eq(4).text('Credit');
+				$ths.eq(5).text('Balance');
+			}
+
+			$clone.prepend(
+				'<colgroup>' +
+				'<col class="col-date">' +
+				'<col class="col-ref">' +
+				'<col class="col-desc">' +
+				'<col class="col-amt">' +
+				'<col class="col-amt">' +
+				'<col class="col-amt">' +
+				'</colgroup>'
+			);
+
+			$wrap.empty().append($clone);
+		}
+
+		function soaClearPrintLedgerTable() {
+			$('#ledger_print_only_wrap').empty();
+		}
+
+		window.printStatementOfAccount = function() {
+			var settings = ledgerDataTable.fnSettings();
+			soaSavedPageLength = settings._iDisplayLength;
+			settings._iDisplayLength = -1;
+			ledgerDataTable.fnDraw(false);
+			setTimeout(function() {
+				soaBuildPrintLedgerTable();
+				window.print();
+			}, 200);
+		};
+
+		window.soaRestoreLedgerAfterPrint = function() {
+			soaClearPrintLedgerTable();
+			var settings = ledgerDataTable.fnSettings();
+			settings._iDisplayLength = soaSavedPageLength;
+			ledgerDataTable.fnDraw(false);
+		};
+
+		$('#printStatementBtn').on('click', function(e) {
+			e.preventDefault();
+			printStatementOfAccount();
+		});
+
+		if (window.matchMedia) {
+			window.matchMedia('print').addListener(function(mql) {
+				if (!mql.matches && typeof soaRestoreLedgerAfterPrint === 'function') {
+					soaRestoreLedgerAfterPrint();
+				}
+			});
+		}
+		if ('onafterprint' in window) {
+			window.onafterprint = soaRestoreLedgerAfterPrint;
+		}
+
 		// Reset Password Button Click Handler
 		$('#resetPasswordBtn').on('click', function(e) {
 			e.preventDefault();
@@ -404,6 +545,67 @@
 </script>
 
 <style>
+	/* Report header + signatures (screen + print) */
+	.report-header {
+		text-align: center;
+		margin: 0 0 15px 0;
+	}
+	.report-logo {
+		margin-bottom: 5px;
+	}
+	.report-title {
+		font-size: 16px;
+		font-weight: bold;
+		letter-spacing: 0.5px;
+	}
+	.report-subtitle {
+		font-size: 12px;
+		color: #555;
+		margin-top: 2px;
+	}
+
+	.signature-block {
+		margin-top: 25px;
+		padding-top: 10px;
+		border-top: 1px solid #ddd;
+	}
+	.sig-row {
+		display: flex;
+		gap: 20px;
+		justify-content: space-between;
+		flex-wrap: wrap;
+	}
+	.sig-item {
+		flex: 1 1 250px;
+		min-width: 250px;
+	}
+	.sig-label {
+		font-size: 12px;
+		margin-bottom: 28px;
+	}
+	.sig-line {
+		border-top: 1px solid #000;
+		padding-top: 3px;
+		font-weight: bold;
+		font-size: 12px;
+		text-align: center;
+	}
+	.sig-title {
+		font-size: 11px;
+		text-align: center;
+		margin-top: 2px;
+	}
+
+	/* Screen: horizontal scroll for wide ledger */
+	#ledger_table {
+		width: 100%;
+		min-width: 800px;
+	}
+
+	.ledger-print-only {
+		display: none;
+	}
+
 	@media print {
 		/* Hide non-essential elements */
 		#ribbon, .btn, .jarviswidget-editbox, .dt-toolbar, 
@@ -416,16 +618,129 @@
 		
 		/* Page setup */
 		@page {
-			size: A4 landscape;
-			margin: 1cm 1.5cm;
+			size: A4 portrait;
+			margin: 0.8cm 1cm;
 		}
 		
 		/* Body and container */
 		body {
 			background: white !important;
 			color: black !important;
-			font-size: 11pt;
-			line-height: 1.4;
+			font-size: 10pt;
+			line-height: 1.35;
+		}
+
+		/* Screen ledger hidden; print-only clone used (Firefox-safe) */
+		.ledger-screen-only,
+		.dataTables_wrapper {
+			display: none !important;
+		}
+
+		.ledger-print-only {
+			display: block !important;
+			width: 100% !important;
+			max-width: 100% !important;
+			overflow: hidden !important;
+		}
+
+		.statement-container,
+		.statement-container .card,
+		.statement-container .card-body,
+		.statement-container .row,
+		.statement-container [class*="col-"] {
+			width: 100% !important;
+			max-width: 100% !important;
+			box-sizing: border-box !important;
+			overflow: visible !important;
+		}
+
+		#ledger_table_print.soa-ledger-print {
+			min-width: 0 !important;
+			max-width: 100% !important;
+			width: 100% !important;
+			table-layout: fixed !important;
+			border-collapse: collapse !important;
+			font-size: 7pt;
+		}
+
+		#ledger_table_print col.col-date { width: 11%; }
+		#ledger_table_print col.col-ref { width: 9%; }
+		#ledger_table_print col.col-desc { width: 40%; }
+		#ledger_table_print col.col-amt { width: 13.33%; }
+
+		#ledger_table_print thead {
+			display: table-header-group;
+		}
+
+		#ledger_table_print tfoot {
+			display: table-footer-group;
+		}
+
+		#ledger_table_print th,
+		#ledger_table_print td {
+			border: 1px solid #999 !important;
+			padding: 2px 3px !important;
+			vertical-align: top;
+			line-height: 1.15;
+			white-space: normal !important;
+			word-break: break-word;
+			overflow-wrap: break-word;
+			box-sizing: border-box !important;
+		}
+
+		#ledger_table_print thead th {
+			background: #f0f0f0 !important;
+			font-size: 6.5pt;
+			font-weight: bold;
+			text-align: center !important;
+		}
+
+		#ledger_table_print thead th:nth-child(3) {
+			text-align: left !important;
+		}
+
+		#ledger_table_print tbody td:nth-child(1),
+		#ledger_table_print tbody td:nth-child(2) {
+			text-align: center !important;
+			font-size: 6.5pt;
+		}
+
+		#ledger_table_print tbody td:nth-child(3) {
+			text-align: left !important;
+			font-size: 6.5pt;
+		}
+
+		#ledger_table_print tbody td:nth-child(4),
+		#ledger_table_print tbody td:nth-child(5),
+		#ledger_table_print tbody td:nth-child(6),
+		#ledger_table_print tfoot th {
+			text-align: right !important;
+			font-size: 6pt;
+		}
+
+		#ledger_table_print tbody tr:nth-child(odd) td {
+			background: #f5f5f5 !important;
+		}
+
+		#ledger_table_print tfoot th {
+			background: #e8e8e8 !important;
+			font-weight: bold;
+			border-top: 2px solid #666 !important;
+		}
+
+		#ledger_table_print tfoot th:first-child {
+			text-align: right !important;
+		}
+
+		#ledger_table_print tfoot .text-success {
+			color: #3c763d !important;
+		}
+
+		#ledger_table_print td:nth-child(3) small.text-muted {
+			display: block;
+			font-size: 5.5pt !important;
+			line-height: 1.1;
+			color: #555 !important;
 		}
 		
 		div[style*="max-width"] {
@@ -444,6 +759,32 @@
 		
 		.card-body {
 			padding: 10px 0 !important;
+		}
+
+		/* Ensure header image prints nicely */
+		.report-header {
+			margin-bottom: 10px !important;
+		}
+		.report-title {
+			font-size: 14pt !important;
+		}
+		.report-subtitle {
+			font-size: 10pt !important;
+			color: #000 !important;
+		}
+
+		/* Signature block print tuning */
+		.signature-block {
+			border-top: 1px solid #000 !important;
+			margin-top: 20px !important;
+			padding-top: 8px !important;
+		}
+		.sig-label {
+			margin-bottom: 35px !important;
+			color: #000 !important;
+		}
+		.sig-line {
+			border-top: 1px solid #000 !important;
 		}
 		
 		.panel {
@@ -511,11 +852,6 @@
 		
 		.table-striped tbody tr:nth-child(odd) {
 			background: #f9f9f9 !important;
-		}
-		
-		/* Ensure table doesn't break across pages */
-		.table-responsive {
-			overflow: visible !important;
 		}
 		
 		/* Customer info tables */
@@ -669,6 +1005,13 @@
 			margin-bottom: 15px !important;
 			padding-left: 0 !important;
 			padding-right: 0 !important;
+		}
+
+		.sig-row {
+			flex-direction: column;
+		}
+		.sig-item {
+			min-width: 100%;
 		}
 		
 		.table-bordered {
