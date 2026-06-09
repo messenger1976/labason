@@ -200,21 +200,6 @@ if ($period_label !== '' && !empty($customer_reading)) {
     $bam_explanation .= '. Net leaking amount: PHP ' . number_format($adj_amt, 2) . '.';
 }
 
-$billing_rows = !empty($billing_history) ? $billing_history : array();
-if (count($billing_rows) >= 2 && count($bam_rows) < 2) {
-    $prior = $billing_rows[count($billing_rows) - 2];
-    $prior_period = trim((isset($prior['month_name']) ? $prior['month_name'] : '') . ' ' . (isset($prior['year']) ? $prior['year'] : ''));
-    $prior_cu = isset($prior['consumed']) ? $prior['consumed'] : '';
-    $prior_amt = (float)(isset($prior['amount']) ? $prior['amount'] : 0);
-    $bam_rows[] = array(
-        'period' => $prior_period,
-        'billed_cu' => $prior_cu,
-        'billed_amt' => $prior_amt,
-        'adj_cu' => $prior_cu,
-        'adj_amt' => $prior_amt,
-    );
-}
-
 if (!function_exists('leaking_print_inline')) {
     function leaking_print_inline($value, $width = 'auto', $min_width = '') {
         $value = htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
@@ -343,7 +328,7 @@ if (!function_exists('leaking_print_bar_fill')) {
         </div>
 
         <div class="meta-row">
-            <div>Paid under OR NO. <?php echo $or_number !== '' ? htmlspecialchars($or_number, ENT_QUOTES, 'UTF-8') : '________'; ?></div>
+            <div>Paid under OR NO. ___________</div>
             <div>OR Date: <?php echo $or_date !== '' ? htmlspecialchars($or_date, ENT_QUOTES, 'UTF-8') : '____________'; ?></div>
         </div>
 
@@ -404,7 +389,7 @@ if (!function_exists('leaking_print_bar_fill')) {
                 <th>Amount</th>
             </tr>
             <?php
-            for ($b = 0; $b < 2; $b++) {
+            for ($b = 0; $b < 1; $b++) {
                 $period_cell = '&nbsp;';
                 $billed_cu = '&nbsp;';
                 $billed_amt = '&nbsp;';
