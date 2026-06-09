@@ -46,7 +46,8 @@
 						if(count($record) > 0){
 							$i=1;
 							foreach($record as $key => $row){
-								$unit_price = $row['unit_price'];	
+								$unit_price = $row['unit_price'];
+								$display_bill_amount = $unit_price;
 								
 								$id = stripslashes($row['customer_id']);
 								$mon_id = stripslashes($row['month']);
@@ -86,7 +87,9 @@
 								<input type="checkbox" name="checkbox[]" id="<?php echo $i;?>" value="<?php echo  $i;?>" class="my_check" > 
 								<?php }else{
 										$trans_date_raw = $record_reading[0]['trans_date'];
-										$trans_date = date('M j, Y',strtotime($trans_date_raw));
+										$date_paid_raw = !empty($record_reading[0]['create_date_time']) ? $record_reading[0]['create_date_time'] : $trans_date_raw;
+										$dt_paid = new DateTime($date_paid_raw, new DateTimeZone('Asia/Manila'));
+										$trans_date = $dt_paid->format('M j, Y h:i:s A');
 										$or_number_paid = $record_reading[0]['or_number'];
 										$due_date_ts = strtotime($due_date);
 										$trans_date_ts = strtotime($trans_date_raw);
@@ -97,9 +100,19 @@
 											if($trans_date_ts>$due_date_ts){
 												//$balance = $row['penalty']; 
 												$balance = $record_reading[0]['amount'];
-												$penalty = $balance - $unit_price;
+												$maintenance_fee = isset($row['maintenance_fee']) ? (float)$row['maintenance_fee'] : 0;
+												$franchise_fee_amount = isset($row['franchise_fee_amount']) ? (float)$row['franchise_fee_amount'] : 0;
+												$penalty = $balance - $unit_price - $maintenance_fee - $franchise_fee_amount;
 												if($penalty<0){
 													$penalty = 0;
+												}
+												// Align with daily collection report: arrears payments roll penalty into bill amount
+												if($penalty > 0 && $due_date_ts && $trans_date_ts){
+													$is_billing_period_arrears = (date('m', $trans_date_ts) != date('m', $due_date_ts)) || (date('Y', $trans_date_ts) != date('Y', $due_date_ts));
+													if($is_billing_period_arrears){
+														$display_bill_amount = $unit_price + $penalty;
+														$penalty = 0;
+													}
 												}
 											}else{
 												$balance = $record_reading[0]['amount'];
@@ -140,7 +153,7 @@
 									<input type="hidden" name="sc_discount_<?php echo $i;?>" id="sc_discount_<?php echo $i;?>" value = "<?php echo  $row['sc_discount'];?>">
 								</td>
 								<td align="center"><?php echo stripslashes($row['consumed']); ?>
-								<td align="right"><?php echo stripslashes($unit_price); ?>
+								<td align="right"><?php echo stripslashes(number_format($display_bill_amount, 2)); ?>
 								<input type="hidden" name="unit_price_<?php echo $i;?>" id="unit_price_<?php echo $i;?>" value = "<?php echo $unit_price;?>">
 								</td>
 								<td align="right"><?php echo stripslashes($row['sc_discount']); ?>
