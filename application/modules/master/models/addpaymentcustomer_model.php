@@ -25,7 +25,20 @@ class addpaymentcustomer_model extends CI_Model {
 	// Autoloading a system library usin constructor method
 	public function __construct() {
         parent::__construct();
+		date_default_timezone_set('Asia/Manila');
     }
+
+	/** Current datetime string in Philippines timezone (Y-m-d H:i:s). */
+	private function manila_now() {
+		return (new DateTime('now', new DateTimeZone('Asia/Manila')))->format('Y-m-d H:i:s');
+	}
+
+	/** Format unix timestamp as date string in Philippines timezone (Y-m-d). */
+	private function manila_date_from_timestamp($timestamp) {
+		$dt = new DateTime('@' . (int) $timestamp);
+		$dt->setTimezone(new DateTimeZone('Asia/Manila'));
+		return $dt->format('Y-m-d');
+	}
 
 	/**
 	 * Highest OR number already recorded for this teller (for seeding a new series row).
@@ -444,7 +457,7 @@ class addpaymentcustomer_model extends CI_Model {
 	
 	public function get_metercustomer_add_all_records($id,$mon_id,$year_id){
 		$sql = "SELECT ac.id AS addcustomer_id, ac.customer_id, am.id AS addmetercustomer_id, am.customer_id, 
-		        am.date, am.month, am.year, ac.mobile1, ac.mobile2, ac.email_id, am.amount, am.per_unit, am.or_number, am.date as trans_date
+		        am.date, am.month, am.year, ac.mobile1, ac.mobile2, ac.email_id, am.amount, am.per_unit, am.or_number, am.date as trans_date, am.create_date_time
 				FROM  `tbl_addmetercustomer` am
 				LEFT JOIN  `tbl_addcustomer` ac ON ac.customer_id = am.customer_id
                 WHERE am.month = '$mon_id' AND am.year = '$year_id' AND ac.customer_id = '$id'";
@@ -672,8 +685,8 @@ class addpaymentcustomer_model extends CI_Model {
 			'leaking_prev_balance' => $leaking_balance_total,
 			'leaking_cur_balance' => $leaking_current_balance_total,
 			'grand_total' => $this->input->post('grand_total'),
-			'date' => date('Y-m-d',$trans_date),
-			'create_date_time' => date('Y-m-d H:i:s'),
+			'date' => $this->manila_date_from_timestamp($trans_date),
+			'create_date_time' => $this->manila_now(),
 			'userid' => $this->session->userdata('userid'),
 			'username' => $this->session->userdata('username'),
 		);
@@ -689,6 +702,7 @@ class addpaymentcustomer_model extends CI_Model {
 			'customer_billing_id' => $lastId,
 			'status' => 1,
 			'or_number' => $or_num,
+			'update_date_time' => $this->manila_now(),
 		);
 		$this->db->where('customer_id',trim($id));
 		$this->db->where('month',$this->input->post('month'));
@@ -701,9 +715,9 @@ class addpaymentcustomer_model extends CI_Model {
 			'ledger_id' => $this->input->post('ledger_id'),
 			'ledger_id_for' => 'customer_id',
 			'debit' => $this->input->post('grand_total'),//$allamount,
-			'date' => date('Y-m-d',$trans_date),
-			'create_date_time' => date('Y-m-d H:i:s'),
-			'update_date_time' => date('Y-m-d H:i:s'),
+			'date' => $this->manila_date_from_timestamp($trans_date),
+			'create_date_time' => $this->manila_now(),
+			'update_date_time' => $this->manila_now(),
 		);
 		$result2 = $this->db->insert($this->table_transactions, $set_data2); //print_r($result2); //exit;
 		
@@ -721,7 +735,7 @@ class addpaymentcustomer_model extends CI_Model {
 				'leaking_total_amount' => $this->input->post('grand_total'),
 				'leaking_balance' => $leaking_balance,
 				'leaking_status' => $leaking_status,
-				'leaking_updated_datetime' => date('Y-m-d H:i:s'),
+				'leaking_updated_datetime' => $this->manila_now(),
 			);
 			$this->db->where('leaking_id',trim($leaking_id));
 			$this->db->update($this->table_leaking_ledger, $set_data5); 
@@ -730,8 +744,8 @@ class addpaymentcustomer_model extends CI_Model {
 				'leaking_id' => $leaking_id,
 				'leakingledgerdetails_or_number' => $or_num,
 				'leakingledgerdetails_amount' => $pay_amount,
-				'leakingledgerdetails_transdate' => date('Y-m-d',$trans_date),
-				'leakingledgerdetails_created_datetime' => date('Y-m-d H:i:s'),
+				'leakingledgerdetails_transdate' => $this->manila_date_from_timestamp($trans_date),
+				'leakingledgerdetails_created_datetime' => $this->manila_now(),
 			);
 			$result2 = $this->db->insert($this->table_leaking_ledger_details, $set_data6); //print_r($result2); //exit;
 		}
@@ -761,7 +775,7 @@ class addpaymentcustomer_model extends CI_Model {
 					'leaking_total_amount' => $this->input->post('grand_total'),
 					'leaking_balance' => $leaking_balance,
 					'leaking_status' => $leaking_status,
-					'leaking_updated_datetime' => date('Y-m-d H:i:s'),
+					'leaking_updated_datetime' => $this->manila_now(),
 				);
 				$this->db->where('leaking_id',trim($leaking_id));
 				$this->db->update($this->table_leaking_ledger, $set_data5); 
@@ -770,8 +784,8 @@ class addpaymentcustomer_model extends CI_Model {
 					'leaking_id' => $leaking_id,
 					'leakingledgerdetails_or_number' => $or_num,
 					'leakingledgerdetails_amount' => $pay_amount,
-					'leakingledgerdetails_transdate' => date('Y-m-d',$trans_date),
-					'leakingledgerdetails_created_datetime' => date('Y-m-d H:i:s'),
+					'leakingledgerdetails_transdate' => $this->manila_date_from_timestamp($trans_date),
+					'leakingledgerdetails_created_datetime' => $this->manila_now(),
 				);
 				$result2 = $this->db->insert($this->table_leaking_ledger_details, $set_data6); //print_r($result2); //exit;
 			}
@@ -813,7 +827,7 @@ class addpaymentcustomer_model extends CI_Model {
 		$year =  $_POST['year_'.$id];
 		$status = $_POST['status_'.$id];
 		//$date = date('Y-m-d');
-		$create_date_time = date('Y-m-d H:i:s');
+		$create_date_time = $this->manila_now();
 
 		if ($or_num === null || $or_num === '') {
 			$or_num = $this->batch_or_number;
@@ -845,7 +859,7 @@ class addpaymentcustomer_model extends CI_Model {
 			'leaking_percent' => $this->input->post('leaking_percent'),
 			'leaking_amount' => $this->input->post('leaking_amount'),
 			'grand_total' => $this->input->post('grand_total'),
-			'date' => date('Y-m-d',$trans_date),
+			'date' => $this->manila_date_from_timestamp($trans_date),
 			'create_date_time' => $create_date_time,
 			'userid' => $this->session->userdata('userid'),
 			'username' => $this->session->userdata('username'),
@@ -857,6 +871,7 @@ class addpaymentcustomer_model extends CI_Model {
 			'customer_billing_id' => $lastId,
 			'status' => 1,
 			'or_number' => $or_num,
+			'update_date_time' => $this->manila_now(),
 		);
 		$this->db->where('customer_id',trim($customer_id));
 		$this->db->where('month',$month);
@@ -869,9 +884,9 @@ class addpaymentcustomer_model extends CI_Model {
 			'ledger_id' => $this->input->post('ledger_id'),
 			'ledger_id_for' => 'customer_id',
 			'debit' => $this->input->post('grand_total'),//$allamount,
-			'date' => date('Y-m-d',$this->input->post('trans_date')),
-			'create_date_time' => date('Y-m-d H:i:s'),
-			'update_date_time' => date('Y-m-d H:i:s'),
+			'date' => $this->manila_date_from_timestamp($this->input->post('trans_date')),
+			'create_date_time' => $this->manila_now(),
+			'update_date_time' => $this->manila_now(),
 		);
 		$result2 = $this->db->insert($this->table_transactions, $set_data2); //print_r($result2); //exit;
 		// save data(second entry) on transaction table
@@ -881,8 +896,8 @@ class addpaymentcustomer_model extends CI_Model {
 						'ledger_id' => $this->input->post('ledger_id'),
 		                'ledger_id_for' => 'ledger_id',
 		                'credit' => $pay_amount,//mysql_real_escape_string($this->input->post('pay_amount')),//$allamount,
-					    'create_date_time' => date('Y-m-d H:i:s'),
-					    'update_date_time' => date('Y-m-d H:i:s'),
+					    'create_date_time' => $this->manila_now(),
+					    'update_date_time' => $this->manila_now(),
 					);
 		$result3 = $this->db->insert($this->table_transactions, $set_data3); //print_r($result3); exit;*/
 		//print_r($result);
@@ -904,8 +919,8 @@ class addpaymentcustomer_model extends CI_Model {
 						'ledger_id' => $this->input->post('customer_id'),
 						'ledger_id_for' => 'customer_id',
 						'debit' => $this->input->post('pay_amount'),//$allamount,
-					    'create_date_time' => date('Y-m-d H:i:s'),
-					    'update_date_time' => date('Y-m-d H:i:s'),
+					    'create_date_time' => $this->manila_now(),
+					    'update_date_time' => $this->manila_now(),
 					);
 		$result2 = $this->db->insert($this->table_transactions, $set_data2); //print_r($result2); //exit;
 		// save data(second entry) on transaction table
@@ -915,8 +930,8 @@ class addpaymentcustomer_model extends CI_Model {
 						'ledger_id' => $this->input->post('ledger_id'),
 						'ledger_id_for' => 'ledger_id',
 		                'credit' => mysql_real_escape_string($this->input->post('pay_amount')),//$allamount,
-					    'create_date_time' => date('Y-m-d H:i:s'),
-					    'update_date_time' => date('Y-m-d H:i:s'),
+					    'create_date_time' => $this->manila_now(),
+					    'update_date_time' => $this->manila_now(),
 					);
 		$result3 = $this->db->insert($this->table_transactions, $set_data3); //print_r($result3); exit;*/
 		return $result;
@@ -997,7 +1012,7 @@ class addpaymentcustomer_model extends CI_Model {
 		$sts = ($balance == 0 ? 1 : 0);
 		$set_data = array(
 						'balance' => '0',
-						'date' => date('Y-m-d'),
+						'date' => $this->manila_date_from_timestamp(time()),
 					);
 		$this->db->where('id',$id);
 		$result = $this->db->update($this->table_name, $set_data); 
