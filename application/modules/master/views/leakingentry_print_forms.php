@@ -422,7 +422,7 @@ if (!function_exists('leaking_print_bar_fill')) {
 
             <p style="margin-top: 20px;">Verified Correct:</p>
             <div style="width: 280px;">
-                <div class="sig-line" style="margin-top: 40px;">DARYL JAY T. VILLARIN</div>
+                <div class="sig-line" style="margin-top: 40px;">DARYL JAY T. VILLARIN, MPA</div>
                 <span class="sig-sub">Administrative/General Services Officer B / HRMO/FO/BO</span>
             </div>
 
