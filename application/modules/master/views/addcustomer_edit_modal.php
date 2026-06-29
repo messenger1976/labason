@@ -1,7 +1,11 @@
 <div class="customer-edit-modal">
 	<div id="edit_customer_msg" style="display:none;"></div>
+	<p class="text-danger" style="font-size:12px; margin-bottom:10px;">
+		<strong>Note:</strong> If the Customer-Id is changed, all meter readings and payment transaction records for this customer will be updated automatically to keep the ledger in sync.
+	</p>
 	<form class="form-horizontal" role="form" name="editCustomerForm" id="editCustomerForm" method="post" enctype="multipart/form-data">
 		<input type="hidden" name="id" id="edit_customer_id" value="<?php echo $record['id']; ?>">
+		<input type="hidden" name="original_customer_id" id="original_customer_id_modal" value="<?php echo htmlspecialchars($record['customer_id'], ENT_QUOTES); ?>">
 		<fieldset>
 			<legend> &nbsp Customer-Edit </legend>
 			<div class="form-group col-lg-6">
@@ -30,7 +34,7 @@
 				<div class="col-lg-12 controls">
 					<div class="form-group">
 						<span class="input-group-addon"><i class="icon-chevron-down"></i><strong>Customer-Id :</strong></span>
-						<input class="form-control" type="text" id="customer_id_modal" name="customer_id" value="<?php echo $record['customer_id']; ?>" readonly required/>
+						<input class="form-control" type="text" id="customer_id_modal" name="customer_id" value="<?php echo $record['customer_id']; ?>" required/>
 					</div>
 				</div>
 			</div>
