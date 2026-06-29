@@ -619,6 +619,16 @@ class addcustomer extends CI_Controller {
 			if(!$image){
 				$withimage = 0;
 			}
+
+			$new_customer_id = trim($this->input->post('customer_id'));
+			$old_customer_id = $record ? trim($record['customer_id']) : '';
+			if ($old_customer_id !== '' && $new_customer_id !== '' && $new_customer_id !== $old_customer_id) {
+				$duplicate = $this->my_model->get_single_record_by_customer_id($new_customer_id);
+				if ($duplicate && $duplicate['id'] != $id) {
+					echo json_encode(array('success' => false, 'message' => 'Customer-Id already exists for another customer.'));
+					exit;
+				}
+			}
 			
 			// Update the record
 			$result = $this->my_model->update_record($id);
@@ -660,7 +670,7 @@ class addcustomer extends CI_Controller {
 				
 				echo json_encode(array('success' => true, 'message' => 'Customer updated successfully.'));
 			} else {
-				echo json_encode(array('success' => false, 'message' => 'Failed to update customer.'));
+				echo json_encode(array('success' => false, 'message' => 'Failed to update customer. Please check that the Customer-Id is unique.'));
 			}
 			exit;
 			

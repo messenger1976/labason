@@ -85,6 +85,7 @@
 									<div class="widget-body">
 				
 										<form class="form-horizontal" role="form" name="myform" id="myform" method="post" action="" enctype="multipart/form-data">
+										<input type="hidden" name="original_customer_id" id="original_customer_id" value="<?php echo htmlspecialchars($record['customer_id'], ENT_QUOTES); ?>">
 										  	
 											<?php if($msg != ''){?>
 											<div class="alert alert-block alert-success">
@@ -137,7 +138,10 @@
 															<div class="col-lg-12 controls">
 																<div class="form-group">
 																	<span class="input-group-addon"><i class="icon-chevron-down"></i><strong>Customer-Id :</strong></span>
-																	<input  class="form-control"  type="text" id="customer_id" name="customer_id" value="<?php echo $record['customer_id']; ?>" readonly required/>
+																	<input  class="form-control"  type="text" id="customer_id" name="customer_id" value="<?php echo $record['customer_id']; ?>" required/>
+																	<p class="text-danger" style="font-size:12px; margin-top:5px;">
+																		<strong>Note:</strong> Changing Customer-Id will also update meter readings and payment transactions for this customer.
+																	</p>
 																	<?php echo form_error('customer_id'); ?>
 																</div>
 															</div>
@@ -704,6 +708,21 @@ $(document).ready(function(){
 
 	$("#classification").on('change', regenerateCustomerId);
 	$("#zone").on('change', regenerateCustomerId);
+
+	$('#myform').on('submit', function(e) {
+		var newCustomerId = $.trim($('#customer_id').val());
+		var oldCustomerId = $.trim($('#original_customer_id').val());
+
+		if (newCustomerId !== oldCustomerId) {
+			var confirmMsg = 'You have changed the Customer-Id from "' + oldCustomerId + '" to "' + newCustomerId + '".\n\n'
+				+ 'This will update all meter readings and payment transactions for this customer.\n\n'
+				+ 'Do you want to continue?';
+			if (!confirm(confirmMsg)) {
+				e.preventDefault();
+				return false;
+			}
+		}
+	});
 	
 });
 	$('#special_priviledge').on('change', function(){

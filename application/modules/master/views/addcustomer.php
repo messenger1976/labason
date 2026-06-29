@@ -682,6 +682,18 @@ $(document).ready(function() {
 	$(document).on('submit', '#editCustomerForm', function(e) {
 		e.preventDefault();
 		var form = $(this);
+		var newCustomerId = $.trim($('#customer_id_modal').val());
+		var oldCustomerId = $.trim($('#original_customer_id_modal').val());
+
+		if (newCustomerId !== oldCustomerId) {
+			var confirmMsg = 'You have changed the Customer-Id from "' + oldCustomerId + '" to "' + newCustomerId + '".\n\n'
+				+ 'This will update all meter readings and payment transactions for this customer.\n\n'
+				+ 'Do you want to continue?';
+			if (!confirm(confirmMsg)) {
+				return false;
+			}
+		}
+
 		var formData = new FormData(form[0]);
 		var submitBtn = form.find('button[type="submit"]');
 		var originalBtnText = submitBtn.text();

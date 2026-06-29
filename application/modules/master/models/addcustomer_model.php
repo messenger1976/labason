@@ -253,9 +253,20 @@ class addcustomer_model extends CI_Model {
 		$dt_date = new DateTime("now", new DateTimeZone("Asia/Manila"));
 		$update_date = $dt_date->format("Y-m-d H:i:s");
 
+		$new_customer_id = trim($this->input->post('customer_id'));
+		$existing = $this->get_single_record($id);
+		$old_customer_id = $existing ? trim($existing['customer_id']) : '';
+
+		if ($old_customer_id !== '' && $new_customer_id !== $old_customer_id) {
+			$duplicate = $this->get_single_record_by_customer_id($new_customer_id);
+			if ($duplicate && $duplicate['id'] != $id) {
+				return false;
+			}
+		}
+
 		$set_data = array(
 						//'account_id' =>mysql_real_escape_string($this->input->post('acount_group')),
-						'customer_id' =>trim($this->input->post('customer_id')),
+						'customer_id' => $new_customer_id,
 						'first_name' => trim($this->input->post('first_name')),
 						'middle_name' => trim($this->input->post('middle_name')),
 						'last_name' => trim($this->input->post('last_name')),
@@ -284,9 +295,21 @@ class addcustomer_model extends CI_Model {
 						'membership_status' => $this->input->post('membership_status'),
 						'update_date_time' => $update_date,
 						);
+		$this->db->trans_start();
+
 		$this->db->where('id',$id);
-		$result = $this->db->update($this->table_name, $set_data); 
-		return $result;
+		$this->db->update($this->table_name, $set_data);
+
+		if ($old_customer_id !== '' && $new_customer_id !== $old_customer_id) {
+			$this->db->where('customer_id', $old_customer_id);
+			$this->db->update($this->table_metercustomer, array('customer_id' => $new_customer_id));
+
+			$this->db->where('customer_id', $old_customer_id);
+			$this->db->update($this->table_customerreading, array('customer_id' => $new_customer_id));
+		}
+
+		$this->db->trans_complete();
+		return $this->db->trans_status() !== FALSE;
 	}
 	
   	/** In Function Delete records for select table **/
