@@ -12,6 +12,7 @@ class addcustomer_model extends CI_Model {
 	public $table_payrol = 'tbl_payrols';
 	public $table_metercustomer = 'tbl_addmetercustomer';
 	public $table_customerreading = 'tbl_addcustomer_reading';
+	public $table_leaking_ledger = 'tbl_leaking_ledger';
 	public $table_account ='tbl_subaccountgroup';
 	public $tbl_admininfo = 'tbl_admininfo';
 	// Autoloading a system library usin constructor method
@@ -306,6 +307,9 @@ class addcustomer_model extends CI_Model {
 
 			$this->db->where('customer_id', $old_customer_id);
 			$this->db->update($this->table_customerreading, array('customer_id' => $new_customer_id));
+
+			$this->db->where('leaking_customer_id', $old_customer_id);
+			$this->db->update($this->table_leaking_ledger, array('leaking_customer_id' => $new_customer_id));
 		}
 
 		$this->db->trans_complete();

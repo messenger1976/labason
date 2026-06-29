@@ -1,7 +1,7 @@
 <div class="customer-edit-modal">
 	<div id="edit_customer_msg" style="display:none;"></div>
 	<p class="text-danger" style="font-size:12px; margin-bottom:10px;">
-		<strong>Note:</strong> If the Customer-Id is changed, all meter readings and payment transaction records for this customer will be updated automatically to keep the ledger in sync.
+		<strong>Note:</strong> If the Customer-Id is changed, all meter readings, payment transactions, and leaking ledger records for this customer will be updated automatically to keep the ledger in sync.
 	</p>
 	<form class="form-horizontal" role="form" name="editCustomerForm" id="editCustomerForm" method="post" enctype="multipart/form-data">
 		<input type="hidden" name="id" id="edit_customer_id" value="<?php echo $record['id']; ?>">

@@ -140,7 +140,7 @@
 																	<span class="input-group-addon"><i class="icon-chevron-down"></i><strong>Customer-Id :</strong></span>
 																	<input  class="form-control"  type="text" id="customer_id" name="customer_id" value="<?php echo $record['customer_id']; ?>" required/>
 																	<p class="text-danger" style="font-size:12px; margin-top:5px;">
-																		<strong>Note:</strong> Changing Customer-Id will also update meter readings and payment transactions for this customer.
+																		<strong>Note:</strong> Changing Customer-Id will also update meter readings, payment transactions, and leaking ledger records for this customer.
 																	</p>
 																	<?php echo form_error('customer_id'); ?>
 																</div>
@@ -715,7 +715,7 @@ $(document).ready(function(){
 
 		if (newCustomerId !== oldCustomerId) {
 			var confirmMsg = 'You have changed the Customer-Id from "' + oldCustomerId + '" to "' + newCustomerId + '".\n\n'
-				+ 'This will update all meter readings and payment transactions for this customer.\n\n'
+				+ 'This will update all meter readings, payment transactions, and leaking ledger records for this customer.\n\n'
 				+ 'Do you want to continue?';
 			if (!confirm(confirmMsg)) {
 				e.preventDefault();

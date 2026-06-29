@@ -687,7 +687,7 @@ $(document).ready(function() {
 
 		if (newCustomerId !== oldCustomerId) {
 			var confirmMsg = 'You have changed the Customer-Id from "' + oldCustomerId + '" to "' + newCustomerId + '".\n\n'
-				+ 'This will update all meter readings and payment transactions for this customer.\n\n'
+				+ 'This will update all meter readings, payment transactions, and leaking ledger records for this customer.\n\n'
 				+ 'Do you want to continue?';
 			if (!confirm(confirmMsg)) {
 				return false;
