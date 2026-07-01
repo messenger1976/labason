@@ -55,7 +55,7 @@
 		tbl_addmetercustomer.*');
 		$this->db->from('tbl_addmetercustomer');
 		$this->db->join('tbl_addcustomer', 'tbl_addmetercustomer.customer_id = tbl_addcustomer.customer_id');
-		$this->db->join('tbl_addcustomer_reading', 'tbl_addmetercustomer.customer_id = tbl_addcustomer_reading.customer_id and tbl_addmetercustomer.month=tbl_addcustomer_reading.month and tbl_addmetercustomer.year=tbl_addmetercustomer.year','left');
+		$this->db->join('tbl_addcustomer_reading', 'tbl_addmetercustomer.customer_id = tbl_addcustomer_reading.customer_id and tbl_addmetercustomer.month=tbl_addcustomer_reading.month and tbl_addmetercustomer.year=tbl_addcustomer_reading.year','left');
 		$this->db->join('tbl_billing_period', 'tbl_billing_period.bp_id = tbl_addcustomer_reading.bp_id', 'left');
 		$this->db->where('tbl_addmetercustomer.date',$from);
 		//$this->db->where('tbl_addmetercustomer.date <=',$to);
@@ -73,7 +73,7 @@
 			$this->db->order_by('last_name','asc');
 			$this->db->order_by('first_name','asc');
 		}
-		$this->db->group_by('invoice_id');
+		$this->db->group_by('tbl_addmetercustomer.or_number, tbl_addcustomer.customer_id');
 		$query = $this->db->get();
 		$result = $query->result_array();
 		return $result;
