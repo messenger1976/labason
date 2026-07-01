@@ -351,6 +351,7 @@ class Report_model extends CI_Model {
 	 * Get daily income for a given month/year (meter + monthly customers).
 	 * Returns array: 'daily' => [day => amount], 'total' => float, 'days_in_month' => int
 	 * Date in DB is stored as Y-m-d (see addpaymentcustomer_model insert).
+	 * Meter totals align with Daily Collection Report: group by OR, leaking balance adjustment, leaking A/R.
 	 */
 	public function get_monthly_income_daily($month, $year) {
 		$month = (int) $month;
@@ -364,18 +365,49 @@ class Report_model extends CI_Model {
 			$daily[$d] = 0;
 		}
 
-		// Meter customers: date column is Y-m-d, use pay_amount or grand_total as amount.
-		// Group by invoice_id so each payment is counted once (matches Daily Report which groups by invoice_id).
-		// Use MAX() so duplicate invoice_id rows (if any) contribute only one amount per payment.
-		$this->db->select('DAY(date) as day_num, invoice_id, MAX(COALESCE(grand_total, pay_amount, amount, 0)) as amt', FALSE);
+		$CI =& get_instance();
+		$CI->load->model('leakingentry_model');
+		$leaking_or_cache = array();
+
+		// Meter customers: one line per OR (matches Daily Collection Report grouping).
+		$this->db->select('date, or_number, customer_id, MAX(COALESCE(grand_total, pay_amount, amount, 0)) as grand_total, MAX(COALESCE(leaking_amount, 0)) as leaking_amount', FALSE);
 		$this->db->from($this->table_meter);
 		$this->db->where('date >=', $start_ymd);
 		$this->db->where('date <=', $end_ymd);
-		$this->db->group_by(array('date', 'invoice_id'));
+		$this->db->group_by(array('date', 'or_number', 'customer_id'));
 		$qm = $this->db->get();
 		if ($qm && $qm->num_rows() > 0) {
 			foreach ($qm->result_array() as $row) {
-				$day = isset($row['day_num']) ? (int) $row['day_num'] : 0;
+				$day = isset($row['date']) ? (int) date('j', strtotime($row['date'])) : 0;
+				if ($day < 1 || $day > 31) {
+					continue;
+				}
+				$grand = (float) $row['grand_total'];
+				if ((float) $row['leaking_amount'] > 0 && !empty($row['or_number'])) {
+					$or_key = sprintf('%07d', $row['or_number']);
+					if (!isset($leaking_or_cache[$or_key])) {
+						$ar_leaking = $CI->leakingentry_model->get_soa_statement_OR($or_key);
+						$leaking_or_cache[$or_key] = ($ar_leaking && is_array($ar_leaking)) ? $ar_leaking : array();
+					}
+					if (isset($leaking_or_cache[$or_key]['leaking_balance'])) {
+						$grand -= (float) $leaking_or_cache[$or_key]['leaking_balance'];
+					}
+				}
+				$daily[$day] += $grand;
+			}
+		}
+
+		// Leaking A/R payments (included in Daily Collection Report grand total).
+		$this->db->select('leakingledgerdetails_transdate as payment_date, SUM(COALESCE(leakingledgerdetails_amount, 0)) as amt', FALSE);
+		$this->db->from('tbl_leaking_ledger_details');
+		$this->db->where('leakingledgerdetails_transdate >=', $start_ymd);
+		$this->db->where('leakingledgerdetails_transdate <=', $end_ymd);
+		$this->db->where('leakingledgerdetails_source_module', 'leaking');
+		$this->db->group_by('leakingledgerdetails_transdate');
+		$ql = $this->db->get();
+		if ($ql && $ql->num_rows() > 0) {
+			foreach ($ql->result_array() as $row) {
+				$day = isset($row['payment_date']) ? (int) date('j', strtotime($row['payment_date'])) : 0;
 				if ($day >= 1 && $day <= 31) {
 					$daily[$day] += (float) $row['amt'];
 				}
