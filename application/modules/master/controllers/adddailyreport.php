@@ -37,14 +37,16 @@ class adddailyreport extends CI_Controller {
 
 	public function printtopdf($trans_date,$zone='',$preparedby='',$verifiedby='',$approvedby='',$grouping=1,$cashier=0){
 		$header['roleResponsible'] = $this->top_model->get_responsibilities();
+		$trans_date_mysql = date('Y-m-d', strtotime($trans_date));
 		$data['zone'] = $this->my_model->get_zone($zone);
-		$data['trans_date'] = date('M d, Y', strtotime($trans_date));
+		$data['trans_date'] = date('M d, Y', strtotime($trans_date_mysql));
 		$data['preparedby'] = $this->my_model->get_employee($preparedby);
 		$data['verifiedby'] = $this->my_model->get_employee($verifiedby);
 		$data['approvedby'] = $this->my_model->get_employee($approvedby);
 		$data['grouping'] = (int)$grouping;
 		$data['cashier'] = (int)$cashier;
 		$data['cashier_info'] = $this->my_model->get_cashiers((int)$cashier);
+		$data['orphan_record'] = $this->my_model->get_metercustomer_orphan_records($trans_date_mysql, (int)$cashier, (int)$grouping);
 		//$this->load->view($this->headerPage,$header);
 		$this->load->view($this->printtopdfPage,$data);
 	}
@@ -140,6 +142,8 @@ class adddailyreport extends CI_Controller {
 		} catch (Exception $e) {
 			$get_all_leaking = array();
 		}
+
+		$orphan_dailytrans = $this->my_model->get_metercustomer_orphan_records($mysql_transdate, $cashier, $grouping);
 		
 		// Process each zone
 		if(count($zones) > 0){
@@ -271,6 +275,119 @@ class adddailyreport extends CI_Controller {
 				$export_data[] = array('');
 			}
 		}
+
+		if(count($orphan_dailytrans) > 0){
+			$export_data[] = array('', 'UNASSIGNED / MISSING CUSTOMER', '', '', '', '', '', '', '', '', '', '', '', '');
+			$total_grand_zone = 0;
+			$total_current_zone = 0;
+			$total_arrears_zone = 0;
+			$total_penalty_zone = 0;
+			$total_wmmf_zone = 0;
+			$total_vat_zone = 0;
+			$total_leaking_zone = 0;
+			$total_ar_leaking_zone = 0;
+			$total_ar_leaking_balance_zone = 0;
+			$total_sc_zone = 0;
+			$total_franchise_fee_zone = 0;
+
+			foreach($orphan_dailytrans as $key => $gdailytrans){
+				$prev_year = 0;
+				$ar_leaking = array('leaking_total_amount' => 0, 'leaking_balance' => 0);
+				if(isset($gdailytrans['leaking_amount']) && $gdailytrans['leaking_amount'] > 0){
+					$ornumber_search = sprintf('%07d', $gdailytrans['or_number']);
+					if(isset($leaking_ar_lookup[$ornumber_search])){
+						$ar_leaking = $leaking_ar_lookup[$ornumber_search];
+						if(isset($ar_leaking['leaking_balance'])){
+							$gdailytrans['grand_total'] = $gdailytrans['grand_total'] - $ar_leaking['leaking_balance'];
+						}
+					} else {
+						$ar_leaking = $this->leakingentry_model->get_soa_statement_OR($ornumber_search);
+						if(isset($ar_leaking['leaking_balance'])){
+							$gdailytrans['grand_total'] = $gdailytrans['grand_total'] - $ar_leaking['leaking_balance'];
+						}
+					}
+				}
+
+				$penalty_val = (float)$gdailytrans['total_penalty'];
+				$arrears_val = (float)$gdailytrans['arrears_amount'];
+				$is_billing_period_arrears = false;
+				if($penalty_val > 0 && $arrears_val > 0){
+					$is_billing_period_arrears = true;
+				} elseif($penalty_val > 0 && isset($gdailytrans['due_date']) && $gdailytrans['due_date'] != ''){
+					$pay_ts = strtotime($gdailytrans['date']);
+					$due_ts = strtotime($gdailytrans['due_date']);
+					if($pay_ts && $due_ts){
+						$is_billing_period_arrears = (date('m', $pay_ts) != date('m', $due_ts)) || (date('Y', $pay_ts) != date('Y', $due_ts));
+					}
+				}
+
+				$display_arrears_amount = $gdailytrans['arrears_amount'];
+				$display_penalty_amount = $gdailytrans['total_penalty'];
+				if($is_billing_period_arrears){
+					$display_arrears_amount = $display_arrears_amount + $display_penalty_amount;
+					$display_penalty_amount = 0;
+				}
+
+				$export_data[] = array(
+					sprintf('%07d', $gdailytrans['or_number']),
+					trim($gdailytrans['last_name'] . ', ' . $gdailytrans['first_name'] . ' ' . $gdailytrans['middle_name']) . ' [' . $gdailytrans['customer_id'] . ']',
+					number_format($gdailytrans['grand_total'], 2),
+					number_format($gdailytrans['current_amount'], 2),
+					number_format($display_arrears_amount, 2),
+					number_format($prev_year, 2),
+					number_format($gdailytrans['total_wmmf'], 2),
+					number_format($display_penalty_amount, 2),
+					number_format(isset($gdailytrans['sc_discount']) ? $gdailytrans['sc_discount'] : 0, 2),
+					number_format(isset($gdailytrans['leaking_amount']) ? $gdailytrans['leaking_amount'] : 0, 2),
+					number_format(isset($ar_leaking['leaking_total_amount']) ? $ar_leaking['leaking_total_amount'] : 0, 2),
+					number_format(isset($ar_leaking['leaking_balance']) ? $ar_leaking['leaking_balance'] : 0, 2),
+					number_format(isset($gdailytrans['vat_amount']) ? $gdailytrans['vat_amount'] : 0, 2),
+					number_format(isset($gdailytrans['total_franchise_fee']) ? $gdailytrans['total_franchise_fee'] : 0, 2)
+				);
+
+				$total_grand_zone += $gdailytrans['grand_total'];
+				$total_current_zone += $gdailytrans['current_amount'];
+				$total_arrears_zone += $display_arrears_amount;
+				$total_wmmf_zone += $gdailytrans['total_wmmf'];
+				$total_penalty_zone += $display_penalty_amount;
+				$total_vat_zone += isset($gdailytrans['vat_amount']) ? $gdailytrans['vat_amount'] : 0;
+				$total_leaking_zone += isset($gdailytrans['leaking_amount']) ? $gdailytrans['leaking_amount'] : 0;
+				$total_sc_zone += isset($gdailytrans['sc_discount']) ? $gdailytrans['sc_discount'] : 0;
+				$total_ar_leaking_zone += isset($ar_leaking['leaking_total_amount']) ? $ar_leaking['leaking_total_amount'] : 0;
+				$total_ar_leaking_balance_zone += isset($ar_leaking['leaking_balance']) ? $ar_leaking['leaking_balance'] : 0;
+				$total_franchise_fee_zone += isset($gdailytrans['total_franchise_fee']) ? $gdailytrans['total_franchise_fee'] : 0;
+			}
+
+			$export_data[] = array(
+				'',
+				'TOTAL',
+				number_format($total_grand_zone, 2),
+				number_format($total_current_zone, 2),
+				number_format($total_arrears_zone, 2),
+				'0.00',
+				number_format($total_wmmf_zone, 2),
+				number_format($total_penalty_zone, 2),
+				number_format($total_sc_zone, 2),
+				number_format($total_leaking_zone, 2),
+				number_format($total_ar_leaking_zone, 2),
+				number_format($total_ar_leaking_balance_zone, 2),
+				number_format($total_vat_zone, 2),
+				number_format($total_franchise_fee_zone, 2)
+			);
+			$export_data[] = array('');
+
+			$grand_total_collected += $total_grand_zone;
+			$grand_total_current += $total_current_zone;
+			$grand_total_arrears += $total_arrears_zone;
+			$grand_total_wmmf += $total_wmmf_zone;
+			$grand_total_penalty += $total_penalty_zone;
+			$grand_total_vat += $total_vat_zone;
+			$grand_total_leaking += $total_leaking_zone;
+			$grand_total_sc += $total_sc_zone;
+			$grand_total_ar_leaking += $total_ar_leaking_zone;
+			$grand_total_ar_leaking_balance += $total_ar_leaking_balance_zone;
+			$grand_total_franchise_fee += $total_franchise_fee_zone;
+		}
 		
 		// Add LEAKING A/R PAYMENT REPORT section
 		$export_data[] = array('', 'LEAKING A/R PAYMENT REPORT', '', '', '', '', '', '', '', '', '', '', '', '');
@@ -395,7 +512,10 @@ class adddailyreport extends CI_Controller {
 					$from = date('Y-m-d', strtotime($fromdate));
 					//$to = date('Y-m-d', strtotime($todate));
 					
-					$data['record'] = $this->my_model->get_metercustomer_records($from,$zone,$grouping,$cashier);
+					$data['record'] = array_merge(
+						$this->my_model->get_metercustomer_records($from,$zone,$grouping,$cashier),
+						$this->my_model->get_metercustomer_orphan_records($from,$cashier,$grouping)
+					);
 					//$data['monthly'] = $this->my_model->get_monthycustomer_records($from,$to,$type);
 					//$data['payroll'] = $this->my_model->get_payrol_records($from,$to,$type);
 					//$data['expense'] = $this->my_model->get_expense_records($from,$to,$type);
