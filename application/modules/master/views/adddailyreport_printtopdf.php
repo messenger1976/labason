@@ -246,6 +246,105 @@
 					$grand_total_franchise_fee += $total_franchise_fee_zone;
                 } 
                 ?>
+                <?php
+					$orphan_dailytrans = isset($orphan_record) && is_array($orphan_record) ? $orphan_record : array();
+					if(count($orphan_dailytrans) > 0){
+				?>
+					<tr>
+						<td></td>
+						<td><b>UNASSIGNED / MISSING CUSTOMER</b></td>
+						<td colspan="10"></td>
+					</tr>
+				<?php
+						$total_grand_zone = 0;
+						$total_current_zone = 0;
+						$total_arrears_zone = 0;
+						$total_penalty_zone = 0;
+						$total_wmmf_zone = 0;
+						$total_leaking_zone = 0;
+						$total_ar_leaking_zone = 0;
+						$total_ar_leaking_balance_zone = 0;
+						$total_sc_zone = 0;
+						$total_franchise_fee_zone = 0;
+
+						foreach($orphan_dailytrans as $key => $gdailytrans){
+							$display_arrears_amount = $gdailytrans['arrears_amount'];
+							$display_penalty_amount = $gdailytrans['total_penalty'];
+							$is_billing_period_arrears = false;
+							$penalty_val = (float)$gdailytrans['total_penalty'];
+							$arrears_val = (float)$gdailytrans['arrears_amount'];
+							if($penalty_val > 0 && $arrears_val > 0){
+								$is_billing_period_arrears = true;
+							} elseif($penalty_val > 0 && isset($gdailytrans['due_date']) && $gdailytrans['due_date'] != ''){
+								$pay_ts = strtotime($gdailytrans['date']);
+								$due_ts = strtotime($gdailytrans['due_date']);
+								if($pay_ts && $due_ts){
+									$is_billing_period_arrears = (date('m', $pay_ts) != date('m', $due_ts)) || (date('Y', $pay_ts) != date('Y', $due_ts));
+								}
+							}
+							if($is_billing_period_arrears){
+								$display_arrears_amount = $display_arrears_amount + $display_penalty_amount;
+								$display_penalty_amount = 0;
+							}
+
+							$ar_leaking = 0;
+							if($gdailytrans['leaking_amount']>0){
+								$ornumber_search = sprintf('%07d',$gdailytrans['or_number']);
+								$ar_leaking = $this->leakingentry_model->get_soa_statement_OR($ornumber_search);
+								$gdailytrans['grand_total'] = $gdailytrans['grand_total']-$ar_leaking['leaking_balance'];
+							}
+
+							echo '<tr>';
+							echo '<td>'.sprintf('%07d',$gdailytrans['or_number']).'</td><td>'.$gdailytrans['last_name'].', '.$gdailytrans['first_name'].' '.$gdailytrans['middle_name'].' ['.$gdailytrans['customer_id'].']</td>
+							<td align="right">'.number_format($gdailytrans['grand_total'],2).'</td>
+							<td align="right">'.number_format($gdailytrans['current_amount'],2).'</td>
+							<td align="right">'.number_format($display_arrears_amount,2).'</td>
+							<td align="right">'. number_format($gdailytrans['total_wmmf'],2).'</td>
+							<td align="right">'. number_format($display_penalty_amount,2).'</td>
+							<td align="right">'.number_format($gdailytrans['sc_discount'],2).'</td>
+							<td align="right">'.number_format($gdailytrans['leaking_amount'],2).'</td>
+							<td align="right">'.number_format($ar_leaking['leaking_total_amount'],2).'</td>
+							<td align="right">'.number_format($ar_leaking['leaking_balance'],2).'</td>
+							<td align="right">'.number_format(isset($gdailytrans['total_franchise_fee']) ? $gdailytrans['total_franchise_fee'] : 0,2).'</td>
+							';
+							echo '</tr>';
+
+							$total_grand_zone += $gdailytrans['grand_total'];
+							$total_current_zone += $gdailytrans['current_amount'];
+							$total_arrears_zone += $display_arrears_amount;
+							$total_wmmf_zone += $gdailytrans['total_wmmf'];
+							$total_penalty_zone += $display_penalty_amount;
+							$total_leaking_zone +=$gdailytrans['leaking_amount'];
+							$total_sc_zone +=$gdailytrans['sc_discount'];
+							$total_ar_leaking_zone+=$ar_leaking['leaking_total_amount'];
+							$total_ar_leaking_balance_zone+=$ar_leaking['leaking_balance'];
+							$total_franchise_fee_zone += isset($gdailytrans['total_franchise_fee']) ? $gdailytrans['total_franchise_fee'] : 0;
+						}
+
+						echo '<tr><td></td><th>TOTAL</th><th style="text-align:right">'.number_format($total_grand_zone,2).'</th>
+						<th style="text-align:right">'.number_format($total_current_zone,2).'</th>
+						<th style="text-align:right">'.number_format($total_arrears_zone,2).'</th>
+						<th style="text-align:right">'.number_format($total_wmmf_zone,2).'</th>
+						<th style="text-align:right">'.number_format($total_penalty_zone,2).'</th>
+						<th style="text-align:right">'.number_format($total_sc_zone,2).'</th>
+						<th style="text-align:right">'.number_format($total_leaking_zone,2).'</th>
+						<th style="text-align:right">'.number_format($total_ar_leaking_zone,2).'</th>
+						<th style="text-align:right">'.number_format($total_ar_leaking_balance_zone,2).'</th>
+						<th style="text-align:right">'.number_format($total_franchise_fee_zone,2).'</th>
+						</tr>';
+
+						$cr += $total_grand_zone;
+						$grand_total_current += $total_current_zone;
+						$grand_total_arrears += $total_arrears_zone;
+						$grand_total_wmmf += $total_wmmf_zone;
+						$grand_total_penalty += $total_penalty_zone;
+						$grand_total_leaking += $total_leaking_zone;
+						$grand_total_sc += $total_sc_zone;
+						$grand_total_ar_leaking += $total_ar_leaking_zone;
+						$grand_total_ar_leaking_balance += $total_ar_leaking_balance_zone;
+						$grand_total_franchise_fee += $total_franchise_fee_zone;
+					}
+				?>
                  <?php } ?>
 
 

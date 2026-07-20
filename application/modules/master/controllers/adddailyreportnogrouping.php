@@ -53,7 +53,10 @@ class adddailyreportnogrouping extends CI_Controller {
 		$data['verifiedby'] = $this->my_model->get_employee($verifiedby);
 		$data['approvedby'] = $this->my_model->get_employee($approvedby);
 		// Get all records without zone filter, sorted by or_number
-		$data['record'] = $this->my_model->get_metercustomer_records($trans_date_mysql, '', $grouping);
+		$data['record'] = array_merge(
+			$this->my_model->get_metercustomer_records($trans_date_mysql, '', $grouping),
+			$this->my_model->get_metercustomer_orphan_records($trans_date_mysql, 0, $grouping)
+		);
 		//$this->load->view($this->headerPage,$header);
 		$this->load->view($this->printtopdfPage,$data);
 	}
@@ -152,7 +155,10 @@ class adddailyreportnogrouping extends CI_Controller {
 		}
 		
 		// Get all records without grouping, sorted by or_number
-		$get_dailytrans = $this->my_model->get_metercustomer_records($mysql_transdate, '', $grouping);
+		$get_dailytrans = array_merge(
+			$this->my_model->get_metercustomer_records($mysql_transdate, '', $grouping),
+			$this->my_model->get_metercustomer_orphan_records($mysql_transdate, 0, $grouping)
+		);
 		
 		// Process each transaction
 		foreach($get_dailytrans as $key => $gdailytrans){
@@ -347,7 +353,10 @@ class adddailyreportnogrouping extends CI_Controller {
 					// Always set grouping to 0 (no grouping) and no zone filter
 					$grouping = 0;
 					$data['grouping'] = $grouping;
-					$data['record'] = $this->my_model->get_metercustomer_records($from, '', $grouping);
+					$data['record'] = array_merge(
+						$this->my_model->get_metercustomer_records($from, '', $grouping),
+						$this->my_model->get_metercustomer_orphan_records($from, 0, $grouping)
+					);
 					$this->load->view($this->searchPage,$data);
 				}		
 			}else{
