@@ -18,7 +18,7 @@ This module provides a comprehensive database backup and restore functionality w
 Run the SQL script to create the backup table:
 
 ```sql
--- Execute the SQL in database_backup_table.sql
+-- Execute the SQL in sql/database_backup_table.sql
 CREATE TABLE IF NOT EXISTS `tbl_database_backups` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `filename` varchar(255) NOT NULL,
@@ -59,7 +59,7 @@ Or create it manually in the project root: `backups/`
 1. **Controller**: `application/modules/master/controllers/database_backup.php`
 2. **Model**: `application/modules/master/models/database_backup_model.php`
 3. **View**: `application/modules/master/views/database_backup.php`
-4. **SQL Script**: `database_backup_table.sql`
+4. **SQL Script**: `sql/database_backup_table.sql`
 
 ## Files Modified
 

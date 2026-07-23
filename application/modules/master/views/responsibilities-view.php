@@ -124,12 +124,12 @@
 											<?php } ?>	
 											
 											<fieldset>
-														<legend>Sub Admins-Add </legend>
+														<legend>Roles &amp; Permissions </legend>
 														<div class="form-group col-lg-6">
 															<div class="col-lg-12 controls">
 																<div class="form-group">
 																	<span class="input-group-addon"><i class="icon-user"></i><strong>Role Name : </strong></span>
-																	<input class="form-control" type="text" id="role_name" name="role_name" value="<?php echo stripslashes($record['role_name']); ?>" required  maxlength="50"/>
+																	<input class="form-control" type="text" id="role_name" name="role_name" value="<?php echo stripslashes($record['role_name']); ?>" required  maxlength="50" readonly/>
 																	<?php echo form_error('customer_id'); ?>
 																</div>
 															</div>
@@ -138,20 +138,7 @@
 														</div>
 														
 														<div style="clear:both;"></div>
-														<?php 
-															foreach($modules_name as $key => $value){ 
-																if($record[$key] !=''){  ?>
-														  <div class="col-md-4">
-														     <div style="background-color: #F5F5F5; border-radius: 6px 6px 6px 6px; padding: 8px; margin-bottom:20px;">
-						                                       <div>
-																	<h4 class="header smaller lighter black" style="border-bottom: 1px solid #DADADA; font-weight:bold; margin-top:0px;">
-																	<input <?php if($record[$key] == 1){ ?> checked <?php } ?> type="checkbox" id="module<?php echo $key; ?>" name="module[]" class="" value="<?php echo $key; ?>" disabled />
-									                                <?php echo $value; ?></h4>
-														       </div>
-															  </div> 
-														  </div>
-														
-														<?php } } ?>
+														<?php include(dirname(__FILE__).'/responsibilities-permissions.php'); ?>
 													</fieldset>
 
 													<div class="form-actions">

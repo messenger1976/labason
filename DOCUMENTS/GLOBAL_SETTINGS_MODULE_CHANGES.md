@@ -13,7 +13,7 @@ Implementation completed on: Current Date
 ### 1. Database Changes
 
 #### New Table: `tbl_global_settings`
-**File:** `tbl_global_settings.sql`
+**File:** `sql/tbl_global_settings.sql`
 
 **Table Structure:**
 - `id` - INT(11) AUTO_INCREMENT PRIMARY KEY
@@ -25,7 +25,7 @@ Implementation completed on: Current Date
 - Pre-inserted record with code `MAINTENANCE_FEE`, description `Water Meter Maintenance Fee`, and default value `25.00`
 
 **Action Required:**
-- Execute the SQL script `tbl_global_settings.sql` in your database
+- Execute the SQL script `sql/tbl_global_settings.sql` in your database
 
 ---
 
@@ -127,7 +127,7 @@ get_maintenance_fee()
 
 ## Files Modified Summary
 
-1. ✅ `tbl_global_settings.sql` - **NEW** (Database table creation script)
+1. ✅ `sql/tbl_global_settings.sql` - **NEW** (Database table creation script)
 2. ✅ `application/modules/master/models/global_settings_model.php` - **NEW**
 3. ✅ `application/modules/master/controllers/global_settings.php` - **NEW**
 4. ✅ `application/modules/master/views/global_settings.php` - **NEW**

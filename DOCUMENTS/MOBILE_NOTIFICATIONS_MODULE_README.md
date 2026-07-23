@@ -19,7 +19,7 @@ This module provides comprehensive mobile notification functionality using the I
 Run the SQL script to create the necessary tables:
 
 ```sql
--- Execute mobile_notifications_table.sql
+-- Execute sql/mobile_notifications_table.sql
 ```
 
 This will create:
@@ -139,7 +139,7 @@ The system handles the following ITEXMO response codes:
 - `application/modules/master/views/mobilenotifications_dashboard.php` - Analytics dashboard
 
 ### Database
-- `mobile_notifications_table.sql` - Database schema
+- `sql/mobile_notifications_table.sql` - Database schema
 
 ## Files Modified
 

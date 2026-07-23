@@ -739,8 +739,8 @@ Possible improvements:
    - `application/modules/master/views/month_customer_invoice.php` - Added maintenance fee, franchise fee, and due date display
 
 5. **SQL Scripts:**
-   - `franchise_fee_database_changes.sql` - Database schema changes
-   - `tbl_global_settings.sql` - Global settings table creation (if needed)
+   - `sql/franchise_fee_database_changes.sql` - Database schema changes
+   - `sql/tbl_global_settings.sql` - Global settings table creation (if needed)
 
 ---
 

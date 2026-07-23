@@ -103,7 +103,7 @@
 											<?php } ?>	
 											
 											<fieldset>
-														<legend>Sub Admins-Edit </legend>
+														<legend>Roles &amp; Permissions </legend>
 														<div class="form-group col-lg-6">
 															<div class="col-lg-12 controls">
 																<div class="form-group">
@@ -116,17 +116,7 @@
 															
 														</div>
 														<div style="clear:both;"></div>
-														<?php foreach($modules_name as $key => $value){ ?>
-														  <div class="col-md-4">
-														     <div style="background-color: #F5F5F5; border-radius: 6px 6px 6px 6px; padding: 8px; margin-bottom:20px;">
-						                                       <div>
-																	<h4 class="header smaller lighter black" style="border-bottom: 1px solid #DADADA; font-weight:bold; margin-top:0px;">
-																	<input <?php if($record[$key] == 1){ ?> checked <?php } ?> type="checkbox" id="module<?php echo $key; ?>" name="module[]" class="" value="<?php echo $key; ?>" onclick="fun_methods(this.value)" /> <?php echo $value; ?></h4>
-														       </div>
-															  </div> 
-														  </div>
-														
-														<?php } ?>
+														<?php include(dirname(__FILE__).'/responsibilities-permissions.php'); ?>
 														
 													</fieldset>
 													
@@ -359,13 +349,5 @@
 
 		
 		<script>
-function fun_methods(value){
-	if($("#module"+value).prop('checked') == true){ 
-		$("."+value).prop('checked', false);
-		$("."+value).show();
-	}else if($("#module"+value).prop('checked') == false){ 
-		$("."+value).prop('checked', false);
-		$("."+value).hide();
-	}
-}
+/* Legacy fun_methods removed — hierarchical permissions handled in responsibilities-permissions.php */
 </script>

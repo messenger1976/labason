@@ -41,12 +41,16 @@
 						<a href="#"><i class="fa fa-lg fa-fw fa-user"></i> <span class="menu-item-parent">Customers</span></a>
 						<ul>
 						  
+							<?php if((array_key_exists('addcustomer',$roleResponsible) && ($roleResponsible['addcustomer'] == 1) ) || ($this->session->userdata('usertype') == 'admin')){ ?>
 							<li class="<?php if($this->uri->segment(2)=='addcustomer'){echo 'active';}?>">
 								<a href="<?php echo ADMIN_URL;?>addcustomer" title="Customers Listing"><i class="fa fa-lg fa-fw fa-user-plus"></i> <span class="menu-item-parent">Customers Listing</span></a>
 							</li>
+							<?php } ?>
+							<?php if((array_key_exists('add_zone',$roleResponsible) && ($roleResponsible['add_zone'] == 1) ) || ($this->session->userdata('usertype') == 'admin')){ ?>
 							<li class="<?php if($this->uri->segment(2)=='add_zone'){echo 'active';}?>">
 								<a href="<?php echo ADMIN_URL;?>add_zone" title="Zone Names"><i class="fa fa-lg fa-fw fa-picture-o"></i> <span class="menu-item-parent">Zone Names</span></a>
 							</li>
+							<?php } ?>
 							
 						</ul>
 					</li>
@@ -64,13 +68,17 @@
 						     ">
 						<a href="#"><i class="fa fa-lg fa-fw fa-money"></i> <span class="menu-item-parent">Finance</span></a>
 						<ul>
+						     <?php if((array_key_exists('addmetercustomerreading',$roleResponsible) && ($roleResponsible['addmetercustomerreading'] == 1) ) || ($this->session->userdata('usertype') == 'admin')){ ?>
 						     <li class="<?php if($this->uri->segment(2)=='addmetercustomerreading' && $this->uri->segment(3)!='edit'){echo 'active';}?>">
 								<a href="<?php echo ADMIN_URL;?>addmetercustomerreading">Add Meter Customers Reading </a>
 							</li>
+							<?php } ?>
 							
+						    <?php if((array_key_exists('addpaymentcustomer',$roleResponsible) && ($roleResponsible['addpaymentcustomer'] == 1) ) || ($this->session->userdata('usertype') == 'admin')){ ?>
 						    <li class="<?php if($this->uri->segment(2)=='addpaymentcustomer'){echo 'active';}?>">
 								<a href="<?php echo ADMIN_URL;?>addpaymentcustomer">Meter Customers Bills</a>
 							</li>
+							<?php } ?>
 							
 							<?php if((array_key_exists('leakingentry',$roleResponsible) && ($roleResponsible['leakingentry'] == 1) ) || ($this->session->userdata('usertype') == 'admin')){ ?>	
 							<li class="<?php if($this->uri->segment(2)=='Leakingentry'){echo 'active';}?>">
@@ -88,9 +96,11 @@
 									<a href="<?php echo ADMIN_URL;?>paymentmonthlycustomer">Monthly Customers Bills</a>
 								</li>
 							<?php } ?>						
+							<?php if((array_key_exists('metersearch',$roleResponsible) && ($roleResponsible['metersearch'] == 1) ) || ($this->session->userdata('usertype') == 'admin')){ ?>
 							<li class="<?php if($this->uri->segment(3)=='metersearch' && $this->uri->segment(2)=='addcustomer'){echo 'active';}?>">
 									<a href="<?php echo ADMIN_URL;?>addcustomer/metersearch"> Meter Customer Search</a>
 							</li>
+							<?php } ?>
 							<?php if((array_key_exists('monthlysearch',$roleResponsible) && ($roleResponsible['monthlysearch'] == 1) ) || ($this->session->userdata('usertype') == 'admin')){ ?>	
 							<li class="<?php if($this->uri->segment(3)=='monthlysearch' && $this->uri->segment(2)=='addcustomer'){echo 'active';}?>">
 								<a href="<?php echo ADMIN_URL;?>addcustomer/monthlysearch">Monthly Customer Search</a>
@@ -101,7 +111,7 @@
 									<a href="<?php echo ADMIN_URL;?>addcustomer/generatemetercustomer_search/">Both Type Of Customers </a>
 								</li>
 							<?php } ?>
-							<?php if(array_key_exists('income_reportsearch',$roleResponsible) && ($roleResponsible['income_reportsearch'] == 1)){ ?>
+							<?php if((array_key_exists('income_reportsearch',$roleResponsible) && ($roleResponsible['income_reportsearch'] == 1) ) || ($this->session->userdata('usertype') == 'admin')){ ?>
 								<li class="<?php if($this->uri->segment(3)=='income_reportsearch' && $this->uri->segment(2)=='addcustomer') echo 'active';?>">
 									<a href="<?php echo ADMIN_URL;?>addcustomer/income_reportsearch/">Income Report search</a>
 								</li>
@@ -111,9 +121,11 @@
 									<a href="<?php echo ADMIN_URL;?>addcustomer/paidsearch/">Paid Search</a>
 								</li>
 							<?php } ?>
+							<?php if((array_key_exists('unpaidsearch',$roleResponsible) && ($roleResponsible['unpaidsearch'] == 1) ) || ($this->session->userdata('usertype') == 'admin')){ ?>
 							<li class="<?php if($this->uri->segment(3)=='unpaidsearch' && $this->uri->segment(2)=='addcustomer') echo 'active';?>">
 								<a href="<?php echo ADMIN_URL;?>addcustomer/unpaidsearch/">Unpaid Search</a>
 							</li>
+							<?php } ?>
 							
 						</ul>
 					</li>
@@ -221,9 +233,10 @@
 								<a href="<?php echo ADMIN_URL;?>adddailyreport"> <span class="menu-item-parent">Daily Report</span></a>
 							</li>	
 							<?php } ?>
+
 							<?php if((array_key_exists('adddailyreport',$roleResponsible) && ($roleResponsible['adddailyreport'] == 1)) || ($this->session->userdata('usertype') == 'admin') || ($this->session->userdata('usertype') == 'subadmin') ){ ?>
-							<li class="<?php if($this->uri->segment(2)=='adddailyreportnogrouping') echo 'active';?>">
-								<a href="<?php echo ADMIN_URL;?>adddailyreportnogrouping"> <span class="menu-item-parent">Daily Report - No Grouping</span></a>
+							<li class="<?php if($this->uri->segment(2)=='adddailyreport_nogroup') echo 'active';?>">
+								<a href="<?php echo ADMIN_URL;?>adddailyreport_nogroup"> <span class="menu-item-parent">Daily Report - No grouping</span></a>
 							</li>	
 							<?php } ?>
 
@@ -332,14 +345,14 @@
                     <?php if((array_key_exists('admin',$roleResponsible) && ($roleResponsible['admin'] == 1) ) || ($this->session->userdata('usertype') == 'admin')){ ?>
 					<li class="<?php if($this->uri->segment(2)=='responsibilities'){echo 'active open';}?>
 									<?php if($this->uri->segment(2)=='addbillingperiod'){echo 'active open';}?>
-								   <?php if($this->uri->segment(2)=='createbalanceforward'){echo 'active open';}?>
+									<?php if($this->uri->segment(2)=='createbalanceforward'){echo 'active open';}?>
 								   <?php if($this->uri->segment(2)=='employee_logins'){echo 'active open';}?>
+								   <?php if($this->uri->segment(2)=='manual_or_series'){echo 'active open';}?>
 								   <?php if($this->uri->segment(2)=='mobilenotifications'){echo 'active open';}?>
 								   <?php if($this->uri->segment(2)=='classification_category'){echo 'active open';}?>
 								   <?php if($this->uri->segment(2)=='classification'){echo 'active open';}?>
 								   <?php if($this->uri->segment(2)=='amountrate'){echo 'active open';}?>
-								   <?php if($this->uri->segment(2)=='Leakingentrycorrection'){echo 'active open';}?>
-								   <?php if($this->uri->segment(2)=='manual_or_series'){echo 'active open';}?>">
+								   <?php if($this->uri->segment(2)=='Leakingentrycorrection'){echo 'active open';}?>">
 						<a href="#"><i class="fa fa-lg fa-fw fa-user"></i> <span class="menu-item-parent">Admin</span></a>
 						<ul>
 
@@ -357,6 +370,12 @@
 								</li>
 							 <?php } ?>	
 
+							<?php if((array_key_exists('manual_or_series',$roleResponsible) && ($roleResponsible['manual_or_series'] == 1 || (is_array($roleResponsible['manual_or_series']) && count($roleResponsible['manual_or_series']) > 0)) ) || ($this->session->userdata('usertype') == 'admin')){ ?>
+								<li class="<?php if($this->uri->segment(2)=='manual_or_series') echo 'active';?>">
+									<a href="<?php echo ADMIN_URL;?>manual_or_series/"><i class="fa fa-list-ol"></i> Manual OR Series</a>
+								</li>
+							<?php } ?>
+
 							 <?php if((array_key_exists('addbillingperiod',$roleResponsible) && ($roleResponsible['addbillingperiod'] == 1) ) || ($this->session->userdata('usertype') == 'admin')){ ?>	
 								<li class="<?php if($this->uri->segment(2)=='addbillingperiod' && $this->uri->segment(2)=='addbillingperiod') echo 'active';?>">
 									<a href="<?php echo ADMIN_URL;?>addbillingperiod/">Setup Schedule Billing Period</a>
@@ -369,32 +388,37 @@
 								</li>
 							 <?php } ?>	
 
+							 <?php if((array_key_exists('or_correction',$roleResponsible) && ($roleResponsible['or_correction'] == 1) ) || ($this->session->userdata('usertype') == 'admin')){ ?>
 							 <li class="<?php if($this->uri->segment(2)=='or_correction' && $this->uri->segment(2)=='or_correction'){echo 'active';}?>">
 								<a href="<?php echo ADMIN_URL;?>or_correction/"> OR Correction</a>
 							</li>
+							 <?php } ?>
+							 <?php if((array_key_exists('meter_reading_correction',$roleResponsible) && ($roleResponsible['meter_reading_correction'] == 1) ) || ($this->session->userdata('usertype') == 'admin')){ ?>
 							<li class="<?php if($this->uri->segment(2)=='addmetercustomerreading' && $this->uri->segment(3)=='edit'){echo 'active';}?>">
 								<a href="<?php echo ADMIN_URL;?>addmetercustomerreading/edit"> Meter Reading Correction</a>
 							</li>
+							 <?php } ?>
+							 <?php if((array_key_exists('leaking_entry_correction',$roleResponsible) && ($roleResponsible['leaking_entry_correction'] == 1) ) || ($this->session->userdata('usertype') == 'admin')){ ?>
 							<li class="<?php if($this->uri->segment(2)=='Leakingentrycorrection'){echo 'active';}?>">
 								<a href="<?php echo ADMIN_URL;?>Leakingentrycorrection"> Leaking Entry Correction</a>
 							</li>
+							 <?php } ?>
 							
 							<?php if((array_key_exists('database_backup',$roleResponsible) && ($roleResponsible['database_backup'] == 1 || (is_array($roleResponsible['database_backup']) && count($roleResponsible['database_backup']) > 0)) ) || ($this->session->userdata('usertype') == 'admin')){ ?>
 								<li class="<?php if($this->uri->segment(2)=='database_backup') echo 'active';?>">
 									<a href="<?php echo ADMIN_URL;?>database_backup/"><i class="fa fa-database"></i> Database Backup</a>
 								</li>
 							<?php } ?>
-							<?php if((array_key_exists('manual_or_series',$roleResponsible) && ($roleResponsible['manual_or_series'] == 1 || (is_array($roleResponsible['manual_or_series']) && count($roleResponsible['manual_or_series']) > 0)) ) || ($this->session->userdata('usertype') == 'admin')){ ?>
-								<li class="<?php if($this->uri->segment(2)=='manual_or_series') echo 'active';?>">
-									<a href="<?php echo ADMIN_URL;?>manual_or_series/"><i class="fa fa-list-ol"></i> Manual OR Series</a>
-								</li>
-							<?php } ?>
+							<?php if((array_key_exists('classification_category',$roleResponsible) && ($roleResponsible['classification_category'] == 1) ) || ($this->session->userdata('usertype') == 'admin')){ ?>
 							<li class="<?php if($this->uri->segment(2)=='classification_category') echo 'active';?>">
 								<a href="<?php echo ADMIN_URL;?>classification_category/"> Classification Category</a>
 							</li>
+							<?php } ?>
+							<?php if((array_key_exists('classification',$roleResponsible) && ($roleResponsible['classification'] == 1) ) || ($this->session->userdata('usertype') == 'admin')){ ?>
 							<li class="<?php if($this->uri->segment(2)=='classification') echo 'active';?>">
 								<a href="<?php echo ADMIN_URL;?>classification/"> Classification</a>
 							</li>
+							<?php } ?>
 							<?php if((array_key_exists('amountrate',$roleResponsible) && ($roleResponsible['amountrate'] == 1) ) || ($this->session->userdata('usertype') == 'admin')){ ?>
 								<li class="<?php if($this->uri->segment(2)=='amountrate'){echo 'active';}?>">
 									<a href="<?php echo ADMIN_URL;?>amountrate">Per Unit Value</a>

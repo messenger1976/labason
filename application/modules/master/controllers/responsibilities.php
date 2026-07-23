@@ -63,36 +63,166 @@ class responsibilities extends CI_Controller
 	}
 	
 	public function module_name(){
-		return $modules_name = array(
+		return array(
 				'dashboard' => 'Dashboard',
-				'addcustomer' => 'Addcustomer',
+				'addcustomer' => 'Customers Listing',
 				'add_zone' => 'Zone Names',
-				'addpaymentcustomer' => 'Meter Customer Bills',
-				'amountrate' => 'Per Unit Value',
+				'addmetercustomerreading' => 'Add Meter Customers Reading',
+				'addpaymentcustomer' => 'Meter Customers Bills',
+				'leakingentry' => 'Leaking Entry',
 				'feesplaning' => 'Monthly Fees Plans',
-				'paymentmonthlycustomer' => 'Monthly Customer Bills',
+				'paymentmonthlycustomer' => 'Monthly Customers Bills',
 				'metersearch' => 'Meter Customer Search',
 				'monthlysearch' => 'Monthly Customer Search',
-				'generatemetercustomer_search' => 'Both Type of Customers',
-				'income_reportsearch' => 'Income Reports Search',
+				'generatemetercustomer_search' => 'Both Type Of Customers',
+				'income_reportsearch' => 'Income Report Search',
 				'paidsearch' => 'Paid Search',
-				'unpaidsearch' => 'Un-Paid Search',
+				'unpaidsearch' => 'Unpaid Search',
 				'addemployee' => 'Add Employee',
-				'payrols' => 'Payrols',
-				'payrolssearch' => 'Payrols search',
+				'payrols' => 'Payrolls',
+				'payrolssearch' => 'Payrolls Search',
 				'addexpenses' => 'Add Expenses',
 				'bsearch' => 'Balance Sheet Search',
-				'addassets' => 'Add Assets',
+				'adddailyreport' => 'Daily Reports',
+				'customerbalancemonitor' => 'Customer Balance Monitor',
+				'addassets' => 'Assets',
+				'addledger' => 'Ledger',
 				'technicalproblems' => 'Technical Problems',
 				'technicalsearch' => 'Technical Problems View',
 				'web_settings' => 'Admin Address',
+				'mobile_notifications' => 'Mobile Notifications',
 				'admin' => 'Admin',
-				'adddailyreport' => 'Daily Reports',
-				'leakingentry' => 'Leaking Entry',
-				'database_backup' => 'Database Backup',
+				'responsibilities' => 'Roles & Responsibilities',
+				'employee_logins' => 'Employee Login',
 				'manual_or_series' => 'Manual OR Series',
-				'customerbalancemonitor' => 'Customer Balance Monitor'
+				'addbillingperiod' => 'Setup Schedule Billing Period',
+				'createbalanceforward' => 'Create Balance Forward',
+				'or_correction' => 'OR Correction',
+				'meter_reading_correction' => 'Meter Reading Correction',
+				'leaking_entry_correction' => 'Leaking Entry Correction',
+				'database_backup' => 'Database Backup',
+				'classification_category' => 'Classification Category',
+				'classification' => 'Classification',
+				'amountrate' => 'Per Unit Value'
 				);
+	}
+
+	/**
+	 * Hierarchical permission groups matching the sidebar navigation.
+	 * parent_key is saved as a module[] checkbox when set (e.g. admin gate).
+	 */
+	public function module_groups(){
+		return array(
+			array(
+				'id' => 'dashboard',
+				'label' => 'Dashboard',
+				'icon' => 'fa-home',
+				'parent_key' => 'dashboard',
+				'children' => array()
+			),
+			array(
+				'id' => 'customers',
+				'label' => 'Customers',
+				'icon' => 'fa-user',
+				'parent_key' => null,
+				'children' => array('addcustomer', 'add_zone')
+			),
+			array(
+				'id' => 'finance',
+				'label' => 'Finance',
+				'icon' => 'fa-money',
+				'parent_key' => null,
+				'children' => array(
+					'addmetercustomerreading',
+					'addpaymentcustomer',
+					'leakingentry',
+					'feesplaning',
+					'paymentmonthlycustomer',
+					'metersearch',
+					'monthlysearch',
+					'generatemetercustomer_search',
+					'income_reportsearch',
+					'paidsearch',
+					'unpaidsearch'
+				)
+			),
+			array(
+				'id' => 'employee',
+				'label' => 'Employee',
+				'icon' => 'fa-user',
+				'parent_key' => 'addemployee',
+				'children' => array('payrols', 'payrolssearch')
+			),
+			array(
+				'id' => 'expenses',
+				'label' => 'Expenses',
+				'icon' => 'fa-pencil-square-o',
+				'parent_key' => 'addexpenses',
+				'children' => array('bsearch')
+			),
+			array(
+				'id' => 'reports',
+				'label' => 'Reports',
+				'icon' => 'fa-pencil-square-o',
+				'parent_key' => null,
+				'children' => array('adddailyreport', 'customerbalancemonitor')
+			),
+			array(
+				'id' => 'assets',
+				'label' => 'Assets',
+				'icon' => 'fa-pencil-square-o',
+				'parent_key' => 'addassets',
+				'children' => array()
+			),
+			array(
+				'id' => 'ledger',
+				'label' => 'Ledger',
+				'icon' => 'fa-pencil-square-o',
+				'parent_key' => 'addledger',
+				'children' => array()
+			),
+			array(
+				'id' => 'technical',
+				'label' => 'Technical Problems',
+				'icon' => 'fa-gavel',
+				'parent_key' => 'technicalproblems',
+				'children' => array('technicalsearch')
+			),
+			array(
+				'id' => 'admin_address',
+				'label' => 'Admin Address',
+				'icon' => 'fa-location-arrow',
+				'parent_key' => 'web_settings',
+				'children' => array()
+			),
+			array(
+				'id' => 'mobile_notifications',
+				'label' => 'Mobile Notifications',
+				'icon' => 'fa-mobile',
+				'parent_key' => 'mobile_notifications',
+				'children' => array()
+			),
+			array(
+				'id' => 'admin',
+				'label' => 'Admin',
+				'icon' => 'fa-user',
+				'parent_key' => 'admin',
+				'children' => array(
+					'responsibilities',
+					'employee_logins',
+					'manual_or_series',
+					'addbillingperiod',
+					'createbalanceforward',
+					'or_correction',
+					'meter_reading_correction',
+					'leaking_entry_correction',
+					'database_backup',
+					'classification_category',
+					'classification',
+					'amountrate'
+				)
+			),
+		);
 	}
 
 	public function module_methods(){
@@ -111,7 +241,9 @@ class responsibilities extends CI_Controller
 		$data['msg'] ='';
 		$this->head['roleResponsible'] = $this->top_model->get_responsibilities();
 		$data['modules_name'] = $this->module_name();
+		$data['module_groups'] = $this->module_groups();
 		$data['module_methods'] = $this->module_methods();
+		$data['permissions_mode'] = 'add';
 		if($this->input->post('add') != ''){
 			$exit_data = array(
 				'role_name' => ($this->input->post('role_name'))
@@ -138,7 +270,9 @@ class responsibilities extends CI_Controller
 		$data['msg'] ='';
 		$this->head['roleResponsible'] = $this->top_model->get_responsibilities();
 		$data['modules_name'] = $this->module_name();
+		$data['module_groups'] = $this->module_groups();
 		$data['module_methods'] = $this->module_methods();
+		$data['permissions_mode'] = 'edit';
 		$data['record'] = $this->my_model->get_single_record($id);
 		if($this->input->post('edit') != ''){
 			$result = $this->my_model->update_record($id);
@@ -158,7 +292,9 @@ class responsibilities extends CI_Controller
 		$data['msg'] ='';
 		$this->head['roleResponsible'] = $this->top_model->get_responsibilities();
 		$data['modules_name'] = $this->module_name();
+		$data['module_groups'] = $this->module_groups();
 		$data['module_methods'] = $this->module_methods();
+		$data['permissions_mode'] = 'view';
 		$data['record'] = $this->my_model->get_single_record($id);
 		if($this->input->post('edit') != ''){
 			$result = $this->my_model->update_record($id);
