@@ -5,11 +5,16 @@
 			<!-- User info -->
 			<div class="login-info">
 				<span> <!-- User image size is adjusted inside CSS, it should stay as it --> 
-					
-					<a href="javascript:void(0);" id="show-shortcut" data-action="toggleShortcut">
+					<?php
+						$logged_in_user = trim((string) $this->session->userdata('name'));
+						if ($logged_in_user === '') {
+							$logged_in_user = trim((string) $this->session->userdata('username'));
+						}
+					?>
+					<a href="javascript:void(0);" id="show-shortcut" data-action="toggleShortcut" data-user-name="<?php echo htmlspecialchars($logged_in_user, ENT_QUOTES, 'UTF-8'); ?>">
 						<img src="<?php echo base_url(); ?>/assets/avatars/avatar.png" alt="me" class="online" /> 
 						<span>
-							<?php echo $this->session->userdata('name');?>
+							<?php echo htmlspecialchars($logged_in_user, ENT_QUOTES, 'UTF-8'); ?>
 						</span>
 						<i class="fa fa-angle-down"></i>
 					</a> 

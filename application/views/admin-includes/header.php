@@ -8,6 +8,35 @@ header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
 if(($this->session->userdata('username')=="")||($this->session->userdata('logged_in')=='')){
 	redirect('/master/');
 }
+// Keep display name in sync with the logged-in account (employee_name or username)
+$__uid = $this->session->userdata('userid');
+$__uname = trim((string) $this->session->userdata('username'));
+$__display_name = '';
+if ((string) $__uid === '1' && strtolower((string) $this->session->userdata('usertype')) === 'admin') {
+	$__display_name = $__uname;
+} else {
+	$__row = $this->db->select('employee_name, username')
+		->from('tbl_responsibilities_user')
+		->where('id', $__uid)
+		->limit(1)
+		->get()
+		->row_array();
+	if (!empty($__row)) {
+		$__display_name = trim((string) $__row['employee_name']);
+		if ($__display_name === '') {
+			$__display_name = trim((string) $__row['username']);
+		}
+	}
+}
+if ($__display_name === '') {
+	$__display_name = trim((string) $this->session->userdata('name'));
+}
+if ($__display_name === '') {
+	$__display_name = $__uname;
+}
+if ($__display_name !== '') {
+	$this->session->set_userdata('name', $__display_name);
+}
 ?>
 <!DOCTYPE html>
 <html lang="en-us">
@@ -241,7 +270,13 @@ if(($this->session->userdata('username')=="")||($this->session->userdata('logged
 
 				<!-- logout button -->
 				<div id="logout" class="btn-header transparent pull-right">
-					<span> <a href="<?php echo site_url()?>master/logout" title="Sign Out" data-action="userLogout" data-logout-msg="You can improve your security further after logging out by closing this opened browser"><i class="fa fa-sign-out"></i></a> </span>
+					<?php
+						$__logout_user = trim((string) $this->session->userdata('name'));
+						if ($__logout_user === '') {
+							$__logout_user = trim((string) $this->session->userdata('username'));
+						}
+					?>
+					<span> <a href="<?php echo site_url()?>master/logout" title="Sign Out" data-action="userLogout" data-logout-user="<?php echo htmlspecialchars($__logout_user, ENT_QUOTES, 'UTF-8'); ?>" data-logout-msg="You can improve your security further after logging out by closing this opened browser"><i class="fa fa-sign-out"></i></a> </span>
 				</div>
 				<!-- end logout button -->
 

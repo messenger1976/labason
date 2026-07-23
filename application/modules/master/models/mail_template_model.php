@@ -126,30 +126,48 @@ class mail_template_model extends CI_Model {
 	}
 	
 	public function setMailHeaderTemplate(){
+		if (!$this->db->table_exists($this->email_template_table)) {
+			return '<div style="font-family:Arial,sans-serif"><p><a href="{WEBSITE}">{WEBSITE}</a></p><hr/>';
+		}
 		$this->db->select('content');
 		$this->db->from($this->email_template_table);
 		$this->db->where('status',2);		
 		$result=$this->db->get();
 		$result=$result->row_array();
-		return $result['content'];
+		return !empty($result['content']) ? $result['content'] : '<div style="font-family:Arial,sans-serif"><p><a href="{WEBSITE}">{WEBSITE}</a></p><hr/>';
 	}
 	
 	public function setMailBodyTemplate($id){
+		if (!$this->db->table_exists($this->email_template_table)) {
+			return array(
+				'subject' => 'Account Updated Successfully',
+				'content' => '<p>Dear {NAME},</p><p>Your account was updated.</p><p>Username: <strong>{USERNAME}</strong></p><p>Password: <strong>{PASSWORD}</strong></p><p>IP: {IP_AD}</p><p>Login: <a href="{WEBSITE}{URL}">{WEBSITE}{URL}</a></p>'
+			);
+		}
 		$this->db->select('subject, content');
 		$this->db->from($this->email_template_table);
 		$this->db->where('id',$id);		
 		$result=$this->db->get();
-		//$result=$result->row_array();
-		return $result->row_array();
+		$row = $result->row_array();
+		if (empty($row)) {
+			return array(
+				'subject' => 'Account Updated Successfully',
+				'content' => '<p>Dear {NAME},</p><p>Your account was updated.</p><p>Username: <strong>{USERNAME}</strong></p><p>Password: <strong>{PASSWORD}</strong></p><p>IP: {IP_AD}</p><p>Login: <a href="{WEBSITE}{URL}">{WEBSITE}{URL}</a></p>'
+			);
+		}
+		return $row;
 	}
 	
 	public function setMailFooterTemplate(){
+		if (!$this->db->table_exists($this->email_template_table)) {
+			return '<hr/><p>Thanks & Regards<br/>{ADDRESS}</p></div>';
+		}
 		$this->db->select('content');
 		$this->db->from($this->email_template_table);
 		$this->db->where('status',3);		
 		$result=$this->db->get();
 		$result=$result->row_array();
-		return $result['content'];
+		return !empty($result['content']) ? $result['content'] : '<hr/><p>Thanks & Regards<br/>{ADDRESS}</p></div>';
 	}
 	
 	public function getMailHeader(){

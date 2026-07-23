@@ -119,6 +119,14 @@ echo " Current time: " . date('Y-m-d H:i:s');
 
 		<!-- MAIN APP JS FILE -->
 		<script src="<?php echo base_url();?>js/app.min.js"></script>
+		<?php
+			$logged_in_user_name = trim((string) $this->session->userdata('name'));
+			if ($logged_in_user_name === '') {
+				$logged_in_user_name = trim((string) $this->session->userdata('username'));
+			}
+		?>
+		<script>window.LOGGED_IN_USER_NAME = <?php echo json_encode($logged_in_user_name); ?>;</script>
+		<script src="<?php echo base_url();?>js/logout-user-name.js?v=2"></script>
 
 		<!-- ENHANCEMENT PLUGINS : NOT A REQUIREMENT -->
 		<!-- Voice command : plugin -->
