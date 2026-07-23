@@ -35,34 +35,38 @@ class Change_username extends CI_Controller {
 			if($this->my_model->username_check() != 0){ 
 				$changepass=$this->my_model->change_username();
 				if($changepass){
-					$subject = 'Username Changed Successfully...';
-					$userdetails=$this->my_model->getuserdetails();
-					$username=$userdetails['username'];
-					$to=$userdetails['email'];
-					
-					$this->load->model('mail_template_model','mail_model'); // Loading the mail template Model	
-					$message = $this->mail_model->getChangePwdMail(6,'Admin',$username,$this->input->post('new_pwd'));
-					if($this->mail_template_model->mail_send($to,$message)){
-						
-						//here session destroy
-						$user_data = $this->session->all_userdata();
-						foreach ($user_data as $key => $value) {
-						 if($key != 'session_id' && $key != 'ip_address' && $key != 'user_agent' && $key != 'last_activity') {
-								$this->session->unset_userdata($key);
-						 }
+					// Optional notification email — do not block username change if mail/templates fail
+					try {
+						$userdetails=$this->my_model->getuserdetails();
+						$username=$userdetails['username'];
+						$to=$userdetails['email'];
+						$this->load->model('mail_template_model','mail_model');
+						if ($this->db->table_exists('tbl_email_templates')) {
+							$message = $this->mail_model->getChangePwdMail(6,'Admin',$username,$this->input->post('conf_username'));
+							if (!empty($to) && !empty($message) && is_array($message)) {
+								@$this->mail_model->mail_send($to,$message);
+							}
 						}
-						$this->session->unset_userdata('username');
-						$this->session->unset_userdata('logged_in');
-						$this->session->sess_destroy();
-					
-						$this->session->set_flashdata('message', 'User Name Has Been Changed Sucessfully...');
-						redirect($this->login_redirect);
-						//redirect($this->listPage_orredirect,'refresh');
-						
-					}else{
-						$this->session->set_flashdata('msg_succ', 'Sorry! Try Again');
-						redirect($this->listPage_redirect);
+					} catch (Exception $e) {
+						// Ignore mail errors; username already updated
 					}
+
+					// Destroy session and force re-login with new username
+					$user_data = $this->session->all_userdata();
+					foreach ($user_data as $key => $value) {
+					 if($key != 'session_id' && $key != 'ip_address' && $key != 'user_agent' && $key != 'last_activity') {
+							$this->session->unset_userdata($key);
+					 }
+					}
+					$this->session->unset_userdata('username');
+					$this->session->unset_userdata('logged_in');
+					$this->session->sess_destroy();
+				
+					$this->session->set_flashdata('message', 'User Name Has Been Changed Sucessfully...');
+					redirect($this->login_redirect);
+				}else{
+					$this->session->set_flashdata('msg_succ', 'Sorry! Try Again');
+					redirect($this->listPage_redirect);
 				}
 			}else{		
 				$data['msg'] = 'Current User Name Wrong...';

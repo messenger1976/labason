@@ -139,7 +139,7 @@
 																<div class="form-group">
 																	<span class="input-group-addon"><i class="icon-user"></i><strong>Username : </strong></span>
 																
-																	<input class="form-control" type="email" id="username" placeholder="User Name" name="username" value="<?php echo $this->input->post('username'); ?>"  required/>
+																	<input class="form-control" type="text" id="username" placeholder="User Name" name="username" value="<?php echo $this->input->post('username'); ?>"  required/>
 																	<?php echo form_error('username'); ?>
 																
 																</div>

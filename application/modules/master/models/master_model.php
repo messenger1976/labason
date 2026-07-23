@@ -72,9 +72,13 @@ class master_model extends CI_Model {
 		}else{
             $result = $query->row_array();
 			if($result){
-				//set session values here
+				//set session values here — name is the logged-in user's display name
+				$display_name = trim((string) $result['name']);
+				if ($display_name === '') {
+					$display_name = trim((string) $result['username']);
+				}
 				$this->session->set_userdata('userid', $result['id']);
-				$this->session->set_userdata('name', $result['name']);
+				$this->session->set_userdata('name', $display_name);
 				$this->session->set_userdata('usertype', $result['user_type']);
 				$this->session->set_userdata('user_type', $result['user_type']);
 				$this->session->set_userdata('username', $result['username']);
@@ -95,9 +99,13 @@ class master_model extends CI_Model {
 		$query=$this->db->get();
 		$result = $query->row_array();
 		if($result){
-			//set session values here
+			//set session values here — prefer employee_name, fall back to username
+			$display_name = trim((string) $result['name']);
+			if ($display_name === '') {
+				$display_name = trim((string) $result['username']);
+			}
 			$this->session->set_userdata('userid', $result['id']);
-			$this->session->set_userdata('name', $result['name']);
+			$this->session->set_userdata('name', $display_name);
 			$this->session->set_userdata('usertype', $result['user_type']);
 			$this->session->set_userdata('username', $result['username']);
 			$this->session->set_userdata('role_id', $result['role_id']);
