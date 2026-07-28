@@ -11,14 +11,14 @@
 				</div>
 				</div>     
 	 
-	                <div class="jarviswidget jarviswidget-color-darken" id="wid-id-0" data-widget-editbutton="false">
+	                
                                             <table  id="dt_basic" class="table table-striped table-bordered table-hover" width="100%">
 												<thead>
 													<tr>
 														<th data-hide="phone"><input type="checkbox" class="ace" name="delete_ids[]" id="delete_ids[]" value="<?php echo $row['id'];?>" /></th>
 														<th data-hide="sno">SNo</th>
-													    <th data-hide="zone"><i class="fa fa-fw fa-user text-muted hidden-md hidden-sm hidden-xs"></i>Zone</th>
-														<th data-hide="billingperiod"><i class="fa fa-fw fa-user text-muted hidden-md hidden-sm hidden-xs"></i> Billing Period</th>																												
+													    <th data-hide="zone"><i class="fal fa-fw fa-user text-muted hidden-md hidden-sm hidden-xs"></i>Zone</th>
+														<th data-hide="billingperiod"><i class="fal fa-fw fa-user text-muted hidden-md hidden-sm hidden-xs"></i> Billing Period</th>																												
 														<th data-hide="startdate">Start Date</th>
 														<th data-hide="enddate">End Date</th>
 														<th data-hide="duedate">Due Date</th>
@@ -48,15 +48,15 @@
 														<td><?php echo stripslashes($row['bp_disconnection_date']); ?></td>
 														
 														
-														<td><span <?php if($row['bp_status']== 1){ echo " class='label label-success arrowed-in arrowed-in-right'"; } elseif($row['bp_status']== 0){ echo "class='label label-danger arrowed'"; } ?>><a href="JavaScript:if(confirm('Are you sure want to Chanage the Status?')==true){window.location='<?php echo ADMIN_URL;?>addbillingperiod/status/<?php echo $row['bp_id']?>/<?php echo $row['bp_status'];?>/<?php echo $this->uri->segment(3);?>';}" style="color:#FFF; text-decoration:none;"><?php if($row['bp_status']== 1){ echo "Active"; } elseif($row['bp_status']== 0){ echo "De-Active"; } ?></a></span></td>    
+														<td><span <?php if($row['bp_status']== 1){ echo " class='badge badge-success arrowed-in arrowed-in-right'"; } elseif($row['bp_status']== 0){ echo "class='badge badge-danger arrowed'"; } ?>><a href="JavaScript:if(confirm('Are you sure want to Chanage the Status?')==true){window.location='<?php echo ADMIN_URL;?>addbillingperiod/status/<?php echo $row['bp_id']?>/<?php echo $row['bp_status'];?>/<?php echo $this->uri->segment(3);?>';}" style="color:#FFF; text-decoration:none;"><?php if($row['bp_status']== 1){ echo "Active"; } elseif($row['bp_status']== 0){ echo "De-Active"; } ?></a></span></td>    
 														<td><div class="visible-md visible-lg hidden-sm hidden-xs action-buttons">
 															
 																<a class="green" href="<?php echo ADMIN_URL;?>addbillingperiod/edit/<?php echo $row['bp_id']; ?>" title="Edit">
-                                                                    <i class="fa fa-edit"></i>
+                                                                    <i class="fal fa-edit"></i>
 
 																</a>
 																<a class="blue" href="<?php echo ADMIN_URL;?>addbillingperiod/view/<?php echo $row['bp_id'];?>">
-                                                                    <i class="fa fa-remove"></i>
+                                                                    <i class="fal fa-remove"></i>
 
 																</a>
                                                                       
@@ -134,9 +134,9 @@
 				};
 	
 				$('#dt_basic').dataTable({
-					"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-12 hidden-xs'l>r>"+
+					"sDom": "<'dt-toolbar'<'col-12 col-sm-6'f><'col-sm-6 col-12 hidden-xs'l>r>"+
 						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
+						"<'dt-toolbar-footer'<'col-sm-6 col-12 hidden-xs'i><'col-12 col-sm-6'p>>",
 					"autoWidth" : true,
 			        "oLanguage": {
 					    "sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
@@ -165,9 +165,9 @@
 		    	//"bAutoWidth": false,
 		    	//"bPaginate": false,
 		    	//"bStateSave": true // saves sort state using localStorage
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6 hidden-xs'f><'col-sm-6 col-xs-12 hidden-xs'<'toolbar'>>r>"+
+				"sDom": "<'dt-toolbar'<'col-12 col-sm-6 hidden-xs'f><'col-sm-6 col-12 hidden-xs'<'toolbar'>>r>"+
 						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
+						"<'dt-toolbar-footer'<'col-sm-6 col-12 hidden-xs'i><'col-12 col-sm-6'p>>",
 				"autoWidth" : true,
 				"oLanguage": {
 					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
@@ -203,9 +203,9 @@
 	    
 			/* COLUMN SHOW - HIDE */
 			$('#datatable_col_reorder').dataTable({
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-6 hidden-xs'C>r>"+
+				"sDom": "<'dt-toolbar'<'col-12 col-sm-6'f><'col-sm-6 col-6 hidden-xs'C>r>"+
 						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-sm-6 col-xs-12'p>>",
+						"<'dt-toolbar-footer'<'col-sm-6 col-12 hidden-xs'i><'col-sm-6 col-12'p>>",
 				"autoWidth" : true,
 				"oLanguage": {
 					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
@@ -231,9 +231,9 @@
 				
 				// Tabletools options: 
 				//   https://datatables.net/extensions/tabletools/button_options
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-6 hidden-xs'T>r>"+
+				"sDom": "<'dt-toolbar'<'col-12 col-sm-6'f><'col-sm-6 col-6 hidden-xs'T>r>"+
 						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-sm-6 col-xs-12'p>>",
+						"<'dt-toolbar-footer'<'col-sm-6 col-12 hidden-xs'i><'col-sm-6 col-12'p>>",
 				"oLanguage": {
 					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
 				},		

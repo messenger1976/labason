@@ -1,5 +1,5 @@
 <div class="row">
-	<div class="col-lg-12 col-sm-12 col-xs-12 col-md-12">
+	<div class="col-lg-12 col-sm-12 col-12 col-md-12">
 		<?php if (isset($grand_total_balance)) { ?>
 		<p class="text-right" style="font-size:15px; margin-bottom:10px;">
 			<strong>Sum of displayed balances (excl. active billing period):</strong>
@@ -44,7 +44,7 @@
 				<td><?php echo isset($row['zone_name']) ? htmlspecialchars($row['zone_name'], ENT_QUOTES, 'UTF-8') : ''; ?></td>
 				<td class="text-right <?php echo $bal_class; ?>"><?php echo number_format($bal, 2); ?></td>
 				<td>
-					<a href="<?php echo htmlspecialchars($stmt_url, ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener" class="btn btn-xs btn-default">Open SOA</a>
+					<a href="<?php echo htmlspecialchars($stmt_url, ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener" class="btn btn-xs btn-secondary">Open SOA</a>
 				</td>
 			</tr>
 			<?php

@@ -1,46 +1,34 @@
-				<div class="main-content">
-					<div class="breadcrumbs" id="breadcrumbs">
-						<script type="text/javascript">
-							try{ace.settings.check('breadcrumbs' , 'fixed')}catch(e){}
-						</script>
-						<ul class="breadcrumb">
-							<li>
-								<i class="icon-home home-icon"></i>
-								<a href="<?php echo DASHBOARD_URL;?>">Home</a>
-							</li>
-							<li>
-								<a href="<?php echo ADMIN_URL;?>main_category">Main Category</a>
-							</li>
-							<li class="active">Add</li>
-						</ul><!-- .breadcrumb -->
+<main id="js-page-content" role="main" class="page-content">
+	<ol class="breadcrumb page-breadcrumb">
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>">Home</a></li>
+		<li class="breadcrumb-item active">Page</li>
+		<li class="position-absolute pos-top pos-right d-sm-block"><span class="js-get-date"></span></li>
+	</ol>
+	<div class="subheader">
+		<h1 class="subheader-title">
+			<i class="subheader-icon fal fa-th-list"></i>
+			Manage <span class="fw-300">Main Category Add</span>
+		</h1>
+	</div>
+
+	<div class="row">
+		<div class="col-xl-12">
+			<div class="panel">
+				<div class="panel-hdr"><h2>Main Category Add</h2>
+					<div class="panel-toolbar">
+						<button class="btn btn-panel" data-action="panel-collapse" data-toggle="tooltip" data-offset="0,10" data-original-title="Collapse"></button>
+						<button class="btn btn-panel" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
 					</div>
-					<div class="page-content">
-							<h3 class="header smaller lighter blue">
-								<i><img src="<?php echo site_url();?>/assets/images/categories.png" width="23" height="24" /></i>Main Category
-                                <small>
-									<i class="icon-double-angle-right"></i>
-									Add
-								</small>
-							</h3>
-                            <?php if($msg != ''){?>
-                        <div class="alert alert-block alert-success">
-                            <button type="button" class="close" data-dismiss="alert">
-                            <i class="icon-remove"></i>
-                            </button>
-                            <p>
-                                <i class="icon-ok"></i>
-								<?php echo $msg?$msg:'';?>
-                            </p>
-                        </div>
-                        <?php } ?>	
-						<div class="row">
-							<div class="col-xs-12">
+				</div>
+				<div class="panel-container show"><div class="panel-content">
+<div class="row">
+							<div class="col-12">
 								<!-- PAGE CONTENT BEGINS -->
 								<form class="form-horizontal" role="form" method="post" enctype="multipart/form-data" >
 									<div class="form-group">
 										<label class="col-sm-3 control-label no-padding-right" for="form-field-1"> Main Category Name : </label>
 										<div class="col-sm-9">
-											<input type="text" id="category_name" name="category_name" class="col-xs-10 col-sm-5" required value="<?php echo stripslashes($this->input->post('category_name'));?>"/>
+											<input type="text" id="category_name" name="category_name" class="col-10 col-sm-5" required value="<?php echo stripslashes($this->input->post('category_name'));?>"/>
 										</div>
 									</div>
 									<div class="space-4"></div>
@@ -49,10 +37,10 @@
 									<label class="col-sm-3 control-label no-padding-right" for="form-field-1"> Status : </label>
 									<div class="col-sm-9">
 									<label>
-									<input name="status" id="status" type="radio" class="ace" value="1" checked="checked" />
+									<input name="status" id="status" type="radio" class="checkbox" value="1" checked="checked" />
 									<span class="lbl"> Active</span></label>
 									<label>
-									<input name="status" id="status" type="radio" value="0" class="ace" />
+									<input name="status" id="status" type="radio" value="0" class="checkbox" />
 									<span class="lbl"> De-Active</span>
 									</label>
 									</div>
@@ -72,7 +60,7 @@
                                     <div class="form-group">
 										<label class="col-sm-3 control-label no-padding-right" for="form-field-1"> Page tittle : </label>
 										<div class="col-sm-9">
-											<input type="text" name="seo_title" id="form-field-1" placeholder="" class="col-xs-10 col-sm-5" value="<?php echo stripslashes(str_replace('\n','',$this->input->post('seo_title')));?>"/>
+											<input type="text" name="seo_title" id="form-field-1" placeholder="" class="col-10 col-sm-5" value="<?php echo stripslashes(str_replace('\n','',$this->input->post('seo_title')));?>"/>
 										</div>
 									</div>
 									<div class="space-4"></div>
@@ -110,11 +98,11 @@
 										</div>
 									</div>
 								</form>
-							</div><!-- /.col -->
-						</div>
+							<!-- /.col -->
+						
                         <!-- /.row -->
-					</div><!-- /.page-content -->
-				</div><!-- /.main-content -->
+					<!-- /.page-content -->
+				<!-- /.main-content -->
 			</div><!-- /.main-container-inner -->
 			<a href="#" id="btn-scroll-up" class="btn-scroll-up btn btn-sm btn-inverse">
 				<i class="icon-double-angle-up icon-only bigger-110"></i>
@@ -157,3 +145,42 @@
 		</script>
 	</body>
 </html>
+
+				</div></div>
+			</div>
+		</div>
+	</div>
+</main>
+<?php include('footer.php'); ?>
+</body>
+</html>
+<script type="text/javascript">
+							try{ace.settings.check('breadcrumbs' , 'fixed')}catch(e){}
+						</script>
+<script type="text/javascript">
+			window.jQuery || document.write("<script src='<?php echo site_url();?>/assets/js/jquery-2.0.3.min.js'>"+"<"+"/script>");
+		</script>
+<script type="text/javascript">
+			if("ontouchend" in document) document.write("<script src='<?php echo site_url();?>assets/js/jquery.mobile.custom.min.js'>"+"<"+"/script>");
+		</script>
+<script type="text/javascript">
+			jQuery(function($) {
+		
+				//jquery accordion
+				$( "#accordion" ).accordion({
+					collapsible: true ,
+					heightStyle: "content",
+					animate: 250,
+					header: ".accordion-header"
+				}).sortable({
+					axis: "y",
+					handle: ".accordion-header",
+					stop: function( event, ui ) {
+						// IE doesn't register the blur when sorting
+						// so trigger focusout handlers to remove .ui-state-focus
+						ui.item.children( ".accordion-header" ).triggerHandler( "focusout" );
+					}
+				});
+			});
+		</script>
+

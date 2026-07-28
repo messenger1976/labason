@@ -1,30 +1,31 @@
-		<link rel="stylesheet" href="<?php echo site_url();?>assets/css/datepicker.css" />
-		<link rel="stylesheet" href="<?php echo site_url();?>assets/css/bootstrap-timepicker.css" />
-		<link rel="stylesheet" href="<?php echo site_url();?>assets/css/daterangepicker.css" />
-        <div class="main-content">
-					<div class="breadcrumbs" id="breadcrumbs">
-						<script type="text/javascript">
-							try{ace.settings.check('breadcrumbs' , 'fixed')}catch(e){}
-						</script>
-						<ul class="breadcrumb">
-							<li>
-								<i class="icon-home home-icon"></i>
-								<a href="<?php echo ADMIN_URL;?>dashboard">Home</a>
-							</li>
-							<li>
-								<a href="<?php echo ADMIN_URL;?>payrols">Add Employees</a>
-							</li>
-							<li class="active">Employee Invoice</li>
-						</ul><!-- .breadcrumb -->
-						<div class="nav-search" id="nav-search">
-					</div><!-- #nav-search -->
+<main id="js-page-content" role="main" class="page-content">
+	<ol class="breadcrumb page-breadcrumb">
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>">Home</a></li>
+		<li class="breadcrumb-item active">Page</li>
+		<li class="position-absolute pos-top pos-right d-none d-sm-block"><span class="js-get-date"></span></li>
+	</ol>
+	<div class="subheader">
+		<h1 class="subheader-title">
+			<i class="subheader-icon fal fa-th-list"></i>
+			Manage <span class="fw-300">Order Invoice</span>
+		</h1>
+	</div>
+
+	<div class="row">
+		<div class="col-xl-12">
+			<div class="panel">
+				<div class="panel-hdr"><h2>Order Invoice</h2>
+					<div class="panel-toolbar">
+						<button class="btn btn-panel" data-action="panel-collapse" data-toggle="tooltip" data-offset="0,10" data-original-title="Collapse"></button>
+						<button class="btn btn-panel" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
 					</div>
-					<div class="page-content">
-						<div class="row">
-							<div class="col-xs-12">
+				</div>
+				<div class="panel-container show"><div class="panel-content">
+<div class="row">
+							<div class="col-12">
 								<!-- PAGE CONTENT BEGINS -->
 								<div class="row">
-									<div class="col-xs-12">
+									<div class="col-12">
 										<h3 class="header smaller lighter blue"><i><img src="<?php echo site_url();?>/assets/images/orders.png" width="23" height="24" /></i> Employee Invoice </h3>
 										
                    <span style="font-weight:bold; color:#0F3;">   <?PHP echo $this->session->flashdata('msg_succ'); ?> </span>                 
@@ -247,3 +248,40 @@
 		</script>
 	</body>
 </html>
+
+				</div></div>
+			</div>
+		</div>
+	</div>
+</main>
+<?php include('footer.php'); ?>
+</body>
+</html>
+<script type="text/javascript">
+							try{ace.settings.check('breadcrumbs' , 'fixed')}catch(e){}
+						</script>
+<script type="text/javascript">
+			window.jQuery || document.write("<script src='<?php echo site_url();?>/assets/js/jquery-2.0.3.min.js'>"+"<"+"/script>");
+		</script>
+<script type="text/javascript">
+			if("ontouchend" in document) document.write("<script src='<?php echo site_url();?>/assets/js/jquery.mobile.custom.min.js'>"+"<"+"/script>");
+		</script>
+<script type="text/javascript">
+			jQuery(function($) {
+				$('.date-picker').datepicker({autoclose:true}).next().on(ace.click_event, function(){
+					$(this).prev().focus();
+				});
+				$('input[name=date-range-picker]').daterangepicker().prev().on(ace.click_event, function(){
+					$(this).next().focus();
+				});
+				
+				$('#timepicker1').timepicker({
+					minuteStep: 1,
+					showSeconds: true,
+					showMeridian: false
+				}).next().on(ace.click_event, function(){
+					$(this).prev().focus();
+				});
+			})
+		</script>
+

@@ -1,75 +1,31 @@
-<!-- MAIN PANEL -->
-		<div id="main" role="main">
+<main id="js-page-content" role="main" class="page-content">
+	<ol class="breadcrumb page-breadcrumb">
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL;?>">Home</a></li>
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL;?>addcustomer">customer</a></li>
+		<li class="breadcrumb-item active">search</li>
+		<li class="position-absolute pos-top pos-right d-none d-sm-block"><span class="js-get-date"></span></li>
+	</ol>
+	<div class="subheader">
+		<h1 class="subheader-title">
+			<i class="subheader-icon fal fa-user-friends"></i>
+			Manage <span class="fw-300">Addmetercustomerreading Search</span>
+		</h1>
+	</div>
 
-			<!-- RIBBON -->
-			<div id="ribbon">
 
-				<span class="ribbon-button-alignment"> 
-					<span id="refresh" class="btn btn-ribbon" data-action="resetWidgets" data-title="refresh"  rel="tooltip" data-placement="bottom" data-original-title="<i class='text-warning fa fa-warning'></i> Warning! This will reset all your widget settings." data-html="true">
-						<i class="fa fa-refresh"></i>
-					</span> 
-				</span>
-
-				<!-- breadcrumb -->
-				<ol class="breadcrumb">
-					<li><a href="<?php echo ADMIN_URL;?>">Home</a></li>
-					<li><a href="<?php echo ADMIN_URL;?>addcustomer">customer</a></li>
-					<li>search</li>
-				</ol>
-				
-			</div>
-			<!-- END RIBBON -->
-
-			<!-- MAIN CONTENT -->
-			<div id="content">
-
-				<div class="row">
-					<div class="col-xs-12 col-sm-7 col-md-7 col-lg-4">
-						<h1 class="page-title txt-color-blueDark"><i class="glyphicon glyphicon-search"></i>&nbsp;search <span>>  Meter Customer-Search  </span></h1>
-					</div>
-					<div class="col-xs-12 col-sm-5 col-md-5 col-lg-8">
-						<ul id="sparks" class="">
-							<li class="sparks-info">
-							<?php 
-							     $income1 = $this->comm_model->get_income_metercustomer();
-							     extract($income1);
-								 $income2 = $this->comm_model->get_income_monthlycustomer();
-								 extract($income2);
-								 $intotal = $total1 + $total2;
-							?>
-								<h5> Income <span class="txt-color-blue">PHP <?php print_r(number_format($intotal,2));?></span></h5>
-								<div class="sparkline txt-color-blue hidden-mobile hidden-md hidden-sm">
-									
-								</div>
-							</li>
-							<?php
-							     $expense1 = $this->my_model->get_outcome_expenses();
-							     extract($expense1);
-								 $expense2 = $this->my_model->get_outcome_payroll();
-								 extract($expense2);
-								 $extotal = $extotal1 + $extotal2;
-							?>
-							<li class="sparks-info">
-								<h5> Expense <span class="txt-color-purple">PHP <?php print_r(number_format($extotal,2));?></span></h5>
-								<div class="sparkline txt-color-purple hidden-mobile hidden-md hidden-sm">
-									
-								</div>
-							</li>
-							<?php 
-							     $total_customer = $this->my_model->total_customer();
-							     extract($total_customer); 
-							?>
-							<li class="sparks-info">
-								<h5> Total Customer <span class="txt-color-greenDark">&nbsp;<?php print_r($count_id);?></span></h5>
-								<div class="sparkline txt-color-greenDark hidden-mobile hidden-md hidden-sm">
-									
-								</div>
-							</li>
-						</ul>
+	<div class="row">
+		<div class="col-xl-12">
+			<div class="panel">
+				<div class="panel-hdr">
+					<h2>Addmetercustomerreading Search <span class="fw-300"><i>Details</i></span></h2>
+					<div class="panel-toolbar">
+						<button class="btn btn-panel" data-action="panel-collapse" data-toggle="tooltip" data-offset="0,10" data-original-title="Collapse"></button>
+						<button class="btn btn-panel" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
 					</div>
 				</div>
-				<!-- widget grid -->
-				<section id="widget-grid" class="">
+				<div class="panel-container show">
+					<div class="panel-content">
+<section id="widget-grid" class="">
 
 					<!-- row -->
 
@@ -82,7 +38,7 @@
 								<!-- your contents here -->
 								<div class="panel panel-default">
 									
-									<div class="widget-body">
+									
 				
 										<div class="form-horizontal" >
 										  	
@@ -163,538 +119,16 @@
 
 				</section>
 				<!-- end widget grid -->
-
+					</div>
+				</div>
 			</div>
-			<!-- END MAIN CONTENT -->
-
 		</div>
-		<!-- END MAIN PANEL -->
-		
-
-
-
-        				<!-- Modal -->
-				<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-					<div class="modal-dialog">
-						<div class="modal-content">
-							<div class="modal-header">
-								<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
-									&times;
-								</button>
-								<h4 class="modal-title" id="myModalLabel">Edit Customer Meter Reading</h4>
-							</div>
-							<div class="modal-body">
-								
-                                <form name="frm_update" id="frm_update" action="" method="POST">
-                                    <div class="row">
-                                        <div class="col-lg-12 controls">
-                                            <div class="form-group"> 
-                                                <span class="input-group-addon"><strong>Billing Period : </strong></span>
-                                                <input class="form-control" type="text" id="billing_period" name="billing_period" style="background-color:yellow;" readonly>
-                                                <?php echo form_error('billing_period'); ?>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-lg-12 controls">
-                                            <div class="form-group"> 
-                                                <span class="input-group-addon"><strong>Previous Reading : </strong></span>
-                                                <input class="form-control" type="text" id="previous_reading" name="previous_reading" style="background-color:white;" value="0" required>
-                                                <?php echo form_error('previous_reading'); ?>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-lg-12 controls">
-                                            <div class="form-group"> 
-                                                <span class="input-group-addon"><strong>Current Reading : <i style="color:red;">*</i></strong></span>
-                                                <input class="form-control" type="text" id="current_reading" name="current_reading" required>
-                                                <?php echo form_error('current_reading'); ?>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-lg-12 controls">
-                                            <div class="form-group"> 
-                                                <span class="input-group-addon"><strong>Consumed : </strong></span>
-                                                <input class="form-control" type="text" id="consumed" name="consumed" style="background-color:white;">
-                                                <?php echo form_error('consumed'); ?>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-lg-12 controls">
-                                            <div class="form-group"> 
-                                                <span class="input-group-addon"><strong>Current Bill : </strong></span>
-                                                <input class="form-control" type="text" id="current_bill" name="current_bill" style="background-color:white;">
-                                                <?php echo form_error('current_bill'); ?>
-                                            </div>
-                                        </div>
-                                    </div>
-									<div class="row">
-                                        <div class="col-lg-12 controls">
-                                            <div class="form-group"> 
-                                                <span class="input-group-addon"><strong>WM Maintenance Fee : </strong></span>
-                                                <input class="form-control" type="text" id="maintenance_fee" name="maintenance_fee" style="background-color:white;">
-                                                <?php echo form_error('maintenance_fee'); ?>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-lg-12 controls">
-                                            <div class="form-group"> 
-                                                <span class="input-group-addon"><strong>Franchise Tax % : </strong></span>
-                                                <input class="form-control" type="text" id="franchise_fee_percent" name="franchise_fee_percent" style="background-color:white;">
-                                                <?php echo form_error('franchise_fee_percent'); ?>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-lg-12 controls">
-                                            <div class="form-group"> 
-                                                <span class="input-group-addon"><strong>Franchise Tax Amount : </strong></span>
-                                                <input class="form-control" type="text" id="franchise_fee_amount" name="franchise_fee_amount" style="background-color:white;" readonly>
-                                                <?php echo form_error('franchise_fee_amount'); ?>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-lg-12 controls">
-                                            <div class="form-group"> 
-                                                <span class="input-group-addon"><strong>SC Discount : </strong></span>
-                                                <input class="form-control" type="text" id="sc_discount" name="sc_discount" style="background-color:white;">
-                                                <?php echo form_error('sc_discount'); ?>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-lg-12 controls">
-                                            <div class="form-group"> 
-                                                <span class="input-group-addon"><strong>Arrears : </strong></span>
-                                                <input class="form-control" type="text" id="arrears" name="arrears" style="background-color:white;">
-                                                <?php echo form_error('arrears'); ?>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-lg-12 controls">
-                                            <div class="form-group"> 
-                                                <span class="input-group-addon"><strong>Amt before due date : </strong></span>
-                                                <input class="form-control" type="text" id="total_amount" name="total_amount" style="background-color:white;">
-                                                <?php echo form_error('arrears'); ?>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-lg-12 controls">
-                                            <div class="form-group"> 
-                                                <span class="input-group-addon"><strong>Amt after due date : </strong></span>
-                                                <input class="form-control" type="text" id="penalty" name="penalty" style="background-color:white;">
-                                                <?php echo form_error('arrears'); ?>
-                                            </div>
-                                        </div>
-                                    </div>
-									<div class="row">
-										<div class="col-lg-12 controls">
-											<div class="form-group">
-												<span class="input-group-addon"><strong>Compute Penalty : </strong></span>
-												<div style="padding:10px 12px; border:1px solid #ddd; border-top:0;">
-													<label style="margin-right:20px;"><input type="radio" name="compute_penalty" value="1" checked> Yes</label>
-													<label><input type="radio" name="compute_penalty" value="0"> No</label>
-												</div>
-											</div>
-										</div>
-									</div>
-                                    <div class="row">
-                                        <div class="col-lg-12 controls">
-                                            <div class="form-group"> 
-                                                <span class="input-group-addon"><strong>Reading date : </strong></span>
-                                                <input class="form-control" type="text" id="reading_date" name="reading_date" style="background-color:white;">
-                                                <?php echo form_error('reading_date'); ?>
-                                            </div>
-                                        </div>
-                                    </div>
-									<div class="row">
-                                        <div class="col-lg-12 controls">
-                                            <div class="form-group"> 
-                                                <span class="input-group-addon"><strong>Customer Status : </strong></span>
-                                                <input class="form-control" type="text" id="customer_status" name="customer_status" style="background-color:white;">
-                                                <?php echo form_error('customer_status'); ?>
-                                            </div>
-                                        </div>
-                                    </div>
-								</form>
-				
-							</div>
-							<div class="modal-footer">
-								<button type="button" class="btn btn-default" data-dismiss="modal">
-									Cancel
-								</button>
-								<button type="button" class="btn btn-primary" id="btn_save" data-dismiss="modal">
-									Update
-								</button>
-							</div>
-						</div><!-- /.modal-content -->
-					</div><!-- /.modal-dialog -->
-				</div><!-- /.modal -->
-
-				<!-- Add Billing Period Modal -->
-				<div class="modal fade" id="addBillingModal" tabindex="-1" role="dialog" aria-labelledby="addBillingLabel" aria-hidden="true">
-					<div class="modal-dialog">
-						<div class="modal-content">
-							<div class="modal-header">
-								<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
-									&times;
-								</button>
-								<h4 class="modal-title" id="addBillingLabel">Add Billing Period</h4>
-								<button type="button" class="btn btn-xs btn-warning pull-right" id="btn_edit_modal" style="margin-right:10px;">Edit</button>
-							</div>
-							<div class="modal-body">
-								<form id="frm_add_billing" name="frm_add_billing" action="" method="POST" class="form-horizontal">
-									<div class="row">
-										<div class="col-lg-12 controls">
-											<div class="form-group"> 
-												<span class="input-group-addon"><strong>Billing Period : </strong></span>
-												<select id="billing_period_select" name="billing_period_select" class="form-control" required>
-													<option value="">-- Select Billing Period --</option>
-													<?php
-														// show last 6 months as default options
-														for ($i = 0; $i < 6; $i++) {
-															$val = date('Y-m', strtotime("-$i month"));
-															$label = date('F Y', strtotime("-$i month"));
-															echo "<option value=\"{$val}\">{$label}</option>";
-														}
-													?>
-												</select>
-												<?php echo form_error('billing_period_select'); ?>
-											</div>
-										</div>
-									</div>
-									<div class="row">
-										<div class="col-lg-12 controls">
-											<div class="form-group"> 
-												<span class="input-group-addon"><strong>Previous Reading : </strong></span>
-												<input class="form-control" type="text" id="previous_reading_add" name="previous_reading_add" value="" required />
-												<?php echo form_error('previous_reading_add'); ?>
-											</div>
-										</div>
-									</div>
-									<div class="row">
-										<div class="col-lg-12 controls">
-											<div class="form-group"> 
-												<span class="input-group-addon"><strong>Current Reading : <i style="color:red;">*</i></strong></span>
-												<input class="form-control" type="text" id="current_reading_add" name="current_reading_add" required />
-												<?php echo form_error('current_reading_add'); ?>
-											</div>
-										</div>
-									</div>
-									<div class="row">
-										<div class="col-lg-12 controls">
-											<div class="form-group"> 
-												<span class="input-group-addon"><strong>Consumed : </strong></span>
-												<input class="form-control" type="text" id="consumed_add" name="consumed_add" style="background-color:white;" required>
-												<?php echo form_error('consumed_add'); ?>
-											</div>
-										</div>
-									</div>
-									<div class="row">
-										<div class="col-lg-12 controls">
-											<div class="form-group"> 
-												<span class="input-group-addon"><strong>Current Bill : </strong></span>
-												<input class="form-control" type="text" id="current_bill_add" name="current_bill_add" style="background-color:white;" required>
-												<?php echo form_error('current_bill_add'); ?>
-											</div>
-										</div>
-									</div>
-									<div class="row">
-										<div class="col-lg-12 controls">
-											<div class="form-group"> 
-												<span class="input-group-addon"><strong>WM Maintenance Fee : </strong></span>
-												<input class="form-control" type="text" id="maintenance_fee_add" name="maintenance_fee_add" style="background-color:white;" required>
-												<?php echo form_error('maintenance_fee_add'); ?>
-											</div>
-										</div>
-									</div>
-									<div class="row">
-										<div class="col-lg-12 controls">
-											<div class="form-group"> 
-												<span class="input-group-addon"><strong>Franchise Tax % : </strong></span>
-												<input class="form-control" type="text" id="franchise_fee_percent_add" name="franchise_fee_percent_add" style="background-color:white;" required>
-												<?php echo form_error('franchise_fee_percent_add'); ?>
-											</div>
-										</div>
-									</div>
-									<div class="row">
-										<div class="col-lg-12 controls">
-											<div class="form-group"> 
-												<span class="input-group-addon"><strong>Franchise Tax Amount : </strong></span>
-												<input class="form-control" type="text" id="franchise_fee_amount_add" name="franchise_fee_amount_add" style="background-color:white;" readonly required>
-												<?php echo form_error('franchise_fee_amount_add'); ?>
-											</div>
-										</div>
-									</div>
-									<div class="row">
-										<div class="col-lg-12 controls">
-											<div class="form-group"> 
-												<span class="input-group-addon"><strong>SC Discount : </strong></span>
-												<input class="form-control" type="text" id="sc_discount_add" name="sc_discount_add" style="background-color:white;" required>
-												<?php echo form_error('sc_discount_add'); ?>
-											</div>
-										</div>
-									</div>
-									<div class="row">
-										<div class="col-lg-12 controls">
-											<div class="form-group"> 
-												<span class="input-group-addon"><strong>Arrears : </strong></span>
-												<input class="form-control" type="text" id="arrears_add" name="arrears_add" style="background-color:white;" required>
-												<?php echo form_error('arrears_add'); ?>
-											</div>
-										</div>
-									</div>
-									<div class="row">
-										<div class="col-lg-12 controls">
-											<div class="form-group"> 
-												<span class="input-group-addon"><strong>Amt before due date : </strong></span>
-												<input class="form-control" type="text" id="total_amount_add" name="total_amount_add" style="background-color:white;" required>
-												<?php echo form_error('total_amount_add'); ?>
-											</div>
-										</div>
-									</div>
-									<div class="row">
-										<div class="col-lg-12 controls">
-											<div class="form-group"> 
-												<span class="input-group-addon"><strong>Amt after due date : </strong></span>
-												<input class="form-control" type="text" id="penalty_add" name="penalty_add" style="background-color:white;" required>
-												<?php echo form_error('penalty_add'); ?>
-											</div>
-										</div>
-									</div>
-									<div class="row">
-										<div class="col-lg-12 controls">
-											<div class="form-group"> 
-												<span class="input-group-addon"><strong>Reading date : </strong></span>
-												<input class="form-control" type="text" id="reading_date_add" name="reading_date_add" style="background-color:white;" required>
-												<?php echo form_error('reading_date_add'); ?>
-											</div>
-										</div>
-									</div>
-									<div class="row">
-										<div class="col-lg-12 controls">
-											<div class="form-group"> 
-												<span class="input-group-addon"><strong>Customer Status : </strong></span>
-												<input class="form-control" type="text" id="customer_status_add" name="customer_status_add" style="background-color:white;" required>
-												<?php echo form_error('customer_status_add'); ?>
-											</div>
-										</div>
-									</div>
-								</form>
-							</div>
-							<div class="modal-footer">
-								<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-								<button type="button" class="btn btn-primary" id="save_billing_period">Save</button>
-							</div>
-						</div><!-- /.modal-content -->
-					</div><!-- /.modal-dialog -->
-				</div><!-- /.modal -->
-
-
-
-		<?php include('footer.php');?>
-
-	</body>
-
+	</div>
+</main>
+<?php include('footer.php'); ?>
+</body>
 </html>
-
-<!-- PAGE RELATED PLUGIN(S) -->
-		<script src="<?php echo base_url();?>js/plugin/datatables/jquery.dataTables.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.colVis.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.tableTools.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.bootstrap.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatable-responsive/datatables.responsive.min.js"></script>
-		<!-- SweetAlert2 for nicer alerts -->
-		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-		<script type="text/javascript">
-		
-		// DO NOT REMOVE : GLOBAL FUNCTIONS!
-		
-		$(document).ready(function() {
-			
-			pageSetUp();
-			
-			/* // DOM Position key index //
-		
-			l - Length changing (dropdown)
-			f - Filtering input (search)
-			t - The Table! (datatable)
-			i - Information (records)
-			p - Pagination (paging)
-			r - pRocessing 
-			< and > - div elements
-			<"#id" and > - div with an id
-			<"class" and > - div with a class
-			<"#id.class" and > - div with an id and class
-			
-			Also see: http://legacy.datatables.net/usage/features
-			*/	
-	
-			/* BASIC ;*/
-				var responsiveHelper_dt_basic = undefined;
-				var responsiveHelper_datatable_fixed_column = undefined;
-				var responsiveHelper_datatable_col_reorder = undefined;
-				var responsiveHelper_datatable_tabletools = undefined;
-				
-				var breakpointDefinition = {
-					tablet : 1024,
-					phone : 480
-				};
-	
-				$('#dt_basic').dataTable({
-					"pageLength": -1, // Show all rows by default
-					"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-12 hidden-xs'l>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
-					"autoWidth" : true,
-			        "oLanguage": {
-					    "sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-					},
-					"preDrawCallback" : function() {
-						// Initialize the responsive datatables helper once.
-						if (!responsiveHelper_dt_basic) {
-							responsiveHelper_dt_basic = new ResponsiveDatatablesHelper($('#dt_basic'), breakpointDefinition);
-						}
-					},
-					"rowCallback" : function(nRow) {
-						responsiveHelper_dt_basic.createExpandIcon(nRow);
-					},
-					"drawCallback" : function(oSettings) {
-						responsiveHelper_dt_basic.respond();
-					}
-				});
-	
-			/* END BASIC */
-			
-			/* COLUMN FILTER  */
-		    var otable = $('#datatable_fixed_column').DataTable({
-		    	//"bFilter": false,
-		    	//"bInfo": false,
-		    	//"bLengthChange": false
-		    	//"bAutoWidth": false,
-		    	//"bPaginate": false,
-		    	//"bStateSave": true // saves sort state using localStorage
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6 hidden-xs'f><'col-sm-6 col-xs-12 hidden-xs'<'toolbar'>>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
-				"autoWidth" : true,
-				"oLanguage": {
-					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-				},
-				"preDrawCallback" : function() {
-					// Initialize the responsive datatables helper once.
-					if (!responsiveHelper_datatable_fixed_column) {
-						responsiveHelper_datatable_fixed_column = new ResponsiveDatatablesHelper($('#datatable_fixed_column'), breakpointDefinition);
-					}
-				},
-				"rowCallback" : function(nRow) {
-					responsiveHelper_datatable_fixed_column.createExpandIcon(nRow);
-				},
-				"drawCallback" : function(oSettings) {
-					responsiveHelper_datatable_fixed_column.respond();
-				}		
-			
-		    });
-		    
-		    // custom toolbar
-		    $("div.toolbar").html('<div class="text-right"><img src="img/logo.png" alt="SmartAdmin" style="width: 111px; margin-top: 3px; margin-right: 10px;"></div>');
-		    	   
-		    // Apply the filter
-		    $("#datatable_fixed_column thead th input[type=text]").on( 'keyup change', function () {
-		    	
-		        otable
-		            .column( $(this).parent().index()+':visible' )
-		            .search( this.value )
-		            .draw();
-		            
-		    } );
-		    /* END COLUMN FILTER */   
-	    
-			/* COLUMN SHOW - HIDE */
-			$('#datatable_col_reorder').dataTable({
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-6 hidden-xs'C>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-sm-6 col-xs-12'p>>",
-				"autoWidth" : true,
-				"oLanguage": {
-					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-				},
-				"preDrawCallback" : function() {
-					// Initialize the responsive datatables helper once.
-					if (!responsiveHelper_datatable_col_reorder) {
-						responsiveHelper_datatable_col_reorder = new ResponsiveDatatablesHelper($('#datatable_col_reorder'), breakpointDefinition);
-					}
-				},
-				"rowCallback" : function(nRow) {
-					responsiveHelper_datatable_col_reorder.createExpandIcon(nRow);
-				},
-				"drawCallback" : function(oSettings) {
-					responsiveHelper_datatable_col_reorder.respond();
-				}			
-			});
-			
-			/* END COLUMN SHOW - HIDE */
-	
-			/* TABLETOOLS */
-			$('#datatable_tabletools').dataTable({
-				
-				// Tabletools options: 
-				//   https://datatables.net/extensions/tabletools/button_options
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-6 hidden-xs'T>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-sm-6 col-xs-12'p>>",
-				"oLanguage": {
-					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-				},		
-		        "oTableTools": {
-		        	 "aButtons": [
-		             "copy",
-		             "csv",
-		             "xls",
-		                {
-		                    "sExtends": "pdf",
-		                    "sTitle": "SmartAdmin_PDF",
-		                    "sPdfMessage": "SmartAdmin PDF Export",
-		                    "sPdfSize": "letter"
-		                },
-		             	{
-	                    	"sExtends": "print",
-	                    	"sMessage": "Generated by SmartAdmin <i>(press Esc to close)</i>"
-	                	}
-		             ],
-		            "sSwfPath": "js/plugin/datatables/swf/copy_csv_xls_pdf.swf"
-		        },
-				"autoWidth" : true,
-				"preDrawCallback" : function() {
-					// Initialize the responsive datatables helper once.
-					if (!responsiveHelper_datatable_tabletools) {
-						responsiveHelper_datatable_tabletools = new ResponsiveDatatablesHelper($('#datatable_tabletools'), breakpointDefinition);
-					}
-				},
-				"rowCallback" : function(nRow) {
-					responsiveHelper_datatable_tabletools.createExpandIcon(nRow);
-				},
-				"drawCallback" : function(oSettings) {
-					responsiveHelper_datatable_tabletools.respond();
-				}
-			});
-			
-			/* END TABLETOOLS */
-
-            
-            
-		
-		})
-
-		</script>
-		<script type="text/javascript">
+<script type="text/javascript">
 		
 		function customer_type_values(){
 			$("#showcustomers").hide();			
@@ -707,8 +141,7 @@
 		}
 	
 		</script>
-		
-		<script type="text/javascript">
+<script type="text/javascript">
 var curDate = '<?php echo date('d-m-Y') ?>';	
 function fun_calendor(field){
 	$("#"+field).focus();
@@ -1025,7 +458,7 @@ function amount_formatted(amount){
 	}).format(amount);
 	return formatted;
 }
-</script>	
+</script>
 <script type="text/javascript">
 $(document).ready(function(){
 	// show Add Billing Period modal when button clicked
@@ -1220,3 +653,4 @@ $(document).ready(function(){
 	});
 });
 </script>
+

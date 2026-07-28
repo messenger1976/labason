@@ -1,156 +1,120 @@
+<?php
+	// Match addcustomer KPI source (grand_total income, same expense/customer counts)
+	$sa4_loading_label = 'Leaking Ledger';
+	$sa4_dt_entity = 'leaking records';
+	$sa4_panel_id = 'panel-leakingentry';
+
+	$income1 = $this->customer_model->get_income_metercustomer();
+	extract($income1);
+	$income2 = $this->customer_model->get_income_monthlycustomer();
+	extract($income2);
+	$intotal = (isset($total1) ? (float)$total1 : 0) + (isset($total2) ? (float)$total2 : 0);
+
+	$expense1 = $this->customer_model->get_outcome_expenses();
+	extract($expense1);
+	$expense2 = $this->customer_model->get_outcome_payroll();
+	extract($expense2);
+	$extotal = (isset($extotal1) ? (float)$extotal1 : 0) + (isset($extotal2) ? (float)$extotal2 : 0);
+
+	$total_customer = $this->customer_model->total_customer();
+	extract($total_customer);
+?>
 <style>
-	.select2-container{
-		width: 100% !important;
-		
-	}
-	.setStatus{
-		cursor: pointer;
-	}
-	/* Fix Select2 dropdown z-index in modals */
-	.select2-dropdown {
-		z-index: 9999 !important;
-	}
-	.select2-container--open {
-		z-index: 9999 !important;
-	}
-	
-
+	.select2-container { width: 100% !important; }
+	.setStatus { cursor: pointer; }
+	.select2-dropdown { z-index: 9999 !important; }
+	.select2-container--open { z-index: 9999 !important; }
+	#myModal .modal-body { max-height: 70vh; overflow-y: auto; }
 </style>
-<!-- MAIN PANEL -->
-		<div id="main" role="main">
+<link rel="stylesheet" media="screen, print" href="<?php echo base_url(); ?>sa4/css/formplugins/select2/select2.bundle.css">
+<link rel="stylesheet" media="screen, print" href="<?php echo base_url(); ?>sa4/css/formplugins/bootstrap-datepicker/bootstrap-datepicker.css">
+<main id="js-page-content" role="main" class="page-content">
+	<ol class="breadcrumb page-breadcrumb">
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>">Home</a></li>
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>Leakingentry">Leaking Entry</a></li>
+		<li class="breadcrumb-item active">List View</li>
+		<li class="position-absolute pos-top pos-right d-none d-sm-block"><span class="js-get-date"></span></li>
+	</ol>
 
-			<!-- RIBBON -->
-			<div id="ribbon">
-
-				<span class="ribbon-button-alignment"> 
-					<span id="refresh" class="btn btn-ribbon" data-action="resetWidgets" data-title="refresh"  rel="tooltip" data-placement="bottom" data-original-title="<i class='text-warning fa fa-warning'></i> Warning! This will reset all your widget settings." data-html="true">
-						<i class="fa fa-refresh"></i>
-					</span> 
+	<div class="subheader">
+		<h1 class="subheader-title">
+			<i class="subheader-icon fal fa-tint"></i>
+			Manage <span class="fw-300">Leaking Ledger</span>
+		</h1>
+		<div class="subheader-block d-lg-flex align-items-center">
+			<div class="d-inline-flex flex-column justify-content-center mr-3">
+				<span class="fw-300 fs-xs d-block opacity-50">
+					<small>INCOME</small>
 				</span>
-
-				<!-- breadcrumb -->
-				<ol class="breadcrumb">
-					<li><a href="<?php echo ADMIN_URL;?>dashboard">Home</a></li>
-					<li><a href="<?php echo ADMIN_URL;?>leakingentry"> Leaking Ledger Listing </a></li>
-					
-				</ol>
-				
+				<span class="fw-500 fs-xl d-block color-primary-500">
+					₱ <?php echo number_format($intotal, 2); ?>
+				</span>
 			</div>
-			<!-- END RIBBON -->
+			<span class="sparklines hidden-lg-down" sparkType="bar" sparkBarColor="#886ab5" sparkHeight="32px" sparkBarWidth="5px" values="3,4,3,6,7,3,3,6,2,6,4"></span>
+		</div>
+		<div class="subheader-block d-lg-flex align-items-center border-faded border-right-0 border-top-0 border-bottom-0 ml-3 pl-3">
+			<div class="d-inline-flex flex-column justify-content-center mr-3">
+				<span class="fw-300 fs-xs d-block opacity-50">
+					<small>EXPENSE</small>
+				</span>
+				<span class="fw-500 fs-xl d-block color-danger-500">
+					₱ <?php echo number_format($extotal, 2); ?>
+				</span>
+			</div>
+			<span class="sparklines hidden-lg-down" sparkType="bar" sparkBarColor="#fe6bb0" sparkHeight="32px" sparkBarWidth="5px" values="1,4,3,6,5,3,9,6,5,9,7"></span>
+		</div>
+		<div class="subheader-block d-lg-flex align-items-center border-faded border-right-0 border-top-0 border-bottom-0 ml-3 pl-3">
+			<div class="d-inline-flex flex-column justify-content-center mr-3">
+				<span class="fw-300 fs-xs d-block opacity-50">
+					<small>TOTAL CUSTOMER</small>
+				</span>
+				<span class="fw-500 fs-xl d-block color-success-500">
+					<?php echo (int) $count_id; ?>
+				</span>
+			</div>
+			<span class="sparklines hidden-lg-down" sparkType="bar" sparkBarColor="#1dc9b7" sparkHeight="32px" sparkBarWidth="5px" values="2,5,3,7,4,6,3,8,5,4,6"></span>
+		</div>
+	</div>
 
-			<!-- MAIN CONTENT -->
-			<div id="content">
+	<?php if ($this->session->flashdata('msg_succ')) { ?>
+	<div class="alert alert-success alert-dismissible fade show" role="alert">
+		<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+			<span aria-hidden="true"><i class="fal fa-times"></i></span>
+		</button>
+		<strong>Success!</strong> <?php echo $this->session->flashdata('msg_succ'); ?>
+	</div>
+	<?php } ?>
 
-				<div class="row">
-					<div class="col-xs-12 col-sm-7 col-md-7 col-lg-4">
-						<h1 class="page-title txt-color-blueDark"><i class="fa-fw fa fa-home"></i> View <span>> Leaking Ledger </span></h1>
+	<section id="widget-grid" class="">
+		<link rel="stylesheet" media="screen, print" href="<?php echo base_url(); ?>sa4/css/datagrid/datatables/datatables.bundle.css">
+		<div class="row">
+			<div class="col-xl-12">
+				<div id="panel-leakingentry" class="panel">
+					<div class="panel-hdr">
+						<h2>Leaking <span class="fw-300"><i>Ledger</i></span></h2>
+						<div class="panel-toolbar">
+							<button type="button" class="btn btn-primary btn-sm waves-effect waves-themed mr-2" id="add_record">
+								<i class="fal fa-plus mr-1"></i> Add Record
+							</button>
+							<button class="btn btn-panel" data-action="panel-collapse" data-toggle="tooltip" data-offset="0,10" data-original-title="Collapse"></button>
+							<button class="btn btn-panel" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
+						</div>
 					</div>
-					<div class="col-xs-12 col-sm-5 col-md-5 col-lg-8">
-						<ul id="sparks" class="">
-							<li class="sparks-info">
-							<?php 
-							     $income1 = $this->comm_model->get_income_metercustomer();
-							     extract($income1);
-								 $income2 = $this->comm_model->get_income_monthlycustomer();
-								 extract($income2);
-								 $intotal = $total1 + $total2;
-							?>
-								<h5> Income <span class="txt-color-blue">PHP <?php print_r(number_format($intotal,2));?></span></h5>
-								<div class="sparkline txt-color-blue hidden-mobile hidden-md hidden-sm">
-									
-								</div>
-							</li>
-							<?php
-							     $expense1 = $this->comm_model->get_outcome_expenses();
-							     extract($expense1);
-								 $expense2 = $this->comm_model->get_outcome_payroll();
-								 extract($expense2);
-								 $extotal = $extotal1 + $extotal2;
-							?>
-							<li class="sparks-info">
-								<h5> Expense <span class="txt-color-purple">PHP <?php print_r(number_format($extotal,2));?></span></h5>
-								<div class="sparkline txt-color-purple hidden-mobile hidden-md hidden-sm">
-									
-								</div>
-							</li>
-							<?php 
-							     $total_customer = $this->comm_model->total_customer();
-							     extract($total_customer); 
-							?>
-							<li class="sparks-info">
-								<h5> Total Customer <span class="txt-color-greenDark">&nbsp;<?php print_r($count_id);?></span></h5>
-								<div class="sparkline txt-color-greenDark hidden-mobile hidden-md hidden-sm">
-									
-								</div>
-							</li>
-						</ul>
-					</div>
-				</div>
-				<!-- widget grid -->
-				<section id="widget-grid" class="">
-
-					<!-- row -->
-					<div class="row">
-				
-						<!-- NEW WIDGET START -->
-						<article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-				
-							<!-- Widget ID (each widget will need unique ID)-->
-							<div class="jarviswidget jarviswidget-color-darken" id="wid-id-0" data-widget-editbutton="false">
-								
-								<header style="height: 42px;">
-									<span class="widget-icon"> <i class="fa fa-tasks"></i> </span>
-									<p style="padding: 5px 0 0 45px;font-size: 16px;"><strong>Manage Leaking Ledger </strong>
-                                    <button class="btn btn-sm btn-primary" style="float:right;" id="add_record"  data-toggle="modal" data-target="#myModal"><i class="fa fa-plus"></i> Add Record</button>
-									</p>
-								</header>
-				
-								<!-- widget div-->
-								<div>
-								
-								<?php if($this->session->flashdata('msg_succ') != ''){?>
-									
-                                    <!--<div class="alert alert-block alert-success">
-                                        <button type="button" class="close" data-dismiss="alert">
-                                        <i class="icon-remove"></i>
-                                        </button>
-                                        <p>
-                                            <i class="icon-ok"></i>
-                                            <?php echo $this->session->flashdata('msg_succ')?$this->session->flashdata('msg_succ'):'';?>
-                                        </p>
-                                    </div>-->
-                                    <?php } ?>
-
-									<!-- widget edit box -->
-									<div class="jarviswidget-editbox">
-										<!-- This area used as dropdown edit box -->
-				
+					<div class="panel-container show">
+						<div class="panel-content">
+							<form method="post" action="<?php echo ADMIN_URL; ?>leakingentry/multi_delete" id="sa4-list-form">
+								<div class="row mb-3 align-items-end">
+									<div class="col-sm-12">
+										<button type="submit" class="btn btn-danger btn-sm waves-effect waves-themed" onclick="return deleteAllData();">
+											<i class="fal fa-trash-alt mr-1"></i> Delete Selected
+										</button>
 									</div>
-									<!-- end widget edit box -->
-									<script type="text/javascript">
-                                        function deleteAllData(){ 
-                                            var checked_num = $('input[name="delete_ids[]"]:checked').length;
-                                            if (checked_num == 0) {
-                                                alert('Select Atleast One Check Box... ');
-                                                return false;
-                                            }else if (checked_num > 0){ 
-                                                if(confirm('Confirm Delete?')==true){
-                                                    //$('#careers').submit();
-                                                    return true;
-                                                }else{
-													return false;
-												}
-                                            }
-                                        }
-                                        </script>
-				                    <form method="post" action="<?php echo ADMIN_URL;?>leakingentry/multi_delete">
-										<!-- widget content -->
-										<div class="widget-body no-padding">
-										   <table id="dt_basic" class="table table-striped table-bordered table-hover" width="100%">
+								</div>
+								<table id="dt_basic" class="table table-striped table-bordered table-hover" width="100%">
 											
 												<thead>			                
 													<tr>
-														<th data-hide="phone"><input type="checkbox"/></th>
+														<th data-hide="phone"><input type="checkbox" id="dt_select_all"/></th>
 														<th data-hide="phone">S No</th>
 														<th data-hide="expand">Customer Name</th>
 														<th data-hide="expand">Customer ID</th>
@@ -194,26 +158,26 @@
 														</td>
 														<td><?php 
 															if($row['leaking_status']==1){
-																echo '<label class="label label-danger setStatus" data-id="'.$row['leaking_id'].'" data-status="'.$row['leaking_status'].'">Pending</label>'; 
+																echo '<label class="badge badge-danger setStatus" data-id="'.$row['leaking_id'].'" data-status="'.$row['leaking_status'].'">Pending</label>'; 
 															}else if($row['leaking_status']==2){
-																echo '<label class="label label-info">Approved</label>'; 
+																echo '<label class="badge badge-info">Approved</label>'; 
 
 															}elseif($row['leaking_status']==4){
-																echo '<label class="label label-primary">Posted</label>';
+																echo '<label class="badge badge-primary">Posted</label>';
 															}elseif($row['leaking_status']==5){
-																echo '<label class="label label-success">Full Paid</label>';
+																echo '<label class="badge badge-success">Full Paid</label>';
 															}else{
-																echo '<label class="label label-default">Denied</label>'; 
+																echo '<label class="badge badge-secondary">Denied</label>'; 
 															}
 														
 														?></td>
 														<td>
 														<!--<div class="visible-md visible-lg hidden-sm hidden-xs action-buttons">
 																<a class="green" href="<?php echo ADMIN_URL;?>employee_logins/edit/<?php echo $row['id'];?>" title="Edit">
-																	<i class="fa fa-edit"></i>
+																	<i class="fal fa-edit"></i>
 																</a>
                                                                 <a class="red" href="JavaScript:if(confirm('Confirm Delete?')==true){window.location='<?php echo ADMIN_URL;?>employee_logins/delete/<?php echo $row['id'];?>';}" title="Delete">                                                                
-																	<i class="fa fa-remove"></i>
+																	<i class="fal fa-remove"></i>
 																</a>														</div>-->
 																<?php
 															if($row['leaking_status']!='4' && $row['leaking_status']!='5'){
@@ -265,7 +229,7 @@
 																</a>
 														<a href="<?php echo ADMIN_URL;?>Leakingentry/print_forms/<?php echo $row['leaking_id'];?>" target="_blank" class="tooltip-success" data-rel="tooltip" title="Print Forms">
 																	<span class="orange">
-																		<i class="fa fa-print"></i>
+																		<i class="fal fa-print"></i>
 																	</span>
 																</a>
 													</td>
@@ -276,56 +240,24 @@
 														<?php $i++;} }?>	
 												</tbody>
 											</table>
-											
-
-										</div>
-										<!-- end widget content -->
-									<!--<div>&nbsp;</div>
-									  <div class="row">
-									   <div class="col-lg-12">
-                                        	<input type="submit" class="btn btn-sm btn-primary" name="add" id="add" value="Delete All" onClick="return deleteAllData();" />
-                                         </div>
-									</div>-->	
-				                    </form>  
-									 
-									 <div>&nbsp;</div>
-								</div>
-								<!-- end widget div -->
-				
-							</div>
-							<!-- end widget -->
-				
-						</article>
-						<!-- WIDGET END -->
-				
+							</form>
+						</div>
 					</div>
-				
-					<!-- end row -->
-
-					
-
-				</section>
-				<!-- end widget grid -->
-
+				</div>
 			</div>
-			<!-- END MAIN CONTENT -->
-
 		</div>
-		<!-- END MAIN PANEL -->
+	</section>
+</main>
 
-
-        
-
-
-		<!-- Modal -->
+<!-- Modal -->
         <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="false">
-					<div class="modal-dialog">
+					<div class="modal-dialog modal-lg">
 						<div class="modal-content">
 							<div class="modal-header">
-								<button type="button" class="close" data-dismiss="modal" aria-hidden="false">
-									&times;
+								<h4 class="modal-title" id="myModalLabel">Add New Leaking Record</h4>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
 								</button>
-								<h4 class="modal-title" id="myModalLabel">Edit Customer Meter Reading</h4>
 							</div>
 							<div class="modal-body">
 								
@@ -561,222 +493,23 @@
 					</div><!-- /.modal-dialog -->
 				</div><!-- /.modal -->
 
+<?php include(__DIR__ . '/partials/sa4_dt_loading.php'); ?>
+<?php include('footer.php'); ?>
+<script src="<?php echo base_url(); ?>sa4/js/formplugins/select2/select2.bundle.js"></script>
+<script src="<?php echo base_url(); ?>sa4/js/formplugins/bootstrap-datepicker/bootstrap-datepicker.js"></script>
+<?php include(__DIR__ . '/partials/sa4_dt_init.js.php'); ?>
+<script type="text/javascript">
+$(document).ready(function() {
+	if ($.fn.datepicker) {
+		$("#payment_date").datepicker({
+			format: 'dd-mm-yyyy',
+			autoclose: true,
+			todayHighlight: true,
+			orientation: 'bottom auto'
+		});
+	}
 
-
-		<?php include('footer.php');?>
-
-	</body>
-
-</html>
-<!-- PAGE RELATED PLUGIN(S) -->
-		<script src="<?php echo base_url();?>js/plugin/datatables/jquery.dataTables.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.colVis.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.tableTools.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.bootstrap.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatable-responsive/datatables.responsive.min.js"></script>
-		<script type="text/javascript">
-		
-		// DO NOT REMOVE : GLOBAL FUNCTIONS!
-		
-		$(document).ready(function() {
-			
-			pageSetUp();
-			
-			/* // DOM Position key index //
-		
-			l - Length changing (dropdown)
-			f - Filtering input (search)
-			t - The Table! (datatable)
-			i - Information (records)
-			p - Pagination (paging)
-			r - pRocessing 
-			< and > - div elements
-			<"#id" and > - div with an id
-			<"class" and > - div with a class
-			<"#id.class" and > - div with an id and class
-			
-			Also see: http://legacy.datatables.net/usage/features
-			*/	
-	
-			/* BASIC ;*/
-				var responsiveHelper_dt_basic = undefined;
-				var responsiveHelper_datatable_fixed_column = undefined;
-				var responsiveHelper_datatable_col_reorder = undefined;
-				var responsiveHelper_datatable_tabletools = undefined;
-				
-				var breakpointDefinition = {
-					tablet : 1024,
-					phone : 480
-				};
-	
-				$('#dt_basic').dataTable({
-					"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-12 hidden-xs'l>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
-					"autoWidth" : true,
-			        "oLanguage": {
-					    "sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-					},
-					"preDrawCallback" : function() {
-						// Initialize the responsive datatables helper once.
-						if (!responsiveHelper_dt_basic) {
-							responsiveHelper_dt_basic = new ResponsiveDatatablesHelper($('#dt_basic'), breakpointDefinition);
-						}
-					},
-					"rowCallback" : function(nRow) {
-						responsiveHelper_dt_basic.createExpandIcon(nRow);
-					},
-					"drawCallback" : function(oSettings) {
-						responsiveHelper_dt_basic.respond();
-					}
-				});
-	
-			/* END BASIC */
-			
-			/* COLUMN FILTER  */
-		    var otable = $('#datatable_fixed_column').DataTable({
-		    	//"bFilter": false,
-		    	//"bInfo": false,
-		    	//"bLengthChange": false
-		    	//"bAutoWidth": false,
-		    	//"bPaginate": false,
-		    	//"bStateSave": true // saves sort state using localStorage
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6 hidden-xs'f><'col-sm-6 col-xs-12 hidden-xs'<'toolbar'>>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
-				"autoWidth" : true,
-				"oLanguage": {
-					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-				},
-				"preDrawCallback" : function() {
-					// Initialize the responsive datatables helper once.
-					if (!responsiveHelper_datatable_fixed_column) {
-						responsiveHelper_datatable_fixed_column = new ResponsiveDatatablesHelper($('#datatable_fixed_column'), breakpointDefinition);
-					}
-				},
-				"rowCallback" : function(nRow) {
-					responsiveHelper_datatable_fixed_column.createExpandIcon(nRow);
-				},
-				"drawCallback" : function(oSettings) {
-					responsiveHelper_datatable_fixed_column.respond();
-				}		
-			
-		    });
-		    
-		    // custom toolbar
-		    $("div.toolbar").html('<div class="text-right"><img src="img/logo.png" alt="SmartAdmin" style="width: 111px; margin-top: 3px; margin-right: 10px;"></div>');
-		    	   
-		    // Apply the filter
-		    $("#datatable_fixed_column thead th input[type=text]").on( 'keyup change', function () {
-		    	
-		        otable
-		            .column( $(this).parent().index()+':visible' )
-		            .search( this.value )
-		            .draw();
-		            
-		    } );
-		    /* END COLUMN FILTER */   
-	    
-			/* COLUMN SHOW - HIDE */
-			$('#datatable_col_reorder').dataTable({
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-6 hidden-xs'C>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-sm-6 col-xs-12'p>>",
-				"autoWidth" : true,
-				"oLanguage": {
-					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-				},
-				"preDrawCallback" : function() {
-					// Initialize the responsive datatables helper once.
-					if (!responsiveHelper_datatable_col_reorder) {
-						responsiveHelper_datatable_col_reorder = new ResponsiveDatatablesHelper($('#datatable_col_reorder'), breakpointDefinition);
-					}
-				},
-				"rowCallback" : function(nRow) {
-					responsiveHelper_datatable_col_reorder.createExpandIcon(nRow);
-				},
-				"drawCallback" : function(oSettings) {
-					responsiveHelper_datatable_col_reorder.respond();
-				}			
-			});
-			
-			/* END COLUMN SHOW - HIDE */
-	
-			/* TABLETOOLS */
-			$('#datatable_tabletools').dataTable({
-				
-				// Tabletools options: 
-				//   https://datatables.net/extensions/tabletools/button_options
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-6 hidden-xs'T>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-sm-6 col-xs-12'p>>",
-				"oLanguage": {
-					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-				},		
-		        "oTableTools": {
-		        	 "aButtons": [
-		             "copy",
-		             "csv",
-		             "xls",
-		                {
-		                    "sExtends": "pdf",
-		                    "sTitle": "SmartAdmin_PDF",
-		                    "sPdfMessage": "SmartAdmin PDF Export",
-		                    "sPdfSize": "letter"
-		                },
-		             	{
-	                    	"sExtends": "print",
-	                    	"sMessage": "Generated by SmartAdmin <i>(press Esc to close)</i>"
-	                	}
-		             ],
-		            "sSwfPath": "js/plugin/datatables/swf/copy_csv_xls_pdf.swf"
-		        },
-				"autoWidth" : true,
-				"preDrawCallback" : function() {
-					// Initialize the responsive datatables helper once.
-					if (!responsiveHelper_datatable_tabletools) {
-						responsiveHelper_datatable_tabletools = new ResponsiveDatatablesHelper($('#datatable_tabletools'), breakpointDefinition);
-					}
-				},
-				"rowCallback" : function(nRow) {
-					responsiveHelper_datatable_tabletools.createExpandIcon(nRow);
-				},
-				"drawCallback" : function(oSettings) {
-					responsiveHelper_datatable_tabletools.respond();
-				}
-			});
-
-
-			<?php if($this->session->flashdata('msg_succ') != ''){?>
-				$.smallBox({
-					title : "Saving Data",
-					content : "<?php echo $this->session->flashdata('msg_succ');?>",
-					color : "#296191",
-					timeout: 5000,
-					icon : "fa fa-bell swing animated"
-				});
-			<?php } ?>
-
-			
-			/* END TABLETOOLS */
-			var curDate = '<?php echo date('d-m-Y') ?>';	
-			$("#payment_date").datepicker({
-				showAnim: null,
-				dateFormat: 'dd-mm-yy',
-				// showOn: 'both',
-				buttonImage: '<?php echo site_url();?>images/calender.jpg',
-				buttonImageOnly: true,
-				firstDay: 1,
-				nextText: '',
-				prevText: '',
-				numberOfMonths: [1, 1],
-				defaultDate: new Date(curDate),
-				//minDate: curDate,
-				//maxDate: ''
-			});
-
-
-			// Function to initialize Select2 properly for modals
+// Function to initialize Select2 properly for modals
 			function initCustomerSelect2() {
 				// Destroy existing Select2 instance if it exists
 				if ($('#customer_id').hasClass('select2-hidden-accessible')) {
@@ -816,7 +549,7 @@
 				if(cust_id){
 					// Send an AJAX request to the backend
 					$.ajax({
-						url: 'Leakingentry/get_customer_meter_reading', // Backend PHP script
+						url: '<?php echo ADMIN_URL; ?>Leakingentry/get_customer_meter_reading', // Backend PHP script
 						type: 'POST',
 						data: { customer_id: cust_id },
 						dataType: 'json',
@@ -851,7 +584,7 @@
 				if(meterreading_id){
 					// Send an AJAX request to the backend
 					$.ajax({
-						url: 'Leakingentry/get_customer_meter_reading_detail', // Backend PHP script
+						url: '<?php echo ADMIN_URL; ?>Leakingentry/get_customer_meter_reading_detail', // Backend PHP script
 						type: 'POST',
 						data: { meterreading_id: meterreading_id },
 						dataType: 'json',
@@ -895,8 +628,7 @@
 			
             $('#add_record').on('click', function(evt){
                 evt.preventDefault();
-				
-                //$('#myModal').modal('show');
+				$('#myModal').modal('show');
 				$('#leaking_option').hide();
                 $('#myModalLabel').text('Add New Leaking Record');
                 $('#btn_save').text('Save');
@@ -1067,37 +799,43 @@
 			});
 
 			$(".setStatus").click(function(e) {
+				e.preventDefault();
 				var getStatus = $(this).data('status');
 				var id = $(this).data('id');
-				if(getStatus==1){
+				if (getStatus != 1) { return; }
+
+				var approveUrl = '<?php echo ADMIN_URL;?>Leakingentry/status/'+id+'/2';
+				var denyUrl = '<?php echo ADMIN_URL;?>Leakingentry/status/'+id+'/3';
+
+				if (typeof $.SmartMessageBox === 'function') {
 					$.SmartMessageBox({
 						title : "Approval Action",
 						content : "Please select option below",
 						buttons : '[Cancel][Denied][Approved]'
 					}, function(ButtonPressed) {
-						if (ButtonPressed === "Cancel") {
-							
-						}
 						if (ButtonPressed === "Approved") {
-			
-							window.location='<?php echo ADMIN_URL;?>Leakingentry/status/'+id+'/2';
+							window.location = approveUrl;
 						}
 						if (ButtonPressed === "Denied") {
-							window.location='<?php echo ADMIN_URL;?>Leakingentry/status/'+id+'/3';
+							window.location = denyUrl;
 						}
-						
-			
 					});
+				} else {
+					var choice = window.prompt('Type Approved or Denied (Cancel to abort):', 'Approved');
+					if (!choice) { return; }
+					choice = String(choice).trim().toLowerCase();
+					if (choice === 'approved') {
+						window.location = approveUrl;
+					} else if (choice === 'denied') {
+						window.location = denyUrl;
+					}
 				}
-				
-				e.preventDefault();
-			})
+			});
 			//$('#customer_id').select2();
-			
-		
-		})
 
-		function parseDmyString(dateStr) {
+});
+
+function parseDmyString(dateStr) {
   			const [day, month, year] = dateStr.split('-');
   			return new Date(year, month - 1, day); // month - 1 because months are 0-indexed
 		}
@@ -1152,8 +890,7 @@
 		}
 
 		
-		</script>
-
-
-
 		
+</script>
+</body>
+</html>

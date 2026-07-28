@@ -1,18 +1,20 @@
-<!-- MAIN PANEL -->
-<div id="main" role="main">
-
-	<div id="ribbon">
-		<ol class="breadcrumb">
-			<li><a href="<?php echo ADMIN_URL; ?>">Home</a></li>
-			<li><a href="<?php echo ADMIN_URL; ?>manual_or_series">Manual OR Series</a></li>
-			<li>List</li>
-		</ol>
+<main id="js-page-content" role="main" class="page-content">
+	<ol class="breadcrumb page-breadcrumb">
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>">Home</a></li>
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>manual_or_series">Manual OR Series</a></li>
+		<li class="breadcrumb-item active">List</li>
+		<li class="position-absolute pos-top pos-right d-none d-sm-block"><span class="js-get-date"></span></li>
+	</ol>
+	<div class="subheader">
+		<h1 class="subheader-title">
+			<i class="subheader-icon fal fa-th-list"></i>
+			Manage <span class="fw-300">Manual Or Series</span>
+		</h1>
 	</div>
 
-	<div id="content">
-		<div class="row">
-			<div class="col-xs-12">
-				<h1 class="page-title txt-color-blueDark"><i class="fa fa-fw fa-list-ol"></i> Manual OR Series</h1>
+<div class="row">
+			<div class="col-12">
+				<h1 class="page-title txt-color-blueDark"><i class="fal fa-fw fa-list-ol"></i> Manual OR Series</h1>
 				<p class="text-muted">Set the <strong>last used</strong> OR/SI number per series. The <strong>next</strong> receipt will be that value <strong>plus one</strong>. Coordinate with physical receipt books and avoid changing numbers while tellers are posting.</p>
 			</div>
 		</div>
@@ -32,13 +34,17 @@
 
 		<section id="widget-grid" class="">
 			<div class="row">
-				<article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-					<div class="jarviswidget jarviswidget-color-darken">
-						<header>
-							<span class="widget-icon"><i class="fa fa-table"></i></span>
-							<h2>OR document series</h2>
-						</header>
-						<div class="widget-body">
+				<div class="col-xl-12">
+					<div class="panel">
+						<div class="panel-hdr"><h2>OR document series</h2>
+					<div class="panel-toolbar">
+						<button class="btn btn-panel" data-action="panel-collapse" data-toggle="tooltip" data-offset="0,10" data-original-title="Collapse"></button>
+						<button class="btn btn-panel" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
+					</div>
+				</div>
+				<div class="panel-container show">
+					<div class="panel-content">
+						
 							<div class="table-responsive">
 								<table class="table table-bordered table-striped">
 									<thead>
@@ -92,10 +98,14 @@
 							</div>
 						</div>
 					</div>
-				</article>
+				</div>
 			</div>
 		</section>
 	</div>
 </div>
-
+</main>
 <?php include('footer.php'); ?>
+</body>
+</html>
+
+

@@ -1,13 +1,13 @@
                <?php if(!empty($record)){ ?>
 			   <!--<div class="row">
-					<div class="col-lg-12 col-sm-12 col-xs-12 col-md-12">
+					<div class="col-lg-12 col-sm-12 col-12 col-md-12">
 						 <div class="col-lg-12" style="text-align: right">
 							<a href="<?php echo ADMIN_URL;?>addexpenses/fileDownloadajaxbsearch/<?php echo $this->input->post('fromdate');?>/<?php echo $this->input->post('todate');?>"class="btn btn-sm btn-primary" style="margin-bottom: 4px;">Export Excel</a>
 						 </div>
 					</div>
 			   </div>     -->
 					 
-					 <div class="jarviswidget jarviswidget-color-darken" id="wid-id-0" data-widget-editbutton="false">
+					 
                         <table  id="dt_basic" class="table table-striped table-bordered table-hover" width="100%">
 							<thead>
 								<tr>
@@ -36,14 +36,14 @@
 				<?php } ?>
 				<?php if(!empty($payrols)){ ?>
 			   <!--<div class="row">
-					<div class="col-lg-12 col-sm-12 col-xs-12 col-md-12">
+					<div class="col-lg-12 col-sm-12 col-12 col-md-12">
 						 <div class="col-lg-12" style="text-align: right">
 							<a href="<?php echo ADMIN_URL;?>addexpenses/fileDownloadajaxbpayrols/<?php echo $this->input->post('fromdate');?>/<?php echo $this->input->post('todate');?>"class="btn btn-sm btn-primary" style="margin-bottom: 4px;">Export Excel</a>
 						 </div>
 					</div>
 			   </div>   -->  
 					 
-					 <div class="jarviswidget jarviswidget-color-darken" id="wid-id-1" data-widget-editbutton="false">
+					 
                        <table  id="dt_basic" class="table table-striped table-bordered table-hover" width="100%">
 							<thead>
 								<tr>
@@ -72,14 +72,14 @@
 				<?php } ?>
 				<?php if(!empty($meter)){ ?>
 			   <div class="row">
-					<div class="col-lg-12 col-sm-12 col-xs-12 col-md-12">
+					<div class="col-lg-12 col-sm-12 col-12 col-md-12">
 						 <div class="col-lg-12" style="text-align: right">
 							<a href="<?php echo ADMIN_URL;?>addexpenses/fileDownloadajaxbmeter/<?php echo $this->input->post('fromdate');?>/<?php echo $this->input->post('todate');?>"class="btn btn-sm btn-primary" style="margin-bottom: 4px;">Export Excel</a>
 						 </div>
 					</div>
 			   </div>     
 					 
-					 <div class="jarviswidget jarviswidget-color-darken" id="wid-id-2" data-widget-editbutton="false">
+					 
                        <table  id="dt_basic" class="table table-striped table-bordered table-hover" width="100%">
 							<thead>
 								<tr>
@@ -108,14 +108,14 @@
 				<?php } ?>
 				<?php if(!empty($monthly)){ ?>
 			   <!--<div class="row">
-					<div class="col-lg-12 col-sm-12 col-xs-12 col-md-12">
+					<div class="col-lg-12 col-sm-12 col-12 col-md-12">
 						 <div class="col-lg-12" style="text-align: right">
 							<a href="<?php echo ADMIN_URL;?>addexpenses/fileDownloadajaxbmonthly/<?php echo $this->input->post('fromdate');?>/<?php echo $this->input->post('todate');?>"class="btn btn-sm btn-primary" style="margin-bottom: 4px;">Export Excel</a>
 						 </div>
 					</div>
 			   </div>    --> 
 					 
-					 <div class="jarviswidget jarviswidget-color-darken" id="wid-id-3" data-widget-editbutton="false">
+					 
                        <table  id="dt_basic" class="table table-striped table-bordered table-hover" width="100%">
 							<thead>
 								<tr>
@@ -185,9 +185,9 @@
 				};
 	
 				$('#dt_basic').dataTable({
-					"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-12 hidden-xs'l>r>"+
+					"sDom": "<'dt-toolbar'<'col-12 col-sm-6'f><'col-sm-6 col-12 hidden-xs'l>r>"+
 						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
+						"<'dt-toolbar-footer'<'col-sm-6 col-12 hidden-xs'i><'col-12 col-sm-6'p>>",
 					"autoWidth" : true,
 			        "oLanguage": {
 					    "sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
@@ -216,9 +216,9 @@
 		    	//"bAutoWidth": false,
 		    	//"bPaginate": false,
 		    	//"bStateSave": true // saves sort state using localStorage
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6 hidden-xs'f><'col-sm-6 col-xs-12 hidden-xs'<'toolbar'>>r>"+
+				"sDom": "<'dt-toolbar'<'col-12 col-sm-6 hidden-xs'f><'col-sm-6 col-12 hidden-xs'<'toolbar'>>r>"+
 						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
+						"<'dt-toolbar-footer'<'col-sm-6 col-12 hidden-xs'i><'col-12 col-sm-6'p>>",
 				"autoWidth" : true,
 				"oLanguage": {
 					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
@@ -254,9 +254,9 @@
 	    
 			/* COLUMN SHOW - HIDE */
 			$('#datatable_col_reorder').dataTable({
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-6 hidden-xs'C>r>"+
+				"sDom": "<'dt-toolbar'<'col-12 col-sm-6'f><'col-sm-6 col-6 hidden-xs'C>r>"+
 						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-sm-6 col-xs-12'p>>",
+						"<'dt-toolbar-footer'<'col-sm-6 col-12 hidden-xs'i><'col-sm-6 col-12'p>>",
 				"autoWidth" : true,
 				"oLanguage": {
 					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
@@ -282,9 +282,9 @@
 				
 				// Tabletools options: 
 				//   https://datatables.net/extensions/tabletools/button_options
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-6 hidden-xs'T>r>"+
+				"sDom": "<'dt-toolbar'<'col-12 col-sm-6'f><'col-sm-6 col-6 hidden-xs'T>r>"+
 						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-sm-6 col-xs-12'p>>",
+						"<'dt-toolbar-footer'<'col-sm-6 col-12 hidden-xs'i><'col-sm-6 col-12'p>>",
 				"oLanguage": {
 					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
 				},		

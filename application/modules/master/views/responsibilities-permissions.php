@@ -1,3 +1,27 @@
+<main id="js-page-content" role="main" class="page-content">
+	<ol class="breadcrumb page-breadcrumb">
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>">Home</a></li>
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>responsibilities/">Responsibilities</a></li>
+		<li class="breadcrumb-item active">Permissions</li>
+		<li class="position-absolute pos-top pos-right d-sm-block"><span class="js-get-date"></span></li>
+	</ol>
+	<div class="subheader">
+		<h1 class="subheader-title">
+			<i class="subheader-icon fal fa-th-list"></i>
+			Manage <span class="fw-300">Responsibilities Permissions</span>
+		</h1>
+	</div>
+
+	<div class="row">
+		<div class="col-xl-12">
+			<div class="panel">
+				<div class="panel-hdr"><h2>Responsibilities Permissions</h2>
+					<div class="panel-toolbar">
+						<button class="btn btn-panel" data-action="panel-collapse" data-toggle="tooltip" data-offset="0,10" data-original-title="Collapse"></button>
+						<button class="btn btn-panel" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
+					</div>
+				</div>
+				<div class="panel-container show"><div class="panel-content">
 <?php
 /**
  * Hierarchical Roles & Permissions checkbox tree.
@@ -106,11 +130,11 @@ if (!function_exists('resp_is_checked')) {
 
 <div class="perm-toolbar">
 	<?php if (!$is_view) { ?>
-	<button type="button" class="btn btn-xs btn-success" id="perm-select-all"><i class="fa fa-check-square-o"></i> Select All</button>
-	<button type="button" class="btn btn-xs btn-default" id="perm-clear-all"><i class="fa fa-square-o"></i> Clear All</button>
+	<button type="button" class="btn btn-xs btn-success" id="perm-select-all"><i class="fal fa-check-square-o"></i> Select All</button>
+	<button type="button" class="btn btn-xs btn-secondary" id="perm-clear-all"><i class="fal fa-square-o"></i> Clear All</button>
 	<?php } ?>
-	<button type="button" class="btn btn-xs btn-primary" id="perm-expand-all"><i class="fa fa-plus-square-o"></i> Expand All</button>
-	<button type="button" class="btn btn-xs btn-default" id="perm-collapse-all"><i class="fa fa-minus-square-o"></i> Collapse All</button>
+	<button type="button" class="btn btn-xs btn-primary" id="perm-expand-all"><i class="fal fa-plus-square-o"></i> Expand All</button>
+	<button type="button" class="btn btn-xs btn-secondary" id="perm-collapse-all"><i class="fal fa-minus-square-o"></i> Collapse All</button>
 	<span class="perm-hint">Check a main menu to expand and assign its submenu permissions (same as sidebar).</span>
 </div>
 
@@ -158,7 +182,7 @@ if (!function_exists('resp_is_checked')) {
 				<?php if ($has_children) { ?>
 					<span class="perm-toggle"><i class="fa <?php echo $is_open ? 'fa-chevron-down' : 'fa-chevron-right'; ?>"></i></span>
 				<?php } else { ?>
-					<span class="perm-toggle"><i class="fa fa-circle" style="font-size:6px;vertical-align:middle;"></i></span>
+					<span class="perm-toggle"><i class="fal fa-circle" style="font-size:6px;vertical-align:middle;"></i></span>
 				<?php } ?>
 
 				<?php if ($parent_key) { ?>
@@ -299,3 +323,99 @@ if (!function_exists('resp_is_checked')) {
 	});
 })(jQuery);
 </script>
+
+				</div></div>
+			</div>
+		</div>
+	</div>
+</main>
+<?php include('footer.php'); ?>
+</body>
+</html>
+<script type="text/javascript">
+(function($){
+	function syncParentState($panel) {
+		var $parent = $panel.find('> .perm-panel-header .perm-parent');
+		var $children = $panel.find('> .perm-children .perm-child-cb');
+		if (!$children.length) {
+			$parent.prop('indeterminate', false);
+			return;
+		}
+		var total = $children.length;
+		var checked = $children.filter(':checked').length;
+		if (checked === 0) {
+			$parent.prop('checked', false).prop('indeterminate', false);
+		} else if (checked === total) {
+			$parent.prop('checked', true).prop('indeterminate', false);
+		} else {
+			$parent.prop('checked', true).prop('indeterminate', true);
+		}
+	}
+
+	function setOpen($panel, open) {
+		var $toggle = $panel.find('> .perm-panel-header .perm-toggle i');
+		if (!$panel.find('> .perm-children').length) return;
+		if (open) {
+			$panel.addClass('open');
+			$toggle.removeClass('fa-chevron-right').addClass('fa-chevron-down');
+		} else {
+			$panel.removeClass('open');
+			$toggle.removeClass('fa-chevron-down').addClass('fa-chevron-right');
+		}
+	}
+
+	$(document).ready(function(){
+		$('#perm-tree .perm-panel').each(function(){
+			syncParentState($(this));
+		});
+
+		$('#perm-tree').on('click', '.perm-toggle', function(e){
+			e.preventDefault();
+			e.stopPropagation();
+			var $panel = $(this).closest('.perm-panel');
+			setOpen($panel, !$panel.hasClass('open'));
+		});
+
+		$('#perm-tree').on('change', '.perm-parent', function(){
+			var $panel = $(this).closest('.perm-panel');
+			var checked = $(this).prop('checked');
+			var $children = $panel.find('> .perm-children .perm-child-cb');
+			if ($children.length) {
+				$children.prop('checked', checked);
+				setOpen($panel, checked);
+			}
+			$(this).prop('indeterminate', false);
+		});
+
+		$('#perm-tree').on('change', '.perm-child-cb', function(){
+			var $panel = $(this).closest('.perm-panel');
+			var $parent = $panel.find('> .perm-panel-header .perm-parent');
+			if ($parent.length && !$parent.hasClass('perm-virtual')) {
+				if ($panel.find('> .perm-children .perm-child-cb:checked').length > 0) {
+					$parent.prop('checked', true);
+				}
+			}
+			syncParentState($panel);
+			if ($(this).prop('checked')) {
+				setOpen($panel, true);
+			}
+		});
+
+		$('#perm-select-all').on('click', function(){
+			$('#perm-tree .perm-parent, #perm-tree .perm-child-cb').prop('checked', true).prop('indeterminate', false);
+			$('#perm-tree .perm-panel').each(function(){ setOpen($(this), true); });
+		});
+		$('#perm-clear-all').on('click', function(){
+			$('#perm-tree .perm-parent, #perm-tree .perm-child-cb').prop('checked', false).prop('indeterminate', false);
+			$('#perm-tree .perm-panel').each(function(){ setOpen($(this), false); });
+		});
+		$('#perm-expand-all').on('click', function(){
+			$('#perm-tree .perm-panel').each(function(){ setOpen($(this), true); });
+		});
+		$('#perm-collapse-all').on('click', function(){
+			$('#perm-tree .perm-panel').each(function(){ setOpen($(this), false); });
+		});
+	});
+})(jQuery);
+</script>
+

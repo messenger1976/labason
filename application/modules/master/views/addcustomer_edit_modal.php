@@ -281,7 +281,7 @@
 		<div class="form-actions">
 			<div class="row">
 				<div class="col-md-12">
-					<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
 					<button type="submit" class="btn btn-primary" name="edit" id="edit_modal_btn">Update</button>
 				</div>
 			</div>

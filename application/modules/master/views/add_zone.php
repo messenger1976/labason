@@ -1,425 +1,431 @@
+<?php
+	$income1 = $this->my_model->get_income_metercustomer();
+	extract($income1);
+	$income2 = $this->my_model->get_income_monthlycustomer();
+	extract($income2);
+	$intotal = $total1 + $total2;
 
-<!-- MAIN PANEL -->
-		<div id="main" role="main">
+	$expense1 = $this->my_model->get_outcome_expenses();
+	extract($expense1);
+	$expense2 = $this->my_model->get_outcome_payroll();
+	extract($expense2);
+	$extotal = $extotal1 + $extotal2;
 
-			<!-- RIBBON -->
-			<div id="ribbon">
+	$total_customer = $this->my_model->total_customer();
+	extract($total_customer);
 
-				<span class="ribbon-button-alignment"> 
-					<span id="refresh" class="btn btn-ribbon" data-action="resetWidgets" data-title="refresh"  rel="tooltip" data-placement="bottom" data-original-title="<i class='text-warning fa fa-warning'></i> Warning! This will reset all your widget settings." data-html="true">
-						<i class="fa fa-refresh"></i>
-					</span> 
+	$zone_count = is_array($record) ? count($record) : 0;
+	$active_zones = 0;
+	if (!empty($record)) {
+		foreach ($record as $zrow) {
+			if ((int) $zrow['status'] === 1) {
+				$active_zones++;
+			}
+		}
+	}
+?>
+<main id="js-page-content" role="main" class="page-content">
+	<ol class="breadcrumb page-breadcrumb">
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>">Home</a></li>
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>add_zone/add">Add Zone</a></li>
+		<li class="breadcrumb-item active">List View</li>
+		<li class="position-absolute pos-top pos-right d-none d-sm-block"><span class="js-get-date"></span></li>
+	</ol>
+
+	<div class="subheader">
+		<h1 class="subheader-title">
+			<i class="subheader-icon fal fa-map-marker-alt"></i>
+			Manage <span class="fw-300">Zones</span>
+		</h1>
+		<div class="subheader-block d-lg-flex align-items-center">
+			<div class="d-inline-flex flex-column justify-content-center mr-3">
+				<span class="fw-300 fs-xs d-block opacity-50">
+					<small>INCOME</small>
 				</span>
-
-				<!-- breadcrumb -->
-				<ol class="breadcrumb">
-					<li><a href="<?php echo ADMIN_URL;?>dashboard">Home</a></li>
-					<li><a href="<?php echo ADMIN_URL;?>add_zone/add"> Add Zone </a></li>
-					<li>List View</li>
-				</ol>
-				
+				<span class="fw-500 fs-xl d-block color-primary-500">
+					₱ <?php echo number_format($intotal, 2); ?>
+				</span>
 			</div>
-			<!-- END RIBBON -->
+			<span class="sparklines hidden-lg-down" sparkType="bar" sparkBarColor="#886ab5" sparkHeight="32px" sparkBarWidth="5px" values="3,4,3,6,7,3,3,6,2,6,4"></span>
+		</div>
+		<div class="subheader-block d-lg-flex align-items-center border-faded border-right-0 border-top-0 border-bottom-0 ml-3 pl-3">
+			<div class="d-inline-flex flex-column justify-content-center mr-3">
+				<span class="fw-300 fs-xs d-block opacity-50">
+					<small>EXPENSE</small>
+				</span>
+				<span class="fw-500 fs-xl d-block color-danger-500">
+					₱ <?php echo number_format($extotal, 2); ?>
+				</span>
+			</div>
+			<span class="sparklines hidden-lg-down" sparkType="bar" sparkBarColor="#fe6bb0" sparkHeight="32px" sparkBarWidth="5px" values="1,4,3,6,5,3,9,6,5,9,7"></span>
+		</div>
+		<div class="subheader-block d-lg-flex align-items-center border-faded border-right-0 border-top-0 border-bottom-0 ml-3 pl-3">
+			<div class="d-inline-flex flex-column justify-content-center mr-3">
+				<span class="fw-300 fs-xs d-block opacity-50">
+					<small>TOTAL ZONES</small>
+				</span>
+				<span class="fw-500 fs-xl d-block color-success-500">
+					<?php echo (int) $zone_count; ?>
+				</span>
+			</div>
+			<span class="sparklines hidden-lg-down" sparkType="bar" sparkBarColor="#1dc9b7" sparkHeight="32px" sparkBarWidth="5px" values="2,5,3,7,4,6,3,8,5,4,6"></span>
+		</div>
+		<div class="subheader-block d-lg-flex align-items-center border-faded border-right-0 border-top-0 border-bottom-0 ml-3 pl-3">
+			<div class="d-inline-flex flex-column justify-content-center mr-3">
+				<span class="fw-300 fs-xs d-block opacity-50">
+					<small>ACTIVE</small>
+				</span>
+				<span class="fw-500 fs-xl d-block color-info-500">
+					<?php echo (int) $active_zones; ?>
+				</span>
+			</div>
+			<span class="sparklines hidden-lg-down" sparkType="bar" sparkBarColor="#2196F3" sparkHeight="32px" sparkBarWidth="5px" values="4,3,5,6,4,7,5,6,4,5,7"></span>
+		</div>
+	</div>
 
-			<!-- MAIN CONTENT -->
-			<div id="content">
+	<?php if ($this->session->flashdata('msg_succ')) { ?>
+	<div class="alert alert-success alert-dismissible fade show" role="alert">
+		<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+			<span aria-hidden="true"><i class="fal fa-times"></i></span>
+		</button>
+		<strong>Success!</strong> <?php echo $this->session->flashdata('msg_succ'); ?>
+	</div>
+	<?php } ?>
 
-				<div class="row">
-					<div class="col-xs-12 col-sm-7 col-md-7 col-lg-4">
-						<h1 class="page-title txt-color-blueDark"><i class="fa-fw fa fa-home"></i> View <span>> Zone </span></h1>
+	<section id="widget-grid" class="">
+		<link rel="stylesheet" media="screen, print" href="<?php echo base_url(); ?>sa4/css/datagrid/datatables/datatables.bundle.css">
+
+		<div class="row">
+			<div class="col-xl-12">
+				<div id="panel-zones" class="panel">
+					<div class="panel-hdr">
+						<h2>
+							Zone <span class="fw-300"><i>Listing</i></span>
+						</h2>
+						<div class="panel-toolbar">
+							<button class="btn btn-panel" data-action="panel-collapse" data-toggle="tooltip" data-offset="0,10" data-original-title="Collapse"></button>
+							<button class="btn btn-panel" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
+						</div>
 					</div>
-					<div class="col-xs-12 col-sm-5 col-md-5 col-lg-8">
-						<ul id="sparks" class="">
-							<li class="sparks-info">
-							<?php 
-							     $income1 = $this->my_model->get_income_metercustomer();
-							     extract($income1);
-								 $income2 = $this->my_model->get_income_monthlycustomer();
-								 extract($income2);
-								 $intotal = $total1 + $total2;
-							?>
-								<h5> Income <span class="txt-color-blue">PHP <?php print_r(number_format($intotal,2));?></span></h5>
-								<div class="sparkline txt-color-blue hidden-mobile hidden-md hidden-sm">
-									
+					<div class="panel-container show">
+						<div class="panel-content">
+							<form method="post" action="<?php echo ADMIN_URL; ?>add_zone/multi_delete" id="zone-list-form">
+								<div class="row mb-3 align-items-end">
+									<div class="col-sm-6 col-md-6">
+										<button type="submit" class="btn btn-danger btn-sm waves-effect waves-themed" id="btn-delete-all" onclick="return deleteAllData();">
+											<i class="fal fa-trash-alt mr-1"></i> Delete Selected
+										</button>
+									</div>
+									<div class="col-sm-6 col-md-6 text-right">
+										<a href="<?php echo ADMIN_URL; ?>add_zone/add/" class="btn btn-success btn-sm waves-effect waves-themed">
+											<i class="fal fa-plus mr-1"></i> Add Zone
+										</a>
+									</div>
 								</div>
-							</li>
-							<?php
-							     $expense1 = $this->my_model->get_outcome_expenses();
-							     extract($expense1);
-								 $expense2 = $this->my_model->get_outcome_payroll();
-								 extract($expense2);
-								 $extotal = $extotal1 + $extotal2;
-							?>
-							<li class="sparks-info">
-								<h5> Expense <span class="txt-color-purple">PHP <?php print_r(number_format($extotal,2));?></span></h5>
-								<div class="sparkline txt-color-purple hidden-mobile hidden-md hidden-sm">
-									
-								</div>
-							</li>
-							<?php 
-							     $total_customer = $this->my_model->total_customer();
-							     extract($total_customer); 
-							?>
-							<li class="sparks-info">
-								<h5> Total Customer <span class="txt-color-greenDark">&nbsp;<?php print_r($count_id);?></span></h5>
-								<div class="sparkline txt-color-greenDark hidden-mobile hidden-md hidden-sm">
-									
-								</div>
-							</li>
-						</ul>
+
+								<table id="dt_basic" class="table table-bordered table-hover table-striped w-100">
+									<thead>
+										<tr>
+											<th style="width:28px;"><input type="checkbox" id="dt_select_all" class="ace" /></th>
+											<th style="width:60px;">S No</th>
+											<th>Zone</th>
+											<th style="width:120px;" class="text-center">Status</th>
+											<th style="width:120px;" class="text-center">Action</th>
+										</tr>
+									</thead>
+									<tbody>
+										<?php
+										if (!empty($record)) {
+											$i = 1;
+											foreach ($record as $row) {
+												$is_active = ((int) $row['status'] === 1);
+												$status_url = ADMIN_URL . 'add_zone/status/' . $row['id'] . '/' . $row['status'];
+												$edit_url = ADMIN_URL . 'add_zone/edit/' . $row['id'];
+												$delete_url = ADMIN_URL . 'add_zone/delete/' . $row['id'];
+										?>
+										<tr>
+											<td class="text-center">
+												<input type="checkbox" class="ace" name="delete_ids[]" value="<?php echo (int) $row['id']; ?>" />
+											</td>
+											<td class="text-center"><?php echo $i; ?></td>
+											<td><?php echo htmlspecialchars(stripslashes($row['zone'])); ?></td>
+											<td class="text-center">
+												<a href="JavaScript:if(confirm('Are you sure you want to change the status?')==true){window.location='<?php echo $status_url; ?>';}" class="badge <?php echo $is_active ? 'badge-success' : 'badge-danger'; ?> badge-pill" style="text-decoration:none;">
+													<?php echo $is_active ? 'Active' : 'De-Active'; ?>
+												</a>
+											</td>
+											<td class="text-center">
+												<div class="btn-group btn-group-sm" role="group">
+													<a href="<?php echo $edit_url; ?>" class="btn btn-outline-primary btn-icon rounded-circle waves-effect waves-themed" title="Edit" data-toggle="tooltip">
+														<i class="fal fa-edit"></i>
+													</a>
+													<a href="JavaScript:if(confirm('Confirm Delete?')==true){window.location='<?php echo $delete_url; ?>';}" class="btn btn-outline-danger btn-icon rounded-circle waves-effect waves-themed" title="Delete" data-toggle="tooltip">
+														<i class="fal fa-trash-alt"></i>
+													</a>
+												</div>
+											</td>
+										</tr>
+										<?php
+												$i++;
+											}
+										}
+										?>
+									</tbody>
+								</table>
+							</form>
+						</div>
 					</div>
 				</div>
-				<!-- widget grid -->
-				<section id="widget-grid" class="">
-
-					<!-- row -->
-					<div class="row">
-				
-						<!-- NEW WIDGET START -->
-						<article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-				
-							<!-- Widget ID (each widget will need unique ID)-->
-							<div class="jarviswidget jarviswidget-color-darken" id="wid-id-0" data-widget-editbutton="false">
-								
-								<header style="height: 42px;">
-									<span class="widget-icon"> <i class="fa fa-users"></i> </span>
-									<p style="padding: 5px 0 0 45px;font-size: 16px;"><strong>Manage Zone</strong>
-									<button class="btn btn-sm btn-primary" style="float:right;"><a href="<?php echo ADMIN_URL?>add_zone/add/" style="color: #fff;"><i class="fa fa-plus"></i> Add Zone</a></button>
-									</p>
-								</header>
-				
-								<!-- widget div-->
-								<div>
-				
-									<!-- widget edit box -->
-									<div class="jarviswidget-editbox">
-										<!-- This area used as dropdown edit box -->
-				
-									</div>
-									<!-- end widget edit box -->
-									<script type="text/javascript">
-                                        function deleteAllData(){ 
-                                            var checked_num = $('input[name="delete_ids[]"]:checked').length;
-                                            if (checked_num == 0) {
-                                                alert('Select Atleast One Check Box... ');
-                                                return false;
-                                            }else if (checked_num > 0){ 
-                                                if(confirm('Confirm Delete?')==true){
-                                                    //$('#careers').submit();
-                                                    return true;
-                                                }else{
-													return false;
-												}
-                                            }
-                                        }
-                                        </script>
-				                    <form method="post" action="<?php echo ADMIN_URL;?>add_zone/multi_delete">
-										<!-- widget content -->
-										<div class="widget-body no-padding">
-										   <table id="dt_basic" class="table table-striped table-bordered table-hover" width="100%">
-											
-												<thead>			                
-													<tr>
-														<th data-hide="phone"><input type="checkbox"/></th>
-														<th data-hide="phone">S No</th>
-														<th data-hide="expand">Zone</th>
-														<th data-hide="expand">Status</th>
-														<th data-hide="expand">Action</th>
-													</tr>
-												</thead>
-												<tbody>
-												  <?php
-														if(count($record) > 0){
-                                                        $i=1;
-                                                        foreach($record as $key => $row){ 
-													?>   
-													<tr>
-														<td><input type="checkbox" class="ace" name="delete_ids[]" id="delete_ids[]" value="<?php echo $row['id'];?>" /></td>
-														<td><?php echo $i; ?></td>
-														<td><?php echo stripslashes($row['zone']); ?></td>
-														<td><span <?php if($row['status']== 1){ echo " class='label label-success arrowed-in arrowed-in-right'"; } elseif($row['status']== 0){ echo "class='label label-danger arrowed'"; } ?>><a href="JavaScript:if(confirm('Are you sure want to Chanage the Status?')==true){window.location='<?php echo ADMIN_URL;?>add_zone/status/<?php echo $row['id']?>/<?php echo $row['status'];?>';}" style="color:#FFF; text-decoration:none;"><?php if($row['status']== 1){ echo "Active"; } elseif($row['status']== 0){ echo "De-Active"; } ?></a></span></td>
-														<td>
-														    <div class="visible-md visible-lg hidden-sm hidden-xs action-buttons">
-																<a class="green" href="<?php echo ADMIN_URL;?>add_zone/edit/<?php echo $row['id']; ?>" title="Edit">
-																	<i class="fa fa-edit"></i>
-																</a>
-																<a class="red" href="JavaScript:if(confirm('Confirm Delete?')==true){window.location='<?php echo ADMIN_URL;?>add_zone/delete/<?php echo $row['id'];?>';}" title="Delete">
-																	<i class="fa fa-remove"></i>
-																</a>
-															</div>
-															<div class="visible-xs visible-sm hidden-md hidden-lg">
-																<div class="inline position-relative">
-																	<button class="btn btn-minier btn-yellow dropdown-toggle" data-toggle="dropdown">
-																		<i class="icon-caret-down icon-only bigger-120"></i>
-																	</button>
-																		
-																	<ul class="dropdown-menu dropdown-only-icon dropdown-yellow pull-right dropdown-caret dropdown-close">
-																		<li>
-																			<a href="<?php echo ADMIN_URL;?>add_zone/edit/<?php echo $row['id']; ?>" class="tooltip-success" data-rel="tooltip" title="Edit">
-																					<span class="green">
-																						<img src="<?php echo base_url();?>images/favicon/document-edit.gif">
-																					</span>
-																			</a>
-																			<a href="<?php echo ADMIN_URL;?>add_zone/view/<?php echo $row['id'];?>" class="tooltip-success" data-rel="tooltip" title="Edit">
-																					<span class="green">
-																						<img src="<?php echo base_url();?>images/favicon/view_icon.gif">
-																					</span>
-																			</a>
-																		</li>
-																		<li>
-																				<a href="JavaScript:if(confirm('Confirm Delete?')==true){window.location='<?php echo ADMIN_URL;?>add_zone/delete/<?php echo $row['id'];?>';}" class="tooltip-error" data-rel="tooltip" title="Delete">
-																					<span class="red">
-																						<img src="<?php echo base_url();?>images/favicon/delete.png">
-																					</span>
-																				</a>
-																		</li>
-																	</ul>
-																</div>
-															</div>
-														</td>
-													</tr>
-														<?php $i++;} }?>	
-												</tbody>
-											</table>
-											
-
-										</div>
-										<!-- end widget content -->
-									<div>&nbsp;</div>
-									  <div class="row">
-									   <div class="col-lg-12">
-                                        	<input type="submit" class="btn btn-sm btn-primary" name="add" id="add" value="Delete All" onClick="return deleteAllData();" />
-                                         </div>
-									</div>	
-				                    </form>  
-									 
-									 <div>&nbsp;</div>
-								</div>
-								<!-- end widget div -->
-				
-							</div>
-							<!-- end widget -->
-				
-						</article>
-						<!-- WIDGET END -->
-				
-					</div>
-				
-					<!-- end row -->
-
-					
-
-				</section>
-				<!-- end widget grid -->
-
 			</div>
-			<!-- END MAIN CONTENT -->
-
 		</div>
-		<!-- END MAIN PANEL -->
-		
+	</section>
+</main>
 
-		<?php include('footer.php');?>
+<!-- Loading Modal Overlay -->
+<div id="datatable-loading-modal" class="dt-loading-modal" style="display: none;" aria-live="polite" aria-busy="true">
+	<div class="dt-loading-backdrop"></div>
+	<div class="dt-loading-card panel shadow-3">
+		<div class="panel-hdr bg-primary-600 bg-primary-gradient">
+			<h2 class="text-white">
+				Loading <span class="fw-300">Zones</span>
+			</h2>
+		</div>
+		<div class="panel-container show">
+			<div class="panel-content text-center py-4 px-4">
+				<div class="mb-3">
+					<div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+						<span class="sr-only">Loading...</span>
+					</div>
+				</div>
+				<h5 class="mb-1 fw-500" id="dt-loading-title">Fetching zone records</h5>
+				<p class="text-muted mb-3 fs-sm" id="dt-loading-subtitle">Please wait while we prepare the listing…</p>
+				<div class="progress progress-lg mb-2">
+					<div id="dt-loading-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary-500" role="progressbar" style="width: 8%;" aria-valuenow="8" aria-valuemin="0" aria-valuemax="100"></div>
+				</div>
+				<div class="d-flex justify-content-between fs-xs text-muted">
+					<span>Event progress</span>
+					<span id="dt-loading-percent">8%</span>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
 
-	</body>
+<?php include('footer.php'); ?>
+<script src="<?php echo base_url(); ?>sa4/js/statistics/sparkline/sparkline.bundle.js"></script>
 
+</body>
 </html>
-<!-- PAGE RELATED PLUGIN(S) -->
-		<script src="<?php echo base_url();?>js/plugin/datatables/jquery.dataTables.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.colVis.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.tableTools.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.bootstrap.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatable-responsive/datatables.responsive.min.js"></script>
-		<script type="text/javascript">
-		
-		// DO NOT REMOVE : GLOBAL FUNCTIONS!
-		
-		$(document).ready(function() {
-			
-			pageSetUp();
-			
-			/* // DOM Position key index //
-		
-			l - Length changing (dropdown)
-			f - Filtering input (search)
-			t - The Table! (datatable)
-			i - Information (records)
-			p - Pagination (paging)
-			r - pRocessing 
-			< and > - div elements
-			<"#id" and > - div with an id
-			<"class" and > - div with a class
-			<"#id.class" and > - div with an id and class
-			
-			Also see: http://legacy.datatables.net/usage/features
-			*/	
-	
-			/* BASIC ;*/
-				var responsiveHelper_dt_basic = undefined;
-				var responsiveHelper_datatable_fixed_column = undefined;
-				var responsiveHelper_datatable_col_reorder = undefined;
-				var responsiveHelper_datatable_tabletools = undefined;
-				
-				var breakpointDefinition = {
-					tablet : 1024,
-					phone : 480
-				};
-	
-				$('#dt_basic').dataTable({
-					"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-12 hidden-xs'l>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
-					"autoWidth" : true,
-			        "oLanguage": {
-					    "sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-					},
-					"preDrawCallback" : function() {
-						// Initialize the responsive datatables helper once.
-						if (!responsiveHelper_dt_basic) {
-							responsiveHelper_dt_basic = new ResponsiveDatatablesHelper($('#dt_basic'), breakpointDefinition);
-						}
-					},
-					"rowCallback" : function(nRow) {
-						responsiveHelper_dt_basic.createExpandIcon(nRow);
-					},
-					"drawCallback" : function(oSettings) {
-						responsiveHelper_dt_basic.respond();
-					}
-				});
-	
-			/* END BASIC */
-			
-			/* COLUMN FILTER  */
-		    var otable = $('#datatable_fixed_column').DataTable({
-		    	//"bFilter": false,
-		    	//"bInfo": false,
-		    	//"bLengthChange": false
-		    	//"bAutoWidth": false,
-		    	//"bPaginate": false,
-		    	//"bStateSave": true // saves sort state using localStorage
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6 hidden-xs'f><'col-sm-6 col-xs-12 hidden-xs'<'toolbar'>>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
-				"autoWidth" : true,
-				"oLanguage": {
-					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-				},
-				"preDrawCallback" : function() {
-					// Initialize the responsive datatables helper once.
-					if (!responsiveHelper_datatable_fixed_column) {
-						responsiveHelper_datatable_fixed_column = new ResponsiveDatatablesHelper($('#datatable_fixed_column'), breakpointDefinition);
-					}
-				},
-				"rowCallback" : function(nRow) {
-					responsiveHelper_datatable_fixed_column.createExpandIcon(nRow);
-				},
-				"drawCallback" : function(oSettings) {
-					responsiveHelper_datatable_fixed_column.respond();
-				}		
-			
-		    });
-		    
-		    // custom toolbar
-		    $("div.toolbar").html('<div class="text-right"><img src="img/logo.png" alt="SmartAdmin" style="width: 111px; margin-top: 3px; margin-right: 10px;"></div>');
-		    	   
-		    // Apply the filter
-		    $("#datatable_fixed_column thead th input[type=text]").on( 'keyup change', function () {
-		    	
-		        otable
-		            .column( $(this).parent().index()+':visible' )
-		            .search( this.value )
-		            .draw();
-		            
-		    } );
-		    /* END COLUMN FILTER */   
-	    
-			/* COLUMN SHOW - HIDE */
-			$('#datatable_col_reorder').dataTable({
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-6 hidden-xs'C>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-sm-6 col-xs-12'p>>",
-				"autoWidth" : true,
-				"oLanguage": {
-					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-				},
-				"preDrawCallback" : function() {
-					// Initialize the responsive datatables helper once.
-					if (!responsiveHelper_datatable_col_reorder) {
-						responsiveHelper_datatable_col_reorder = new ResponsiveDatatablesHelper($('#datatable_col_reorder'), breakpointDefinition);
-					}
-				},
-				"rowCallback" : function(nRow) {
-					responsiveHelper_datatable_col_reorder.createExpandIcon(nRow);
-				},
-				"drawCallback" : function(oSettings) {
-					responsiveHelper_datatable_col_reorder.respond();
-				}			
-			});
-			
-			/* END COLUMN SHOW - HIDE */
-	
-			/* TABLETOOLS */
-			$('#datatable_tabletools').dataTable({
-				
-				// Tabletools options: 
-				//   https://datatables.net/extensions/tabletools/button_options
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-6 hidden-xs'T>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-sm-6 col-xs-12'p>>",
-				"oLanguage": {
-					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-				},		
-		        "oTableTools": {
-		        	 "aButtons": [
-		             "copy",
-		             "csv",
-		             "xls",
-		                {
-		                    "sExtends": "pdf",
-		                    "sTitle": "SmartAdmin_PDF",
-		                    "sPdfMessage": "SmartAdmin PDF Export",
-		                    "sPdfSize": "letter"
-		                },
-		             	{
-	                    	"sExtends": "print",
-	                    	"sMessage": "Generated by SmartAdmin <i>(press Esc to close)</i>"
-	                	}
-		             ],
-		            "sSwfPath": "js/plugin/datatables/swf/copy_csv_xls_pdf.swf"
-		        },
-				"autoWidth" : true,
-				"preDrawCallback" : function() {
-					// Initialize the responsive datatables helper once.
-					if (!responsiveHelper_datatable_tabletools) {
-						responsiveHelper_datatable_tabletools = new ResponsiveDatatablesHelper($('#datatable_tabletools'), breakpointDefinition);
-					}
-				},
-				"rowCallback" : function(nRow) {
-					responsiveHelper_datatable_tabletools.createExpandIcon(nRow);
-				},
-				"drawCallback" : function(oSettings) {
-					responsiveHelper_datatable_tabletools.respond();
+<style>
+	.dt-loading-modal {
+		position: fixed;
+		inset: 0;
+		z-index: 1055;
+		display: none;
+		align-items: center;
+		justify-content: center;
+	}
+	.dt-loading-modal.is-visible {
+		display: flex !important;
+	}
+	.dt-loading-backdrop {
+		position: absolute;
+		inset: 0;
+		background: rgba(33, 37, 41, 0.45);
+		backdrop-filter: blur(3px);
+	}
+	.dt-loading-card {
+		position: relative;
+		z-index: 1;
+		width: min(420px, calc(100vw - 2rem));
+		margin: 0;
+		border: 0;
+		overflow: hidden;
+	}
+	.dt-loading-card .panel-hdr {
+		border-bottom: 0;
+	}
+	.dt-loading-card .progress {
+		height: 1rem;
+		border-radius: 999px;
+		background: rgba(136, 106, 181, 0.15);
+		overflow: hidden;
+	}
+	.dt-loading-card .progress-bar {
+		transition: width 0.25s ease;
+		border-radius: 999px;
+	}
+	.dataTables_wrapper {
+		position: relative;
+	}
+	.dataTables_wrapper.processing {
+		opacity: 0.55;
+		pointer-events: none;
+		filter: grayscale(0.15);
+	}
+	#panel-zones.panel-loading::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		height: 3px;
+		width: 100%;
+		z-index: 5;
+		background: linear-gradient(90deg, transparent, var(--theme-primary, #886ab5), transparent);
+		background-size: 40% 100%;
+		animation: dt-panel-shimmer 1.1s linear infinite;
+	}
+	#panel-zones {
+		position: relative;
+	}
+	@keyframes dt-panel-shimmer {
+		0% { background-position: -40% 0; }
+		100% { background-position: 140% 0; }
+	}
+</style>
+<script src="<?php echo base_url(); ?>sa4/js/datagrid/datatables/datatables.bundle.js"></script>
+<script type="text/javascript">
+function deleteAllData() {
+	var checked_num = $('input[name="delete_ids[]"]:checked').length;
+	if (checked_num === 0) {
+		alert('Select at least one checkbox...');
+		return false;
+	}
+	return confirm('Confirm Delete?');
+}
+
+$(document).ready(function() {
+	pageSetUp();
+
+	var isInitialLoad = true;
+	var progressTimer = null;
+	var progressValue = 8;
+
+	function setProgress(pct) {
+		progressValue = Math.max(0, Math.min(100, pct));
+		$('#dt-loading-progress-bar')
+			.css('width', progressValue + '%')
+			.attr('aria-valuenow', Math.round(progressValue));
+		$('#dt-loading-percent').text(Math.round(progressValue) + '%');
+	}
+
+	function startProgress() {
+		clearInterval(progressTimer);
+		setProgress(8);
+		$('#dt-loading-title').text('Fetching zone records');
+		$('#dt-loading-subtitle').text('Please wait while we prepare the listing…');
+		progressTimer = setInterval(function() {
+			if (progressValue < 90) {
+				setProgress(progressValue + Math.max(0.6, (90 - progressValue) * 0.08));
+			}
+		}, 180);
+	}
+
+	function completeProgress(done) {
+		clearInterval(progressTimer);
+		setProgress(100);
+		$('#dt-loading-title').text('Almost done');
+		$('#dt-loading-subtitle').text('Rendering zone listing…');
+		setTimeout(done, 220);
+	}
+
+	function showLoader() {
+		$('#datatable-loading-modal').addClass('is-visible').show();
+		$('#panel-zones').addClass('panel-loading');
+		$('.dataTables_wrapper').addClass('processing');
+		startProgress();
+	}
+
+	function hideLoader() {
+		completeProgress(function() {
+			$('#datatable-loading-modal').removeClass('is-visible').fadeOut(180);
+			$('#panel-zones').removeClass('panel-loading');
+			$('.dataTables_wrapper').removeClass('processing');
+			setTimeout(function() { setProgress(8); }, 250);
+		});
+	}
+
+	showLoader();
+
+	var table = $('#dt_basic').DataTable({
+		responsive: true,
+		stateSave: false,
+		pageLength: 25,
+		lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
+		order: [[1, 'asc']],
+		columnDefs: [
+			{ orderable: false, targets: [0, 4] },
+			{ searchable: false, targets: [0, 4] }
+		],
+		dom: "<'row mb-3'<'col-sm-12 col-md-6 d-flex align-items-center justify-content-start'f><'col-sm-12 col-md-6 d-flex align-items-center justify-content-end'B>>" +
+			"<'row'<'col-sm-12'tr>>" +
+			"<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+		language: {
+			processing: '',
+			search: '',
+			searchPlaceholder: 'Search zones...',
+			lengthMenu: '_MENU_',
+			info: 'Showing _START_ to _END_ of _TOTAL_ zones',
+			infoEmpty: 'No zones found',
+			zeroRecords: 'No matching zones',
+			paginate: {
+				first: '<i class="fal fa-chevron-double-left"></i>',
+				last: '<i class="fal fa-chevron-double-right"></i>',
+				next: '<i class="fal fa-chevron-right"></i>',
+				previous: '<i class="fal fa-chevron-left"></i>'
+			}
+		},
+		buttons: [
+			{
+				extend: 'copyHtml5',
+				text: '<i class="fal fa-copy mr-1"></i> Copy',
+				className: 'btn-primary btn-sm mr-1',
+				exportOptions: { columns: [1, 2, 3] }
+			},
+			{
+				extend: 'excelHtml5',
+				text: '<i class="fal fa-file-excel mr-1"></i> Excel',
+				className: 'btn-primary btn-sm mr-1',
+				exportOptions: { columns: [1, 2, 3] }
+			},
+			{
+				extend: 'csvHtml5',
+				text: '<i class="fal fa-file-csv mr-1"></i> CSV',
+				className: 'btn-primary btn-sm mr-1',
+				exportOptions: { columns: [1, 2, 3] }
+			},
+			{
+				extend: 'pdfHtml5',
+				text: '<i class="fal fa-file-pdf mr-1"></i> PDF',
+				className: 'btn-primary btn-sm mr-1',
+				exportOptions: { columns: [1, 2, 3] }
+			},
+			{
+				extend: 'print',
+				text: '<i class="fal fa-print mr-1"></i> Print',
+				className: 'btn-primary btn-sm mr-1',
+				exportOptions: { columns: [1, 2, 3] }
+			},
+			{
+				text: '<i class="fal fa-sync mr-1"></i> Refresh',
+				className: 'btn-primary btn-sm',
+				action: function() {
+					window.location.reload();
 				}
-			});
-			
-			/* END TABLETOOLS */
-		
-		})
+			}
+		],
+		drawCallback: function() {
+			if (isInitialLoad) {
+				isInitialLoad = false;
+				hideLoader();
+			}
+			$('[data-toggle="tooltip"]').tooltip();
+		}
+	});
 
-		</script>
-
-		<!-- Your GOOGLE ANALYTICS CODE Below -->
-		<script type="text/javascript">
-			var _gaq = _gaq || [];
-			_gaq.push(['_setAccount', 'UA-XXXXXXXX-X']);
-			_gaq.push(['_trackPageview']);
-			
-			(function() {
-			var ga = document.createElement('script');
-			ga.type = 'text/javascript';
-			ga.async = true;
-			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-			var s = document.getElementsByTagName('script')[0];
-			s.parentNode.insertBefore(ga, s);
-			})();
-		</script>
+	$('#dt_select_all').on('change', function() {
+		var checked = $(this).is(':checked');
+		$('#dt_basic tbody input[name="delete_ids[]"]').prop('checked', checked);
+	});
+});
+</script>

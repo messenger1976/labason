@@ -8,12 +8,12 @@ $shown = count($record);
 $end = $total_count > 0 ? min($offset + $shown, $total_count) : 0;
 ?>
 <div class="row">
-	<div class="col-xs-12" style="margin-bottom:10px;">
+	<div class="col-12" style="margin-bottom:10px;">
 		<p class="text-muted">
 			Showing <?php echo $shown > 0 ? ($offset + 1) : 0; ?>–<?php echo $end; ?> of <?php echo $total_count; ?> (<?php echo $limit; ?> per page)
 		</p>
-		<button type="button" class="btn btn-default btn-sm" id="cpm_prev" <?php echo ($offset < 100) ? 'disabled="disabled"' : ''; ?>>Previous 100</button>
-		<button type="button" class="btn btn-default btn-sm" id="cpm_next" <?php echo $has_more ? '' : 'disabled="disabled"'; ?>>Next 100</button>
+		<button type="button" class="btn btn-secondary btn-sm" id="cpm_prev" <?php echo ($offset < 100) ? 'disabled="disabled"' : ''; ?>>Previous 100</button>
+		<button type="button" class="btn btn-secondary btn-sm" id="cpm_next" <?php echo $has_more ? '' : 'disabled="disabled"'; ?>>Next 100</button>
 	</div>
 </div>
 <div class="table-responsive">

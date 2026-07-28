@@ -1,190 +1,235 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<title>Login Page</title>
-		<meta name="description" content="User login page" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<!-- #CSS Links -->
-		<!-- Basic Styles -->
-		<link rel="stylesheet" type="text/css" media="screen" href="<?php echo base_url();?>css/bootstrap.min.css">
-		<link rel="stylesheet" type="text/css" media="screen" href="<?php echo base_url();?>css/font-awesome.min.css">
-
-		<!-- SmartAdmin Styles : Caution! DO NOT change the order -->
-		<link rel="stylesheet" type="text/css" media="screen" href="<?php echo base_url();?>css/smartadmin-production-plugins.min.css">
-		<link rel="stylesheet" type="text/css" media="screen" href="<?php echo base_url();?>css/smartadmin-production.min.css">
-		<link rel="stylesheet" type="text/css" media="screen" href="<?php echo base_url();?>css/smartadmin-skins.min.css">
-
-		<!-- SmartAdmin RTL Support -->
-		<link rel="stylesheet" type="text/css" media="screen" href="<?php echo base_url();?>css/smartadmin-rtl.min.css"> 
-
-		<!-- We recommend you use "your_style.css" to override SmartAdmin
-		     specific styles this will also ensure you retrain your customization with each SmartAdmin update.
-		<link rel="stylesheet" type="text/css" media="screen" href="css/your_style.css"> -->
-
-		<!-- Demo purpose only: goes with demo.js, you can delete this css when designing your own WebApp -->
-		<link rel="stylesheet" type="text/css" media="screen" href="<?php echo base_url();?>css/demo.min.css">
-
-		<!-- #FAVICONS -->
-		<link rel="shortcut icon" href="<?php echo base_url();?>img/favicon/favicon.ico" type="image/x-icon">
-		<link rel="icon" href="<?php echo base_url();?>img/favicon/favicon.ico" type="image/x-icon">
-
-		<!-- #GOOGLE FONT -->
-		<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,700italic,300,400,700">
-	</head>
-	<body>
-
-		<!--<header id="header">
-
-			<div id="logo-group">
-				<span id="logo"> <img src="img/logo.png" alt="SmartAdmin"> </span>
-			</div>
-
-			
-
-		</header>--><br/><br/><br/><br/>
-
-		<div id="main" role="main">
-
-			<!-- MAIN CONTENT -->
-			<div id="content" class="container">
-
-				<div class="row">
-					<div class="col-xs-12 col-sm-12 col-md-5 col-lg-3 hidden-xs hidden-sm">
-					</div>
-					<div class="col-xs-12 col-sm-12 col-md-5 col-lg-4">
-						<div class="well no-padding">
-						<form action="" method="post" id="login-form" class="smart-form client-form">
-							   <header>
-									<?php if( $this->session->flashdata( 'message' ) ) { ?>
-                                            <span style="color:#F00; font-size:12px; font-weight:bold; text-align:center;">
-                                                <?php echo $this->session->flashdata( 'message' ); ?>
-                                            </span> 
-                                        <?php  }else if( $this->session->flashdata( 'messages' ) ) { ?>
-                                            <span style="color:green; font-size:12px; font-weight:bold; text-align:center;">
-                                                <?php echo $this->session->flashdata( 'messages' ); ?>
-                                            </span> 
-                                        <?php  }else{ ?>
-                                            Please Enter Your Information
-                                        <?php } //print_r($this->session->all_userdata());?>
-										<?php if(isset($error)) echo $error;?>
-								</header>
-								
-								<fieldset>
-									
-									<section>
-										<label class="label">Username</label>
-										<label class="input"> <i class="icon-append fa fa-user"></i>
-											<input type="text" name="username" id="username" value="<?php echo set_value('username'); ?>"  />
-                                            <b class="tooltip tooltip-top-right"><i class="fa fa-user txt-color-teal"></i>Please enter username</b></label>
-									</section>
-
-									<section>
-										<label class="label">Password</label>
-										<label class="input"> <i class="icon-append fa fa-lock"></i>
-											<input type="password" name="password" id="password" value="<?php echo set_value('password'); ?>" />
-											<b class="tooltip tooltip-top-right"><i class="fa fa-lock txt-color-teal"></i> Enter your password</b> </label>
-										<div class="note">
-											<a href="<?php echo site_url()?>/master/forgot_password">Forgot password?</a>
-										</div>
-									</section>
-
-									<section>
-										<label class="checkbox">
-											<input type="checkbox" name="remember" checked="">
-											<i></i>Stay signed in</label>
-									</section>
-								</fieldset>
-								<footer>
-									
-									<input type="submit" name="submit" id="submit" class="btn btn-primary" value="Login" />
-								</footer>
-							</form>
-
+<head>
+	<meta charset="utf-8">
+	<title>Login - Billing System</title>
+	<meta name="description" content="Secure login">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, user-scalable=no, minimal-ui">
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="msapplication-tap-highlight" content="no">
+	<?php $sa4 = base_url() . 'sa4/'; ?>
+	<link id="vendorsbundle" rel="stylesheet" media="screen, print" href="<?php echo $sa4; ?>css/vendors.bundle.css">
+	<link id="appbundle" rel="stylesheet" media="screen, print" href="<?php echo $sa4; ?>css/app.bundle.css">
+	<link id="mytheme" rel="stylesheet" media="screen, print" href="#">
+	<link id="myskin" rel="stylesheet" media="screen, print" href="<?php echo $sa4; ?>css/skins/skin-master.css">
+	<link rel="apple-touch-icon" sizes="180x180" href="<?php echo $sa4; ?>img/favicon/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="<?php echo $sa4; ?>img/favicon/favicon-32x32.png">
+	<link rel="mask-icon" href="<?php echo $sa4; ?>img/favicon/safari-pinned-tab.svg" color="#5bbad5">
+	<link rel="shortcut icon" href="<?php echo base_url(); ?>favicon.ico" type="image/x-icon">
+	<link rel="stylesheet" media="screen, print" href="<?php echo $sa4; ?>css/fa-brands.css">
+</head>
+<body>
+	<style>
+		/* Auth pages have no sidebar — never reserve nav space */
+		.page-wrapper.auth .page-content-wrapper {
+			padding-left: 0 !important;
+			margin-left: 0 !important;
+		}
+	</style>
+	<script>
+		'use strict';
+		var classHolder = document.getElementsByTagName('BODY')[0],
+			themeSettings = (localStorage.getItem('themeSettings')) ? JSON.parse(localStorage.getItem('themeSettings')) : {};
+		/*
+		 * Do NOT apply saved admin layout classes (nav-function-fixed, etc.)
+		 * on login — they add ~270px left padding for a sidebar that is not here.
+		 * Theme color CSS is still applied via #mytheme when present.
+		 */
+		classHolder.className = '';
+		if (themeSettings.themeURL && document.getElementById('mytheme')) {
+			document.getElementById('mytheme').href = themeSettings.themeURL;
+		}
+	</script>
+	<div class="page-wrapper auth">
+		<div class="page-inner bg-brand-gradient">
+			<div class="page-content-wrapper bg-transparent m-0">
+				<div class="height-10 w-100 shadow-lg px-4 bg-brand-gradient">
+					<div class="d-flex align-items-center container p-0">
+						<div class="page-logo width-mobile-auto m-0 align-items-center justify-content-center p-0 bg-transparent bg-img-none shadow-0 height-9 border-0">
+							<a href="<?php echo site_url(); ?>/master/" class="page-logo-link press-scale-down d-flex align-items-center">
+								<img src="<?php echo $sa4; ?>img/logo.png" alt="Billing System" aria-roledescription="logo">
+								<span class="page-logo-text mr-1">Billing System</span>
+							</a>
 						</div>
-						
-						
+						<a href="<?php echo site_url(); ?>/master/forgot_password" class="btn-link text-white ml-auto">
+							Forgot password?
+						</a>
+					</div>
+				</div>
+				<div class="flex-1" style="background: url(<?php echo $sa4; ?>img/svg/pattern-1.svg) no-repeat center bottom fixed; background-size: cover;">
+					<div class="container py-4 py-lg-5 my-lg-5 px-4 px-sm-0">
+						<div class="row">
+							<div class="col col-md-6 col-lg-7 hidden-sm-down">
+								<h2 class="fs-xxl fw-500 mt-4 text-white">
+									Water Billing Administration
+									<small class="h3 fw-300 mt-3 mb-5 text-white opacity-60">
+										A modern control center for customers, meter readings, payments, leaking reports, and day-to-day operations — built for clarity, speed, and reliable billing workflows.
+									</small>
+								</h2>
+								<a href="#js-login-form" class="fs-lg fw-500 text-white opacity-70">Learn more &gt;&gt;</a>
+								<div class="d-sm-flex flex-column align-items-center justify-content-center d-md-block">
+									<div class="px-0 py-1 mt-5 text-white fs-nano opacity-50">
+										Find us on social media
+									</div>
+									<div class="d-flex flex-row opacity-70">
+										<a href="javascript:void(0);" class="mr-2 fs-xxl text-white">
+											<i class="fab fa-facebook-square"></i>
+										</a>
+										<a href="javascript:void(0);" class="mr-2 fs-xxl text-white">
+											<i class="fab fa-twitter-square"></i>
+										</a>
+										<a href="javascript:void(0);" class="mr-2 fs-xxl text-white">
+											<i class="fab fa-google-plus-square"></i>
+										</a>
+										<a href="javascript:void(0);" class="mr-2 fs-xxl text-white">
+											<i class="fab fa-linkedin"></i>
+										</a>
+									</div>
+								</div>
+							</div>
+							<div class="col-sm-12 col-md-6 col-lg-5 col-xl-4 ml-auto">
+								<h1 class="text-white fw-300 mb-3 d-sm-block d-md-none">
+									Secure login
+								</h1>
+								<div class="card p-4 rounded-plus bg-faded">
+									<?php if ($this->session->flashdata('message')) { ?>
+										<div class="alert alert-danger alert-dismissible fade show" role="alert">
+											<?php echo $this->session->flashdata('message'); ?>
+											<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+												<span aria-hidden="true"><i class="fal fa-times"></i></span>
+											</button>
+										</div>
+									<?php } else if ($this->session->flashdata('messages')) { ?>
+										<div class="alert alert-success alert-dismissible fade show" role="alert">
+											<?php echo $this->session->flashdata('messages'); ?>
+											<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+												<span aria-hidden="true"><i class="fal fa-times"></i></span>
+											</button>
+										</div>
+									<?php } else { ?>
+										<div class="text-center mb-3 text-muted">
+											Please enter your information
+										</div>
+									<?php } ?>
+									<?php if (isset($error) && $error) { echo '<div class="alert alert-danger" role="alert">' . $error . '</div>'; } ?>
+
+									<form action="" method="post" id="js-login-form" novalidate>
+										<div class="form-group">
+											<label class="form-label" for="username">Username</label>
+											<input type="text" name="username" id="username" class="form-control form-control-lg" placeholder="your username" value="<?php echo set_value('username'); ?>" required autocomplete="username" autofocus>
+											<div class="invalid-feedback">No, you missed this one.</div>
+											<div class="help-block">Your unique username to app</div>
+											<?php echo form_error('username'); ?>
+										</div>
+										<div class="form-group">
+											<label class="form-label" for="password">Password</label>
+											<input type="password" name="password" id="password" class="form-control form-control-lg" placeholder="password" value="<?php echo set_value('password'); ?>" required autocomplete="current-password">
+											<div class="invalid-feedback">Sorry, you missed this one.</div>
+											<div class="help-block">Your password</div>
+											<?php echo form_error('password'); ?>
+										</div>
+										<div class="form-group text-left">
+											<div class="custom-control custom-checkbox">
+												<input type="checkbox" class="custom-control-input" id="remember" name="remember" value="1" checked>
+												<label class="custom-control-label" for="remember">Remember me for the next 30 days</label>
+											</div>
+										</div>
+										<div class="row no-gutters">
+											<div class="col-lg-6 pr-lg-1 my-2">
+												<a href="<?php echo site_url(); ?>/master/forgot_password" class="btn btn-info btn-block btn-lg">
+													Forgot <i class="fal fa-key"></i>
+												</a>
+											</div>
+											<div class="col-lg-6 pl-lg-1 my-2">
+												<button type="submit" name="submit" id="js-login-btn" value="Login" class="btn btn-danger btn-block btn-lg">Secure login</button>
+											</div>
+										</div>
+									</form>
+								</div>
+							</div>
+						</div>
+						<div class="position-absolute pos-bottom pos-left pos-right p-3 text-center text-white">
+							<?php echo date('Y'); ?> &copy; Billing System by&nbsp;<span class="text-white opacity-40 fw-500">Water Billing Administration</span>
+						</div>
 					</div>
 				</div>
 			</div>
-
 		</div>
-
-		<!--================================================== -->	
-        <!--================================================== -->	
-
-		<!-- PACE LOADER - turn this on if you want ajax loading to show (caution: uses lots of memory on iDevices)-->
-		<!--<script src="<?php echo base_url();?>js/plugin/pace/pace.min.js"></script>-->
-
-	    <!-- Link to Google CDN's jQuery + jQueryUI; fall back to local -->
-	    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-		<script> if (!window.jQuery) { document.write('<script src="js/libs/jquery-2.1.1.min.js"><\/script>');} </script>
-
-	    <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
-		<script> if (!window.jQuery.ui) { document.write('<script src="js/libs/jquery-ui-1.10.3.min.js"><\/script>');} </script>
-
-		<!-- IMPORTANT: APP CONFIG -->
-		<script src="<?php echo base_url();?>js/app.config.js"></script>
-
-		<!-- JS TOUCH : include this plugin for mobile drag / drop touch events 		
-		<script src="js/plugin/jquery-touch/jquery.ui.touch-punch.min.js"></script> -->
-
-		<!-- BOOTSTRAP JS -->		
-		<script src="<?php echo base_url();?>js/bootstrap/bootstrap.min.js"></script>
-
-		<!-- JQUERY VALIDATE -->
-		<script src="<?php echo base_url();?>js/plugin/jquery-validate/jquery.validate.min.js"></script>
-		
-		<!-- JQUERY MASKED INPUT -->
-		<script src="<?php echo base_url();?>js/plugin/masked-input/jquery.maskedinput.min.js"></script>
-		
-		<!--[if IE 8]>
-			
-			<h1>Your browser is out of date, please update your browser by going to www.microsoft.com/download</h1>
-			
-		<![endif]-->
-		<!-- MAIN APP JS FILE -->
-		<script src="<?php echo base_url();?>js/app.min.js"></script>
-		
-		<script type="text/javascript">
-			runAllForms();
-
-			$(function() {
-				// Validation
-				$("#login-form").validate({
-					// Rules for form validation
-					rules : {
-						username : {
-							required : true
-						},
-						password : {
-							required : true,
-							minlength : 3,
-							maxlength : 20
-						}
-					},
-
-					// Messages for form validation
-					messages : {
-						username : {
-							required : 'Please enter username'
-						},
-						password : {
-							required : 'Please enter your password'
-						}
-					},
-
-					// Do not change code below
-					errorPlacement : function(error, element) {
-						error.insertAfter(element.parent());
-					}
-				});
-			});
-		</script>
-
-	</body>
+	</div>
+	<p id="js-color-profile" class="d-none">
+		<span class="color-primary-50"></span>
+		<span class="color-primary-100"></span>
+		<span class="color-primary-200"></span>
+		<span class="color-primary-300"></span>
+		<span class="color-primary-400"></span>
+		<span class="color-primary-500"></span>
+		<span class="color-primary-600"></span>
+		<span class="color-primary-700"></span>
+		<span class="color-primary-800"></span>
+		<span class="color-primary-900"></span>
+		<span class="color-info-50"></span>
+		<span class="color-info-100"></span>
+		<span class="color-info-200"></span>
+		<span class="color-info-300"></span>
+		<span class="color-info-400"></span>
+		<span class="color-info-500"></span>
+		<span class="color-info-600"></span>
+		<span class="color-info-700"></span>
+		<span class="color-info-800"></span>
+		<span class="color-info-900"></span>
+		<span class="color-danger-50"></span>
+		<span class="color-danger-100"></span>
+		<span class="color-danger-200"></span>
+		<span class="color-danger-300"></span>
+		<span class="color-danger-400"></span>
+		<span class="color-danger-500"></span>
+		<span class="color-danger-600"></span>
+		<span class="color-danger-700"></span>
+		<span class="color-danger-800"></span>
+		<span class="color-danger-900"></span>
+		<span class="color-warning-50"></span>
+		<span class="color-warning-100"></span>
+		<span class="color-warning-200"></span>
+		<span class="color-warning-300"></span>
+		<span class="color-warning-400"></span>
+		<span class="color-warning-500"></span>
+		<span class="color-warning-600"></span>
+		<span class="color-warning-700"></span>
+		<span class="color-warning-800"></span>
+		<span class="color-warning-900"></span>
+		<span class="color-success-50"></span>
+		<span class="color-success-100"></span>
+		<span class="color-success-200"></span>
+		<span class="color-success-300"></span>
+		<span class="color-success-400"></span>
+		<span class="color-success-500"></span>
+		<span class="color-success-600"></span>
+		<span class="color-success-700"></span>
+		<span class="color-success-800"></span>
+		<span class="color-success-900"></span>
+		<span class="color-fusion-50"></span>
+		<span class="color-fusion-100"></span>
+		<span class="color-fusion-200"></span>
+		<span class="color-fusion-300"></span>
+		<span class="color-fusion-400"></span>
+		<span class="color-fusion-500"></span>
+		<span class="color-fusion-600"></span>
+		<span class="color-fusion-700"></span>
+		<span class="color-fusion-800"></span>
+		<span class="color-fusion-900"></span>
+	</p>
+	<script src="<?php echo $sa4; ?>js/vendors.bundle.js"></script>
+	<script src="<?php echo $sa4; ?>js/app.bundle.js"></script>
+	<script>
+		$('#js-login-btn').on('click', function(event) {
+			var form = $('#js-login-form');
+			if (form[0].checkValidity() === false) {
+				event.preventDefault();
+				event.stopPropagation();
+			}
+			form.addClass('was-validated');
+		});
+	</script>
+</body>
 </html>
-	
-	
-	
-	

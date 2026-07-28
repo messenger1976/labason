@@ -42,14 +42,14 @@
 					}
 				</style>
 				<div class="row stat-widget" style="margin-bottom: 20px;">
-					<div class="col-xs-12 col-sm-6 col-md-3">
+					<div class="col-12 col-sm-6 col-md-3">
 						<div class="panel panel-primary">
 							<div class="panel-body">
 								<div class="row">
-									<div class="col-xs-3">
-										<i class="fa fa-users fa-3x"></i>
+									<div class="col-3">
+										<i class="fal fa-users fa-3x"></i>
 									</div>
-									<div class="col-xs-9 text-right">
+									<div class="col-9 text-right">
 										<div class="huge"><?php echo isset($statistics['total']) ? number_format($statistics['total']) : 0; ?></div>
 										<div>Total Members</div>
 									</div>
@@ -57,20 +57,20 @@
 							</div>
 							<div class="panel-footer">
 								<span class="pull-left">All Status</span>
-								<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+								<span class="pull-right"><i class="fal fa-arrow-circle-right"></i></span>
 								<div class="clearfix"></div>
 							</div>
 						</div>
 					</div>
 					
-					<div class="col-xs-12 col-sm-6 col-md-3">
+					<div class="col-12 col-sm-6 col-md-3">
 						<div class="panel panel-success">
 							<div class="panel-body">
 								<div class="row">
-									<div class="col-xs-3">
-										<i class="fa fa-check-circle fa-3x"></i>
+									<div class="col-3">
+										<i class="fal fa-check-circle fa-3x"></i>
 									</div>
-									<div class="col-xs-9 text-right">
+									<div class="col-9 text-right">
 										<div class="huge"><?php echo isset($statistics['active']) ? number_format($statistics['active']) : 0; ?></div>
 										<div>Active Members</div>
 									</div>
@@ -78,20 +78,20 @@
 							</div>
 							<div class="panel-footer">
 								<span class="pull-left">Status: Active</span>
-								<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+								<span class="pull-right"><i class="fal fa-arrow-circle-right"></i></span>
 								<div class="clearfix"></div>
 							</div>
 						</div>
 					</div>
 					
-					<div class="col-xs-12 col-sm-6 col-md-3">
+					<div class="col-12 col-sm-6 col-md-3">
 						<div class="panel panel-warning">
 							<div class="panel-body">
 								<div class="row">
-									<div class="col-xs-3">
-										<i class="fa fa-pause-circle fa-3x"></i>
+									<div class="col-3">
+										<i class="fal fa-pause-circle fa-3x"></i>
 									</div>
-									<div class="col-xs-9 text-right">
+									<div class="col-9 text-right">
 										<div class="huge"><?php echo isset($statistics['inactive']) ? number_format($statistics['inactive']) : 0; ?></div>
 										<div>Inactive Members</div>
 									</div>
@@ -99,20 +99,20 @@
 							</div>
 							<div class="panel-footer">
 								<span class="pull-left">Status: Inactive</span>
-								<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+								<span class="pull-right"><i class="fal fa-arrow-circle-right"></i></span>
 								<div class="clearfix"></div>
 							</div>
 						</div>
 					</div>
 					
-					<div class="col-xs-12 col-sm-6 col-md-3">
+					<div class="col-12 col-sm-6 col-md-3">
 						<div class="panel panel-danger">
 							<div class="panel-body">
 								<div class="row">
-									<div class="col-xs-3">
-										<i class="fa fa-times-circle fa-3x"></i>
+									<div class="col-3">
+										<i class="fal fa-times-circle fa-3x"></i>
 									</div>
-									<div class="col-xs-9 text-right">
+									<div class="col-9 text-right">
 										<div class="huge"><?php echo isset($statistics['deactivated']) ? number_format($statistics['deactivated']) : 0; ?></div>
 										<div>Deactivated Members</div>
 									</div>
@@ -120,14 +120,14 @@
 							</div>
 							<div class="panel-footer">
 								<span class="pull-left">Status: Deactivated</span>
-								<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+								<span class="pull-right"><i class="fal fa-arrow-circle-right"></i></span>
 								<div class="clearfix"></div>
 							</div>
 						</div>
 					</div>
 				</div>
 	 
-	                <div class="jarviswidget jarviswidget-color-darken" id="wid-id-0" data-widget-editbutton="false">
+	                
                                             <table  id="dt_basic" class="table table-striped table-bordered table-hover" width="100%">
 												<thead>
 													<tr>
@@ -216,9 +216,9 @@
 				};
 	
 				$('#dt_basic').dataTable({
-					"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-12 hidden-xs'l>r>"+
+					"sDom": "<'dt-toolbar'<'col-12 col-sm-6'f><'col-sm-6 col-12 hidden-xs'l>r>"+
 						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
+						"<'dt-toolbar-footer'<'col-sm-6 col-12 hidden-xs'i><'col-12 col-sm-6'p>>",
 					"autoWidth" : true,
 			        "oLanguage": {
 					    "sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'

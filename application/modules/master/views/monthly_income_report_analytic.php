@@ -1,35 +1,38 @@
-<!DOCTYPE html>
-<!-- MAIN PANEL -->
-<div id="main" role="main">
-	<!-- RIBBON -->
-	<div id="ribbon">
-		<span class="ribbon-button-alignment">
-			<span id="refresh" class="btn btn-ribbon" data-action="resetWidgets" data-title="refresh" rel="tooltip" data-placement="bottom"><i class="fa fa-refresh"></i></span>
-		</span>
-		<ol class="breadcrumb">
-			<li><a href="<?php echo ADMIN_URL;?>">Home</a></li>
-			<li><a href="<?php echo ADMIN_URL;?>reports/monthly_income_report_analytic">Reports</a></li>
-			<li>Monthly Income Report Analytic</li>
-		</ol>
+<main id="js-page-content" role="main" class="page-content">
+	<ol class="breadcrumb page-breadcrumb">
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL;?>">Home</a></li>
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL;?>reports/monthly_income_report_analytic">Reports</a></li>
+		<li class="breadcrumb-item active">Monthly Income Report Analytic</li>
+		<li class="position-absolute pos-top pos-right d-none d-sm-block"><span class="js-get-date"></span></li>
+	</ol>
+	<div class="subheader">
+		<h1 class="subheader-title">
+			<i class="subheader-icon fal fa-chart-bar"></i>
+			Manage <span class="fw-300">Monthly Income Report Analytic</span>
+		</h1>
 	</div>
-	<!-- END RIBBON -->
 
-	<!-- MAIN CONTENT -->
-	<div id="content">
-		<div class="row">
-			<div class="col-xs-12 col-sm-7 col-md-7 col-lg-4">
-				<h1 class="page-title txt-color-blueDark"><i class="fa fa-bar-chart"></i> Monitoring Monthly Income <span>> Monthly Income Report Analytic</span></h1>
-			</div>
-		</div>
 
-		<section id="widget-grid" class="">
+	<div class="row">
+		<div class="col-xl-12">
+			<div class="panel">
+				<div class="panel-hdr">
+					<h2>Monthly Income Report Analytic <span class="fw-300"><i>Details</i></span></h2>
+					<div class="panel-toolbar">
+						<button class="btn btn-panel" data-action="panel-collapse" data-toggle="tooltip" data-offset="0,10" data-original-title="Collapse"></button>
+						<button class="btn btn-panel" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
+					</div>
+				</div>
+				<div class="panel-container show">
+					<div class="panel-content">
+<section id="widget-grid" class="">
 			<div class="row">
 				<div class="col-sm-12 col-lg-12">
 					<div class="panel panel-default">
 						<div class="panel-heading">
 							<strong>Monthly Income Report Analytic</strong>
 						</div>
-						<div class="widget-body">
+						
 							<fieldset>
 								<legend>Select period</legend>
 								<div class="form-group col-lg-3">
@@ -57,10 +60,10 @@
 									</select>
 								</div>
 								<div class="form-group col-lg-4" style="padding-top: 25px;">
-									<button type="button" class="btn btn-primary" id="btnPerform"><i class="fa fa-play"></i> Perform</button>
-									<button type="button" class="btn btn-default" id="btnCancel"><i class="fa fa-times"></i> Cancel</button>
-									<button type="button" class="btn btn-warning" id="btnPrint" title="Print report" style="margin-left: 8px;"><i class="fa fa-print"></i> Print</button>
-									<button type="button" class="btn btn-success" id="btnExportExcel" title="Export to Excel" style="margin-left: 4px;"><i class="fa fa-file-excel-o"></i> Export to Excel</button>
+									<button type="button" class="btn btn-primary" id="btnPerform"><i class="fal fa-play"></i> Perform</button>
+									<button type="button" class="btn btn-secondary" id="btnCancel"><i class="fal fa-times"></i> Cancel</button>
+									<button type="button" class="btn btn-warning" id="btnPrint" title="Print report" style="margin-left: 8px;"><i class="fal fa-print"></i> Print</button>
+									<button type="button" class="btn btn-success" id="btnExportExcel" title="Export to Excel" style="margin-left: 4px;"><i class="fal fa-file-excel-o"></i> Export to Excel</button>
 								</div>
 								<div style="clear:both"></div>
 							</fieldset>
@@ -106,46 +109,15 @@
 				</div>
 			</div>
 		</section>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
-	<!-- END MAIN CONTENT -->
-</div>
-<!-- END MAIN PANEL -->
-
-<?php include('footer.php');?>
-<style>
-/* CSS Bar Chart - bars need a fixed-height parent so height:% works */
-.monthly-income-barchart { padding: 10px 0; }
-.monthly-income-barchart .chart-wrap {
-	display: flex;
-	align-items: flex-end;
-	gap: 2px;
-	height: 220px;
-	max-width: 100%;
-	overflow-x: auto;
-	padding-bottom: 25px;
-	border-bottom: 1px solid #ddd;
-}
-.monthly-income-barchart .bar-wrap {
-	flex: 1;
-	min-width: 12px;
-	max-width: 24px;
-	height: 220px;
-	display: flex;
-	flex-direction: column;
-	justify-content: flex-end;
-	align-items: center;
-}
-.monthly-income-barchart .bar {
-	width: 100%;
-	height: 0%;
-	min-height: 2px;
-	background: #5cb85c;
-	border-radius: 2px 2px 0 0;
-	transition: height 0.3s;
-}
-.monthly-income-barchart .bar-label { font-size: 10px; margin-top: 4px; color: #555; flex-shrink: 0; }
-.monthly-income-barchart .y-axis-labels { position: absolute; left: 0; top: 0; bottom: 25px; width: 45px; font-size: 10px; color: #666; display: flex; flex-direction: column-reverse; justify-content: space-between; }
-</style>
+</main>
+<?php include('footer.php'); ?>
+</body>
+</html>
 <script type="text/javascript">
 (function() {
 
@@ -269,5 +241,4 @@
 	});
 })();
 </script>
-</body>
-</html>
+

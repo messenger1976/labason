@@ -1,30 +1,35 @@
-<!DOCTYPE html>
+<main id="js-page-content" role="main" class="page-content">
+	<ol class="breadcrumb page-breadcrumb">
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL;?>">Home</a></li>
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL;?>customerbalancemonitor">Customer balance monitor</a></li>
+		<li class="breadcrumb-item active">Search</li>
+		<li class="position-absolute pos-top pos-right d-none d-sm-block"><span class="js-get-date"></span></li>
+	</ol>
+	<div class="subheader">
+		<h1 class="subheader-title">
+			<i class="subheader-icon fal fa-user-friends"></i>
+			Manage <span class="fw-300">Customerbalancemonitor</span>
+		</h1>
+	</div>
 
-		<div id="main" role="main">
 
-			<div id="ribbon">
-
-				<span class="ribbon-button-alignment">
-					<span id="refresh" class="btn btn-ribbon" data-action="resetWidgets" data-title="refresh"  rel="tooltip" data-placement="bottom" data-original-title="<i class='text-warning fa fa-warning'></i> Warning! This will reset all your widget settings." data-html="true">
-						<i class="fa fa-refresh"></i>
-					</span>
-				</span>
-
-				<ol class="breadcrumb">
-					<li><a href="<?php echo ADMIN_URL;?>">Home</a></li>
-					<li><a href="<?php echo ADMIN_URL;?>customerbalancemonitor">Customer balance monitor</a></li>
-					<li>Search</li>
-				</ol>
-
-			</div>
-
-			<div id="content">
-
-				<div class="row">
-					<div class="col-xs-12 col-sm-7 col-md-7 col-lg-4">
+	<div class="row">
+		<div class="col-xl-12">
+			<div class="panel">
+				<div class="panel-hdr">
+					<h2>Customerbalancemonitor <span class="fw-300"><i>Details</i></span></h2>
+					<div class="panel-toolbar">
+						<button class="btn btn-panel" data-action="panel-collapse" data-toggle="tooltip" data-offset="0,10" data-original-title="Collapse"></button>
+						<button class="btn btn-panel" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
+					</div>
+				</div>
+				<div class="panel-container show">
+					<div class="panel-content">
+<div class="row">
+					<div class="col-12 col-sm-7 col-md-7 col-lg-4">
 						<h1 class="page-title txt-color-blueDark"><i class="glyphicon glyphicon-list-alt"></i> Reports <span>&gt; Customer balance (excl. current period)</span></h1>
 					</div>
-					<div class="col-xs-12 col-sm-5 col-md-5 col-lg-8">
+					<div class="col-12 col-sm-5 col-md-5 col-lg-8">
 						<ul id="sparks" class="">
 							<li class="sparks-info">
 							<?php
@@ -68,7 +73,7 @@
 
 							<div class="panel panel-default">
 
-								<div class="widget-body">
+								
 
 									<fieldset>
 										<legend>
@@ -130,7 +135,7 @@
 										</div>
 										<div style="clear:both"></div>
 
-										<div class="col-xs-12" id="resultDiv" style="margin-top: 13px;"></div>
+										<div class="col-12" id="resultDiv" style="margin-top: 13px;"></div>
 
 									</fieldset>
 
@@ -146,149 +151,14 @@
 			</div>
 
 		</div>
-
-		<?php include('footer.php');?>
-
-	</body>
-
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</main>
+<?php include('footer.php'); ?>
+</body>
 </html>
 
-<script src="<?php echo base_url();?>js/plugin/datatables/jquery.dataTables.min.js"></script>
-<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.colVis.min.js"></script>
-<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.tableTools.min.js"></script>
-<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.bootstrap.min.js"></script>
-<script src="<?php echo base_url();?>js/plugin/datatable-responsive/datatables.responsive.min.js"></script>
-<script type="text/javascript">
-	$(document).ready(function() {
-		pageSetUp();
 
-		$('#search').on('click', function(evt) {
-			evt.preventDefault();
-			var zone = $("#zone").val();
-			var status = $("#status").val();
-			var special_privilege = $("#special_privilege").is(':checked') ? 1 : 0;
-			var only_with_balance = $("#only_with_balance").is(':checked') ? 1 : 0;
-			var batchOffset = 0;
-			var rowIndex = 1;
-			var grandTotal = 0;
-			var totalRows = 0;
-			var isDone = false;
-
-			$("#resultDiv").html(
-				'<div id="balanceProgress" class="alert alert-info">Loading balances in batches of 100...</div>' +
-				'<div class="row"><div class="col-lg-12 col-sm-12 col-xs-12 col-md-12">' +
-				'<p id="balanceGrandTotal" class="text-right" style="font-size:15px; margin-bottom:10px;"><strong>Sum of displayed balances (excl. active billing period):</strong> <span class="txt-color-blueDark">0.00</span></p>' +
-				'</div></div>' +
-				'<div class="table-responsive">' +
-				'<table id="balance_monitor_table" class="table table-bordered table-striped">' +
-				'<thead><tr><th data-hide="phone">#</th><th data-hide="phone">Customer ID</th><th data-hide="phone">Name</th><th data-hide="phone">Address</th><th data-hide="phone">Zone</th><th class="text-right">Balance (SOA excl. current period)</th><th data-hide="phone">Statement</th></tr></thead>' +
-				'<tbody></tbody></table></div>'
-			);
-
-			var $tbody = $("#balance_monitor_table tbody");
-			var $progress = $("#balanceProgress");
-			var $grandTotal = $("#balanceGrandTotal span");
-
-			function updateProgressLabel(done, nextOffset, total) {
-				var totalText = (typeof total === 'number' && total >= 0) ? total : '?';
-				if (done) {
-					$progress.removeClass('alert-info').addClass('alert-success').text('Done. Loaded ' + totalRows + ' displayed records.');
-				} else {
-					$progress.text('Processing records ' + nextOffset + ' of ' + totalText + '...');
-				}
-			}
-
-			function appendRows(rows) {
-				$.each(rows, function(_, row) {
-					var fullName = $.trim((row.first_name || '') + ' ' + (row.middle_name || '') + ' ' + (row.last_name || ''));
-					var balance = parseFloat(row.total_balance || 0);
-					var balanceClass = '';
-					if (balance > 0.005) {
-						balanceClass = 'text-danger';
-					} else if (balance < -0.005) {
-						balanceClass = 'text-success';
-					}
-
-					var $tr = $('<tr/>');
-					$tr.append($('<td/>').text(rowIndex));
-					$tr.append($('<td/>').text(row.customer_id || ''));
-					$tr.append($('<td/>').text(fullName));
-					$tr.append($('<td/>').text(row.address || ''));
-					$tr.append($('<td/>').text(row.zone_name || ''));
-					$tr.append($('<td/>').addClass('text-right').addClass(balanceClass).text(balance.toFixed(2)));
-					$tr.append($('<td/>').append(
-						$('<a/>', {
-							'href': row.statement_url || '#',
-							'target': '_blank',
-							'rel': 'noopener',
-							'class': 'btn btn-xs btn-default',
-							'text': 'Open SOA'
-						})
-					));
-					$tbody.append($tr);
-					rowIndex++;
-					totalRows++;
-				});
-			}
-
-			function finishTable() {
-				if (totalRows === 0) {
-					$tbody.append('<tr><td colspan="7" class="text-center">No records found</td></tr>');
-				}
-				var $tbl = $('#balance_monitor_table');
-				if ($.fn.dataTable && $tbl.length && totalRows > 0) {
-					if ($.fn.DataTable && $.fn.DataTable.isDataTable('#balance_monitor_table')) {
-						$tbl.DataTable().destroy();
-					}
-					$tbl.dataTable({
-						"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-12 hidden-xs'l>r>t<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
-						"autoWidth": true,
-						"order": [[5, "desc"]],
-						"oLanguage": {
-							"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-						}
-					});
-				}
-			}
-
-			function fetchNextBatch() {
-				$.ajax({
-					type: "POST",
-					url: "<?php echo ADMIN_URL;?>customerbalancemonitor/search_batch",
-					dataType: "json",
-					data: {
-						zone: zone,
-						status: status,
-						special_privilege: special_privilege,
-						only_with_balance: only_with_balance,
-						batch_offset: batchOffset
-					},
-					success: function(response) {
-						if (!response || response.ok !== true || !$.isArray(response.rows)) {
-							$("#resultDiv").html('<div class="alert alert-danger"><strong>Error loading data.</strong> Invalid server response.</div>');
-							return;
-						}
-
-						appendRows(response.rows);
-						grandTotal += parseFloat(response.batch_balance_sum || 0);
-						$grandTotal.text(grandTotal.toFixed(2));
-						batchOffset = parseInt(response.next_offset, 10) || batchOffset;
-						isDone = response.done === true;
-						updateProgressLabel(isDone, batchOffset, parseInt(response.total, 10));
-
-						if (isDone) {
-							finishTable();
-							return;
-						}
-						fetchNextBatch();
-					},
-					error: function(xhr) {
-						$("#resultDiv").html('<div class="alert alert-danger"><strong>Error loading data.</strong> Status: ' + (xhr ? xhr.status : '') + '</div>');
-					}
-				});
-			}
-
-			fetchNextBatch();
-		});
-	});
-</script>

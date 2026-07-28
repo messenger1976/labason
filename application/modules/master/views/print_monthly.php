@@ -67,11 +67,11 @@ function getPrint(){
                                         <div class="pull-right">
                                           <div class="">
 										   
-                                          <div class="col-xs-4">
+                                          <div class="col-4">
                                     <!--<a href="<?php echo ADMIN_URL; ?>news/fileDownload" class="add-link"><button class="btn btn-sm btn-primary" type="button">Export</button></a>--></div>
-                                    <div class="col-xs-4">
+                                    <div class="col-4">
                                     <!--<a href="#modal-form" role="button" class="blue" data-toggle="modal"><button class="btn btn-sm btn-primary" type="button">Import</button></a>--></div>
-                                    <div class="col-xs-5 pull-right">
+                                    <div class="col-5 pull-right">
 									
                                      
 									
@@ -156,7 +156,7 @@ function getPrint(){
 														<td><?php echo stripslashes($total); ?></td>
 														<td><?php echo stripslashes($row['month']); ?></td>
 														
-														<td><span <?php if($row['status']== 1){ echo " class='label label-success arrowed-in arrowed-in-right'"; } elseif($row['status']== 0){ echo "class='label label-danger arrowed'"; } ?>><a href="JavaScript:if(confirm('Are you sure want to Chanage the Status?')==true){window.location='<?php echo ADMIN_URL;?>paymentmonthlycustomer/status/<?php echo $row['id']?>/<?php echo $row['status'];?>/<?php echo $row['customer_id'];?>';}" style="color:#FFF; text-decoration:none;"> <?php if($row['status']== 1){ echo "Paid"; } elseif($row['status']== 0) { echo "Partial-Paid"; } ?></a></span></td>
+														<td><span <?php if($row['status']== 1){ echo " class='badge badge-success arrowed-in arrowed-in-right'"; } elseif($row['status']== 0){ echo "class='badge badge-danger arrowed'"; } ?>><a href="JavaScript:if(confirm('Are you sure want to Chanage the Status?')==true){window.location='<?php echo ADMIN_URL;?>paymentmonthlycustomer/status/<?php echo $row['id']?>/<?php echo $row['status'];?>/<?php echo $row['customer_id'];?>';}" style="color:#FFF; text-decoration:none;"> <?php if($row['status']== 1){ echo "Paid"; } elseif($row['status']== 0) { echo "Partial-Paid"; } ?></a></span></td>
 														   
 														<!--<td><div class="visible-md visible-lg hidden-sm hidden-xs action-buttons">
 															

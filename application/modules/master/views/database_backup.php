@@ -1,92 +1,55 @@
-<!DOCTYPE html>
-<html lang="en-us">
-	<head>
-		<meta charset="utf-8">
-		<title> SmartAdmin </title>
-		<meta name="description" content="">
-		<meta name="author" content="">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-	</head>
-	
-<!-- MAIN PANEL -->
-		<div id="main" role="main">
+<?php
+	$sa4_page_icon = 'fal fa-th-list';
+	$sa4_page_title = 'Manage';
+	$sa4_page_subtitle = 'Database Backup';
+	$sa4_loading_label = 'Database Backup';
+	$sa4_dt_entity = 'database backup';
+	$sa4_panel_id = 'panel-database-backup';
+?>
+<main id="js-page-content" role="main" class="page-content">
+	<ol class="breadcrumb page-breadcrumb">
+		<li class="breadcrumb-item"><a href="<?php echo base_url();?>index.php/master/dashboard">Home</a></li>
+		<li class="breadcrumb-item"><a href="<?php echo base_url();?>index.php/master/database_backup/">Database Backup</a></li>
+		<li class="breadcrumb-item active">List View</li>
+		<li class="position-absolute pos-top pos-right d-sm-block"><span class="js-get-date"></span></li>
+	</ol>
+<?php include(__DIR__ . '/partials/sa4_kpi_subheader.php'); ?>
 
-			<!-- RIBBON -->
-			<div id="ribbon">
-				<span class="ribbon-button-alignment"> 
-					<span id="refresh" class="btn btn-ribbon" data-action="resetWidgets" data-title="refresh"  rel="tooltip" data-placement="bottom" data-original-title="<i class='text-warning fa fa-warning'></i> Warning! This will reset all your widget settings." data-html="true">
-						<i class="fa fa-refresh"></i>
-					</span> 
-				</span>
+	<?php if ($this->session->flashdata('msg_succ')) { ?>
+	<div class="alert alert-success alert-dismissible fade show" role="alert">
+		<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+			<span aria-hidden="true"><i class="fal fa-times"></i></span>
+		</button>
+		<strong>Success!</strong> <?php echo $this->session->flashdata('msg_succ'); ?>
+	</div>
+	<?php } ?>
 
-				<!-- breadcrumb -->
-				<ol class="breadcrumb">
-					<li><a href="<?php echo base_url();?>index.php/master/dashboard">Home</a></li>
-					<li><a href="<?php echo base_url();?>index.php/master/database_backup/"> Database Backup </a></li>
-					<li>List View</li>
-				</ol>
-			</div>
-			<!-- END RIBBON -->
-
-			<!-- MAIN CONTENT -->
-			<div id="content">
-
-				<div class="row">
-					<div class="col-xs-12 col-sm-7 col-md-7 col-lg-4">
-						<h1 class="page-title txt-color-blueDark"><i class="fa-fw fa fa-database"></i> Database <span>> Backup Management </span></h1>
+	<section id="widget-grid" class="">
+		<link rel="stylesheet" media="screen, print" href="<?php echo base_url(); ?>sa4/css/datagrid/datatables/datatables.bundle.css">
+		<div class="row">
+			<div class="col-xl-12">
+				<div id="panel-database-backup" class="panel">
+					<div class="panel-hdr">
+						<h2>Database Backup <span class="fw-300"><i>Listing</i></span></h2>
+						<div class="panel-toolbar">
+							<button class="btn btn-panel" data-action="panel-collapse" data-toggle="tooltip" data-offset="0,10" data-original-title="Collapse"></button>
+							<button class="btn btn-panel" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
+						</div>
 					</div>
-				</div>
-				
-				<!-- Success/Error Messages -->
-				<?php if($this->session->flashdata('msg_succ')): ?>
-					<div class="alert alert-success fade in">
-						<button class="close" data-dismiss="alert">×</button>
-						<i class="fa-fw fa fa-check"></i>
-						<strong>Success!</strong> <?php echo $this->session->flashdata('msg_succ'); ?>
-					</div>
-				<?php endif; ?>
-				
-				<?php if($this->session->flashdata('msg_err')): ?>
-					<div class="alert alert-danger fade in">
-						<button class="close" data-dismiss="alert">×</button>
-						<i class="fa-fw fa fa-times"></i>
-						<strong>Error!</strong> <?php echo $this->session->flashdata('msg_err'); ?>
-					</div>
-				<?php endif; ?>
-				
-				<!-- widget grid -->
-				<section id="widget-grid" class="">
+					<div class="panel-container show">
+						<div class="panel-content">
+							
 
-					<!-- row -->
-					<div class="row">
-				
-						<!-- NEW WIDGET START -->
-						<article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-				
-							<!-- Widget ID (each widget will need unique ID)-->
-							<div class="jarviswidget jarviswidget-color-darken" id="wid-id-0" data-widget-editbutton="false">
-								
-								<header style="height: 42px;">
-									<span class="widget-icon"> <i class="fa fa-database"></i> </span>
-									<p style="padding: 5px 0 0 45px;font-size: 16px;"><strong>Database Backups</strong>
-									</p>
-									<div class="widget-toolbar" role="menu">
-										<?php 
-										$header_data = isset($data['header']) ? $data['header'] : array();
-										$roleResponsible = isset($header_data['roleResponsible']['database_backup']) ? $header_data['roleResponsible']['database_backup'] : array();
-										if($this->session->userdata('usertype') != 'subadmin' || (is_array($roleResponsible) && in_array('a', $roleResponsible))): ?>
-											<a href="<?php echo base_url();?>index.php/master/database_backup/create" class="btn btn-primary btn-sm">
-												<i class="fa fa-plus"></i> Create Backup
-											</a>
-										<?php endif; ?>
+								<div class="row mb-3 align-items-end">
+
+
+									<div class="col-sm-6 col-md-6 text-right">
+										<a href="<?php echo base_url();?>index.php/master/database_backup/create" class="btn btn-success btn-sm waves-effect waves-themed">
+											<i class="fal fa-plus mr-1"></i> Create Backup
+										</a>
 									</div>
-								</header>
-				
-								<!-- widget div-->
-								<div>
-									<!-- widget content -->
-									<div class="widget-body no-padding">
-									   <table id="dt_basic" class="table table-striped table-bordered table-hover" width="100%">
+								</div>
+								<table id="dt_basic" class="table table-striped table-bordered table-hover" width="100%">
 										
 											<thead>			                
 												<tr>
@@ -112,37 +75,37 @@
 													<td><?php echo $row['created_by'];?></td>
 													<td><?php echo date('Y-m-d H:i:s', strtotime($row['created_at']));?></td>
 													<td>
-													    <div class="visible-md visible-lg hidden-sm hidden-xs action-buttons">
+													    <div class=" action-buttons">
 															<?php 
 															$header_data = isset($data['header']) ? $data['header'] : array();
 															$roleResponsible = isset($header_data['roleResponsible']['database_backup']) ? $header_data['roleResponsible']['database_backup'] : array();
 															if($this->session->userdata('usertype') != 'subadmin' || (is_array($roleResponsible) && in_array('l', $roleResponsible))): ?>
 																<a class="blue" href="<?php echo base_url();?>index.php/master/database_backup/download/<?php echo $row['id']; ?>" title="Download">
-																	<i class="fa fa-download"></i>
+																	<i class="fal fa-download"></i>
 																</a>
 															<?php endif; ?>
 															
 															<?php 
 															if($this->session->userdata('usertype') != 'subadmin' || (is_array($roleResponsible) && in_array('a', $roleResponsible))): ?>
 																<a class="green" href="<?php echo base_url();?>index.php/master/database_backup/restore/<?php echo $row['id']; ?>" title="Restore" onclick="return confirm('Are you sure you want to restore this backup? This will overwrite the current database!');">
-																	<i class="fa fa-undo"></i>
+																	<i class="fal fa-undo"></i>
 																</a>
 															<?php endif; ?>
 															
 															<?php 
 															if($this->session->userdata('usertype') != 'subadmin' || (is_array($roleResponsible) && in_array('d', $roleResponsible))): ?>
 																<a class="red" href="<?php echo base_url();?>index.php/master/database_backup/delete/<?php echo $row['id']; ?>" title="Delete" onclick="return confirm('Are you sure you want to delete this backup?');">
-																	<i class="fa fa-trash"></i>
+																	<i class="fal fa-trash"></i>
 																</a>
 															<?php endif; ?>
 														</div>
-														<div class="visible-xs visible-sm hidden-md hidden-lg">
+														<div class="">
 															<div class="inline position-relative">
 																<button class="btn btn-minier btn-yellow dropdown-toggle" data-toggle="dropdown">
-																	<i class="icon-caret-down icon-only bigger-120"></i>
+																	<i class="fal fa-caret-down icon-only bigger-120"></i>
 																</button>
 																	
-																<ul class="dropdown-menu dropdown-only-icon dropdown-yellow pull-right dropdown-caret dropdown-close">
+																<ul class="dropdown-menu dropdown-only-icon dropdown-yellow float-right dropdown-caret dropdown-close">
 																	<?php 
 																	$header_data = isset($data['header']) ? $data['header'] : array();
 																	$roleResponsible = isset($header_data['roleResponsible']['database_backup']) ? $header_data['roleResponsible']['database_backup'] : array();
@@ -150,7 +113,7 @@
 																		<li>
 																			<a href="<?php echo base_url();?>index.php/master/database_backup/download/<?php echo $row['id']; ?>" class="tooltip-info" data-rel="tooltip" title="Download">
 																				<span class="blue">
-																					<i class="fa fa-download bigger-120"></i>
+																					<i class="fal fa-download bigger-120"></i>
 																				</span>
 																			</a>
 																		</li>
@@ -161,7 +124,7 @@
 																		<li>
 																			<a href="<?php echo base_url();?>index.php/master/database_backup/restore/<?php echo $row['id']; ?>" class="tooltip-success" data-rel="tooltip" title="Restore" onclick="return confirm('Are you sure you want to restore this backup? This will overwrite the current database!');">
 																				<span class="green">
-																					<i class="fa fa-undo bigger-120"></i>
+																					<i class="fal fa-undo bigger-120"></i>
 																				</span>
 																			</a>
 																		</li>
@@ -172,7 +135,7 @@
 																		<li>
 																			<a href="<?php echo base_url();?>index.php/master/database_backup/delete/<?php echo $row['id']; ?>" class="tooltip-error" data-rel="tooltip" title="Delete" onclick="return confirm('Are you sure you want to delete this backup?');">
 																				<span class="red">
-																					<i class="fa fa-trash bigger-120"></i>
+																					<i class="fal fa-trash bigger-120"></i>
 																				</span>
 																			</a>
 																		</li>
@@ -190,81 +153,18 @@
 												<?php } ?>	
 											</tbody>
 										</table>
-									</div>
-									<!-- end widget content -->
-								</div>
-								<!-- end widget div -->
-				
-							</div>
-							<!-- end widget -->
-				
-						</article>
-						<!-- WIDGET END -->
-				
+							
+						</div>
 					</div>
-				
-					<!-- end row -->
-
-				</section>
-				<!-- end widget grid -->
-
+				</div>
 			</div>
-			<!-- END MAIN CONTENT -->
-
 		</div>
-		<!-- END MAIN PANEL -->
-		
+	</section>
+</main>
 
-		<?php include('footer.php');?>
-
-	</body>
-
+<?php include(__DIR__ . '/partials/sa4_dt_loading.php'); ?>
+<?php include('footer.php'); ?>
+<?php include(__DIR__ . '/partials/sa4_dt_init.js.php'); ?>
+</body>
 </html>
-<!-- PAGE RELATED PLUGIN(S) -->
-		<script src="<?php echo base_url();?>js/plugin/datatables/jquery.dataTables.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.colVis.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.tableTools.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.bootstrap.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatable-responsive/datatables.responsive.min.js"></script>
-		<script type="text/javascript">
-		
-		// DO NOT REMOVE : GLOBAL FUNCTIONS!
-		
-		$(document).ready(function() {
-			
-			pageSetUp();
-			
-			/* BASIC */
-				var responsiveHelper_dt_basic = undefined;
-				var breakpointDefinition = {
-					tablet : 1024,
-					phone : 480
-				};
-	
-				$('#dt_basic').dataTable({
-					"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-12 hidden-xs'l>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
-					"autoWidth" : true,
-			        "oLanguage": {
-					    "sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-					},
-					"preDrawCallback" : function() {
-						if (!responsiveHelper_dt_basic) {
-							responsiveHelper_dt_basic = new ResponsiveDatatablesHelper($('#dt_basic'), breakpointDefinition);
-						}
-					},
-					"rowCallback" : function(nRow) {
-						responsiveHelper_dt_basic.createExpandIcon(nRow);
-					},
-					"drawCallback" : function(oSettings) {
-						responsiveHelper_dt_basic.respond();
-					}
-				});
-			
-			/* END BASIC */
-		
-		})
-
-		</script>
 

@@ -1,35 +1,31 @@
+<main id="js-page-content" role="main" class="page-content">
+	<ol class="breadcrumb page-breadcrumb">
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL;?>dashboard">Home</a></li>
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL;?>createbalanceforward">Create Balance Forward</a></li>
+		<li class="breadcrumb-item active">List View</li>
+		<li class="position-absolute pos-top pos-right d-none d-sm-block"><span class="js-get-date"></span></li>
+	</ol>
+	<div class="subheader">
+		<h1 class="subheader-title">
+			<i class="subheader-icon fal fa-th-list"></i>
+			Manage <span class="fw-300">Createbalanceforward</span>
+		</h1>
+	</div>
 
-<!-- MAIN PANEL -->
-		<div id="main" role="main">
 
-			<!-- RIBBON -->
-			<div id="ribbon">
-
-				<span class="ribbon-button-alignment"> 
-					<span id="refresh" class="btn btn-ribbon" data-action="resetWidgets" data-title="refresh"  rel="tooltip" data-placement="bottom" data-original-title="<i class='text-warning fa fa-warning'></i> Warning! This will reset all your widget settings." data-html="true">
-						<i class="fa fa-refresh"></i>
-					</span> 
-				</span>
-
-				<!-- breadcrumb -->
-				<ol class="breadcrumb">
-					<li><a href="<?php echo ADMIN_URL;?>dashboard">Home</a></li>
-					<li><a href="<?php echo ADMIN_URL;?>createbalanceforward"> Create Balance Forward </a></li>
-					<li>List View</li>
-				</ol>
-				
-			</div>
-			<!-- END RIBBON -->
-
-			<!-- MAIN CONTENT -->
-			<div id="content">
-				<div class="row">
-					<div class="col-xs-12 col-sm-7 col-md-7 col-lg-4">
-						<h1 class="page-title txt-color-blueDark"><i class="fa-fw fa fa-home"></i> View <span>> Create Balance Forward</span></h1>
+	<div class="row">
+		<div class="col-xl-12">
+			<div class="panel">
+				<div class="panel-hdr">
+					<h2>Createbalanceforward <span class="fw-300"><i>Details</i></span></h2>
+					<div class="panel-toolbar">
+						<button class="btn btn-panel" data-action="panel-collapse" data-toggle="tooltip" data-offset="0,10" data-original-title="Collapse"></button>
+						<button class="btn btn-panel" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
 					</div>
 				</div>
-				<!-- widget grid -->
-				<section id="widget-grid" class="">
+				<div class="panel-container show">
+					<div class="panel-content">
+<section id="widget-grid" class="">
 
 					<!-- row -->
 					<div class="row">
@@ -39,7 +35,7 @@
                             <!-- your contents here -->
                             <div class="panel panel-default">
                                 
-                                <div class="widget-body">
+                                
             
                                     <div class="form-horizontal" >
                                         
@@ -115,7 +111,7 @@
                         </div>
                         <div class="col-sm-6 col-lg-12" id="progressBarDiv" style="margin-top: 13px; display:none;">
                             <div class="panel panel-default">
-                                <div class="widget-body">
+                                
                                     <h4>Processing Balance Forward...</h4>
                                     <div class="progress" style="height: 35px;">
                                         <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
@@ -137,29 +133,16 @@
 
 				</section>
 				<!-- end widget grid -->
-
+					</div>
+				</div>
 			</div>
-			<!-- END MAIN CONTENT -->
-
 		</div>
-		<!-- END MAIN PANEL -->
-		
-
-
-		<?php include('footer.php');?>
-
-	</body>
-
+	</div>
+</main>
+<?php include('footer.php'); ?>
+</body>
 </html>
-<!-- PAGE RELATED PLUGIN(S) -->
-		<!-- SweetAlert2 -->
-		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/jquery.dataTables.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.colVis.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.tableTools.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.bootstrap.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatable-responsive/datatables.responsive.min.js"></script>
-		<script type="text/javascript">
+<script type="text/javascript">
 		
 		// DO NOT REMOVE : GLOBAL FUNCTIONS!
 		

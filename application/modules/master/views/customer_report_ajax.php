@@ -1,5 +1,5 @@
 <div class="row">
-	<div class="col-lg-12 col-sm-12 col-xs-12 col-md-12">
+	<div class="col-lg-12 col-sm-12 col-12 col-md-12">
 		<?php
             // Check if record exists and is an array
             if(isset($record) && is_array($record) && count($record) > 0){
@@ -41,11 +41,11 @@
 							<span <?php 
 								$status_val = isset($row['status']) ? $row['status'] : '';
 								if($status_val == '1' || $status_val === 1){ 
-									echo " class='label label-success arrowed-in arrowed-in-right'"; 
+									echo " class='badge badge-success arrowed-in arrowed-in-right'"; 
 								} else if($status_val == '0' || $status_val === 0){ 
-									echo "class='label label-warning arrowed'";
+									echo "class='badge badge-warning arrowed'";
 								} else if($status_val == '2' || $status_val === 2){ 
-									echo "class='label label-danger arrowed'";
+									echo "class='badge badge-danger arrowed'";
 								} else {
 									echo "class='label label-default arrowed'";
 								}

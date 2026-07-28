@@ -1,5 +1,5 @@
 <div class="row">
-	<div class="col-lg-12 col-sm-12 col-xs-12 col-md-12">
+	<div class="col-lg-12 col-sm-12 col-12 col-md-12">
 		<?php
             if(count($record) > 0){
                 foreach($record as $key => $row){ 
@@ -101,9 +101,9 @@
 			};
 	
 			$('#dt_basic').dataTable({
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-12 hidden-xs'l>r>"+
+				"sDom": "<'dt-toolbar'<'col-12 col-sm-6'f><'col-sm-6 col-12 hidden-xs'l>r>"+
 					"t"+
-					"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
+					"<'dt-toolbar-footer'<'col-sm-6 col-12 hidden-xs'i><'col-12 col-sm-6'p>>",
 				"autoWidth" : true,
 		        "oLanguage": {
 				    "sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
@@ -154,7 +154,7 @@
 						if(resp && resp.success){
 							$row.find('.current-arrears-cell').text(parseFloat(resp.current_arrears).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}));
 							$row.css({"background-color":"", "color":""});
-							$btn.closest('td').html('<span class="label label-success">Updated</span>');
+							$btn.closest('td').html('<span class="badge badge-success">Updated</span>');
 							Swal.fire({ icon: "success", title: "Updated!", text: "Current Billing Period Arrears was updated." });
 						}else{
 							Swal.fire({ icon: "error", title: "Failed", text: resp && resp.message ? resp.message : "Unable to update arrears." });

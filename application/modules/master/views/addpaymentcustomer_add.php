@@ -1,137 +1,129 @@
-<!-- MAIN PANEL -->
-		<div id="main" role="main">
+<link rel="stylesheet" media="screen, print" href="<?php echo base_url(); ?>sa4/css/formplugins/select2/select2.bundle.css">
+<link rel="stylesheet" media="screen, print" href="<?php echo base_url(); ?>sa4/css/datagrid/datatables/datatables.bundle.css">
+<link rel="stylesheet" media="screen, print" href="<?php echo base_url(); ?>sa4/css/formplugins/bootstrap-datepicker/bootstrap-datepicker.css">
+<?php
+	$income1 = $this->comm_model->get_income_metercustomer();
+	extract($income1);
+	$income2 = $this->comm_model->get_income_monthlycustomer();
+	extract($income2);
+	$intotal = (isset($total1) ? (float)$total1 : 0) + (isset($total2) ? (float)$total2 : 0);
 
-			<!-- RIBBON -->
-			<div id="ribbon">
+	$expense1 = $this->my_model->get_outcome_expenses();
+	extract($expense1);
+	$expense2 = $this->my_model->get_outcome_payroll();
+	extract($expense2);
+	$extotal = (isset($extotal1) ? (float)$extotal1 : 0) + (isset($extotal2) ? (float)$extotal2 : 0);
 
-				<span class="ribbon-button-alignment"> 
-					<span id="refresh" class="btn btn-ribbon" data-action="resetWidgets" data-title="refresh"  rel="tooltip" data-placement="bottom" data-original-title="<i class='text-warning fa fa-warning'></i> Warning! This will reset all your widget settings." data-html="true">
-						<i class="fa fa-refresh"></i>
-					</span> 
+	$total_customer = $this->my_model->total_customer();
+	extract($total_customer);
+?>
+<main id="js-page-content" role="main" class="page-content">
+	<ol class="breadcrumb page-breadcrumb">
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>">Home</a></li>
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>addpaymentcustomer/">Meter Customer Bills</a></li>
+		<li class="breadcrumb-item active">Add</li>
+		<li class="position-absolute pos-top pos-right d-none d-sm-block"><span class="js-get-date"></span></li>
+	</ol>
+
+	<div class="subheader">
+		<h1 class="subheader-title">
+			<i class="subheader-icon fal fa-wallet"></i>
+			Manage <span class="fw-300">Customer Payment</span>
+		</h1>
+		<div class="subheader-block d-lg-flex align-items-center">
+			<div class="d-inline-flex flex-column justify-content-center mr-3">
+				<span class="fw-300 fs-xs d-block opacity-50">
+					<small>INCOME</small>
 				</span>
-
-				<!-- breadcrumb -->
-				<ol class="breadcrumb">
-					<li><a href="<?php echo ADMIN_URL;?>">Home</a></li>
-					<li><a href="<?php echo ADMIN_URL;?>addpaymentcustomer/">Meter Customer Bills</a></li>
-					<li>Add</li>
-				</ol>
-				
+				<span class="fw-500 fs-xl d-block color-primary-500">
+					₱ <?php echo number_format($intotal, 2); ?>
+				</span>
 			</div>
-			<!-- END RIBBON -->
+			<span class="sparklines hidden-lg-down" sparkType="bar" sparkBarColor="#886ab5" sparkHeight="32px" sparkBarWidth="5px" values="3,4,3,6,7,3,3,6,2,6,4"></span>
+		</div>
+		<div class="subheader-block d-lg-flex align-items-center border-faded border-right-0 border-top-0 border-bottom-0 ml-3 pl-3">
+			<div class="d-inline-flex flex-column justify-content-center mr-3">
+				<span class="fw-300 fs-xs d-block opacity-50">
+					<small>EXPENSE</small>
+				</span>
+				<span class="fw-500 fs-xl d-block color-danger-500">
+					₱ <?php echo number_format($extotal, 2); ?>
+				</span>
+			</div>
+			<span class="sparklines hidden-lg-down" sparkType="bar" sparkBarColor="#fe6bb0" sparkHeight="32px" sparkBarWidth="5px" values="1,4,3,6,5,3,9,6,5,9,7"></span>
+		</div>
+		<div class="subheader-block d-lg-flex align-items-center border-faded border-right-0 border-top-0 border-bottom-0 ml-3 pl-3">
+			<div class="d-inline-flex flex-column justify-content-center mr-3">
+				<span class="fw-300 fs-xs d-block opacity-50">
+					<small>TOTAL CUSTOMER</small>
+				</span>
+				<span class="fw-500 fs-xl d-block color-success-500">
+					<?php echo (int) $count_id; ?>
+				</span>
+			</div>
+			<span class="sparklines hidden-lg-down" sparkType="bar" sparkBarColor="#1dc9b7" sparkHeight="32px" sparkBarWidth="5px" values="2,5,3,7,4,6,3,8,5,4,6"></span>
+		</div>
+	</div>
 
-			<!-- MAIN CONTENT -->
-			<div id="content">
+	<?php if (!empty($msg)) { ?>
+	<div class="alert alert-success alert-dismissible fade show" role="alert">
+		<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+			<span aria-hidden="true"><i class="fal fa-times"></i></span>
+		</button>
+		<?php echo $msg; ?>
+	</div>
+	<?php } ?>
 
-				<div class="row">
-					<div class="col-xs-12 col-sm-7 col-md-7 col-lg-4">
-						<h1 class="page-title txt-color-blueDark"><i class="fa fa-pencil-square-o fa-fw"></i>add <span>>  Meter Customer Bills </span></h1>
-					</div>
-					<div class="col-xs-12 col-sm-5 col-md-5 col-lg-8">
-						<ul id="sparks" class="">
-							<li class="sparks-info">
-							<?php 
-							     $income1 = $this->comm_model->get_income_metercustomer();
-							     extract($income1);
-								 $income2 = $this->comm_model->get_income_monthlycustomer();
-								 extract($income2);
-								 $intotal = $total1 + $total2;
-							?>
-								<h5> Income <span class="txt-color-blue">PHP <?php print_r(number_format($intotal,2));?></span></h5>
-								<div class="sparkline txt-color-blue hidden-mobile hidden-md hidden-sm">
-									
-								</div>
-							</li>
-							<?php
-							     $expense1 = $this->my_model->get_outcome_expenses();
-							     extract($expense1);
-								 $expense2 = $this->my_model->get_outcome_payroll();
-								 extract($expense2);
-								 $extotal = $extotal1 + $extotal2;
-							?>
-							<li class="sparks-info">
-								<h5> Expense <span class="txt-color-purple">PHP <?php print_r(number_format($extotal,2));?></span></h5>
-								<div class="sparkline txt-color-purple hidden-mobile hidden-md hidden-sm">
-									
-								</div>
-							</li>
-							<?php 
-							     $total_customer = $this->my_model->total_customer();
-							     extract($total_customer); 
-							?>
-							<li class="sparks-info">
-								<h5> Total Customer <span class="txt-color-greenDark">&nbsp;<?php print_r($count_id);?></span></h5>
-								<div class="sparkline txt-color-greenDark hidden-mobile hidden-md hidden-sm">
-									
-								</div>
-							</li>
-						</ul>
+	<div class="row">
+		<div class="col-xl-12">
+			<div id="panel-payment-add" class="panel">
+				<div class="panel-hdr">
+					<h2>
+						Meter Customer Bills <span class="fw-300"><i>Add Payment</i></span>
+					</h2>
+					<div class="panel-toolbar">
+						<button class="btn btn-panel" data-action="panel-collapse" data-toggle="tooltip" data-offset="0,10" data-original-title="Collapse"></button>
+						<button class="btn btn-panel" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
 					</div>
 				</div>
-				<!-- widget grid -->
-				<section id="widget-grid" class="">
-
-					<!-- row -->
-
-					<div class="row">
-
-						<!-- a blank row to get started -->
-						<div class="col-sm-6 col-lg-12">
-						
-
-								<!-- your contents here -->
-								<div class="panel panel-default">
-									
-									<div class="widget-body">
-				
-										
-										  	
-											<?php if($msg != ''){?>
-											<div class="alert alert-block alert-success">
-												<button type="button" class="close" data-dismiss="alert">
-												<i class="icon-remove"></i>
-												</button>
-												<p>
-													<i class="icon-ok"></i>
-													<?php echo $msg?$msg:'';?>
-												</p>
-											</div>
-											<?php } ?>	
-											
-											<fieldset>
-														<legend>Meter Customer Bills -Add </legend>
-													<div class="form-group col-lg-6">
-														<div class="col-lg-12 controls">
-															<div class="form-group">
-														   		<span class="input-group-addon"><i class="icon-user"></i><strong>Search : </strong></span>
-																<select class="form-control"  id="search_box_id" name="search_box_id" id="search_box_id" placeholder="Type text to search..." required>
-																		
-																		<?php
-																		$selected = $member_id;
-																		foreach ($record as $key => $value) {
-																			?>
-																			<option <?php echo ($selected ? ($selected == $value->member_id ? 'selected="selected"' : '') : ''); ?> value="<?php echo $value['customer_id']; ?>"> <?php echo $value['customer_id'] . ' ==> ' . $value['last_name'] . ', ' . $value['first_name'] . ' ' . $value['middle_name']; ?></option>
-																		<?php }
-																		?>
-																	</select>
-
-																	<!--<input  class="form-control"  id="search_box_id" name="name" id="name" required/>-->
-																<?php echo form_error('search_box_id'); ?>
-															</div>
-														</div>
-													</div>
-															<!--<input type="submit" class="form-control"  id="btn_search_box" name="btn_search_box" id="btn_search_box" value="search" style=" width: auto;">-->
-															<input type="submit" class="form-control"  id="btn_search_box" name="btn_search_box" value = "Search" style="width: auto; float: left;  background: #3276b1; color:#fff;" /> 
-															<a href="<?php echo ADMIN_URL;?>addpaymentcustomer" id="btn_search_cancel" class="btn btn-default" name="btn_search_cancel" style="width: auto; float: left;margin-left: 10px;">Back</a> 
-													</div>
-
-
-
+				<div class="panel-container show">
+					<div class="panel-content">
+						<div class="row mb-3 align-items-end">
+							<div class="col-md-7 col-lg-8 col-xl-9">
+								<label class="form-label" for="search_box_id">Search Customer</label>
+								<select class="form-control" id="search_box_id" name="search_box_id" data-placeholder="Type to search customer ID or name...">
+									<option value=""></option>
+									<?php
+									if (!empty($record)) {
+										foreach ($record as $value) {
+											$cid = isset($value['customer_id']) ? $value['customer_id'] : '';
+											$label = $cid . ' ==> ' . (isset($value['last_name']) ? $value['last_name'] : '') . ', ' . (isset($value['first_name']) ? $value['first_name'] : '') . ' ' . (isset($value['middle_name']) ? $value['middle_name'] : '');
+									?>
+									<option value="<?php echo htmlspecialchars($cid, ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($label, ENT_QUOTES, 'UTF-8'); ?></option>
+									<?php
+										}
+									}
+									?>
+								</select>
+								<?php echo form_error('search_box_id'); ?>
+							</div>
+							<div class="col-md-5 col-lg-4 col-xl-3">
+								<label class="form-label d-none d-md-block">&nbsp;</label>
+								<div class="d-flex flex-wrap align-items-center">
+									<button type="button" id="btn_search_box" name="btn_search_box" class="btn btn-primary waves-effect waves-themed mr-2 mb-1">
+										<i class="fal fa-search mr-1"></i> Search
+									</button>
+									<a href="<?php echo ADMIN_URL; ?>addpaymentcustomer" id="btn_search_cancel" class="btn btn-secondary waves-effect waves-themed mb-1">
+										<i class="fal fa-arrow-left mr-1"></i> Back
+									</a>
+								</div>
+							</div>
+						</div>
 													<form class="form-horizontal" role="form" name="myform" id="myform" method="POST" action="" enctype="multipart/form-data">
 
 														<div id="names">
 														</div>	
-														<div class="col-xs-12" id="meterincomeDiv" style="margin-top: 13px; margin-bottom:20px;"></div> 
+														<div class="col-12" id="meterincomeDiv" style="margin-top: 13px; margin-bottom:20px;"></div> 
 
 														<input type="hidden" name="customer_id" id="customer_id" value="">
 														<input type="hidden" name="fullname" id="fullname" value="">
@@ -144,279 +136,184 @@
 
 														<div style="clear:both"></div>
 														
-										<div class="modal" id="myModalPay" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-											<div class="modal-dialog">
-												<div class="modal-content">
-												<div class="modal-header">
-													<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
-														&times;
-													</button>
-													<h4 class="modal-title" id="myModalLabel">Cash Payment Module</h4>
-												</div>
-													<div class="modal-body">
-
-														<div id="hideclass" style="display:none; padding:20px; box-shadow: 0px 0px 3px 1px rgba(0,0,0,0.75); margin: 0px;" >
+										<div class="modal fade" id="myModalPay" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+											<div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+												<div class="modal-content border-0 shadow-3">
+													<div class="modal-header bg-primary-600 bg-primary-gradient">
+														<h5 class="modal-title text-white" id="myModalLabel">
+															<i class="fal fa-cash-register mr-2"></i>Cash Payment Module
+														</h5>
+														<button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+															<span aria-hidden="true"><i class="fal fa-times"></i></span>
+														</button>
+													</div>
+													<div class="modal-body p-4">
+														<div id="hideclass" style="display:none;">
 															<div class="row">
-																<div class="col-md-12 controls">
-																	<div class="form-group" style="width: 100%;">
-																		<label class="col-md-5 control-label" for="or_num" style="text-align:right;"> OR/SI # : (<span style="color:red;font-style:italic;">*</span>)</label>
-																		<div class="col-md-7">
-																			<input type="text" class="form-control text-input" id="or_num" name="or_num" value="<?php echo $this->input->post('or_num'); ?>" required autocomplete="off" title="Editable. Must be unique for your teller; validated when you change the value and again on save."/>
-																			<small class="help-block">Suggested next number loads automatically; you may change it. Duplicates for your login are not allowed.</small>
-																			<small id="or_num_feedback" class="help-block" style="color:#a94442;"></small>
-																			<?php echo form_error('or_num'); ?>
-																		</div>
+																<div class="col-md-6">
+																	<div class="form-group">
+																		<label class="form-label" for="or_num">OR/SI # <span class="text-danger">*</span></label>
+																		<input type="text" class="form-control form-control-lg text-input" id="or_num" name="or_num" value="<?php echo $this->input->post('or_num'); ?>" required autocomplete="off" title="Editable. Must be unique for your teller; validated when you change the value and again on save."/>
+																		<small class="form-text text-muted">Suggested next number loads automatically; duplicates for your login are not allowed.</small>
+																		<small id="or_num_feedback" class="form-text text-danger"></small>
+																		<?php echo form_error('or_num'); ?>
 																	</div>
 																</div>
-															</div>
-
-															<div class="row">
-																<div class="col-md-12 controls">
-																	<div class="form-group" style=" width: 100%; ">
-																		<label class="col-md-5 control-label" for="transdate" style="text-align:right;">Transaction Date : (<span style="color:red;font-style:italic;">*</span>)</label>
-																		<div class="col-md-7">
-																			<input  type="text"  class="form-control"  id="transdate" name="transdate"  value="<?php echo $this->input->post('transdate')!=''?$this->input->post('transdate'):Date('d-m-Y'); ?>" required/>
-																			<?php echo form_error('transdate'); ?>
-																		</div>
+																<div class="col-md-6">
+																	<div class="form-group">
+																		<label class="form-label" for="transdate">Transaction Date <span class="text-danger">*</span></label>
+																		<input type="text" class="form-control form-control-lg" id="transdate" name="transdate" value="<?php echo $this->input->post('transdate')!=''?$this->input->post('transdate'):Date('d-m-Y'); ?>" required/>
+																		<?php echo form_error('transdate'); ?>
 																	</div>
 																</div>
 															</div>
 
-														  <div id="total_setting_1">	
-															<div class="row">
-																<div class="col-md-12 controls">
-																	<div class="form-group" style="width: 100%;">
-																		<label class="col-md-5 control-label" style="text-align:right;">Current Bill Amount : </label>
-																		<div class="col-md-7">
-																			<div class="test_deep"><h1>&#8369;&nbsp;&nbsp;<span id="deepmala">0</span></h1></div>
-																			<input type="hidden"  class="form-control"  id="paid_total_amount" name="paid_total_amount"  value="<?php echo $this->input->post('paid_total_amount'); ?>" readonly ="readonly"/>
-																			<input type="hidden"  class="form-control"  id="time_format" name="time_format"  value="WTME-<?php echo strtotime("now"); ?>" readonly ="readonly"/>
+															<div id="total_setting_1">
+																<div class="row mb-3">
+																	<div class="col-md-12">
+																		<div class="p-3 rounded border bg-faded">
+																			<span class="d-block text-muted fs-sm mb-1">Current Bill Amount</span>
+																			<div class="test_deep h2 mb-0 color-primary-500 fw-500">&#8369;&nbsp;<span id="deepmala">0</span></div>
+																			<input type="hidden" class="form-control" id="paid_total_amount" name="paid_total_amount" value="<?php echo $this->input->post('paid_total_amount'); ?>" readonly="readonly"/>
+																			<input type="hidden" class="form-control" id="time_format" name="time_format" value="WTME-<?php echo strtotime("now"); ?>" readonly="readonly"/>
+																		</div>
+																	</div>
+																</div>
+																<div style="display:none;">
+																	<input type="text" class="form-control" id="current_reading" name="current_reading" value="<?php echo $this->input->post('current_reading'); ?>" readonly="readonly"/>
+																	<input type="text" class="form-control" id="oldmeter" name="oldmeter" value="<?php echo $this->input->post('oldmeter'); ?>" readonly="readonly"/>
+																	<input type="text" class="form-control" id="month_name" name="month_name" value="" readonly="readonly"/>
+																	<input type="hidden" class="form-control" id="month" name="month" value="<?php echo $this->input->post('month'); ?>" readonly="readonly"/>
+																	<input type="text" class="form-control" id="year" name="year" value="<?php echo $this->input->post('year'); ?>" readonly="readonly"/>
+																	<input type="hidden" class="form-control" id="balence" name="balence" value="<?php echo $this->input->post('balence'); ?>" readonly="readonly"/>
+																	<input type="hidden" class="form-control" id="final_total_amount" name="final_total_amount" value="<?php echo $this->input->post('final_total_amount'); ?>" readonly="readonly"/>
+																	<input type="text" class="form-control" id="aftermeter" name="aftermeter" value="<?php echo $this->input->post('aftermeter'); ?>"/>
+																	<input type="text" class="form-control" id="total_amount" name="total_amount" value="<?php echo $this->input->post('total_amount'); ?>" readonly="readonly"/>
+																</div>
+															</div>
+
+															<div id="total_setting_2">
+																<div class="row mb-3">
+																	<div class="col-md-12">
+																		<div class="p-3 rounded border bg-faded">
+																			<span class="d-block text-muted fs-sm mb-1">Total Bill Amount</span>
+																			<div class="test_deep h2 mb-0 color-primary-500 fw-500">&#8369;&nbsp;<span id="deepmala_total">0</span></div>
+																			<input type="hidden" class="form-control" id="total_total_amount" name="total_total_amount" value="<?php echo $this->input->post('total_total_amount'); ?>" readonly="readonly"/>
 																		</div>
 																	</div>
 																</div>
 															</div>
-															<!--<div class="form-group">
-																<label class="col-md-4 control-label">  Old Balance : </label>
-																<div class="col-md-4">
-																	<input  type="text" class="form-control"  id="balence" name="balence" value="<?php echo $this->input->post('balence'); ?>" readonly ="readonly"/>
-																	<?php echo form_error('balence'); ?>
-																</div>
-															</div>
-															<div class="form-group">
-																<label class="col-md-4 control-label">Total Amount : </label>
-																<div class="col-md-4">
-																	<div class="test_deep"><h1>&#8377;&nbsp;&nbsp;<span id="deeksha">0</span>/-</h1></div>
-																	<input type="hidden"  class="form-control"  id="final_total_amount" name="final_total_amount"  value="<?php echo $this->input->post('final_total_amount'); ?>" readonly ="readonly"/>
-																</div>
-															</div>-->
-															<div class="row">
-																<div class="col-md-12 controls">
-																	<div class="form-group" style="display:none;">
-																		<label class="col-md-4 control-label" style="text-align:right;"> Current Reading : </label>
-																		<div class="col-md-4">
-																			<input type="text"  class="form-control"  id="current_reading" name="current_reading"  value="<?php echo $this->input->post('current_reading'); ?>" readonly ="readonly"/>
-																			<?php echo form_error('current_reading'); ?>
-																		</div>
-																	</div>
-																</div>
-															</div>
-															<div class="form-group" style="width : 60% ;display:none;">
-																<label class="col-md-4 control-label"> Old Reading : </label>
-																<div class="col-md-4">
-																	<input type="text"  class="form-control"  id="oldmeter" name="oldmeter"  value="<?php echo $this->input->post('oldmeter'); ?>" readonly ="readonly"/>
-																	<?php echo form_error('current_reading'); ?>
-																</div>
-															</div>
-															<div class="form-group" style="width : 60% ;display:none;">
-																<label class="col-md-4 control-label"> Month : </label>
-																<div class="col-md-4">
-																	<input  type="text" class="form-control" id="month_name" name="month_name" value="" readonly ="readonly"/>
-																	<input  type="hidden" class="form-control" id="month" name="month" value="<?php echo $this->input->post('month'); ?>" readonly ="readonly"/>
-																	
-																	<?php echo form_error('month'); ?>
-																</div>
-															</div>
-															
-															<div class="form-group" style="width : 60% ;display:none;">
-																<label class="col-md-4 control-label">  Year : </label>
-																<div class="col-md-4">
-																	<input  type="text"  class="form-control"  id="year" name="year" value="<?php echo $this->input->post('year'); ?>" readonly ="readonly"/>
-																	<?php echo form_error('year'); ?>
-																</div>
-															</div>
-															
-														
-															<!--<div class="form-group">
-																<label class="col-md-4 control-label"> Aqrin dambe : </label>
-																<div class="col-md-4">
-																	<input  type="text"  class="form-control" id="aftermeter" name="aftermeter" value="<?php echo $this->input->post('aftermeter'); ?>" required/>
-																	<?php echo form_error('aftermeter'); ?>
-																</div>
-															</div>
-															
-															<div class="form-group" style="width : 60% ;">
-																<label class="col-md-4 control-label"> Total Amount : </label>
-																<div class="col-md-4">
-																	<input   type="text"  class="form-control"  id="total_amount" name="total_amount"  value="<?php echo $this->input->post('total_amount'); ?>" required readonly ="readonly"/>
-																	<?php echo form_error('total_amount'); ?>
-																</div>
-															</div>-->
-													    </div>
-														
-                                                        													
-															<div id="total_setting_2">   	
-																<div class="row">
-																	<div class="col-md-12 controls">
-																	<div class="form-group" style="width : 100% ;">
-																			<label class="col-md-5 control-label" style="text-align:right;">Total Bill Amount : </label>
-																			<div class="col-md-7">
-																				<div class="test_deep"><h1>&#8369;&nbsp;&nbsp;<span id="deepmala_total">0</span></h1></div>
-																				<input type="hidden"  class="form-control"  id="total_total_amount" name="total_total_amount"  value="<?php echo $this->input->post('total_total_amount'); ?>" readonly ="readonly"/>
-																				</div>
-																		</div>
-																	</div>
-																</div>	
-															</div>
-															
-															<div class="form-group" style=" width: 60%;display:none;">
-															<label class="col-md-4 control-label">Ledger : </label>
-															<div class="col-md-4">
+
+															<div style="display:none;">
 																<select name="ledger_id" id="ledger_id" class="form-control" required>
-																	 
-                                                                     <?php foreach($ledger as $key => $value){?>
-																	  <option value="<?php echo $value['id'];?>"><?php echo $value['ledgerName'];?></option>
-                                                                      <?php } ?>
+																	<?php foreach($ledger as $key => $value){?>
+																	<option value="<?php echo $value['id'];?>"><?php echo $value['ledgerName'];?></option>
+																	<?php } ?>
 																</select>
-																<?php echo form_error('ledger_id'); ?>
+																<select class="form-control" id="currency" name="currency" required>
+																	<option value="PHP" selected>PHP</option>
+																</select>
+															</div>
+
+															<div class="row" id="leaking_balance_div" style="display: none;">
+																<div class="col-md-12">
+																	<div class="form-group">
+																		<label class="form-label" for="leaking_balance">Add: Balance</label>
+																		<input type="text" class="form-control" id="leaking_balance" name="leaking_balance" value="0.00"/>
+																		<input type="hidden" id="leaking_balance_total" name="leaking_balance_total" value="0"/>
+																		<?php echo form_error('leaking_balance_total'); ?>
+																	</div>
+																</div>
+															</div>
+
+															<div class="row" id="leaking_discount_div">
+																<div class="col-md-6">
+																	<div class="form-group">
+																		<label class="form-label" for="leaking_percent">Less: Leaking Disc %</label>
+																		<div class="input-group">
+																			<input type="text" step="1" min="0" max="100" class="form-control text-input" id="leaking_percent" name="leaking_percent" value="0" readonly/>
+																			<div class="input-group-append"><span class="input-group-text">%</span></div>
+																		</div>
+																	</div>
+																</div>
+																<div class="col-md-6">
+																	<div class="form-group">
+																		<label class="form-label" for="leaking_amount">Leaking Disc Amount</label>
+																		<input type="text" class="form-control" id="leaking_amount" name="leaking_amount" value="0.00" readonly/>
+																		<?php echo form_error('leaking_amount'); ?>
+																	</div>
+																</div>
+															</div>
+
+															<div class="row">
+																<div class="col-md-6">
+																	<div class="form-group">
+																		<label class="form-label" for="vat_percent">Less: VAT %</label>
+																		<div class="input-group">
+																			<input type="text" step="1" min="0" max="100" class="form-control text-input" id="vat_percent" name="vat_percent" value="0"/>
+																			<div class="input-group-append"><span class="input-group-text">%</span></div>
+																		</div>
+																	</div>
+																</div>
+																<div class="col-md-6">
+																	<div class="form-group">
+																		<label class="form-label" for="vat_amount">VAT Amount</label>
+																		<input type="text" class="form-control" id="vat_amount" name="vat_amount" value="0.00" readonly/>
+																		<input type="hidden" id="vat_base_amount" name="vat_base_amount" value="0"/>
+																		<?php echo form_error('vat_amount'); ?>
+																	</div>
+																</div>
+															</div>
+
+															<div class="row">
+																<div class="col-md-6">
+																	<div class="form-group">
+																		<label class="form-label" for="grand_total">Grand Total</label>
+																		<input type="text" class="form-control form-control-lg fw-500" id="grand_total" name="grand_total" value="<?php echo $this->input->post('grand_total'); ?>" readonly/>
+																		<?php echo form_error('grand_total'); ?>
+																	</div>
+																</div>
+																<div class="col-md-6">
+																	<div class="form-group">
+																		<label class="form-label" for="pay_amount">Tendered Amount <span class="text-danger">*</span></label>
+																		<input type="text" class="form-control form-control-lg text-input" id="pay_amount" name="pay_amount" value="0.00" required/>
+																		<?php echo form_error('pay_amount'); ?>
+																	</div>
+																</div>
+															</div>
+
+															<div class="row">
+																<div class="col-md-6">
+																	<div class="form-group mb-0">
+																		<label class="form-label" for="change_amount">Change Amount</label>
+																		<input type="text" class="form-control form-control-lg" id="change_amount" name="change_amount" value="0.00" readonly/>
+																	</div>
+																</div>
+															</div>
+
+															<div id="payment-save-progress" class="mt-4 d-none">
+																<div class="d-flex justify-content-between fs-xs text-muted mb-1">
+																	<span id="payment-save-progress-label">Saving payment…</span>
+																	<span id="payment-save-progress-pct">0%</span>
+																</div>
+																<div class="progress progress-sm mb-0">
+																	<div id="payment-save-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary-500" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+																</div>
 															</div>
 														</div>
-															<div class="form-group"style=" width: 60%; display:none;">
-																		<label class="col-md-4 control-label"> Currency :</label>
-																		<div class="col-md-4">
-																			<select class="form-control"  id="currency" name="currency"  value="<?php echo $this->input->post('currency'); ?>" required>                               
-                                                                            
-                                                                            <option value="PHP" selected>PHP</option>
-                                                                            
-                                                                            </select>
-																			<?php echo form_error('currency'); ?>
-																		</div>
-																	</div>
-
-																	<div class="row" id="leaking_balance_div" style="display: none;">
-																		<div class="col-md-12 controls">
-																			<div class="form-group" style=" width: 100%;">
-																				<label class="col-md-5 control-label" style="text-align:right;"> Add: Balance :</label>
-																				<div class="col-md-7">
-																					<input  type="text"  class="form-control"  id="leaking_balance" name="leaking_balance"  value="0.00"/>
-																					<input type="hidden" id="leaking_balance_total" name="leaking_balance_total" value="0"/>
-																					<?php echo form_error('leaking_balance_total'); ?>
-																				</div>
-																			</div>
-																		</div>
-																	</div>
-
-																	<div class="row" id="leaking_discount_div">
-																		<div class="col-md-12 controls">
-																			<div class="form-group" style=" width: 100%;">
-																				<label class="col-md-5 control-label" style="text-align:right;">Less: Leaking Disc :</label>
-																				<div class="col-md-3">
-																					<div class="input-group">
-																						<input  type="text" step="1" min="0" max="100" class="form-control text-input"  id="leaking_percent" name="leaking_percent"  value="0" readonly/>
-																						<span class="input-group-addon" style="min-width:5px;">%</span>
-																					</div>
-																					
-																					
-																				</div>
-																				<div class="col-md-3">
-																					<input  type="text" class="form-control"  id="leaking_amount" name="leaking_amount"  value="0.00" readonly/>
-																					<?php echo form_error('leaking_amount'); ?>
-																				</div>
-																			</div>
-																		</div>
-																	</div>
-																	<div class="row">
-																		<div class="col-md-12 controls">
-																			<div class="form-group" style=" width: 100%;">
-																				<label class="col-md-5 control-label" style="text-align:right;">Less: VAT :</label>
-																				<div class="col-md-3">
-																					<div class="input-group">
-																						<input  type="text" step="1" min="0" max="100" class="form-control text-input"  id="vat_percent" name="vat_percent"  value="0"/>
-																						<span class="input-group-addon" style="min-width:5px;">%</span>
-																					</div>
-																					
-																					
-																				</div>
-																				<div class="col-md-3">
-																					<input  type="text" class="form-control"  id="vat_amount" name="vat_amount"  value="0.00" readonly/>
-																					<input type="hidden" id="vat_base_amount" name="vat_base_amount" value="0"/>
-																					<?php echo form_error('vat_amount'); ?>
-																				</div>
-																			</div>
-																		</div>
-																	</div>
-
-																	<div class="row">
-																		<div class="col-md-12 controls">
-																			<div class="form-group" style=" width: 100%;">
-																				<label class="col-md-5 control-label" style="text-align:right;"> Grand Total :</label>
-																				<div class="col-md-7">
-																					<input  type="text"  class="form-control"  id="grand_total" name="grand_total"  value="<?php echo $this->input->post('grand_total'); ?>" readonly/>
-																					<?php echo form_error('grand_total'); ?>
-																				</div>
-																			</div>
-																		</div>
-																	</div>
-
-																	<div class="row">
-																		<div class="col-md-12 controls">
-																			<div class="form-group" style=" width: 100%;">
-																				<label class="col-md-5 control-label" style="text-align:right;"> Tendered Amount : (<span style="color:red;font-style:italic;">*</span>)</label>
-																				<div class="col-md-7">
-																					<input  type="text" class="form-control text-input"  id="pay_amount" name="pay_amount" value="0.00" required/>
-																					<?php echo form_error('pay_amount'); ?>
-																				</div>
-																			</div>
-																		</div>
-																	</div>
-
-																	<div class="row">
-																		<div class="col-md-12 controls">
-																			<div class="form-group" style=" width: 100%;">
-																				<label class="col-md-5 control-label" style="text-align:right;"> Change Amount :</label>
-																				<div class="col-md-7">
-																					<input  type="text"  class="form-control"  id="change_amount" name="change_amount"  value="0.00" readonly/>
-																					
-																				</div>
-																			</div>
-																		</div>
-																	</div>
-
-
-															<div class="pay_setting_1">
-																<div class="form-actions">
-																	<div class="row">
-																		<div class="col-md-12">
-																			<a href="<?php echo ADMIN_URL;?>addpaymentcustomer/add" class="btn btn-default btn_cancel_pay">Cancel</a>
-																			<input type="submit" class="btn btn-primary" name="add" id="add" value="Add">
-																		</div>
-																	</div>
-																</div>
-															</div>	
-												
-															<div id="total_settin_pay">
-																<div class="form-actions">
-																	<div class="row">
-																		<div class="col-md-12">
-																			<a href="<?php echo ADMIN_URL;?>addpaymentcustomer/add" class="btn btn-default btn_cancel_pay">Cancel</a>
-																			<input type="submit" class="btn btn-primary" id="total_add" name="total_add" value="Add">
-																		</div>
-																	</div>
-																</div>
-															</div>	
-
-
-
-
+													</div>
+													<div class="modal-footer">
+														<div class="pay_setting_1">
+															<button type="button" class="btn btn-secondary waves-effect waves-themed btn_cancel_pay">Cancel</button>
+															<button type="submit" class="btn btn-primary waves-effect waves-themed" name="add" id="add" value="Add">
+																<i class="fal fa-check mr-1"></i> Add
+															</button>
+														</div>
+														<div id="total_settin_pay">
+															<button type="button" class="btn btn-secondary waves-effect waves-themed btn_cancel_pay">Cancel</button>
+															<button type="submit" class="btn btn-primary waves-effect waves-themed" id="total_add" name="total_add" value="Add">
+																<i class="fal fa-check mr-1"></i> Add
+															</button>
 														</div>
 													</div>
 												</div>
@@ -424,227 +321,68 @@
 										</div>	    
 
 														
-														</form>	
-													</fieldset>
-													    
-													
-														
-										
-										
-										
-									</div>
-								    
-								
-								</div>	
-						</div>
+														</form>
+
 					</div>
-                    <!-- end row -->
-
-				</section>
-				<!-- end widget grid -->
-
-					
-
-				</section>
-				<!-- end widget grid -->
-
+				</div>
 			</div>
-			<!-- END MAIN CONTENT -->
-
 		</div>
-		<!-- END MAIN PANEL -->
-		
+	</div>
+</main>
 
-		<?php include('footer.php');?>
+<!-- Loading Modal Overlay -->
+<div id="datatable-loading-modal" class="dt-loading-modal" style="display: none;" aria-live="polite" aria-busy="true">
+	<div class="dt-loading-backdrop"></div>
+	<div class="dt-loading-card panel shadow-3">
+		<div class="panel-hdr bg-primary-600 bg-primary-gradient">
+			<h2 class="text-white">Loading <span class="fw-300">Customer Bills</span></h2>
+		</div>
+		<div class="panel-container show">
+			<div class="panel-content text-center py-4 px-4">
+				<div class="mb-3">
+					<div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+						<span class="sr-only">Loading...</span>
+					</div>
+				</div>
+				<h5 class="mb-1 fw-500" id="dt-loading-title">Searching customer</h5>
+				<p class="text-muted mb-3 fs-sm" id="dt-loading-subtitle">Please wait while we fetch billing rows…</p>
+				<div class="progress progress-lg mb-2">
+					<div id="dt-loading-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary-500" role="progressbar" style="width: 8%;" aria-valuenow="8" aria-valuemin="0" aria-valuemax="100"></div>
+				</div>
+				<div class="d-flex justify-content-between fs-xs text-muted">
+					<span>Event progress</span>
+					<span id="dt-loading-percent">8%</span>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
 
-	</body>
-
+<?php include('footer.php'); ?>
+</body>
 </html>
+<style>
+	.dt-loading-modal { position: fixed; inset: 0; z-index: 2000; display: none; align-items: center; justify-content: center; }
+	.dt-loading-modal.is-visible { display: flex !important; }
+	.dt-loading-backdrop { position: absolute; inset: 0; background: rgba(33, 37, 41, 0.45); backdrop-filter: blur(3px); }
+	.dt-loading-card { position: relative; z-index: 1; width: min(420px, calc(100vw - 2rem)); margin: 0; border: 0; overflow: hidden; }
+	.dt-loading-card .panel-hdr { border-bottom: 0; }
+	.dt-loading-card .progress { height: 1rem; border-radius: 999px; background: rgba(136, 106, 181, 0.15); overflow: hidden; }
+	.dt-loading-card .progress-bar { transition: width 0.25s ease; border-radius: 999px; }
+	#panel-payment-add { position: relative; }
+	#panel-payment-add.panel-loading::before {
+		content: ''; position: absolute; top: 0; left: 0; height: 3px; width: 100%; z-index: 5;
+		background: linear-gradient(90deg, transparent, var(--theme-primary, #886ab5), transparent);
+		background-size: 40% 100%; animation: dt-panel-shimmer 1.1s linear infinite;
+	}
+	@keyframes dt-panel-shimmer { 0% { background-position: -40% 0; } 100% { background-position: 140% 0; } }
+</style>
+<script src="<?php echo base_url(); ?>sa4/js/statistics/sparkline/sparkline.bundle.js"></script>
+<script src="<?php echo base_url(); ?>sa4/js/formplugins/select2/select2.bundle.js"></script>
+<script src="<?php echo base_url(); ?>sa4/js/datagrid/datatables/datatables.bundle.js"></script>
+<script src="<?php echo base_url(); ?>sa4/js/formplugins/bootstrap-datepicker/bootstrap-datepicker.js"></script>
 
-<!-- PAGE RELATED PLUGIN(S) -->
-		<script src="<?php echo base_url();?>js/plugin/datatables/jquery.dataTables.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.colVis.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.tableTools.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.bootstrap.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatable-responsive/datatables.responsive.min.js"></script>
-		<script type="text/javascript">
-		
-		// DO NOT REMOVE : GLOBAL FUNCTIONS!
-		
-		$(document).ready(function() {
-			
-			pageSetUp();
-			
-			/* // DOM Position key index //
-		
-			l - Length changing (dropdown)
-			f - Filtering input (search)
-			t - The Table! (datatable)
-			i - Information (records)
-			p - Pagination (paging)
-			r - pRocessing 
-			< and > - div elements
-			<"#id" and > - div with an id
-			<"class" and > - div with a class
-			<"#id.class" and > - div with an id and class
-			
-			Also see: http://legacy.datatables.net/usage/features
-			*/	
-	
-			/* BASIC ;*/
-				var responsiveHelper_dt_basic = undefined;
-				var responsiveHelper_datatable_fixed_column = undefined;
-				var responsiveHelper_datatable_col_reorder = undefined;
-				var responsiveHelper_datatable_tabletools = undefined;
-				
-				var breakpointDefinition = {
-					tablet : 1024,
-					phone : 480
-				};
-	
-				$('#dt_basic').dataTable({
-					"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-12 hidden-xs'l>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
-					"autoWidth" : true,
-			        "oLanguage": {
-					    "sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-					},
-					"preDrawCallback" : function() {
-						// Initialize the responsive datatables helper once.
-						if (!responsiveHelper_dt_basic) {
-							responsiveHelper_dt_basic = new ResponsiveDatatablesHelper($('#dt_basic'), breakpointDefinition);
-						}
-					},
-					"rowCallback" : function(nRow) {
-						responsiveHelper_dt_basic.createExpandIcon(nRow);
-					},
-					"drawCallback" : function(oSettings) {
-						responsiveHelper_dt_basic.respond();
-					}
-				});
-	
-			/* END BASIC */
-			
-			/* COLUMN FILTER  */
-		    var otable = $('#datatable_fixed_column').DataTable({
-		    	//"bFilter": false,
-		    	//"bInfo": false,
-		    	//"bLengthChange": false
-		    	//"bAutoWidth": false,
-		    	//"bPaginate": false,
-		    	//"bStateSave": true // saves sort state using localStorage
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6 hidden-xs'f><'col-sm-6 col-xs-12 hidden-xs'<'toolbar'>>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
-				"autoWidth" : true,
-				"oLanguage": {
-					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-				},
-				"preDrawCallback" : function() {
-					// Initialize the responsive datatables helper once.
-					if (!responsiveHelper_datatable_fixed_column) {
-						responsiveHelper_datatable_fixed_column = new ResponsiveDatatablesHelper($('#datatable_fixed_column'), breakpointDefinition);
-					}
-				},
-				"rowCallback" : function(nRow) {
-					responsiveHelper_datatable_fixed_column.createExpandIcon(nRow);
-				},
-				"drawCallback" : function(oSettings) {
-					responsiveHelper_datatable_fixed_column.respond();
-				}		
-			
-		    });
-		    
-		    // custom toolbar
-		    $("div.toolbar").html('<div class="text-right"><img src="img/logo.png" alt="SmartAdmin" style="width: 111px; margin-top: 3px; margin-right: 10px;"></div>');
-		    	   
-		    // Apply the filter
-		    $("#datatable_fixed_column thead th input[type=text]").on( 'keyup change', function () {
-		    	
-		        otable
-		            .column( $(this).parent().index()+':visible' )
-		            .search( this.value )
-		            .draw();
-		            
-		    } );
-		    /* END COLUMN FILTER */   
-	    
-			/* COLUMN SHOW - HIDE */
-			$('#datatable_col_reorder').dataTable({
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-6 hidden-xs'C>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-sm-6 col-xs-12'p>>",
-				"autoWidth" : true,
-				"oLanguage": {
-					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-				},
-				"preDrawCallback" : function() {
-					// Initialize the responsive datatables helper once.
-					if (!responsiveHelper_datatable_col_reorder) {
-						responsiveHelper_datatable_col_reorder = new ResponsiveDatatablesHelper($('#datatable_col_reorder'), breakpointDefinition);
-					}
-				},
-				"rowCallback" : function(nRow) {
-					responsiveHelper_datatable_col_reorder.createExpandIcon(nRow);
-				},
-				"drawCallback" : function(oSettings) {
-					responsiveHelper_datatable_col_reorder.respond();
-				}			
-			});
-			
-			/* END COLUMN SHOW - HIDE */
-	
-			/* TABLETOOLS */
-			$('#datatable_tabletools').dataTable({
-				
-				// Tabletools options: 
-				//   https://datatables.net/extensions/tabletools/button_options
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-6 hidden-xs'T>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-sm-6 col-xs-12'p>>",
-				"oLanguage": {
-					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-				},		
-		        "oTableTools": {
-		        	 "aButtons": [
-		             "copy",
-		             "csv",
-		             "xls",
-		                {
-		                    "sExtends": "pdf",
-		                    "sTitle": "SmartAdmin_PDF",
-		                    "sPdfMessage": "SmartAdmin PDF Export",
-		                    "sPdfSize": "letter"
-		                },
-		             	{
-	                    	"sExtends": "print",
-	                    	"sMessage": "Generated by SmartAdmin <i>(press Esc to close)</i>"
-	                	}
-		             ],
-		            "sSwfPath": "js/plugin/datatables/swf/copy_csv_xls_pdf.swf"
-		        },
-				"autoWidth" : true,
-				"preDrawCallback" : function() {
-					// Initialize the responsive datatables helper once.
-					if (!responsiveHelper_datatable_tabletools) {
-						responsiveHelper_datatable_tabletools = new ResponsiveDatatablesHelper($('#datatable_tabletools'), breakpointDefinition);
-					}
-				},
-				"rowCallback" : function(nRow) {
-					responsiveHelper_datatable_tabletools.createExpandIcon(nRow);
-				},
-				"drawCallback" : function(oSettings) {
-					responsiveHelper_datatable_tabletools.respond();
-				}
-			});
-			
-			/* END TABLETOOLS */
-		
-		})
-
-		</script>
-		<script type="text/javascript">
+<script type="text/javascript">
 		
 		function customer_type_values(){
 			$("#showcustomers").hide();			
@@ -656,13 +394,106 @@
 			}
 		}
 		</script>
-		
-			
 <script>
 	var curDate = '<?php echo date('d-m-Y') ?>';
+	var billingTable = null;
+	var searchProgressTimer = null;
+	var searchProgressValue = 8;
+
+	function setSearchProgress(pct) {
+		searchProgressValue = Math.max(0, Math.min(100, pct));
+		$('#dt-loading-progress-bar').css('width', searchProgressValue + '%').attr('aria-valuenow', Math.round(searchProgressValue));
+		$('#dt-loading-percent').text(Math.round(searchProgressValue) + '%');
+	}
+
+	function startSearchProgress() {
+		clearInterval(searchProgressTimer);
+		setSearchProgress(8);
+		$('#dt-loading-title').text('Searching customer');
+		$('#dt-loading-subtitle').text('Please wait while we fetch billing rows…');
+		searchProgressTimer = setInterval(function() {
+			if (searchProgressValue < 90) {
+				setSearchProgress(searchProgressValue + Math.max(0.6, (90 - searchProgressValue) * 0.08));
+			}
+		}, 180);
+	}
+
+	function showSearchLoader() {
+		$('#datatable-loading-modal').addClass('is-visible').show();
+		$('#panel-payment-add').addClass('panel-loading');
+		startSearchProgress();
+	}
+
+	function hideSearchLoader() {
+		clearInterval(searchProgressTimer);
+		setSearchProgress(100);
+		$('#dt-loading-title').text('Almost done');
+		$('#dt-loading-subtitle').text('Rendering billing rows…');
+		setTimeout(function() {
+			$('#datatable-loading-modal').removeClass('is-visible').fadeOut(180);
+			$('#panel-payment-add').removeClass('panel-loading');
+			setTimeout(function() { setSearchProgress(8); }, 250);
+		}, 220);
+	}
+
+	function destroyBillingTable() {
+		if ($.fn.DataTable && $.fn.DataTable.isDataTable('#dt_billing_rows')) {
+			$('#dt_billing_rows').DataTable().clear().destroy();
+		}
+		billingTable = null;
+	}
+
+	function initBillingDataTable() {
+		if (!$('#dt_billing_rows').length || !$('#dt_billing_rows tbody tr').length) {
+			return;
+		}
+		destroyBillingTable();
+		billingTable = $('#dt_billing_rows').DataTable({
+			responsive: true,
+			pageLength: 10,
+			lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'All']],
+			order: [[1, 'asc']],
+			columnDefs: [
+				{ orderable: false, searchable: false, targets: [0, 16] }
+			],
+			dom: "<'row mb-3'<'col-sm-12 col-md-6 d-flex align-items-center justify-content-start'<'mr-2'l>f><'col-sm-12 col-md-6 d-flex align-items-center justify-content-end'B>>" +
+				"<'row'<'col-sm-12'tr>>" +
+				"<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+			language: {
+				search: '',
+				searchPlaceholder: 'Search billing rows...',
+				lengthMenu: '_MENU_',
+				info: 'Showing _START_ to _END_ of _TOTAL_ rows',
+				infoEmpty: 'No billing rows found',
+				zeroRecords: 'No matching billing rows',
+				paginate: {
+					first: '<i class="fal fa-chevron-double-left"></i>',
+					last: '<i class="fal fa-chevron-double-right"></i>',
+					next: '<i class="fal fa-chevron-right"></i>',
+					previous: '<i class="fal fa-chevron-left"></i>'
+				}
+			},
+			buttons: [
+				{ extend: 'copyHtml5', text: '<i class="fal fa-copy mr-1"></i> Copy', className: 'btn-primary btn-sm mr-1', exportOptions: { columns: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15], format: { body: billingExportCell } } },
+				{ extend: 'excelHtml5', text: '<i class="fal fa-file-excel mr-1"></i> Excel', className: 'btn-primary btn-sm mr-1', exportOptions: { columns: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15], format: { body: billingExportCell } } },
+				{ extend: 'csvHtml5', text: '<i class="fal fa-file-csv mr-1"></i> CSV', className: 'btn-primary btn-sm mr-1', exportOptions: { columns: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15], format: { body: billingExportCell } } },
+				{ extend: 'pdfHtml5', text: '<i class="fal fa-file-pdf mr-1"></i> PDF', className: 'btn-primary btn-sm mr-1', orientation: 'landscape', pageSize: 'A4', exportOptions: { columns: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15], format: { body: billingExportCell } } },
+				{ extend: 'print', text: '<i class="fal fa-print mr-1"></i> Print', className: 'btn-primary btn-sm mr-1', exportOptions: { columns: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15], format: { body: billingExportCell } } }
+			]
+		});
+	}
+
+	function billingExportCell(data, row, column, node) {
+		var text = $('<div>').html(data).text();
+		return $.trim(text.replace(/\s+/g, ' '));
+	}
 
 $(document).ready(function(){
-	$('#search_box_id').select2();
+	$('#search_box_id').select2({
+		width: '100%',
+		placeholder: $('#search_box_id').data('placeholder') || 'Type to search customer ID or name...',
+		allowClear: true
+	});
 	$(".hideclass").hide();
 	$(".pay_setting_1").hide();
 	$("#total_setting_1").hide();
@@ -671,59 +502,120 @@ $(document).ready(function(){
 
 	$('.btn_cancel_pay').on('click',function(evt){
 		evt.preventDefault();
+		hidePaymentSaveProgress();
 		$('#myModalPay').modal('hide');
 	});
 
 	$('#myModalPay').on('hidden.bs.modal', function() {
 		$(this).removeData('skipTransdatePenaltyRecalc');
+		hidePaymentSaveProgress();
+	});
+	$('#myModalPay').on('show.bs.modal', function() {
+		hidePaymentSaveProgress();
+	});
+
+	$(document).on('change', '#dt_billing_rows .my_check', function () {
+		var id = $(this).attr('id');
+		var presentVal = parseFloat($('#prsentamount_' + id).val()) || 0;
+		var val = parseFloat($('#checkbox_cal').val()) || 0;
+		var billVal = parseFloat($('#unit_price_' + id).val()) || 0;
+		var bill_total = parseFloat($('#checkbox_cal_bill').val()) || 0;
+		if ($(this).is(':checked')) {
+			val += presentVal;
+			bill_total += billVal;
+		} else {
+			val -= presentVal;
+			bill_total -= billVal;
+		}
+		$('#checkbox_cal').val(val.toFixed(2));
+		$('#checkbox_cal_bill').val(bill_total.toFixed(2));
 	});
 });
 
+function setPaymentProgress(pct) {
+	pct = Math.max(0, Math.min(100, pct));
+	$('#payment-save-progress-bar').css('width', pct + '%').attr('aria-valuenow', Math.round(pct));
+	$('#payment-save-progress-pct').text(Math.round(pct) + '%');
+	$('#payment-save-progress-label').text(pct >= 100 ? 'Payment saved — redirecting…' : 'Saving payment…');
+}
+
+function showPaymentSaveProgress(submitName) {
+	$('#payment-save-progress').removeClass('d-none');
+	// Preserve submit name/value — disabled buttons are not posted
+	if (submitName) {
+		var $flag = $('#payment_submit_flag');
+		if (!$flag.length) {
+			$flag = $('<input type="hidden" id="payment_submit_flag">').appendTo('#myform');
+		}
+		$flag.attr('name', submitName).val('Add');
+	}
+	clearInterval(window._payProgressTimer);
+	var pct = 12;
+	setPaymentProgress(pct);
+	window._payProgressTimer = setInterval(function() {
+		if (pct < 92) {
+			pct += Math.max(0.8, (92 - pct) * 0.07);
+			setPaymentProgress(pct);
+		}
+	}, 180);
+	// Disable after submit has started so the POST still includes the button value
+	setTimeout(function() {
+		$('#add, #total_add').prop('disabled', true).addClass('disabled');
+		$('.btn_cancel_pay').prop('disabled', true).addClass('disabled');
+	}, 30);
+}
+
+function hidePaymentSaveProgress() {
+	clearInterval(window._payProgressTimer);
+	window._payProgressTimer = null;
+	$('#payment-save-progress').addClass('d-none');
+	setPaymentProgress(0);
+	$('#payment_submit_flag').remove();
+	$('#add, #total_add').prop('disabled', false).removeClass('disabled');
+	$('.btn_cancel_pay').prop('disabled', false).removeClass('disabled');
+}
 $('#btn_search_box').on('click', function(evt) {
 	evt.preventDefault();
 	
 	let search_text = $("#search_box_id").val();
-	const search_text_result = search_text.split("==>");
-	var id = search_text_result[0];
+	if (!search_text) {
+		alert('Please select a customer');
+		return;
+	}
+	const search_text_result = String(search_text).split("==>");
+	var id = $.trim(search_text_result[0]);
 	$('#customer_id').val(id);
-	//showSpinner(); // Call this to show the spinner
 	$.ajax({
 		type: 'POST',
 		url: '<?php echo ADMIN_URL;?>addpaymentcustomer/get_custmer_name/',
 		data: {id: id},
-		//async: false, // Make the request synchronous
 		beforeSend: function() {
-			//showSpinner(); // Call this to show the spinner
   		},
 		success: function(data) {
 			$("#names").html(data);
 			var fullname = document.querySelector('#first_name').value;
 			$('#fullname').val(fullname);
-			//console.log('fullname:'+$('#fullname').val());
-						
 		},
 		complete: function() {
-			//hideSpinner(); // Simulate loading for 3 seconds
 		}
 	});
 
-	//console.log('customer id:'+id)
 	$.ajax({
 		type: 'POST',
 		url: '<?php echo ADMIN_URL;?>addpaymentcustomer/get_custmer_all_data/',
 		data: {id: id},
-		//async: false, // Make the request synchronous
 		beforeSend: function() {
-			showSpinner(); // Call this to show the spinner
+			showSearchLoader();
   		},
 		success: function(data) {
-			$("#meterincomeDiv").html(data);		
+			destroyBillingTable();
+			$("#meterincomeDiv").html(data);
+			initBillingDataTable();
 		},
 		complete: function() {
-			hideSpinner(); // Simulate loading for 3 seconds
+			hideSearchLoader();
 		}
 	});
-	//hideSpinner(); // Simulate loading for 3 seconds
 	$('#or_num').val('');
 	$('#deepmala').text('0.00');
 	$('#deepmala_total').text('0.00');
@@ -821,10 +713,22 @@ $(document).on('click','.pay_button',function(e){
 		url: '<?php echo ADMIN_URL;?>addpaymentcustomer/get_leaking_balance/',
 		data: {customer_id: customer_id},
 		success: function(data) {
-			const resultdata = JSON.parse(data);
-			var leaking_balance = resultdata[0]['leaking_balance'];
-			$('#leaking_id').val(resultdata[0]['leaking_id']);
-			console.log('leaking_id:'+resultdata[0]['leaking_id']);
+			var resultdata = [];
+			try {
+				resultdata = (typeof data === 'string') ? JSON.parse(data) : data;
+			} catch (e) {
+				resultdata = [];
+			}
+			if (!$.isArray(resultdata) || !resultdata.length || !resultdata[0]) {
+				$("#leaking_balance_div").hide();
+				$("#leaking_discount_div").show();
+				$('#leaking_id').val('');
+				$('#leaking_balance').val('0');
+				$('#leaking_balance_total').val('0');
+				return;
+			}
+			var leaking_balance = parseFloat(resultdata[0]['leaking_balance']) || 0;
+			$('#leaking_id').val(resultdata[0]['leaking_id'] || '');
 			if(leaking_balance>0){
 				$("#leaking_balance_div").show();
 				$("#leaking_discount_div").hide();
@@ -852,8 +756,13 @@ $(document).on('click','.pay_button',function(e){
 			url: '<?php echo ADMIN_URL;?>addpaymentcustomer/chk_leakingentry/'+refno,
 			data: {id: customer_id, month: month, year: year},
 			success: function(data) {
-				const resultdata = JSON.parse(data);
-				if(resultdata[0]['leaking_id']!==undefined){
+				var resultdata = [];
+				try {
+					resultdata = (typeof data === 'string') ? JSON.parse(data) : data;
+				} catch (e) {
+					resultdata = [];
+				}
+				if($.isArray(resultdata) && resultdata.length && resultdata[0] && resultdata[0]['leaking_id']!==undefined){
 					$('#leaking_id').val(resultdata[0]['leaking_id']);
 					$('#leaking_percent').val(resultdata[0]['discount_percent']);
 					$('#leaking_amount').val(resultdata[0]['discount_amount']);
@@ -1086,42 +995,55 @@ $('#pay_amount').on('blur', function() {
 $('#add').on('click',function(evt){
 	var pay_amount = parseFloat($('#pay_amount').val());
 	var leaking_id = $('#leaking_id').val();
+	var blocked = false;
 
 	if(leaking_id!='' && pay_amount<=0){
 		evt.preventDefault();
-		$.smallBox({
-			title : "TENDER AMOUNT field required",
-			content : "Tender amount should be greater then zero.",
-			color : "#D30000",
-			timeout: 8000,
-			icon : "fa fa-exclamation-circle swing animated"
-		});
-		
+		blocked = true;
+		if (typeof $.smallBox === 'function') {
+			$.smallBox({
+				title : "TENDER AMOUNT field required",
+				content : "Tender amount should be greater then zero.",
+				color : "#D30000",
+				timeout: 8000,
+				icon : "fa fa-exclamation-circle swing animated"
+			});
+		} else {
+			alert('Tender amount should be greater than zero.');
+		}
 	}
 	if(leaking_id=='' && pay_amount<=0){
 		evt.preventDefault();
-		//alert('Tender amount should be greater then zero.');
-		$.smallBox({
-			title : "TENDER AMOUNT field required",
-			content : "Tender amount should be greater then zero.",
-			color : "#D30000",
-			timeout: 8000,
-			icon : "fa fa-exclamation-circle swing animated"
-		});
-		
+		blocked = true;
+		if (typeof $.smallBox === 'function') {
+			$.smallBox({
+				title : "TENDER AMOUNT field required",
+				content : "Tender amount should be greater then zero.",
+				color : "#D30000",
+				timeout: 8000,
+				icon : "fa fa-exclamation-circle swing animated"
+			});
+		} else {
+			alert('Tender amount should be greater than zero.');
+		}
 	}
 
 	var orN = parseOrSiDigits($('#or_num').val());
 	if (orN <= 0) {
 		evt.preventDefault();
+		blocked = true;
 		markOrNumValidity(false, 'Enter a valid OR/SI number (digits only).');
-		$.smallBox({
-			title : "OR/SI #",
-			content : "Enter a valid OR/SI number.",
-			color : "#D30000",
-			timeout: 8000,
-			icon : "fa fa-exclamation swing animated"
-		});
+		if (typeof $.smallBox === 'function') {
+			$.smallBox({
+				title : "OR/SI #",
+				content : "Enter a valid OR/SI number.",
+				color : "#D30000",
+				timeout: 8000,
+				icon : "fa fa-exclamation swing animated"
+			});
+		} else {
+			alert('Enter a valid OR/SI number.');
+		}
 		return false;
 	}
 	var orDup = false;
@@ -1133,95 +1055,64 @@ $('#add').on('click',function(evt){
 	});
 	if (orDup) {
 		evt.preventDefault();
+		blocked = true;
 		markOrNumValidity(false, 'This OR/SI # is already used for your teller account.');
-		$.smallBox({
-			title : "OR/SI NUMBER",
-			content : "This OR/SI number is already used for your teller account.",
-			color : "#D30000",
-			timeout: 8000,
-			icon : "fa fa-exclamation swing animated"
-		});
+		if (typeof $.smallBox === 'function') {
+			$.smallBox({
+				title : "OR/SI NUMBER",
+				content : "This OR/SI number is already used for your teller account.",
+				color : "#D30000",
+				timeout: 8000,
+				icon : "fa fa-exclamation swing animated"
+			});
+		} else {
+			alert('This OR/SI number is already used for your teller account.');
+		}
 		return false;
 	}
 	markOrNumValidity(true, '');
-
-	
-	
-	
-	
-	/*var name = $('#fullname').val();
-	var address = $('#address').val();
-	var current_reading = $('#current_reading').val();
-	var oldmeter = $('#oldmeter').val();
-	var customer = $('#customer_id').val();
-	var month = $('#month').val();
-	var year = $('#year').val();
-	var unit = $('#unit_d').val();
-	var pay_amount = $('#pay_amount').val();
-	var invoi_id = $('#time_format').val();
-	var currency = $('#currency').val(); 
-	if(customer != '' && currency != '' && pay_amount != '' && month !='' && year !=''){
-		var url = '<?php echo ADMIN_URL;?>addpaymentcustomer/monthlyreceipt_single/'+customer+'/'+month+'/'+year+'/'+name+'/'+current_reading+'/'+oldmeter+'/'+unit+'/'+pay_amount+'/'+invoi_id+'/'+address+'/'+currency;
-				//var url = '<?php echo ADMIN_URL;?>addpaymentcustomer/monthlyreceipt/'+customer;
-				//window.open( url , "popupWindow", "width=1024,height=600,scrollbars=yes");	
-	}*/
-	//$('#myform').submit();
+	if (!blocked && !evt.isDefaultPrevented()) {
+		showPaymentSaveProgress('add');
+	}
 });
 
 
 $('#total_add').on('click',function(evt){
-	//evt.preventDefault();
-	
-	/*var name = $('#fullname').val();
-	var address = $('#address').val();
-	var current_reading = $('#current_reading').val();
-	var oldmeter = $('#oldmeter').val();
-	var customer = $('#customer_id').val();
-	var month = $('#month').val();
-	var year = $('#year').val();
-	var unit = $('#unit_d').val();
-	var pay_amount = $('#pay_amount').val();
-	var invoi_id = $('#time_format').val();
-	var currency = $('#currency').val(); 
-
-	//$('#myform').append($("#meterincomeDiv").html());
-	//alert(customer); 
-	//alert(currency); 
-	//alert(pay_amount);
-	if(customer != '' && currency != '' && pay_amount != '' ){
-				var url = '<?php echo ADMIN_URL;?>addpaymentcustomer/monthlyreceipt_single/'+customer+'/'+month+'/'+year+'/'+name+'/'+current_reading+'/'+oldmeter+'/'+unit+'/'+pay_amount+'/'+invoi_id+'/'+address+'/'+currency;
-				//var url = '<?php echo ADMIN_URL;?>addpaymentcustomer/monthlyreceipt/'+customer;
-				//window.open( url , "popupWindow", "width=1024,height=600,scrollbars=yes");	
-	}
-	//$('#myform').submit();
-	*/
-
 	var pay_amount = parseFloat($('#pay_amount').val());
+	var blocked = false;
 
 	if(pay_amount<=0){
-		
-		//alert('Tender amount should be greater then zero.');
-		$.smallBox({
-			title : "TENDER AMOUNT field required",
-			content : "Tender amount should be greater then zero.",
-			color : "#D30000",
-			timeout: 8000,
-			icon : "fa fa-exclamation-circle swing animated"
-		});
+		blocked = true;
+		if (typeof $.smallBox === 'function') {
+			$.smallBox({
+				title : "TENDER AMOUNT field required",
+				content : "Tender amount should be greater then zero.",
+				color : "#D30000",
+				timeout: 8000,
+				icon : "fa fa-exclamation-circle swing animated"
+			});
+		} else {
+			alert('Tender amount should be greater than zero.');
+		}
 		evt.preventDefault();
 	}
 
 	var orNb = parseOrSiDigits($('#or_num').val());
 	if (orNb <= 0) {
 		evt.preventDefault();
+		blocked = true;
 		markOrNumValidity(false, 'Enter a valid OR/SI number (digits only).');
-		$.smallBox({
-			title : "OR/SI #",
-			content : "Enter a valid OR/SI number.",
-			color : "#D30000",
-			timeout: 8000,
-			icon : "fa fa-exclamation swing animated"
-		});
+		if (typeof $.smallBox === 'function') {
+			$.smallBox({
+				title : "OR/SI #",
+				content : "Enter a valid OR/SI number.",
+				color : "#D30000",
+				timeout: 8000,
+				icon : "fa fa-exclamation swing animated"
+			});
+		} else {
+			alert('Enter a valid OR/SI number.');
+		}
 		return false;
 	}
 	var orDupB = false;
@@ -1233,33 +1124,33 @@ $('#total_add').on('click',function(evt){
 	});
 	if (orDupB) {
 		evt.preventDefault();
+		blocked = true;
 		markOrNumValidity(false, 'This OR/SI # is already used for your teller account.');
-		$.smallBox({
-			title : "OR/SI NUMBER",
-			content : "This OR/SI number is already used for your teller account.",
-			color : "#D30000",
-			timeout: 8000,
-			icon : "fa fa-exclamation swing animated"
-		});
+		if (typeof $.smallBox === 'function') {
+			$.smallBox({
+				title : "OR/SI NUMBER",
+				content : "This OR/SI number is already used for your teller account.",
+				color : "#D30000",
+				timeout: 8000,
+				icon : "fa fa-exclamation swing animated"
+			});
+		} else {
+			alert('This OR/SI number is already used for your teller account.');
+		}
 		return false;
 	}
 	markOrNumValidity(true, '');
+	if (!blocked && !evt.isDefaultPrevented()) {
+		showPaymentSaveProgress('total_add');
+	}
 
 });
 
 $("#transdate").datepicker({
-	showAnim: null,
-	dateFormat: 'dd-mm-yy',
-	// showOn: 'both',
-	buttonImage: '<?php echo site_url();?>images/calender.jpg',
-	buttonImageOnly: true,
-	firstDay: 1,
-	nextText: '',
-	prevText: '',
-	numberOfMonths: [1, 1],
-	//setDate: new Date(),
-	//minDate: curDate,
-	//maxDate: ''
+	format: 'dd-mm-yyyy',
+	autoclose: true,
+	todayHighlight: true,
+	orientation: 'bottom auto'
 });
 
 // Function to recalculate penalty based on transaction date
@@ -1378,6 +1269,3 @@ $('#transdate').on('blur change', function() {
 	}
 </script>
 
-<style>
-#names .form-group{ width: 70%;}
-</style>

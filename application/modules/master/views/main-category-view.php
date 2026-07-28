@@ -1,34 +1,28 @@
-				<div class="main-content">
-					<div class="breadcrumbs" id="breadcrumbs">
-						<script type="text/javascript">
-							try{ace.settings.check('breadcrumbs' , 'fixed')}catch(e){}
-						</script>
-						<ul class="breadcrumb">
-							<li>
-								<i class="icon-home home-icon"></i>
-								<a href="<?php echo DASHBOARD_URL;?>">Home</a>
-							</li>
-							<li>
-								<a href="<?php echo ADMIN_URL;?>main_category">Main Category</a>
-							</li>
-							<li class="active">View</li>
-						</ul><!-- .breadcrumb -->
-						<div class="nav-search" id="nav-search">
-						</div><!-- #nav-search -->
+<main id="js-page-content" role="main" class="page-content">
+	<ol class="breadcrumb page-breadcrumb">
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>">Home</a></li>
+		<li class="breadcrumb-item active">Page</li>
+		<li class="position-absolute pos-top pos-right d-sm-block"><span class="js-get-date"></span></li>
+	</ol>
+	<div class="subheader">
+		<h1 class="subheader-title">
+			<i class="subheader-icon fal fa-th-list"></i>
+			Manage <span class="fw-300">Main Category View</span>
+		</h1>
+	</div>
+
+	<div class="row">
+		<div class="col-xl-12">
+			<div class="panel">
+				<div class="panel-hdr"><h2>Main Category View</h2>
+					<div class="panel-toolbar">
+						<button class="btn btn-panel" data-action="panel-collapse" data-toggle="tooltip" data-offset="0,10" data-original-title="Collapse"></button>
+						<button class="btn btn-panel" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
 					</div>
-					<div class="page-content">
-                  
-                        <h3 class="header smaller lighter blue">
-                        <i><img src="<?php echo site_url();?>assets/images/categories.png" width="23" height="24" /></i>
-                            Main Category
-                            <small>
-                                <i class="icon-double-angle-right"></i>
-                                View
-                            </small>
-                        </h3>
-						
-						<div class="row">
-							<div class="col-xs-12">
+				</div>
+				<div class="panel-container show"><div class="panel-content">
+<div class="row">
+							<div class="col-12">
 								<!-- PAGE CONTENT BEGINS -->
 								<form class="form-horizontal" role="form" method="post" enctype="multipart/form-data">
 									<div class="form-group">
@@ -111,10 +105,10 @@
 										</div>
 									</div>
 								</form>
-							</div><!-- /.col -->
-						</div><!-- /.row -->
-					</div><!-- /.page-content -->
-				</div><!-- /.main-content -->
+							<!-- /.col -->
+						<!-- /.row -->
+					<!-- /.page-content -->
+				<!-- /.main-content -->
 			</div><!-- /.main-container-inner -->
 			<a href="#" id="btn-scroll-up" class="btn-scroll-up btn btn-sm btn-inverse">
 				<i class="icon-double-angle-up icon-only bigger-110"></i>
@@ -130,3 +124,22 @@
 		</script>
 	</body>
 </html>
+
+				</div></div>
+			</div>
+		</div>
+	</div>
+</main>
+<?php include('footer.php'); ?>
+</body>
+</html>
+<script type="text/javascript">
+							try{ace.settings.check('breadcrumbs' , 'fixed')}catch(e){}
+						</script>
+<script type="text/javascript">
+			window.jQuery || document.write("<script src='<?php echo site_url();?>assets/js/jquery-2.0.3.min.js'>"+"<"+"/script>");
+		</script>
+<script type="text/javascript">
+			if("ontouchend" in document) document.write("<script src='<?php echo site_url();?>assets/js/jquery.mobile.custom.min.js'>"+"<"+"/script>");
+		</script>
+

@@ -40,7 +40,7 @@
     <div style="text-align: center;"><img src="<?php echo site_url();?>images/mroxas-logo-report.jpg" height="80px"/></div>
 <h3 style="text-align: center;">CUSTOMER REPORT</h3>
 <div class="row">
-	<div class="col-lg-12 col-sm-12 col-xs-12 col-md-12">
+	<div class="col-lg-12 col-sm-12 col-12 col-md-12">
 		<?php
             if(count($record) > 0){
                 foreach($record as $key => $row){ 
