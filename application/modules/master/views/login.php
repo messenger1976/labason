@@ -13,10 +13,10 @@
 	<link id="appbundle" rel="stylesheet" media="screen, print" href="<?php echo $sa4; ?>css/app.bundle.css">
 	<link id="mytheme" rel="stylesheet" media="screen, print" href="#">
 	<link id="myskin" rel="stylesheet" media="screen, print" href="<?php echo $sa4; ?>css/skins/skin-master.css">
-	<link rel="apple-touch-icon" sizes="180x180" href="<?php echo $sa4; ?>img/favicon/apple-touch-icon.png">
-	<link rel="icon" type="image/png" sizes="32x32" href="<?php echo $sa4; ?>img/favicon/favicon-32x32.png">
-	<link rel="mask-icon" href="<?php echo $sa4; ?>img/favicon/safari-pinned-tab.svg" color="#5bbad5">
-	<link rel="shortcut icon" href="<?php echo base_url(); ?>favicon.ico" type="image/x-icon">
+	<link rel="apple-touch-icon" sizes="180x180" href="<?php echo base_url(); ?>img/pmroxas-logo.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="<?php echo base_url(); ?>img/pmroxas-logo.png">
+	<link rel="icon" href="<?php echo base_url(); ?>img/pmroxas-logo.png" type="image/png">
+	<link rel="shortcut icon" href="<?php echo base_url(); ?>img/pmroxas-logo.png" type="image/png">
 	<link rel="stylesheet" media="screen, print" href="<?php echo $sa4; ?>css/fa-brands.css">
 </head>
 <body>
@@ -48,8 +48,8 @@
 					<div class="d-flex align-items-center container p-0">
 						<div class="page-logo width-mobile-auto m-0 align-items-center justify-content-center p-0 bg-transparent bg-img-none shadow-0 height-9 border-0">
 							<a href="<?php echo site_url(); ?>/master/" class="page-logo-link press-scale-down d-flex align-items-center">
-								<img src="<?php echo $sa4; ?>img/logo.png" alt="Billing System" aria-roledescription="logo">
-								<span class="page-logo-text mr-1">Billing System</span>
+								<img src="<?php echo base_url(); ?>img/pmroxas-logo.png" alt="Labason Water District" aria-roledescription="logo" style="width:32px;height:32px;">
+								<span class="page-logo-text mr-1">LABASON WATER DISTRICT</span>
 							</a>
 						</div>
 						<a href="<?php echo site_url(); ?>/master/forgot_password" class="btn-link text-white ml-auto">

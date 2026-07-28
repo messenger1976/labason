@@ -11,7 +11,10 @@
 	<link id="appbundle" rel="stylesheet" media="screen, print" href="<?php echo $sa4; ?>css/app.bundle.css">
 	<link id="mytheme" rel="stylesheet" media="screen, print" href="#">
 	<link id="myskin" rel="stylesheet" media="screen, print" href="<?php echo $sa4; ?>css/skins/skin-master.css">
-	<link rel="shortcut icon" href="<?php echo base_url(); ?>favicon.ico" type="image/x-icon">
+	<link rel="apple-touch-icon" sizes="180x180" href="<?php echo base_url(); ?>img/pmroxas-logo.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="<?php echo base_url(); ?>img/pmroxas-logo.png">
+	<link rel="icon" href="<?php echo base_url(); ?>img/pmroxas-logo.png" type="image/png">
+	<link rel="shortcut icon" href="<?php echo base_url(); ?>img/pmroxas-logo.png" type="image/png">
 	<style>
 		.page-wrapper.auth .page-content-wrapper {
 			padding-left: 0 !important;

@@ -64,9 +64,9 @@ $sa4 = base_url() . 'sa4/';
 		<link id="myskin" rel="stylesheet" media="screen, print" href="<?php echo $sa4; ?>css/skins/skin-master.css">
 		<link rel="stylesheet" media="screen, print" href="<?php echo $sa4; ?>css/legacy-bridge.css">
 
-		<link rel="shortcut icon" href="<?php echo base_url(); ?>favicon.ico" type="image/x-icon">
-		<link rel="icon" href="<?php echo base_url(); ?>favicon.ico" type="image/x-icon">
-		<link rel="apple-touch-icon" sizes="180x180" href="<?php echo $sa4; ?>img/favicon/apple-touch-icon.png">
+		<link rel="shortcut icon" href="<?php echo base_url(); ?>img/pmroxas-logo.png" type="image/png">
+		<link rel="icon" href="<?php echo base_url(); ?>img/pmroxas-logo.png" type="image/png">
+		<link rel="apple-touch-icon" sizes="180x180" href="<?php echo base_url(); ?>img/pmroxas-logo.png">
 
 		<script>
 			function showSpinner() {
