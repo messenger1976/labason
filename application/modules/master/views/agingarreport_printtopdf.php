@@ -90,18 +90,25 @@ if($status==='99' || $status===''){
 			</thead>
 			<tbody>
 				<?php
-                    if(count($zone) > 0){
-                        $index = 0;
-						
-                        $grand_total_30days = 0;
-						$grand_total_60days = 0;
-						$grand_total_90days = 0;
-						$grand_total_120days = 0;
-						$grand_total_150daysup = 0;
-						$grand_total_amount =0;
+                    $index = 0;
+                    $grand_total_current = 0;
+                    $grand_total_30days = 0;
+                    $grand_total_60days = 0;
+                    $grand_total_90days = 0;
+                    $grand_total_120days = 0;
+                    $grand_total_150daysup = 0;
+                    $grand_total_amount = 0;
 
-                        
+                    if(count($zone) > 0){
                         foreach($zone as $key => $row){ 
+                 //$mysql_transdate = date('Y-m-d',strtotime($trans_date));
+                 //$get_dailytrans = $this->my_model->get_metercustomer_records($mysql_transdate,$row['id']);
+                 $get_dailytrans = $this->report_model->get_aging_ar_report_records($asofdate,$row['id'],$status);
+
+                 // Skip zones with no aging rows (no header / no TOTAL)
+                 if(empty($get_dailytrans) || count($get_dailytrans) === 0){
+                     continue;
+                 }
 				?>                                            
 					<tr>
 						<td></td>
@@ -109,10 +116,7 @@ if($status==='99' || $status===''){
 						<td colspan="8"></td>
 					</tr>
                 <?php
-                //$mysql_transdate = date('Y-m-d',strtotime($trans_date));
-                 //$get_dailytrans = $this->my_model->get_metercustomer_records($mysql_transdate,$row['id']);
-                 $get_dailytrans = $this->report_model->get_aging_ar_report_records($asofdate,$row['id'],$status);
-                 
+				 $grand_total_current_zone = 0;
 				 $grand_total_30days_zone = 0;
 				 $grand_total_60days_zone = 0;
 				 $grand_total_90days_zone = 0;
@@ -172,15 +176,6 @@ if($status==='99' || $status===''){
 				  <th style="text-align:right">'.number_format($grand_total_amount_zone,2).'</th>
                   <th></th>
                  </tr>';
-                
-                
-                    
-                    $grand_total_amount += $total_amount_zone; 
-                    $grand_total_penalty += $total_penalty_zone;
-                    $grand_total_reading += $total_reading_zone;
-                    $grand_total_billamount += $total_billamount_zone;
-                    
-
             
                 } 
                 ?>

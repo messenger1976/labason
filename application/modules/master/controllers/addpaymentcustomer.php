@@ -147,7 +147,7 @@ class addpaymentcustomer extends CI_Controller {
 					.'<div class="btn-group btn-group-sm" role="group">'
 					.'<a href="javascript:void(0);" class="btn btn-outline-primary print_button_new1" id="print_button_new1'.$i.'" data-print-val-id="'.$i.'" title="Print Receipt" data-toggle="tooltip"><i class="fal fa-print"></i></a>'
 					.'<a href="javascript:void(0);" class="btn btn-outline-info print_button_new2" id="print_button_new2'.$i.'" data-print-val-id="'.$i.'" title="Secondary Print" data-toggle="tooltip"><i class="fal fa-file-invoice"></i></a>'
-					.'<a href="JavaScript:if(confirm(\'Confirm Delete?\')==true){window.location=\''.ADMIN_URL.'addpaymentcustomer/delete/'.$row_id.'\';}" class="btn btn-outline-danger" title="Delete" data-toggle="tooltip"><i class="fal fa-trash-alt"></i></a>'
+					.'<a href="javascript:void(0);" class="btn btn-outline-danger sa4-confirm-delete" data-sa4-delete-url="'.ADMIN_URL.'addpaymentcustomer/delete/'.$row_id.'" title="Delete" data-toggle="tooltip"><i class="fal fa-trash-alt"></i></a>'
 					.'</div>';
 
 				$data[] = array(

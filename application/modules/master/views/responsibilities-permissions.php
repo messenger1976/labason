@@ -1,27 +1,3 @@
-<main id="js-page-content" role="main" class="page-content">
-	<ol class="breadcrumb page-breadcrumb">
-		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>">Home</a></li>
-		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>responsibilities/">Responsibilities</a></li>
-		<li class="breadcrumb-item active">Permissions</li>
-		<li class="position-absolute pos-top pos-right d-sm-block"><span class="js-get-date"></span></li>
-	</ol>
-	<div class="subheader">
-		<h1 class="subheader-title">
-			<i class="subheader-icon fal fa-th-list"></i>
-			Manage <span class="fw-300">Responsibilities Permissions</span>
-		</h1>
-	</div>
-
-	<div class="row">
-		<div class="col-xl-12">
-			<div class="panel">
-				<div class="panel-hdr"><h2>Responsibilities Permissions</h2>
-					<div class="panel-toolbar">
-						<button class="btn btn-panel" data-action="panel-collapse" data-toggle="tooltip" data-offset="0,10" data-original-title="Collapse"></button>
-						<button class="btn btn-panel" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
-					</div>
-				</div>
-				<div class="panel-container show"><div class="panel-content">
 <?php
 /**
  * Hierarchical Roles & Permissions checkbox tree.
@@ -30,7 +6,9 @@
  */
 $permissions_mode = isset($permissions_mode) ? $permissions_mode : 'add';
 $is_view = ($permissions_mode === 'view');
-$record = isset($record) ? $record : array();
+$record = (isset($record) && is_array($record)) ? $record : array();
+$module_groups = (isset($module_groups) && is_array($module_groups)) ? $module_groups : array();
+$modules_name = (isset($modules_name) && is_array($modules_name)) ? $modules_name : array();
 $disabled_attr = $is_view ? 'disabled="disabled"' : '';
 
 if (!function_exists('resp_is_checked')) {
@@ -38,55 +16,31 @@ if (!function_exists('resp_is_checked')) {
 		if ($mode === 'add') {
 			return false;
 		}
-		return (isset($record[$key]) && (string)$record[$key] === '1');
+		return (isset($record[$key]) && (string) $record[$key] === '1');
 	}
 }
 ?>
 <style>
-.perm-toolbar {
-	margin: 10px 0 18px;
-	display: flex;
-	flex-wrap: wrap;
-	gap: 8px;
-	align-items: center;
-}
-.perm-toolbar .btn { margin-right: 0; }
-.perm-hint {
-	color: #666;
-	font-size: 12px;
-	margin-left: 4px;
-}
-.perm-grid {
-	display: flex;
-	flex-wrap: wrap;
-	margin: 0 -8px;
-}
-.perm-card {
-	width: 100%;
-	padding: 0 8px;
-	margin-bottom: 14px;
-}
-@media (min-width: 992px) {
-	.perm-card { width: 50%; }
-}
-@media (min-width: 1200px) {
-	.perm-card { width: 33.333%; }
-}
+.perm-toolbar { margin: 0 0 1rem; display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+.perm-hint { color: #6c757d; font-size: 0.8125rem; margin-left: 0.25rem; }
+.perm-grid { display: flex; flex-wrap: wrap; margin: 0 -0.5rem; }
+.perm-card { width: 100%; padding: 0 0.5rem; margin-bottom: 0.875rem; }
+@media (min-width: 992px) { .perm-card { width: 50%; } }
+@media (min-width: 1200px) { .perm-card { width: 33.333%; } }
 .perm-panel {
-	background: #f7f7f7;
-	border: 1px solid #e3e3e3;
-	border-radius: 6px;
+	background: #f8f9fa;
+	border: 1px solid #e9ecef;
+	border-radius: 0.25rem;
 	overflow: hidden;
 	height: 100%;
 }
 .perm-panel-header {
-	padding: 10px 12px;
+	padding: 0.625rem 0.75rem;
 	background: #eee;
 	border-bottom: 1px solid #e0e0e0;
 	display: flex;
 	align-items: center;
-	gap: 8px;
-	cursor: pointer;
+	gap: 0.5rem;
 	user-select: none;
 }
 .perm-panel-header.has-children { cursor: pointer; }
@@ -94,48 +48,29 @@ if (!function_exists('resp_is_checked')) {
 .perm-panel-header label {
 	margin: 0;
 	font-weight: 700;
-	font-size: 14px;
+	font-size: 0.875rem;
 	cursor: pointer;
 	flex: 1;
 }
-.perm-panel-header .perm-toggle {
-	color: #555;
-	width: 18px;
-	text-align: center;
-}
+.perm-panel-header .perm-toggle { color: #555; width: 18px; text-align: center; }
 .perm-panel.open > .perm-panel-header { background: #e8f0e8; border-bottom-color: #cfe0cf; }
-.perm-children {
-	display: none;
-	padding: 8px 12px 10px 34px;
-	background: #fff;
-}
+.perm-children { display: none; padding: 0.5rem 0.75rem 0.625rem 2rem; background: #fff; }
 .perm-panel.open > .perm-children { display: block; }
-.perm-child {
-	padding: 5px 0;
-	border-bottom: 1px dashed #eee;
-}
+.perm-child { padding: 0.3rem 0; border-bottom: 1px dashed #eee; }
 .perm-child:last-child { border-bottom: 0; }
-.perm-child label {
-	margin: 0;
-	font-weight: normal;
-	font-size: 13px;
-	cursor: pointer;
-}
+.perm-child label { margin: 0; font-weight: normal; font-size: 0.8125rem; cursor: pointer; }
 .perm-child input[type="checkbox"],
-.perm-panel-header input[type="checkbox"] {
-	margin-right: 6px;
-	vertical-align: middle;
-}
+.perm-panel-header input[type="checkbox"] { margin-right: 0.375rem; vertical-align: middle; }
 </style>
 
 <div class="perm-toolbar">
 	<?php if (!$is_view) { ?>
-	<button type="button" class="btn btn-xs btn-success" id="perm-select-all"><i class="fal fa-check-square-o"></i> Select All</button>
-	<button type="button" class="btn btn-xs btn-secondary" id="perm-clear-all"><i class="fal fa-square-o"></i> Clear All</button>
+	<button type="button" class="btn btn-xs btn-success" id="perm-select-all"><i class="fal fa-check-square mr-1"></i> Select All</button>
+	<button type="button" class="btn btn-xs btn-secondary" id="perm-clear-all"><i class="fal fa-square mr-1"></i> Clear All</button>
 	<?php } ?>
-	<button type="button" class="btn btn-xs btn-primary" id="perm-expand-all"><i class="fal fa-plus-square-o"></i> Expand All</button>
-	<button type="button" class="btn btn-xs btn-secondary" id="perm-collapse-all"><i class="fal fa-minus-square-o"></i> Collapse All</button>
-	<span class="perm-hint">Check a main menu to expand and assign its submenu permissions (same as sidebar).</span>
+	<button type="button" class="btn btn-xs btn-primary" id="perm-expand-all"><i class="fal fa-plus-square mr-1"></i> Expand All</button>
+	<button type="button" class="btn btn-xs btn-secondary" id="perm-collapse-all"><i class="fal fa-minus-square mr-1"></i> Collapse All</button>
+	<span class="perm-hint">Check a main menu to expand and assign its submenu permissions.</span>
 </div>
 
 <div class="perm-grid" id="perm-tree">
@@ -165,7 +100,6 @@ if (!function_exists('resp_is_checked')) {
 		$all_children_checked = $parent_checked;
 	}
 
-	// Virtual parent (no parent_key): checked when all children checked; indeterminate when some
 	$virtual_checked = false;
 	if (!$parent_key && $has_children) {
 		$virtual_checked = $all_children_checked && $any_child_checked;
@@ -180,7 +114,7 @@ if (!function_exists('resp_is_checked')) {
 		<div class="<?php echo $panel_class; ?>" data-group="<?php echo htmlspecialchars($group_id); ?>">
 			<div class="<?php echo $header_class; ?>">
 				<?php if ($has_children) { ?>
-					<span class="perm-toggle"><i class="fa <?php echo $is_open ? 'fa-chevron-down' : 'fa-chevron-right'; ?>"></i></span>
+					<span class="perm-toggle"><i class="fal <?php echo $is_open ? 'fa-chevron-down' : 'fa-chevron-right'; ?>"></i></span>
 				<?php } else { ?>
 					<span class="perm-toggle"><i class="fal fa-circle" style="font-size:6px;vertical-align:middle;"></i></span>
 				<?php } ?>
@@ -195,7 +129,7 @@ if (!function_exists('resp_is_checked')) {
 							data-group="<?php echo htmlspecialchars($group_id); ?>"
 							<?php echo resp_is_checked($parent_key, $record, $permissions_mode) ? 'checked' : ''; ?>
 							<?php echo $disabled_attr; ?> />
-						<i class="fa <?php echo htmlspecialchars($icon); ?>"></i>
+						<i class="fal <?php echo htmlspecialchars(str_replace('fa-', 'fa-', $icon)); ?>"></i>
 						<?php echo htmlspecialchars($group['label']); ?>
 					</label>
 				<?php } else { ?>
@@ -205,7 +139,7 @@ if (!function_exists('resp_is_checked')) {
 							data-group="<?php echo htmlspecialchars($group_id); ?>"
 							<?php echo ($virtual_checked || ($any_child_checked && $all_children_checked)) ? 'checked' : ''; ?>
 							<?php echo $disabled_attr; ?> />
-						<i class="fa <?php echo htmlspecialchars($icon); ?>"></i>
+						<i class="fal <?php echo htmlspecialchars($icon); ?>"></i>
 						<?php echo htmlspecialchars($group['label']); ?>
 					</label>
 				<?php } ?>
@@ -238,7 +172,7 @@ if (!function_exists('resp_is_checked')) {
 </div>
 
 <script type="text/javascript">
-(function($){
+(function($) {
 	function syncParentState($panel) {
 		var $parent = $panel.find('> .perm-panel-header .perm-parent');
 		var $children = $panel.find('> .perm-children .perm-child-cb');
@@ -269,19 +203,17 @@ if (!function_exists('resp_is_checked')) {
 		}
 	}
 
-	$(document).ready(function(){
-		$('#perm-tree .perm-panel').each(function(){
-			syncParentState($(this));
-		});
+	$(document).ready(function() {
+		$('#perm-tree .perm-panel').each(function() { syncParentState($(this)); });
 
-		$('#perm-tree').on('click', '.perm-toggle', function(e){
+		$('#perm-tree').on('click', '.perm-toggle', function(e) {
 			e.preventDefault();
 			e.stopPropagation();
 			var $panel = $(this).closest('.perm-panel');
 			setOpen($panel, !$panel.hasClass('open'));
 		});
 
-		$('#perm-tree').on('change', '.perm-parent', function(){
+		$('#perm-tree').on('change', '.perm-parent', function() {
 			var $panel = $(this).closest('.perm-panel');
 			var checked = $(this).prop('checked');
 			var $children = $panel.find('> .perm-children .perm-child-cb');
@@ -292,7 +224,7 @@ if (!function_exists('resp_is_checked')) {
 			$(this).prop('indeterminate', false);
 		});
 
-		$('#perm-tree').on('change', '.perm-child-cb', function(){
+		$('#perm-tree').on('change', '.perm-child-cb', function() {
 			var $panel = $(this).closest('.perm-panel');
 			var $parent = $panel.find('> .perm-panel-header .perm-parent');
 			if ($parent.length && !$parent.hasClass('perm-virtual')) {
@@ -301,121 +233,23 @@ if (!function_exists('resp_is_checked')) {
 				}
 			}
 			syncParentState($panel);
-			if ($(this).prop('checked')) {
-				setOpen($panel, true);
-			}
+			if ($(this).prop('checked')) { setOpen($panel, true); }
 		});
 
-		$('#perm-select-all').on('click', function(){
+		$('#perm-select-all').on('click', function() {
 			$('#perm-tree .perm-parent, #perm-tree .perm-child-cb').prop('checked', true).prop('indeterminate', false);
-			$('#perm-tree .perm-panel').each(function(){ setOpen($(this), true); });
+			$('#perm-tree .perm-panel').each(function() { setOpen($(this), true); });
 		});
-		$('#perm-clear-all').on('click', function(){
+		$('#perm-clear-all').on('click', function() {
 			$('#perm-tree .perm-parent, #perm-tree .perm-child-cb').prop('checked', false).prop('indeterminate', false);
-			$('#perm-tree .perm-panel').each(function(){ setOpen($(this), false); });
+			$('#perm-tree .perm-panel').each(function() { setOpen($(this), false); });
 		});
-		$('#perm-expand-all').on('click', function(){
-			$('#perm-tree .perm-panel').each(function(){ setOpen($(this), true); });
+		$('#perm-expand-all').on('click', function() {
+			$('#perm-tree .perm-panel').each(function() { setOpen($(this), true); });
 		});
-		$('#perm-collapse-all').on('click', function(){
-			$('#perm-tree .perm-panel').each(function(){ setOpen($(this), false); });
+		$('#perm-collapse-all').on('click', function() {
+			$('#perm-tree .perm-panel').each(function() { setOpen($(this), false); });
 		});
 	});
 })(jQuery);
 </script>
-
-				</div></div>
-			</div>
-		</div>
-	</div>
-</main>
-<?php include('footer.php'); ?>
-</body>
-</html>
-<script type="text/javascript">
-(function($){
-	function syncParentState($panel) {
-		var $parent = $panel.find('> .perm-panel-header .perm-parent');
-		var $children = $panel.find('> .perm-children .perm-child-cb');
-		if (!$children.length) {
-			$parent.prop('indeterminate', false);
-			return;
-		}
-		var total = $children.length;
-		var checked = $children.filter(':checked').length;
-		if (checked === 0) {
-			$parent.prop('checked', false).prop('indeterminate', false);
-		} else if (checked === total) {
-			$parent.prop('checked', true).prop('indeterminate', false);
-		} else {
-			$parent.prop('checked', true).prop('indeterminate', true);
-		}
-	}
-
-	function setOpen($panel, open) {
-		var $toggle = $panel.find('> .perm-panel-header .perm-toggle i');
-		if (!$panel.find('> .perm-children').length) return;
-		if (open) {
-			$panel.addClass('open');
-			$toggle.removeClass('fa-chevron-right').addClass('fa-chevron-down');
-		} else {
-			$panel.removeClass('open');
-			$toggle.removeClass('fa-chevron-down').addClass('fa-chevron-right');
-		}
-	}
-
-	$(document).ready(function(){
-		$('#perm-tree .perm-panel').each(function(){
-			syncParentState($(this));
-		});
-
-		$('#perm-tree').on('click', '.perm-toggle', function(e){
-			e.preventDefault();
-			e.stopPropagation();
-			var $panel = $(this).closest('.perm-panel');
-			setOpen($panel, !$panel.hasClass('open'));
-		});
-
-		$('#perm-tree').on('change', '.perm-parent', function(){
-			var $panel = $(this).closest('.perm-panel');
-			var checked = $(this).prop('checked');
-			var $children = $panel.find('> .perm-children .perm-child-cb');
-			if ($children.length) {
-				$children.prop('checked', checked);
-				setOpen($panel, checked);
-			}
-			$(this).prop('indeterminate', false);
-		});
-
-		$('#perm-tree').on('change', '.perm-child-cb', function(){
-			var $panel = $(this).closest('.perm-panel');
-			var $parent = $panel.find('> .perm-panel-header .perm-parent');
-			if ($parent.length && !$parent.hasClass('perm-virtual')) {
-				if ($panel.find('> .perm-children .perm-child-cb:checked').length > 0) {
-					$parent.prop('checked', true);
-				}
-			}
-			syncParentState($panel);
-			if ($(this).prop('checked')) {
-				setOpen($panel, true);
-			}
-		});
-
-		$('#perm-select-all').on('click', function(){
-			$('#perm-tree .perm-parent, #perm-tree .perm-child-cb').prop('checked', true).prop('indeterminate', false);
-			$('#perm-tree .perm-panel').each(function(){ setOpen($(this), true); });
-		});
-		$('#perm-clear-all').on('click', function(){
-			$('#perm-tree .perm-parent, #perm-tree .perm-child-cb').prop('checked', false).prop('indeterminate', false);
-			$('#perm-tree .perm-panel').each(function(){ setOpen($(this), false); });
-		});
-		$('#perm-expand-all').on('click', function(){
-			$('#perm-tree .perm-panel').each(function(){ setOpen($(this), true); });
-		});
-		$('#perm-collapse-all').on('click', function(){
-			$('#perm-tree .perm-panel').each(function(){ setOpen($(this), false); });
-		});
-	});
-})(jQuery);
-</script>
-

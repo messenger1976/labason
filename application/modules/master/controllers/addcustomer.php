@@ -172,7 +172,7 @@ class addcustomer extends CI_Controller {
 									<a class="btn btn-outline-warning set-password-btn" href="javascript:void(0);" data-customer-id="'.$row_id.'" data-customer-code="'.(isset($row['customer_id']) ? htmlspecialchars($row['customer_id'], ENT_QUOTES, 'UTF-8') : '').'" title="Set Login Password" data-toggle="tooltip">
 										<i class="fal fa-key"></i>
 									</a>
-									<a class="btn btn-outline-danger" href="JavaScript:if(confirm(\'Confirm Delete?\')==true){window.location=\''.ADMIN_URL.'addcustomer/delete/'.$row_id.'\';}" title="Delete" data-toggle="tooltip">
+									<a class="btn btn-outline-danger sa4-confirm-delete" href="javascript:void(0);" data-sa4-delete-url="'.ADMIN_URL.'addcustomer/delete/'.$row_id.'" title="Delete" data-toggle="tooltip">
 										<i class="fal fa-times"></i>
 									</a>
 								</div>';
@@ -466,57 +466,66 @@ class addcustomer extends CI_Controller {
 	}
 	public function adminconfigurationupdate()
 	{
-		// Ensure database connection is available
 		if (!isset($this->db) || !is_object($this->db)) {
 			$this->load->database();
 		}
-		$this->load->library('image_lib');
-		$adminid						= $this->input->post('adminid');
-		$data['name'] 					= $this->input->post('name');
-		$data['email'] 					= $this->input->post('email');
-		$data['established'] 			= date ("Y-m-d", strtotime($this->input->post('established')));
-		$data['contact1']	 			= $this->input->post('contact1');
-		$data['contactperson'] 			= $this->input->post('contactperson');
-		$data['contactpersonphone'] 	= $this->input->post('contactperson');
-		$data['website']			 	= $this->input->post('website');
-		$data['address1']			 	= $this->input->post('address1');
-		$data['about']				 	= $this->input->post('about');
-		$result							= $this->my_model->get_adminrecord_update($adminid,$data);
-						$config = array(
-										'upload_path'   => './images/logo',
-										'allowed_types' => 'gif|jpg|png',
-										/*'max_size'      => '10000',
-										'max_width'     => '1024',
-										'max_height'    => '768',*/
-										'encrypt_name'  => false,
-									   );
-						$this->load->library('upload', $config);
-						$this->image_lib->resize();
-			if($result){
-						if ($this->upload->do_upload('userfile')) 
-							{	
-							   	$upload_data = $this->upload->data();
-									$data_ary = array(
-														'title'     => $upload_data['client_name'],
-														'file'      => $upload_data['file_name'],
-														'width'     => $upload_data['image_width'],
-														'height'    => $upload_data['image_height'],
-														'type'      => $upload_data['image_type'],
-														'size'      => $upload_data['file_size'],
-														'date'      => date('Y-m-d')
-													  );
-														$this->db->where('adminid', $adminid);
-														$this->db->update('tbl_adminlogo', $data_ary);
-							}
-		
-						$data['record'] = $this->my_model->get_adminrecord_edit($adminid);
-						$this->load->view($this->headerPage,$this->head);
-						$this->load->view(adminconfiguration,$data);
-					}
-			else
-			{
-				$data['msg'] = "Not Updated...";
-			}	
+
+		$adminid = (int) $this->input->post('adminid');
+		if ($adminid <= 0) {
+			$this->session->set_flashdata('msg_err', 'Invalid admin configuration record.');
+			redirect('master/addcustomer/adminconfiguration');
+			return;
+		}
+
+		$established_raw = trim((string) $this->input->post('established'));
+		$established = $established_raw !== '' ? date('Y-m-d', strtotime($established_raw)) : null;
+
+		$update = array(
+			'name'               => trim((string) $this->input->post('name')),
+			'email'              => trim((string) $this->input->post('email')),
+			'established'        => $established,
+			'contact1'           => trim((string) $this->input->post('contact1')),
+			'contactperson'      => trim((string) $this->input->post('contactperson')),
+			'contactpersonphone' => trim((string) $this->input->post('contactpersonphone')),
+			'website'            => trim((string) $this->input->post('website')),
+			'address1'           => trim((string) $this->input->post('address1')),
+			'about'              => trim((string) $this->input->post('about')),
+		);
+
+		$result = $this->my_model->get_adminrecord_update($adminid, $update);
+
+		if (!$result) {
+			$this->session->set_flashdata('msg_err', 'Not Updated...');
+			redirect('master/addcustomer/editadminconfiguration/' . $adminid);
+			return;
+		}
+
+		if (!empty($_FILES['userfile']['name'])) {
+			$this->load->library('image_lib');
+			$config = array(
+				'upload_path'   => './images/logo',
+				'allowed_types' => 'gif|jpg|png|jpeg',
+				'encrypt_name'  => false,
+			);
+			$this->load->library('upload', $config);
+			if ($this->upload->do_upload('userfile')) {
+				$upload_data = $this->upload->data();
+				$logo_data = array(
+					'title'  => $upload_data['client_name'],
+					'file'   => $upload_data['file_name'],
+					'width'  => $upload_data['image_width'],
+					'height' => $upload_data['image_height'],
+					'type'   => $upload_data['image_type'],
+					'size'   => $upload_data['file_size'],
+					'date'   => date('Y-m-d'),
+				);
+				$this->db->where('adminid', $adminid);
+				$this->db->update('tbl_adminlogo', $logo_data);
+			}
+		}
+
+		$this->session->set_flashdata('msg_succ', 'Admin configuration updated successfully.');
+		redirect('master/addcustomer/adminconfiguration');
 	}
 	/** View Function **/
 	public function view($id){ 

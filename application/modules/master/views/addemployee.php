@@ -1,20 +1,70 @@
 <?php
-	$sa4_page_icon = 'fal fa-users';
-	$sa4_page_title = 'Manage';
-	$sa4_page_subtitle = 'Addemployee';
-	$sa4_loading_label = 'Addemployee';
+	$sa4_loading_label = 'Employees';
 	$sa4_dt_entity = 'addemployee';
 	$sa4_panel_id = 'panel-addemployee';
+
+	$income1 = $this->my_model->get_income_metercustomer();
+	extract($income1);
+	$income2 = $this->my_model->get_income_monthlycustomer();
+	extract($income2);
+	$intotal = (isset($total1) ? (float) $total1 : 0) + (isset($total2) ? (float) $total2 : 0);
+
+	$expense1 = $this->my_model->get_outcome_expenses();
+	extract($expense1);
+	$expense2 = $this->my_model->get_outcome_payroll();
+	extract($expense2);
+	$extotal = (isset($extotal1) ? (float) $extotal1 : 0) + (isset($extotal2) ? (float) $extotal2 : 0);
+
+	$total_customer = $this->my_model->total_customer();
+	extract($total_customer);
 ?>
 <main id="js-page-content" role="main" class="page-content">
 	<ol class="breadcrumb page-breadcrumb">
-		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL?>">Home</a></li>
-		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL?>addemployee/add/">addemployee</a></li>
-		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL?>addemployee/search/">Search Employee</a></li>
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>">Home</a></li>
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>addemployee/search/">Search Employee</a></li>
 		<li class="breadcrumb-item active">List View</li>
-		<li class="position-absolute pos-top pos-right d-sm-block"><span class="js-get-date"></span></li>
+		<li class="position-absolute pos-top pos-right d-none d-sm-block"><span class="js-get-date"></span></li>
 	</ol>
-<?php include(__DIR__ . '/partials/sa4_kpi_subheader.php'); ?>
+
+	<div class="subheader">
+		<h1 class="subheader-title">
+			<i class="subheader-icon fal fa-users"></i>
+			Manage <span class="fw-300">Employees</span>
+		</h1>
+		<div class="subheader-block d-lg-flex align-items-center">
+			<div class="d-inline-flex flex-column justify-content-center mr-3">
+				<span class="fw-300 fs-xs d-block opacity-50">
+					<small>INCOME</small>
+				</span>
+				<span class="fw-500 fs-xl d-block color-primary-500">
+					₱ <?php echo number_format($intotal, 2); ?>
+				</span>
+			</div>
+			<span class="sparklines hidden-lg-down" sparkType="bar" sparkBarColor="#886ab5" sparkHeight="32px" sparkBarWidth="5px" values="3,4,3,6,7,3,3,6,2,6,4"></span>
+		</div>
+		<div class="subheader-block d-lg-flex align-items-center border-faded border-right-0 border-top-0 border-bottom-0 ml-3 pl-3">
+			<div class="d-inline-flex flex-column justify-content-center mr-3">
+				<span class="fw-300 fs-xs d-block opacity-50">
+					<small>EXPENSE</small>
+				</span>
+				<span class="fw-500 fs-xl d-block color-danger-500">
+					₱ <?php echo number_format($extotal, 2); ?>
+				</span>
+			</div>
+			<span class="sparklines hidden-lg-down" sparkType="bar" sparkBarColor="#fe6bb0" sparkHeight="32px" sparkBarWidth="5px" values="1,4,3,6,5,3,9,6,5,9,7"></span>
+		</div>
+		<div class="subheader-block d-lg-flex align-items-center border-faded border-right-0 border-top-0 border-bottom-0 ml-3 pl-3">
+			<div class="d-inline-flex flex-column justify-content-center mr-3">
+				<span class="fw-300 fs-xs d-block opacity-50">
+					<small>TOTAL CUSTOMER</small>
+				</span>
+				<span class="fw-500 fs-xl d-block color-success-500">
+					<?php echo (int) (isset($count_id) ? $count_id : 0); ?>
+				</span>
+			</div>
+			<span class="sparklines hidden-lg-down" sparkType="bar" sparkBarColor="#1dc9b7" sparkHeight="32px" sparkBarWidth="5px" values="2,5,3,7,4,6,3,8,5,4,6"></span>
+		</div>
+	</div>
 
 	<?php if ($this->session->flashdata('msg_succ')) { ?>
 	<div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -31,7 +81,7 @@
 			<div class="col-xl-12">
 				<div id="panel-addemployee" class="panel">
 					<div class="panel-hdr">
-						<h2>Addemployee <span class="fw-300"><i>Listing</i></span></h2>
+						<h2>Employee <span class="fw-300"><i>Listing</i></span></h2>
 						<div class="panel-toolbar">
 							<button class="btn btn-panel" data-action="panel-collapse" data-toggle="tooltip" data-offset="0,10" data-original-title="Collapse"></button>
 							<button class="btn btn-panel" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
@@ -98,51 +148,16 @@
 														<td>
 														    <input type="hidden" name="employeeid_<?php echo $i;?>" id="employeeid_<?php echo $i;?>" value = "<?php echo $row['employee_id'];?>">
 															<input type="hidden" name="id_<?php echo $i;?>" id="id_<?php echo $i;?>" value = "<?php echo $row['id'];?>">
-															
-														    <div class=" action-buttons">
-															 <!--<a href="#" title="Print">
-																 <i class="print_button fal fa-print" id="print_button<?php echo $i;?>" data-print-val-id="<?php echo $i ?>"></i>
-															</a>-->
-															<a class="blue" href="<?php echo ADMIN_URL;?>addemployee/view/<?php echo $row['id'];?>" title="view">
-																	<i class="fal fa-info-circle"></i>
-															</a>	
-																<a class="green" href="<?php echo ADMIN_URL;?>addemployee/edit/<?php echo $row['id']; ?>" title="Edit">
+															<div class="btn-group btn-group-sm" role="group">
+																<a class="btn btn-outline-primary" href="<?php echo ADMIN_URL;?>addemployee/view/<?php echo $row['id'];?>" title="View" data-toggle="tooltip">
+																	<i class="fal fa-eye"></i>
+																</a>
+																<a class="btn btn-outline-success" href="<?php echo ADMIN_URL;?>addemployee/edit/<?php echo $row['id']; ?>" title="Edit" data-toggle="tooltip">
 																	<i class="fal fa-edit"></i>
 																</a>
-																<a class="red" href="JavaScript:if(confirm('Confirm Delete?')==true){window.location='<?php echo ADMIN_URL;?>addemployee/delete/<?php echo $row['id'];?>';}" title="Delete">
+																<a class="btn btn-outline-danger" href="JavaScript:if(confirm('Confirm Delete?')==true){window.location='<?php echo ADMIN_URL;?>addemployee/delete/<?php echo $row['id'];?>';}" title="Delete" data-toggle="tooltip">
 																	<i class="fal fa-times"></i>
 																</a>
-															</div>
-															<div class="">
-																<div class="inline position-relative">
-																	<button class="btn btn-minier btn-yellow dropdown-toggle" data-toggle="dropdown">
-																		<i class="fal fa-caret-down icon-only bigger-120"></i>
-																	</button>
-																		
-																	<ul class="dropdown-menu dropdown-only-icon dropdown-yellow float-right dropdown-caret dropdown-close">
-																		<li><a href="#"><img src="<?php echo base_url();?>images/favicon/icon-printer.gif" class="print_button" id="print_button<?php echo $i;?>" data-print-val-id="<?php echo $i; ?>"></a></li>
-                                                                        <li>
-																			<a href="<?php echo ADMIN_URL;?>addemployee/edit/<?php echo $row['id']; ?>" class="tooltip-success" data-rel="tooltip" title="Edit">
-																					<span class="green">
-																						<img src="<?php echo base_url();?>images/favicon/document-edit.gif">
-																					</span>
-																				</a>
-																				
-																		</li>
-																		<li>
-																			<a class="blue" href="<?php echo ADMIN_URL;?>addemployee/view/<?php echo $row['id'];?>">
-																				<img src="<?php echo base_url();?>images/favicon/view_icon.gif">
-																			</a>			
-																		</li>
-																		<li>
-																			<a href="JavaScript:if(confirm('Confirm Delete?')==true){window.location='<?php echo ADMIN_URL;?>addemployee/delete/<?php echo $row['id'];?>';}" class="tooltip-error" data-rel="tooltip" title="Delete">
-																				<span class="red">
-																					<img src="<?php echo base_url();?>images/favicon/delete.png">
-																				</span>
-																			</a>
-																		</li>
-																	</ul>
-																</div>
 															</div>
 														</td>
 													</tr>

@@ -128,15 +128,6 @@
 <script src="<?php echo base_url(); ?>sa4/js/datagrid/datatables/datatables.bundle.js"></script>
 <script src="<?php echo base_url(); ?>sa4/js/statistics/sparkline/sparkline.bundle.js"></script>
 <script type="text/javascript">
-function deleteAllData() {
-	var checked_num = $('input[name="delete_ids[]"]:checked').length;
-	if (checked_num === 0) {
-		alert('Select at least one checkbox...');
-		return false;
-	}
-	return confirm('Confirm Delete?');
-}
-
 $(document).ready(function() {
 	pageSetUp();
 

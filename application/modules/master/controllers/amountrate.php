@@ -86,42 +86,29 @@ class amountrate extends CI_Controller {
 		$i = $start + 1;
 		foreach($records as $row) {
 			$status_html = '';
-			if($row['status'] == 1) {
-				$status_html = '<span class="label label-success arrowed-in arrowed-in-right"><a href="JavaScript:if(confirm(\'Are you sure want to Chanage the Status?\')==true){window.location=\''.ADMIN_URL.'amountrate/status/'.$row['id'].'/'.$row['status'].'\';}" style="color:#FFF; text-decoration:none;">Active</a></span>';
+			$row_id = isset($row['id']) ? (int) $row['id'] : 0;
+			$row_status = isset($row['status']) ? (int) $row['status'] : 0;
+			$status_url = ADMIN_URL.'amountrate/status/'.$row_id.'/'.$row_status;
+			if($row_status == 1) {
+				$status_html = '<a href="javascript:void(0);" class="badge badge-success badge-pill btn-status-toggle" data-url="'.$status_url.'" title="Click to deactivate">Active</a>';
 			} else {
-				$status_html = '<span class="label label-danger arrowed"><a href="JavaScript:if(confirm(\'Are you sure want to Chanage the Status?\')==true){window.location=\''.ADMIN_URL.'amountrate/status/'.$row['id'].'/'.$row['status'].'\';}" style="color:#FFF; text-decoration:none;">De-Active</a></span>';
+				$status_html = '<a href="javascript:void(0);" class="badge badge-danger badge-pill btn-status-toggle" data-url="'.$status_url.'" title="Click to activate">De-Active</a>';
 			}
 			
-			$action_html = '<div class="visible-md visible-lg hidden-sm hidden-xs action-buttons">
-								<a class="green" href="'.ADMIN_URL.'amountrate/edit/'.$row['id'].'" title="Edit">
-									<i class="fa fa-edit"></i>
-								</a>
-							</div>
-							<div class="visible-xs visible-sm hidden-md hidden-lg">
-								<div class="inline position-relative">
-									<button class="btn btn-minier btn-yellow dropdown-toggle" data-toggle="dropdown">
-										<i class="icon-caret-down icon-only bigger-120"></i>
-									</button>
-									<ul class="dropdown-menu dropdown-only-icon dropdown-yellow pull-right dropdown-caret dropdown-close">
-										<li>
-											<a href="'.ADMIN_URL.'amountrate/edit/'.$row['id'].'" class="tooltip-success" data-rel="tooltip" title="Edit">
-												<span class="green">
-													<img src="'.base_url().'images/favicon/document-edit.gif">
-												</span>
-											</a>
-										</li>
-									</ul>
-								</div>
-							</div>';
+			$action_html = '<div class="btn-group btn-group-sm" role="group">'
+				.'<a href="'.ADMIN_URL.'amountrate/edit/'.$row_id.'" class="btn btn-outline-success" title="Edit" data-toggle="tooltip">'
+				.'<i class="fal fa-edit"></i>'
+				.'</a>'
+				.'</div>';
 			
 			$commodity_charges = isset($row['commodity_charges']) && $row['commodity_charges'] != '' ? number_format($row['commodity_charges'], 2) : '0.00';
 			
 			$data[] = array(
 				$i++,
-				stripslashes($row['class_name']),
-				stripslashes($row['cubic_meter']),
-				'<div align="right">'.stripslashes(number_format($row['per_unit'],2)).'</div>',
-				'<div align="right">'.stripslashes($commodity_charges).'</div>',
+				htmlspecialchars(stripslashes($row['class_name'])),
+				htmlspecialchars(stripslashes($row['cubic_meter'])),
+				number_format((float) $row['per_unit'], 2),
+				$commodity_charges,
 				$status_html,
 				$action_html
 			);

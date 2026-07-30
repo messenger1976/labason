@@ -6,6 +6,23 @@ if ($logged_in_user === '') {
 $admin_name = trim((string) $this->session->userdata('admininfo_name'));
 if ($admin_name === '') { $admin_name = 'Billing System'; }
 if (!isset($roleResponsible) || !is_array($roleResponsible)) { $roleResponsible = array(); }
+$avatar_relative = 'assets/avatars/avatar.png';
+$avatar_dir = FCPATH . 'uploads/profile/';
+$avatar_key = preg_replace('/[^a-z0-9_-]/i', '', strtolower((string) $this->session->userdata('usertype'))) . '_' . (int) $this->session->userdata('userid');
+$avatar_mtime = 0;
+foreach (array('jpg', 'jpeg', 'png', 'gif', 'webp') as $avatar_ext) {
+	$avatar_abs = $avatar_dir . $avatar_key . '.' . $avatar_ext;
+	if (is_file($avatar_abs)) {
+		$avatar_relative = 'uploads/profile/' . $avatar_key . '.' . $avatar_ext;
+		$avatar_mtime = @filemtime($avatar_abs);
+		break;
+	}
+}
+if (!$avatar_mtime) {
+	$avatar_default_abs = FCPATH . $avatar_relative;
+	$avatar_mtime = @filemtime($avatar_default_abs) ?: time();
+}
+$avatar_url = base_url($avatar_relative) . '?v=' . $avatar_mtime;
 ?>
 <aside class="page-sidebar">
 	<div class="page-logo">
@@ -24,7 +41,7 @@ if (!isset($roleResponsible) || !is_array($roleResponsible)) { $roleResponsible 
 			</div>
 		</div>
 		<div class="info-card">
-			<img src="<?php echo base_url(); ?>assets/avatars/avatar.png" class="profile-image rounded-circle" alt="User">
+			<img src="<?php echo htmlspecialchars($avatar_url, ENT_QUOTES, 'UTF-8'); ?>" class="profile-image rounded-circle" alt="User" style="object-fit:cover;">
 			<div class="info-card-text">
 				<a href="javascript:void(0);" class="d-flex align-items-center text-white">
 					<span class="text-truncate text-truncate-sm d-inline-block"><?php echo htmlspecialchars($logged_in_user, ENT_QUOTES, 'UTF-8'); ?></span>
@@ -280,8 +297,8 @@ if (!isset($roleResponsible) || !is_array($roleResponsible)) { $roleResponsible 
 					<?php } ?>
 
 					<?php if((array_key_exists('adddailyreport',$roleResponsible) && ($roleResponsible['adddailyreport'] == 1)) || ($this->session->userdata('usertype') == 'admin') || ($this->session->userdata('usertype') == 'subadmin') ){ ?>
-					<li class="<?php if($this->uri->segment(2)=='adddailyreport_nogroup') echo 'active';?>">
-						<a href="<?php echo ADMIN_URL;?>adddailyreport_nogroup" title="Daily Report - No grouping">
+					<li class="<?php if($this->uri->segment(2)=='adddailyreportnogrouping') echo 'active';?>">
+						<a href="<?php echo ADMIN_URL;?>adddailyreportnogrouping" title="Daily Report - No grouping">
 							<span class="nav-link-text">Daily Report - No grouping</span>
 						</a>
 					</li>

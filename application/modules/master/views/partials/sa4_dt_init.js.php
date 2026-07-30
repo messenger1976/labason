@@ -122,13 +122,4 @@ $export_js = $export_cols ? json_encode(array_values($export_cols)) : 'null';
 		$('#dt_basic tbody input[name="delete_ids[]"]').prop('checked', checked);
 	});
 })(jQuery);
-
-function deleteAllData() {
-	var checked_num = $('input[name="delete_ids[]"]:checked').length;
-	if (checked_num === 0) {
-		alert('Select at least one checkbox...');
-		return false;
-	}
-	return confirm('Confirm Delete?');
-}
 </script>

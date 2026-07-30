@@ -12,7 +12,30 @@ $__uid = $this->session->userdata('userid');
 $__uname = trim((string) $this->session->userdata('username'));
 $__display_name = '';
 if ((string) $__uid === '1' && strtolower((string) $this->session->userdata('usertype')) === 'admin') {
-	$__display_name = $__uname;
+	$__display_name = trim((string) $this->session->userdata('name'));
+	if ($__display_name === '') {
+		if ($this->db->field_exists('name', 'tbl_admin_details')) {
+			$__row = $this->db->select('name, username')
+				->from('tbl_admin_details')
+				->where('id', $__uid)
+				->limit(1)
+				->get()
+				->row_array();
+		} else {
+			$__row = $this->db->select('username')
+				->from('tbl_admin_details')
+				->where('id', $__uid)
+				->limit(1)
+				->get()
+				->row_array();
+		}
+		if (!empty($__row)) {
+			$__display_name = isset($__row['name']) ? trim((string) $__row['name']) : '';
+			if ($__display_name === '') {
+				$__display_name = trim((string) $__row['username']);
+			}
+		}
+	}
 } else {
 	$__row = $this->db->select('employee_name, username')
 		->from('tbl_responsibilities_user')
@@ -42,6 +65,23 @@ if ($__admin_name === '') {
 	$__admin_name = 'Billing System';
 }
 $__logout_user = $__display_name !== '' ? $__display_name : $__uname;
+$__avatar_relative = 'assets/avatars/avatar.png';
+$__avatar_dir = FCPATH . 'uploads/profile/';
+$__avatar_key = preg_replace('/[^a-z0-9_-]/i', '', strtolower((string) $this->session->userdata('usertype'))) . '_' . (int) $__uid;
+$__avatar_mtime = 0;
+foreach (array('jpg', 'jpeg', 'png', 'gif', 'webp') as $__avatar_ext) {
+	$__avatar_abs = $__avatar_dir . $__avatar_key . '.' . $__avatar_ext;
+	if (is_file($__avatar_abs)) {
+		$__avatar_relative = 'uploads/profile/' . $__avatar_key . '.' . $__avatar_ext;
+		$__avatar_mtime = @filemtime($__avatar_abs);
+		break;
+	}
+}
+if (!$__avatar_mtime) {
+	$__default_abs = FCPATH . $__avatar_relative;
+	$__avatar_mtime = @filemtime($__default_abs) ?: time();
+}
+$__avatar_url = base_url($__avatar_relative) . '?v=' . $__avatar_mtime;
 if (!isset($roleResponsible) || !is_array($roleResponsible)) {
 	$roleResponsible = array();
 }
@@ -164,13 +204,13 @@ $sa4 = base_url() . 'sa4/';
 							</a>
 							<div>
 								<a href="#" data-toggle="dropdown" title="Account" class="header-icon d-flex align-items-center justify-content-center ml-2">
-									<img src="<?php echo base_url(); ?>assets/avatars/avatar.png" class="profile-image rounded-circle" alt="User" style="width:32px;height:32px;">
+								<img src="<?php echo htmlspecialchars($__avatar_url, ENT_QUOTES, 'UTF-8'); ?>" class="profile-image rounded-circle" alt="User" style="width:32px;height:32px;object-fit:cover;">
 								</a>
 								<div class="dropdown-menu dropdown-menu-animated dropdown-menu-right">
 									<div class="dropdown-header bg-trans-gradient d-flex flex-row py-4 rounded-top">
 										<div class="d-flex flex-row align-items-center mt-1 mb-1 color-white">
 											<span class="mr-2">
-												<img src="<?php echo base_url(); ?>assets/avatars/avatar.png" class="rounded-circle profile-image" alt="User" style="width:40px;height:40px;">
+											<img src="<?php echo htmlspecialchars($__avatar_url, ENT_QUOTES, 'UTF-8'); ?>" class="rounded-circle profile-image" alt="User" style="width:40px;height:40px;object-fit:cover;">
 											</span>
 											<div class="info-card-text">
 												<div class="fs-lg text-truncate text-truncate-lg"><?php echo htmlspecialchars($__logout_user, ENT_QUOTES, 'UTF-8'); ?></div>
@@ -179,6 +219,9 @@ $sa4 = base_url() . 'sa4/';
 										</div>
 									</div>
 									<div class="dropdown-divider m-0"></div>
+								<a href="<?php echo ADMIN_URL; ?>profile/" class="dropdown-item">
+									<span>Profile</span>
+								</a>
 									<a href="<?php echo ADMIN_URL; ?>change_password/" class="dropdown-item">
 										<span>Change Password</span>
 									</a>

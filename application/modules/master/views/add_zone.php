@@ -156,11 +156,11 @@
 											</td>
 											<td class="text-center">
 												<div class="btn-group btn-group-sm" role="group">
-													<a href="<?php echo $edit_url; ?>" class="btn btn-outline-primary btn-icon rounded-circle waves-effect waves-themed" title="Edit" data-toggle="tooltip">
+													<a class="btn btn-outline-success" href="<?php echo $edit_url; ?>" title="Edit" data-toggle="tooltip">
 														<i class="fal fa-edit"></i>
 													</a>
-													<a href="JavaScript:if(confirm('Confirm Delete?')==true){window.location='<?php echo $delete_url; ?>';}" class="btn btn-outline-danger btn-icon rounded-circle waves-effect waves-themed" title="Delete" data-toggle="tooltip">
-														<i class="fal fa-trash-alt"></i>
+													<a class="btn btn-outline-danger" href="JavaScript:if(confirm('Confirm Delete?')==true){window.location='<?php echo $delete_url; ?>';}" title="Delete" data-toggle="tooltip">
+														<i class="fal fa-times"></i>
 													</a>
 												</div>
 											</td>
@@ -285,15 +285,6 @@
 </style>
 <script src="<?php echo base_url(); ?>sa4/js/datagrid/datatables/datatables.bundle.js"></script>
 <script type="text/javascript">
-function deleteAllData() {
-	var checked_num = $('input[name="delete_ids[]"]:checked').length;
-	if (checked_num === 0) {
-		alert('Select at least one checkbox...');
-		return false;
-	}
-	return confirm('Confirm Delete?');
-}
-
 $(document).ready(function() {
 	pageSetUp();
 

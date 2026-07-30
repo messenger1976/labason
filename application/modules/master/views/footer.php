@@ -114,6 +114,7 @@
 			})();
 		</script>
 		<script src="<?php echo base_url(); ?>sa4/js/app.bundle.js"></script>
+		<?php include(__DIR__ . '/partials/sa4_swal_delete.js.php'); ?>
 		<?php
 			$logged_in_user_name = trim((string) $this->session->userdata('name'));
 			if ($logged_in_user_name === '') {

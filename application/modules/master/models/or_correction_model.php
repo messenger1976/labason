@@ -20,7 +20,10 @@ class or_correction_model extends CI_Model {
         $this->db->select("*,(Select month_name from ".$this->table_months." where ".$this->table_months.".month_id	= ".$this->table_meter.".month ) as month_name");
 		$this->db->from($this->table_meter);
 		if($trans_date!=''){
-			$dt_date = new DateTime($trans_date, new DateTimeZone("Asia/Manila"));
+			$dt_date = DateTime::createFromFormat('d-m-Y', $trans_date, new DateTimeZone("Asia/Manila"));
+			if ($dt_date === false) {
+				$dt_date = new DateTime($trans_date, new DateTimeZone("Asia/Manila"));
+			}
 			$trans_date = $dt_date->format("Y-m-d");
 			$this->db->where($this->table_meter.".date",$trans_date);
 		}
@@ -149,7 +152,7 @@ class or_correction_model extends CI_Model {
 	}
 	
 	public function get_income_metercustomer(){
-		$this->db->select('SUM(pay_amount) as total1');
+		$this->db->select('SUM(grand_total) as total1');
 		$this->db->from($this->table_meter);
 		$query = $this->db->get();
 		$result = $query->row_array();

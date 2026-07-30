@@ -93,7 +93,7 @@
 					<div class="panel-hdr">
 						<h2>Leaking <span class="fw-300"><i>Ledger</i></span></h2>
 						<div class="panel-toolbar">
-							<button type="button" class="btn btn-primary btn-sm waves-effect waves-themed mr-2" id="add_record">
+							<button type="button" class="btn btn-success btn-sm waves-effect waves-themed mr-2" id="add_record">
 								<i class="fal fa-plus mr-1"></i> Add Record
 							</button>
 							<button class="btn btn-panel" data-action="panel-collapse" data-toggle="tooltip" data-offset="0,10" data-original-title="Collapse"></button>
@@ -172,67 +172,44 @@
 														
 														?></td>
 														<td>
-														<!--<div class="visible-md visible-lg hidden-sm hidden-xs action-buttons">
-																<a class="green" href="<?php echo ADMIN_URL;?>employee_logins/edit/<?php echo $row['id'];?>" title="Edit">
+															<div class="btn-group btn-group-sm" role="group">
+																<?php if ($row['leaking_status'] != '4' && $row['leaking_status'] != '5') { ?>
+																<a href="<?php echo ADMIN_URL; ?>Leakingentry/edit/<?php echo $row['leaking_id']; ?>" class="btn btn-outline-success btn_edit" title="Edit" data-toggle="tooltip"
+																	data-leaking_id="<?php echo $row['leaking_id']; ?>"
+																	data-fullname="<?php echo $row['customer_id'].'==>'.$row['last_name'].', '.$row['first_name']; ?>"
+																	data-special_priviledge="<?php echo $row['special_priviledge']; ?>"
+																	data-billing_period="<?php echo getMonthName($row['month'])[0]->month_name.' '.$row['year']; ?>"
+																	data-previous_reading="<?php echo $row['previous_reading']; ?>"
+																	data-current_reading="<?php echo $row['reading']; ?>"
+																	data-consumed="<?php echo $row['consumed']; ?>"
+																	data-current_bill="<?php echo $row['unit_price']; ?>"
+																	data-sc_discount="<?php echo $row['sc_discount']; ?>"
+																	data-arrears="<?php echo $row['arrears']; ?>"
+																	data-maintenance_fee="<?php echo $row['maintenance_fee']; ?>"
+																	data-franchise_fee_percent="<?php echo $row['franchise_fee_percent']; ?>"
+																	data-franchise_fee_amount="<?php echo $row['franchise_fee_amount']; ?>"
+																	data-total_amount="<?php echo $row['amount']; ?>"
+																	data-penalty="<?php echo $row['penalty']; ?>"
+																	data-reading_date="<?php echo $row['date']; ?>"
+																	data-bill_duedate="<?php echo date('d-m-Y', strtotime($row['leaking_bill_duedate'])); ?>"
+																	data-leaking_discount_percent="<?php echo $row['leaking_discount_percent']; ?>"
+																	data-leaking_discount_amount="<?php echo $row['leaking_discount_amount']; ?>"
+																	data-leaking_bill_amount="<?php echo $row['leaking_total_amount']; ?>"
+																	data-leaking_date="<?php echo date('d-m-Y', strtotime($row['leaking_date'])); ?>">
 																	<i class="fal fa-edit"></i>
 																</a>
-                                                                <a class="red" href="JavaScript:if(confirm('Confirm Delete?')==true){window.location='<?php echo ADMIN_URL;?>employee_logins/delete/<?php echo $row['id'];?>';}" title="Delete">                                                                
-																	<i class="fal fa-remove"></i>
-																</a>														</div>-->
-																<?php
-															if($row['leaking_status']!='4' && $row['leaking_status']!='5'){
-														?>		
-																
-																<a href="<?php echo ADMIN_URL;?>Leakingentry/edit/<?php echo $row['leaking_id'];?>" class="tooltip-success btn_edit" data-rel="tooltip" title="Edit" 
-																data-leaking_id="<?php echo $row['leaking_id'];?>"
-																data-fullname="<?php echo $row['customer_id'].'==>'.$row['last_name'].', '.$row['first_name'];?>"
-																data-special_priviledge = "<?php echo $row['special_priviledge'];?>"
-																data-billing_period="<?php echo getMonthName($row['month'])[0]->month_name.' '.$row['year'];?>"
-																data-previous_reading="<?php echo $row['previous_reading'];?>"
-																data-current_reading="<?php echo $row['reading'];?>"
-																data-consumed="<?php echo $row['consumed'];?>"
-																data-current_bill="<?php echo $row['unit_price'];?>"
-																data-sc_discount="<?php echo $row['sc_discount'];?>"
-																data-arrears="<?php echo $row['arrears'];?>"
-																data-maintenance_fee="<?php echo $row['maintenance_fee'];?>"
-																data-franchise_fee_percent="<?php echo $row['franchise_fee_percent'];?>"
-																data-franchise_fee_amount="<?php echo $row['franchise_fee_amount'];?>"
-																data-total_amount="<?php echo $row['amount'];?>"
-																data-penalty="<?php echo $row['penalty'];?>"
-																data-reading_date="<?php echo $row['date'];?>"
-																data-bill_duedate="<?php echo date('d-m-Y',strtotime($row['leaking_bill_duedate']));?>"
-																data-leaking_discount_percent="<?php echo $row['leaking_discount_percent'];?>"
-																data-leaking_discount_amount="<?php echo $row['leaking_discount_amount'];?>"
-																data-leaking_bill_amount="<?php echo $row['leaking_total_amount'];?>"
-																data-leaking_date="<?php echo date('d-m-Y',strtotime($row['leaking_date']));?>"
-																>
-																	<span class="green">
-																		<img src="<?php echo base_url();?>images/favicon/document-edit.gif">
-																	</span>
+																<a href="JavaScript:if(confirm('Confirm Delete?')==true){window.location='<?php echo ADMIN_URL; ?>Leakingentry/delete/<?php echo $row['leaking_id']; ?>';}" class="btn btn-outline-danger" title="Delete" data-toggle="tooltip">
+																	<i class="fal fa-times"></i>
 																</a>
-
-														
-															<a href="JavaScript:if(confirm('Confirm Delete?')==true){window.location='<?php echo ADMIN_URL;?>Leakingentry/delete/<?php echo $row['leaking_id'];?>';}" class="tooltip-error" data-rel="tooltip" title="Delete">
-															<span class="red">
-																<img src="<?php echo base_url();?>images/favicon/delete.png">
-															</span>
-														</a>
-														
-														<?php
-															}
-														?>
-														
-														<a href="<?php echo ADMIN_URL;?>Leakingentry/ledger/<?php echo $row['leaking_id'];?>" class="tooltip-success" data-rel="tooltip" title="Ledger">
-																	<span class="blue">
-																		<img src="<?php echo base_url();?>images/favicon/ledger.png">
-																	</span>
+																<?php } ?>
+																<a href="<?php echo ADMIN_URL; ?>Leakingentry/ledger/<?php echo $row['leaking_id']; ?>" class="btn btn-outline-primary" title="Ledger" data-toggle="tooltip">
+																	<i class="fal fa-eye"></i>
 																</a>
-														<a href="<?php echo ADMIN_URL;?>Leakingentry/print_forms/<?php echo $row['leaking_id'];?>" target="_blank" class="tooltip-success" data-rel="tooltip" title="Print Forms">
-																	<span class="orange">
-																		<i class="fal fa-print"></i>
-																	</span>
+																<a href="<?php echo ADMIN_URL; ?>Leakingentry/print_forms/<?php echo $row['leaking_id']; ?>" target="_blank" class="btn btn-outline-warning" title="Print Forms" data-toggle="tooltip">
+																	<i class="fal fa-print"></i>
 																</a>
-													</td>
+															</div>
+														</td>
 
 														
 														
