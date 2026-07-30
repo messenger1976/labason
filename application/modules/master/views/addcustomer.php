@@ -65,6 +65,7 @@
 				<!-- widget grid -->
 				<section id="widget-grid" class="">
 					<link rel="stylesheet" media="screen, print" href="<?php echo base_url(); ?>sa4/css/datagrid/datatables/datatables.bundle.css">
+					<link rel="stylesheet" media="screen, print" href="<?php echo base_url(); ?>sa4/css/formplugins/bootstrap-datepicker/bootstrap-datepicker.css">
 
 					<!-- row -->
 					<div class="row">
@@ -166,14 +167,16 @@
 		</div>
 		
 		<!-- Modal for Viewing Customer Details -->
-		<div class="modal fade" id="viewCustomerModal" tabindex="-1" role="dialog" aria-labelledby="viewCustomerModalLabel">
+		<div class="modal fade" id="viewCustomerModal" tabindex="-1" role="dialog" aria-labelledby="viewCustomerModalLabel" aria-hidden="true">
 			<div class="modal-dialog modal-lg" role="document">
 				<div class="modal-content">
 					<div class="modal-header">
-						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
-							&times;
+						<h5 class="modal-title" id="viewCustomerModalLabel">
+							<i class="fal fa-eye mr-1"></i> Customer Details
+						</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true"><i class="fal fa-times"></i></span>
 						</button>
-						<h4 class="modal-title" id="viewCustomerModalLabel">Customer Details</h4>
 					</div>
 					<div class="modal-body" id="viewCustomerModalBody">
 						<div class="text-center py-4">
@@ -182,21 +185,23 @@
 						</div>
 					</div>
 					<div class="modal-footer">
-						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+						<button type="button" class="btn btn-secondary waves-effect waves-themed" data-dismiss="modal">Close</button>
 					</div>
 				</div>
 			</div>
 		</div>
 
 		<!-- Modal for Editing Customer Details -->
-		<div class="modal fade" id="editCustomerModal" tabindex="-1" role="dialog" aria-labelledby="editCustomerModalLabel">
-			<div class="modal-dialog modal-lg" role="document">
+		<div class="modal fade" id="editCustomerModal" tabindex="-1" role="dialog" aria-labelledby="editCustomerModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
 				<div class="modal-content">
 					<div class="modal-header">
-						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
-							&times;
+						<h5 class="modal-title" id="editCustomerModalLabel">
+							<i class="fal fa-edit mr-1"></i> Edit Customer
+						</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true"><i class="fal fa-times"></i></span>
 						</button>
-						<h4 class="modal-title" id="editCustomerModalLabel">Edit Customer</h4>
 					</div>
 					<div class="modal-body" id="editCustomerModalBody">
 						<div class="text-center py-4">
@@ -209,29 +214,31 @@
 		</div>
 
 		<!-- Modal for Setting Customer Password -->
-		<div class="modal fade" id="passwordModal" tabindex="-1" role="dialog" aria-labelledby="passwordModalLabel">
-			<div class="modal-dialog">
+		<div class="modal fade" id="passwordModal" tabindex="-1" role="dialog" aria-labelledby="passwordModalLabel" aria-hidden="true">
+			<div class="modal-dialog" role="document">
 				<div class="modal-content">
 					<div class="modal-header">
-						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
-							&times;
+						<h5 class="modal-title" id="passwordModalLabel">
+							<i class="fal fa-key mr-1"></i> Set Customer Login Password
+						</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true"><i class="fal fa-times"></i></span>
 						</button>
-						<h4 class="modal-title" id="passwordModalLabel">Set Customer Login Password</h4>
 					</div>
 					<div class="modal-body">
 						<form id="passwordForm">
 							<input type="hidden" id="modal_customer_id" name="customer_id" value="">
 							<div class="form-group">
-								<label for="modal_customer_code">Customer ID:</label>
+								<label class="form-label" for="modal_customer_code">Customer ID</label>
 								<input type="text" class="form-control" id="modal_customer_code" readonly>
 							</div>
 							<div class="form-group">
-								<label for="modal_password">Password: <span class="text-danger">*</span></label>
+								<label class="form-label" for="modal_password">Password <span class="text-danger">*</span></label>
 								<input type="password" class="form-control" id="modal_password" name="password" required>
-								<small class="help-block">Enter a password for customer login</small>
+								<small class="form-text text-muted">Enter a password for customer login</small>
 							</div>
 							<div class="form-group">
-								<label for="modal_confirm_password">Confirm Password: <span class="text-danger">*</span></label>
+								<label class="form-label" for="modal_confirm_password">Confirm Password <span class="text-danger">*</span></label>
 								<input type="password" class="form-control" id="modal_confirm_password" name="confirm_password" required>
 							</div>
 							<div id="password_error" class="alert alert-danger" style="display:none;"></div>
@@ -239,8 +246,8 @@
 						</form>
 					</div>
 					<div class="modal-footer">
-						<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-						<button type="button" class="btn btn-primary" id="savePasswordBtn">Save Password</button>
+						<button type="button" class="btn btn-secondary waves-effect waves-themed" data-dismiss="modal">Cancel</button>
+						<button type="button" class="btn btn-primary waves-effect waves-themed" id="savePasswordBtn">Save Password</button>
 					</div>
 				</div>
 			</div>
@@ -248,6 +255,7 @@
 
 		<?php include('footer.php');?>
 		<script src="<?php echo base_url(); ?>sa4/js/statistics/sparkline/sparkline.bundle.js"></script>
+		<script src="<?php echo base_url(); ?>sa4/js/formplugins/bootstrap-datepicker/bootstrap-datepicker.js"></script>
 
 	</body>
 

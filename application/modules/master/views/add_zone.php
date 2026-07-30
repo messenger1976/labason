@@ -3,26 +3,16 @@
 	extract($income1);
 	$income2 = $this->my_model->get_income_monthlycustomer();
 	extract($income2);
-	$intotal = $total1 + $total2;
+	$intotal = (isset($total1) ? (float) $total1 : 0) + (isset($total2) ? (float) $total2 : 0);
 
 	$expense1 = $this->my_model->get_outcome_expenses();
 	extract($expense1);
 	$expense2 = $this->my_model->get_outcome_payroll();
 	extract($expense2);
-	$extotal = $extotal1 + $extotal2;
+	$extotal = (isset($extotal1) ? (float) $extotal1 : 0) + (isset($extotal2) ? (float) $extotal2 : 0);
 
 	$total_customer = $this->my_model->total_customer();
 	extract($total_customer);
-
-	$zone_count = is_array($record) ? count($record) : 0;
-	$active_zones = 0;
-	if (!empty($record)) {
-		foreach ($record as $zrow) {
-			if ((int) $zrow['status'] === 1) {
-				$active_zones++;
-			}
-		}
-	}
 ?>
 <main id="js-page-content" role="main" class="page-content">
 	<ol class="breadcrumb page-breadcrumb">
@@ -62,24 +52,13 @@
 		<div class="subheader-block d-lg-flex align-items-center border-faded border-right-0 border-top-0 border-bottom-0 ml-3 pl-3">
 			<div class="d-inline-flex flex-column justify-content-center mr-3">
 				<span class="fw-300 fs-xs d-block opacity-50">
-					<small>TOTAL ZONES</small>
+					<small>TOTAL CUSTOMER</small>
 				</span>
 				<span class="fw-500 fs-xl d-block color-success-500">
-					<?php echo (int) $zone_count; ?>
+					<?php echo (int) (isset($count_id) ? $count_id : 0); ?>
 				</span>
 			</div>
 			<span class="sparklines hidden-lg-down" sparkType="bar" sparkBarColor="#1dc9b7" sparkHeight="32px" sparkBarWidth="5px" values="2,5,3,7,4,6,3,8,5,4,6"></span>
-		</div>
-		<div class="subheader-block d-lg-flex align-items-center border-faded border-right-0 border-top-0 border-bottom-0 ml-3 pl-3">
-			<div class="d-inline-flex flex-column justify-content-center mr-3">
-				<span class="fw-300 fs-xs d-block opacity-50">
-					<small>ACTIVE</small>
-				</span>
-				<span class="fw-500 fs-xl d-block color-info-500">
-					<?php echo (int) $active_zones; ?>
-				</span>
-			</div>
-			<span class="sparklines hidden-lg-down" sparkType="bar" sparkBarColor="#2196F3" sparkHeight="32px" sparkBarWidth="5px" values="4,3,5,6,4,7,5,6,4,5,7"></span>
 		</div>
 	</div>
 
