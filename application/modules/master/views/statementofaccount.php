@@ -1,53 +1,31 @@
-<!-- Content starts here - no header/sidebar -->
-<div class="statement-container" style="max-width: 1400px; margin: 0 auto; background: #fff; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-		<div class="row no-print action-buttons" style="margin-bottom: 20px;">
-			<div class="col-xs-12 col-sm-12">
-				<div class="btn-group-mobile">
-					<button type="button" class="btn btn-primary btn-block-mobile" id="printStatementBtn"><i class="fa fa-print"></i> Print</button>
-					<button class="btn btn-warning btn-block-mobile" id="resetPasswordBtn"><i class="fa fa-key"></i> Reset Password</button>
-					<a href="<?php echo base_url();?>master/statementofaccount/search" class="btn btn-default btn-block-mobile"><i class="fa fa-arrow-left"></i> Back to Search</a>
+<main id="js-page-content" role="main" class="page-content">
+	<ol class="breadcrumb page-breadcrumb">
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>">Home</a></li>
+		<li class="breadcrumb-item active">List</li>
+		<li class="position-absolute pos-top pos-right d-none d-sm-block"><span class="js-get-date"></span></li>
+	</ol>
+	<div class="subheader">
+		<h1 class="subheader-title">
+			<i class="subheader-icon fal fa-chart-bar"></i>
+			Manage <span class="fw-300">Statementofaccount</span>
+		</h1>
+	</div>
+
+
+	<div class="row">
+		<div class="col-xl-12">
+			<div class="panel">
+				<div class="panel-hdr">
+					<h2>Statementofaccount <span class="fw-300"><i>Details</i></span></h2>
+					<div class="panel-toolbar">
+						<button class="btn btn-panel" data-action="panel-collapse" data-toggle="tooltip" data-offset="0,10" data-original-title="Collapse"></button>
+						<button class="btn btn-panel" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
+					</div>
 				</div>
-			</div>
-		</div>
-		
-		<?php
-			$printed_at = date('Y-m-d H:i:s');
-			$prepared_name = 'MISHELLE P. MONDARTE';
-			$prepared_title = 'Industrial Relations Management Officer C / Billing Officer';
-			$verified_name = 'DARYL JAY T. VILLARIN';
-			$verified_title = 'Administrative/General Services Officer B / HRMO/FO/BO';
-			$approved_name = 'ENGR. ANASTACIA T. ROMANILLOS, CE';
-			$approved_title = 'General Manager';
-
-			if (isset($preparedby[0])) {
-				$prepared_name = trim($preparedby[0]['first_name'].' '.$preparedby[0]['middle_name'].' '.$preparedby[0]['last_name']);
-				$prepared_title = isset($preparedby[0]['jobtitle']) ? $preparedby[0]['jobtitle'] : $prepared_title;
-			}
-			if (isset($verifiedby[0])) {
-				$verified_name = trim($verifiedby[0]['first_name'].' '.$verifiedby[0]['middle_name'].' '.$verifiedby[0]['last_name']);
-				$verified_title = isset($verifiedby[0]['jobtitle']) ? $verifiedby[0]['jobtitle'] : $verified_title;
-			}
-			if (isset($approvedby[0])) {
-				$approved_name = trim($approvedby[0]['first_name'].' '.$approvedby[0]['middle_name'].' '.$approvedby[0]['last_name']);
-				$approved_title = isset($approvedby[0]['jobtitle']) ? $approvedby[0]['jobtitle'] : $approved_title;
-			}
-		?>
-
-		<!-- Report Header (logo same as other reports) -->
-		<div class="report-header">
-			<div class="report-logo">
-				<img src="<?php echo site_url();?>images/mroxas-logo-report.jpg" height="80px" alt="Labason Water District Logo">
-			</div>
-			<div class="report-title">STATEMENT OF ACCOUNT</div>
-			<div class="report-subtitle">
-				Customer ID: <?php echo htmlspecialchars($customer_info['customer_id'], ENT_QUOTES, 'UTF-8'); ?>
-				&nbsp; | &nbsp; Date/Time printed: <?php echo htmlspecialchars($printed_at, ENT_QUOTES, 'UTF-8'); ?>
-			</div>
-		</div>
-
-		<!-- Card Design -->
-		<div class="row">
-			<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+				<div class="panel-container show">
+					<div class="panel-content">
+<div class="row">
+			<div class="col-12 col-sm-12 col-md-12 col-lg-12">
 				<div class="card" style="border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden;">
 					<div class="card-body" style="padding: 20px;">
 								<!-- Customer Information -->
@@ -230,7 +208,7 @@
 					<span aria-hidden="true">&times;</span>
 				</button>
 				<h4 class="modal-title" id="resetPasswordModalLabel">
-					<i class="fa fa-key"></i> Reset Password
+					<i class="fal fa-key"></i> Reset Password
 				</h4>
 			</div>
 			<div class="modal-body">
@@ -254,7 +232,7 @@
 				</form>
 			</div>
 			<div class="modal-footer">
-				<button type="button" class="btn btn-default" id="cancelResetPasswordBtn">Cancel</button>
+				<button type="button" class="btn btn-secondary" id="cancelResetPasswordBtn">Cancel</button>
 				<button type="button" class="btn btn-primary" id="saveResetPasswordBtn">Reset Password</button>
 			</div>
 		</div>
@@ -264,12 +242,6 @@
 <!-- PAGE RELATED PLUGIN(S) -->
 <!-- Bootstrap JS (required for modals) -->
 <script src="<?php echo base_url();?>js/bootstrap/bootstrap.min.js"></script>
-<script src="<?php echo base_url();?>js/plugin/datatables/jquery.dataTables.min.js"></script>
-<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.colVis.min.js"></script>
-<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.tableTools.min.js"></script>
-<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.bootstrap.min.js"></script>
-<script src="<?php echo base_url();?>js/plugin/datatable-responsive/datatables.responsive.min.js"></script>
-
 <script type="text/javascript">
 	// DO NOT REMOVE : GLOBAL FUNCTIONS!
 	$(document).ready(function() {
@@ -283,9 +255,9 @@
 		};
 
 		var ledgerDataTable = $('#ledger_table').dataTable({
-			"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-12 hidden-xs'l>r>"+
+			"sDom": "<'dt-toolbar'<'col-12 col-sm-6'f><'col-sm-6 col-12 hidden-xs'l>r>"+
 				"t"+
-				"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
+				"<'dt-toolbar-footer'<'col-sm-6 col-12 hidden-xs'i><'col-12 col-sm-6'p>>",
 			"autoWidth" : true,
 			"ordering": false, // Disable sorting - data is already sorted by PHP
 			"order": [], // No initial sorting
@@ -964,7 +936,7 @@
 			padding: 8px !important;
 		}
 		
-		.action-buttons .col-xs-12 {
+		.action-buttons .col-12 {
 			padding: 0 !important;
 		}
 		
@@ -1157,4 +1129,14 @@
 </body>
 
 </html>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</main>
+<?php include('footer.php'); ?>
+</body>
+</html>
+
 

@@ -1,0 +1,223 @@
+add_zone.php
+add_zone_add.php
+add_zone_edit.php
+addaccountgroup.php
+addaccountgroup_add.php
+addaccountgroup_edit.php
+addaccountmetercustomer.php
+addaccountmonthlycustomer.php
+addassets.php
+addassets_add.php
+addassets_edit.php
+addassets_search _ajax.php
+addassets_search.php
+addassets_view.php
+addbillingperiod.php
+addbillingperiod_add.php
+addbillingperiod_ajax.php
+addbillingperiod_edit.php
+addbillingperiod_import.php
+addcustomer.php
+addcustomer_add.php
+addcustomer_edit.php
+addcustomer_edit_modal.php
+addcustomer_generatemetercustomer_search.php
+addcustomer_generatemetercustomersearch _ajax.php
+addcustomer_income_reportsearch _ajax.php
+addcustomer_income_reportsearch.php
+addcustomer_income_reportsearch.php- 04-aug
+addcustomer_income_reportsearch_monthly_ajax.php
+addcustomer_metersearch _ajax.php
+addcustomer_metersearch.php
+addcustomer_monthlysearch _ajax.php
+addcustomer_monthlysearch.php
+addcustomer_paidsearch _ajax.php
+addcustomer_paidsearch.php
+addcustomer_search _ajax.php
+addcustomer_search.php
+addcustomer_technicalsearch _ajax.php
+addcustomer_technicalsearch.php
+addcustomer_unpaidsearch _ajax.php
+addcustomer_unpaidsearch.php
+addcustomer_view.php
+addcustomer_view_modal.php
+adddaily_search _ajax.php
+adddailyreport_add.php
+adddailyreport_printtopdf.php
+adddailyreportnogrouping_add.php
+adddailyreportnogrouping_printtopdf.php
+adddailyreportnogrouping_search_ajax.php
+addemployee.php
+addemployee_add.php
+addemployee_edit.php
+addemployee_payrolssearch _ajax.php
+addemployee_payrolssearch.php
+addemployee_search _ajax.php
+addemployee_search.php
+addemployee_view.php
+addexpenses.php
+addexpenses_add.php
+addexpenses_bsearch _ajax.php
+addexpenses_edit.php
+addexpenses_invoice.php
+addexpenses_search _ajax.php
+addexpenses_search.php
+addexpenses_view.php
+addexpenses-print.php
+addexpensestype.php
+addexpensestype_add.php
+addexpensestype_edit.php
+addjournalvoucher.php
+addjournalvoucher_add.php
+addjournalvoucher_edit.php
+addledger.php
+addledger_add.php
+addledger_edit.php
+addledger_payrolssearch _ajax.php
+addledger_payrolssearch.php
+addledger_search _ajax.php
+addledger_search.php
+addledger_view.php
+addmetercustomerreading.php
+addmetercustomerreading_add _ajax.php
+addmetercustomerreading_add.php
+addmetercustomerreading_edit.php
+addmetercustomerreading_metersearch_ajax.php
+addmetercustomerreading_search.php
+addmetercustomerreading_search_edit.php
+addpaymentcustomer.php
+addpaymentcustomer.php-05-aug
+addpaymentcustomer_add _ajax.php
+addpaymentcustomer_add.php
+addpaymentcustomer_edit.php
+addpaymentcustomer-print.php
+addshareholder.php
+addshareholder_add.php
+addshareholder_edit.php
+addshareholder_search.php
+addshareholder_search_ajax.php
+addshareholder_view.php
+addsubaccountgroup.php
+addsubaccountgroup_add.php
+addsubaccountgroup_edit.php
+adminconfiguration.php
+adminconfiguration_edit.php
+adminreport.php
+aging_ar_report.php
+aging_ar_report_ajax.php
+agingarreport_printtopdf.php
+amountrate.php
+amountrate_add.php
+amountrate_edit.php
+arrears_monitoring_report.php
+arrears_monitoring_report_ajax.php
+arrearsmonitoring_printtopdf.php
+change-password.php
+change-username.php
+classification.php
+classification_add.php
+classification_category.php
+classification_category_add.php
+classification_category_edit.php
+classification_edit.php
+createbalanceforward.php
+createbalanceforward_ajax.php
+customer_invoice.php
+customer_payment_monitoring_report.php
+customer_payment_monitoring_report_ajax.php
+customer_report.php
+customer_report_ajax.php
+customerbalancemonitor.php
+customerbalancemonitor_ajax.php
+customer-print.php
+customerreport_printtopdf.php
+dashboard.php
+dashboard_new.php
+database_backup.php
+employee-logins.php
+employee-logins-add.php
+employee-logins-edit.php
+feesplaning.php
+feesplaning_add.php
+feesplaning_edit.php
+footer.php
+forgot-password.php
+global_settings.php
+global_settings-edit.php
+header.php
+include.php
+job_title.php
+job_title_add.php
+job_title_edit.php
+leaking_ar_report.php
+leaking_soa_statement.php
+leakingarreport_printtopdf.php
+leakingentry.php
+leakingentry_ledger.php
+leakingentry_print_forms.php
+leakingentrycorrection.php
+leakingentrycorrection_ledger.php
+login.php
+main-category.php
+main-category-add.php
+main-category-edit.php
+main-category-view.php
+manual_or_series.php
+mobile_dashboard.php
+mobile_footer.php
+mobile_tickets.php
+mobilenotifications.php
+mobilenotifications_dashboard.php
+mobilenotifications_settings.php
+month_customer_invoice.php
+monthly_billing_report.php
+monthly_billing_report_ajax.php
+monthly_income_report_analytic.php
+monthly_income_report_printtopdf.php
+monthlybillingreport_printtopdf.php
+or_correction.php
+or_correction_edit.php
+order-invoice.php
+paymentmonthlycustomer.php
+paymentmonthlycustomer.php-05-aug
+paymentmonthlycustomer_add _ajax.php
+paymentmonthlycustomer_add.php
+paymentmonthlycustomer_edit.php
+paymentmonthlycustomer_generate.php
+paymentmonthlycustomer_invoice.php
+paymentmonthlycustomer-print.php
+payroles-print.php
+payrols.php
+payrols_add.php
+payrols_edit.php
+practise.php
+practise_add.php
+practise_edit.php
+print_income_meter.php
+print_income_month.php
+print_meter.php
+print_meter_month.php
+print_monthly.php
+print_paid_customer.php
+print_receipt.php
+print_unpaid_customer.php
+profit_addshareholder_add.php
+qrcode.php
+responsibilities.php
+responsibilities-add.php
+responsibilities-edit.php
+responsibilities-permissions.php
+responsibilities-view.php
+share_profitloss_view.php
+statementofaccount.php
+statementofaccount_search.php
+technicalproblems.php
+technicalproblems_add.php
+technicalproblems_edit.php
+transaction.php
+trialbalance.php
+trialbalance_search - Copy.php
+trialbalance_search.php
+web_settings.php
+web_settings-edit.php
+web_settings-view.php

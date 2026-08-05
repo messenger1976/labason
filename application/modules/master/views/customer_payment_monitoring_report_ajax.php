@@ -7,18 +7,23 @@ $record = isset($record) && is_array($record) ? $record : array();
 $shown = count($record);
 $end = $total_count > 0 ? min($offset + $shown, $total_count) : 0;
 ?>
-<div class="row">
-	<div class="col-xs-12" style="margin-bottom:10px;">
-		<p class="text-muted">
-			Showing <?php echo $shown > 0 ? ($offset + 1) : 0; ?>–<?php echo $end; ?> of <?php echo $total_count; ?> (<?php echo $limit; ?> per page)
-		</p>
-		<button type="button" class="btn btn-default btn-sm" id="cpm_prev" <?php echo ($offset < 100) ? 'disabled="disabled"' : ''; ?>>Previous 100</button>
-		<button type="button" class="btn btn-default btn-sm" id="cpm_next" <?php echo $has_more ? '' : 'disabled="disabled"'; ?>>Next 100</button>
+<div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
+	<p class="text-muted mb-2 mb-md-0">
+		Showing <?php echo $shown > 0 ? ($offset + 1) : 0; ?>–<?php echo $end; ?> of <?php echo $total_count; ?>
+		<span class="opacity-50">(<?php echo $limit; ?> per page)</span>
+	</p>
+	<div class="mb-2 mb-md-0">
+		<button type="button" class="btn btn-secondary btn-sm" id="cpm_prev" <?php echo ($offset < 100) ? 'disabled="disabled"' : ''; ?>>
+			<i class="fal fa-chevron-left mr-1"></i> Previous 100
+		</button>
+		<button type="button" class="btn btn-secondary btn-sm" id="cpm_next" <?php echo $has_more ? '' : 'disabled="disabled"'; ?>>
+			Next 100 <i class="fal fa-chevron-right ml-1"></i>
+		</button>
 	</div>
 </div>
 <div class="table-responsive">
-	<table class="table table-bordered table-striped" id="tbl_payment_monitor">
-		<thead>
+	<table class="table table-bordered table-hover table-striped w-100" id="tbl_payment_monitor">
+		<thead class="bg-primary-600">
 			<tr>
 				<th>SN#</th>
 				<th>Customer ID</th>
@@ -26,10 +31,10 @@ $end = $total_count > 0 ? min($offset + $shown, $total_count) : 0;
 				<th>Address</th>
 				<th>Zone</th>
 				<th>OR number</th>
-				<th># periods</th>
+				<th class="text-right"># periods</th>
 				<th>Billing Period Paid</th>
-				<th>Total amount paid</th>
-				<th>Arrears</th>
+				<th class="text-right">Total amount paid</th>
+				<th class="text-right">Arrears</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -59,10 +64,10 @@ $end = $total_count > 0 ? min($offset + $shown, $total_count) : 0;
 						<td><?php echo $addr; ?></td>
 						<td><?php echo $zn; ?></td>
 						<td><?php echo $or; ?></td>
-						<td align="right"><?php echo $pc; ?></td>
+						<td class="text-right"><?php echo $pc; ?></td>
 						<td><?php echo $bp; ?></td>
-						<td align="right"><?php echo number_format($tp, 2); ?></td>
-						<td align="right"><?php echo number_format($ar, 2); ?></td>
+						<td class="text-right"><?php echo number_format($tp, 2); ?></td>
+						<td class="text-right"><?php echo number_format($ar, 2); ?></td>
 					</tr>
 					<?php
 					$index++;
@@ -70,7 +75,7 @@ $end = $total_count > 0 ? min($offset + $shown, $total_count) : 0;
 				?>
 			<?php } else { ?>
 				<tr>
-					<td colspan="10" style="text-align:center;">No records found</td>
+					<td colspan="10" class="text-center py-4">No records found</td>
 				</tr>
 			<?php } ?>
 		</tbody>

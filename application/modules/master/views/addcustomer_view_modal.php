@@ -1,94 +1,85 @@
+<?php
+	$record = (isset($record) && is_array($record)) ? $record : array();
+	$image = (isset($image) && is_array($image)) ? $image : array();
+	$photo_file = !empty($image['file']) ? $image['file'] : 'a.png';
+	$photo_url = ADMIN_IMG_URL . 'upload/' . $photo_file;
+
+	$v = function($key, $fallback = '') use ($record) {
+		if (!isset($record[$key]) || $record[$key] === null || $record[$key] === '') {
+			return $fallback;
+		}
+		return htmlspecialchars(stripslashes(str_replace('\n', '', (string) $record[$key])), ENT_QUOTES, 'UTF-8');
+	};
+
+	$full_name = trim(preg_replace('/\s+/', ' ', $v('first_name') . ' ' . $v('middle_name') . ' ' . $v('last_name')));
+	if ($full_name === '') {
+		$full_name = 'Customer';
+	}
+
+	$status_raw = isset($record['status']) ? (string) $record['status'] : '';
+	$status_html = ($status_raw === '1')
+		? '<span class="badge badge-success">Active</span>'
+		: (($status_raw === '0') ? '<span class="badge badge-danger">Inactive</span>' : '—');
+
+	$customer_type_label = $v('customer_type', '—');
+	if ($customer_type_label === 'metercustomer') {
+		$customer_type_label = 'Meter Customer';
+	} elseif ($customer_type_label === 'monthlycustomer') {
+		$customer_type_label = 'Monthly Customer';
+	}
+
+	$gender_label = $v('gender', '—');
+	if ($gender_label !== '—') {
+		$gender_label = ucfirst(strtolower($gender_label));
+	}
+
+	$rows = array(
+		array('Customer ID', $v('customer_id', '—')),
+		array('Account Subgroup', $v('subName', '—')),
+		array('First Name', $v('first_name', '—')),
+		array('Middle Name', $v('middle_name', '—')),
+		array('Last Name', $v('last_name', '—')),
+		array('DOB', !empty($record['DOB']) ? htmlspecialchars((string) $record['DOB'], ENT_QUOTES, 'UTF-8') : '—'),
+		array('Gender', $gender_label),
+		array('Place of Birth', $v('place_of_birth', '—')),
+		array('Address', $v('address', '—')),
+		array('City', $v('city', '—')),
+		array('Province', $v('state', '—')),
+		array('Mobile 1', $v('mobile1', '—')),
+		array('Mobile 2', $v('mobile2', '—')),
+		array('Email', $v('email_id', '—')),
+		array('Line Number', $v('line_number', '—')),
+		array('Zone', $v('zones', '—')),
+		array('Payment Type', $customer_type_label),
+		array('Reference Person', $v('referenceperson', '—')),
+		array('Billing Plans', $v('billingplans_name', '—')),
+		array('Status', $status_html),
+	);
+?>
 <div class="customer-view-modal">
-	<table id="user" class="table table-bordered table-striped" style="clear: both">
+	<div class="d-flex align-items-center mb-3 pb-3 border-bottom border-faded">
+		<img
+			src="<?php echo htmlspecialchars($photo_url, ENT_QUOTES, 'UTF-8'); ?>"
+			alt="Customer photo"
+			class="border border-faded rounded mr-3"
+			style="width:88px; height:88px; object-fit:cover;"
+			onerror="this.src='<?php echo ADMIN_IMG_URL; ?>upload/a.png';"
+		>
+		<div>
+			<div class="fs-lg fw-500"><?php echo $full_name; ?></div>
+			<div class="text-muted"><?php echo $v('customer_id', '—'); ?></div>
+			<div class="mt-1"><?php echo $status_html; ?></div>
+		</div>
+	</div>
+
+	<table class="table table-sm table-striped table-bordered mb-0">
 		<tbody>
+			<?php foreach ($rows as $row) { ?>
 			<tr>
-				<td>User Photo : </td>
-				<td>
-					<div class="image" style="width:150px; height:150px;">
-						<img id="blah" src="<?php echo ADMIN_IMG_URL;?>upload/<?php echo $image['file']; ?>" style="width:150px; height:150px;"/>
-					</div>
-				</td>
+				<th class="w-25 text-muted fw-500 bg-faded"><?php echo htmlspecialchars($row[0], ENT_QUOTES, 'UTF-8'); ?></th>
+				<td><?php echo $row[1]; ?></td>
 			</tr>
-			<tr>
-				<td style="width:25%;">Account Subgroup Type : </td>
-				<td style="width:75%"><?php echo stripslashes(str_replace('\n','',$record['subName'])); ?></td>
-			</tr>
-			<tr>
-				<td style="width:25%;">Customer-Id : </td>
-				<td style="width:75%"><?php echo stripslashes(str_replace('\n','',$record['customer_id'])); ?></td>
-			</tr>
-			<tr>
-				<td>First Name :</td>
-				<td><?php echo stripslashes(str_replace('\n','',$record['first_name'])); ?></td>
-			</tr>
-			<tr>
-				<td>Middle Name :</td>
-				<td><?php echo stripslashes(str_replace('\n','',$record['middle_name'])); ?></td>
-			</tr>
-			<tr>
-				<td>Last Name :</td>
-				<td><?php echo stripslashes(str_replace('\n','',$record['last_name'])); ?></td>
-			</tr>
-			<tr>
-				<td>DOB :</td>
-				<td><?php echo $record['DOB']; ?></td>
-			</tr>
-			<tr>
-				<td>Gender:</td>
-				<td><?php echo stripslashes(str_replace('\n','',$record['gender'])); ?></td>
-			</tr>
-			<tr>
-				<td>State:</td>
-				<td><?php echo stripslashes(str_replace('\n','',$record['state'])); ?></td>
-			</tr>
-			<tr>
-				<td>Place of birth :</td>
-				<td><?php echo stripslashes(str_replace('\n','',$record['place_of_birth'])); ?></td>
-			</tr>
-			<tr>
-				<td>Address:</td>
-				<td><?php echo stripslashes(str_replace('\n','',$record['city'])); ?></td>
-			</tr>
-			<tr>
-				<td>City: </td>
-				<td><?php echo stripslashes(str_replace('\n','',$record['mobile1'])); ?></td>
-			</tr>
-			<tr>
-				<td>Mobile1:</td>
-				<td><?php echo stripslashes(str_replace('\n','',$record['mobile1'])); ?></td>
-			</tr>
-			<tr>
-				<td>Mobile2:</td>
-				<td><?php echo stripslashes(str_replace('\n','',$record['mobile2'])); ?></td>
-			</tr>
-			<tr>
-				<td> Email-Id:</td>
-				<td><?php echo stripslashes(str_replace('\n','',$record['email_id'])); ?></td>
-			</tr>
-			<tr>
-				<td>Line Number:</td>
-				<td><?php echo stripslashes(str_replace('\n','',$record['line_number'])); ?></td>
-			</tr>
-			<tr>
-				<td> Zone:</td>
-				<td><?php echo stripslashes(str_replace('\n','',$record['zones'])); ?></td>
-			</tr>
-			<tr>
-				<td>Customer-Type:</td>
-				<td><?php echo stripslashes(str_replace('\n','',$record['customer_type'])); ?></td>
-			</tr>
-			<tr>
-				<td>Reference person:</td>
-				<td><?php echo stripslashes(str_replace('\n','',$record['referenceperson'])); ?></td>
-			</tr>
-			<tr>
-				<td>Billing-plans:</td>
-				<td><?php echo stripslashes(str_replace('\n','',$record['billingplans_name'])); ?></td>
-			</tr>
-			<tr>
-				<td>Status:</td>
-				<td><?php if($record['status']=='0'){ ?>Deactive <?php } if($record['status']=='1'){ ?>Active <?php } ?></td>
-			</tr>
+			<?php } ?>
 		</tbody>
 	</table>
 </div>

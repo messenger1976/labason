@@ -152,66 +152,29 @@ class addcustomer extends CI_Controller {
 				$row_id = isset($row['id']) ? $row['id'] : 0;
 				
 				if($row_status == 1) {
-					$status_html = '<span class="label label-success arrowed-in arrowed-in-right"><a href="JavaScript:if(confirm(\'Are you sure want to Chanage the Status?\')==true){window.location=\''.ADMIN_URL.'addcustomer/status/'.$row_id.'/'.$row_status.'\';}" style="color:#FFF; text-decoration:none;">Active</a></span>';
+					$status_html = '<a href="JavaScript:if(confirm(\'Are you sure want to Change the Status?\')==true){window.location=\''.ADMIN_URL.'addcustomer/status/'.$row_id.'/'.$row_status.'\';}" class="badge badge-success badge-pill">Active</a>';
 				} elseif($row_status == 0) {
-					$status_html = '<span class="label label-danger arrowed"><a href="JavaScript:if(confirm(\'Are you sure want to Chanage the Status?\')==true){window.location=\''.ADMIN_URL.'addcustomer/status/'.$row_id.'/'.$row_status.'\';}" style="color:#FFF; text-decoration:none;">De-Active</a></span>';
+					$status_html = '<a href="JavaScript:if(confirm(\'Are you sure want to Change the Status?\')==true){window.location=\''.ADMIN_URL.'addcustomer/status/'.$row_id.'/'.$row_status.'\';}" class="badge badge-warning badge-pill">De-Active</a>';
 				} elseif($row_status == 2) {
-					$status_html = '<span class="label label-danger arrowed"><a href="JavaScript:if(confirm(\'Are you sure want to Chanage the Status?\')==true){window.location=\''.ADMIN_URL.'addcustomer/status/'.$row_id.'/'.$row_status.'\';}" style="color:#FFF; text-decoration:none;">Disconnected</a></span>';
+					$status_html = '<a href="JavaScript:if(confirm(\'Are you sure want to Change the Status?\')==true){window.location=\''.ADMIN_URL.'addcustomer/status/'.$row_id.'/'.$row_status.'\';}" class="badge badge-danger badge-pill">Disconnected</a>';
 				}
 				
 				$action_html = '<input type="hidden" name="id_'.$i.'" id="id_'.$i.'" value="'.$row_id.'">
 								<input type="hidden" name="customerid_'.$i.'" id="customerid_'.$i.'" value="'.(isset($row['customer_id']) ? $row['customer_id'] : '').'">
 								<input type="hidden" name="billingplansid_'.$i.'" id="billingplansid_'.$i.'" value="'.(isset($row['billingplans']) ? $row['billingplans'] : '').'">
-								<div class="visible-md visible-lg hidden-sm hidden-xs action-buttons">
-									<a class="blue view-customer-btn" href="javascript:void(0);" data-customer-id="'.$row_id.'" title="View">
-										<i class="fa fa-info-circle"></i>
-									</a>	
-									<a class="green edit-customer-btn" href="javascript:void(0);" data-customer-id="'.$row_id.'" title="Edit">
-										<i class="fa fa-edit"></i>
+								<div class="btn-group btn-group-sm" role="group">
+									<a class="btn btn-outline-primary view-customer-btn" href="javascript:void(0);" data-customer-id="'.$row_id.'" title="View" data-toggle="tooltip">
+										<i class="fal fa-eye"></i>
 									</a>
-									<a class="orange set-password-btn" href="javascript:void(0);" data-customer-id="'.$row_id.'" data-customer-code="'.(isset($row['customer_id']) ? $row['customer_id'] : '').'" title="Set Login Password">
-										<i class="fa fa-key"></i>
+									<a class="btn btn-outline-success edit-customer-btn" href="javascript:void(0);" data-customer-id="'.$row_id.'" title="Edit" data-toggle="tooltip">
+										<i class="fal fa-edit"></i>
 									</a>
-									<a class="red" href="JavaScript:if(confirm(\'Confirm Delete?\')==true){window.location=\''.ADMIN_URL.'addcustomer/delete/'.$row_id.'\';}" title="Delete">
-										<i class="fa fa-remove"></i>
+									<a class="btn btn-outline-warning set-password-btn" href="javascript:void(0);" data-customer-id="'.$row_id.'" data-customer-code="'.(isset($row['customer_id']) ? htmlspecialchars($row['customer_id'], ENT_QUOTES, 'UTF-8') : '').'" title="Set Login Password" data-toggle="tooltip">
+										<i class="fal fa-key"></i>
 									</a>
-								</div>
-								<div class="visible-xs visible-sm hidden-md hidden-lg">
-									<div class="inline position-relative">
-										<button class="btn btn-minier btn-yellow dropdown-toggle" data-toggle="dropdown">
-											<i class="icon-caret-down icon-only bigger-120"></i>
-										</button>
-										<ul class="dropdown-menu dropdown-only-icon dropdown-yellow pull-right dropdown-caret dropdown-close">
-											<li>
-												<a href="javascript:void(0);" class="edit-customer-btn" data-customer-id="'.$row_id.'" data-rel="tooltip" title="Edit">
-													<span class="green">
-														<img src="'.base_url().'images/favicon/document-edit.gif">
-													</span>
-												</a>
-											</li>
-											<li>
-												<a class="blue view-customer-btn" href="javascript:void(0);" data-customer-id="'.$row_id.'" data-rel="tooltip" title="View">
-													<span class="blue">
-														<img src="'.base_url().'images/favicon/view_icon.gif">
-													</span>
-												</a>			
-											</li>
-											<li>
-												<a href="javascript:void(0);" class="set-password-btn" data-customer-id="'.$row_id.'" data-customer-code="'.(isset($row['customer_id']) ? $row['customer_id'] : '').'" data-rel="tooltip" title="Set Login Password">
-													<span class="orange">
-														<i class="fa fa-key"></i>
-													</span>
-												</a>
-											</li>
-											<li>
-												<a href="JavaScript:if(confirm(\'Confirm Delete?\')==true){window.location=\''.ADMIN_URL.'addcustomer/delete/'.$row_id.'\';}" class="tooltip-error" data-rel="tooltip" title="Delete">
-													<span class="red">
-														<img src="'.base_url().'images/favicon/delete.png">
-													</span>
-												</a>
-											</li>
-										</ul>
-									</div>
+									<a class="btn btn-outline-danger sa4-confirm-delete" href="javascript:void(0);" data-sa4-delete-url="'.ADMIN_URL.'addcustomer/delete/'.$row_id.'" title="Delete" data-toggle="tooltip">
+										<i class="fal fa-times"></i>
+									</a>
 								</div>';
 				
 				$data[] = array(
@@ -219,7 +182,7 @@ class addcustomer extends CI_Controller {
 					$i++,
 					stripslashes(isset($row['customer_id']) ? $row['customer_id'] : ''),
 					stripslashes((isset($row['last_name']) ? $row['last_name'] : '').',  '.(isset($row['first_name']) ? $row['first_name'] : '').'  '.(isset($row['middle_name']) ? $row['middle_name'] : '')),
-					'<span style="width:25%;">'.stripslashes(isset($row['address']) ? $row['address'] : '').'</span>',
+					stripslashes(isset($row['address']) ? $row['address'] : ''),
 					stripslashes(isset($row['meter_number']) ? $row['meter_number'] : ''),
 					stripslashes(isset($row['zones']) ? $row['zones'] : ''),
 					stripslashes(isset($row['classification_name']) ? $row['classification_name'] : ''),
@@ -503,57 +466,66 @@ class addcustomer extends CI_Controller {
 	}
 	public function adminconfigurationupdate()
 	{
-		// Ensure database connection is available
 		if (!isset($this->db) || !is_object($this->db)) {
 			$this->load->database();
 		}
-		$this->load->library('image_lib');
-		$adminid						= $this->input->post('adminid');
-		$data['name'] 					= $this->input->post('name');
-		$data['email'] 					= $this->input->post('email');
-		$data['established'] 			= date ("Y-m-d", strtotime($this->input->post('established')));
-		$data['contact1']	 			= $this->input->post('contact1');
-		$data['contactperson'] 			= $this->input->post('contactperson');
-		$data['contactpersonphone'] 	= $this->input->post('contactperson');
-		$data['website']			 	= $this->input->post('website');
-		$data['address1']			 	= $this->input->post('address1');
-		$data['about']				 	= $this->input->post('about');
-		$result							= $this->my_model->get_adminrecord_update($adminid,$data);
-						$config = array(
-										'upload_path'   => './images/logo',
-										'allowed_types' => 'gif|jpg|png',
-										/*'max_size'      => '10000',
-										'max_width'     => '1024',
-										'max_height'    => '768',*/
-										'encrypt_name'  => false,
-									   );
-						$this->load->library('upload', $config);
-						$this->image_lib->resize();
-			if($result){
-						if ($this->upload->do_upload('userfile')) 
-							{	
-							   	$upload_data = $this->upload->data();
-									$data_ary = array(
-														'title'     => $upload_data['client_name'],
-														'file'      => $upload_data['file_name'],
-														'width'     => $upload_data['image_width'],
-														'height'    => $upload_data['image_height'],
-														'type'      => $upload_data['image_type'],
-														'size'      => $upload_data['file_size'],
-														'date'      => date('Y-m-d')
-													  );
-														$this->db->where('adminid', $adminid);
-														$this->db->update('tbl_adminlogo', $data_ary);
-							}
-		
-						$data['record'] = $this->my_model->get_adminrecord_edit($adminid);
-						$this->load->view($this->headerPage,$this->head);
-						$this->load->view(adminconfiguration,$data);
-					}
-			else
-			{
-				$data['msg'] = "Not Updated...";
-			}	
+
+		$adminid = (int) $this->input->post('adminid');
+		if ($adminid <= 0) {
+			$this->session->set_flashdata('msg_err', 'Invalid admin configuration record.');
+			redirect('master/addcustomer/adminconfiguration');
+			return;
+		}
+
+		$established_raw = trim((string) $this->input->post('established'));
+		$established = $established_raw !== '' ? date('Y-m-d', strtotime($established_raw)) : null;
+
+		$update = array(
+			'name'               => trim((string) $this->input->post('name')),
+			'email'              => trim((string) $this->input->post('email')),
+			'established'        => $established,
+			'contact1'           => trim((string) $this->input->post('contact1')),
+			'contactperson'      => trim((string) $this->input->post('contactperson')),
+			'contactpersonphone' => trim((string) $this->input->post('contactpersonphone')),
+			'website'            => trim((string) $this->input->post('website')),
+			'address1'           => trim((string) $this->input->post('address1')),
+			'about'              => trim((string) $this->input->post('about')),
+		);
+
+		$result = $this->my_model->get_adminrecord_update($adminid, $update);
+
+		if (!$result) {
+			$this->session->set_flashdata('msg_err', 'Not Updated...');
+			redirect('master/addcustomer/editadminconfiguration/' . $adminid);
+			return;
+		}
+
+		if (!empty($_FILES['userfile']['name'])) {
+			$this->load->library('image_lib');
+			$config = array(
+				'upload_path'   => './images/logo',
+				'allowed_types' => 'gif|jpg|png|jpeg',
+				'encrypt_name'  => false,
+			);
+			$this->load->library('upload', $config);
+			if ($this->upload->do_upload('userfile')) {
+				$upload_data = $this->upload->data();
+				$logo_data = array(
+					'title'  => $upload_data['client_name'],
+					'file'   => $upload_data['file_name'],
+					'width'  => $upload_data['image_width'],
+					'height' => $upload_data['image_height'],
+					'type'   => $upload_data['image_type'],
+					'size'   => $upload_data['file_size'],
+					'date'   => date('Y-m-d'),
+				);
+				$this->db->where('adminid', $adminid);
+				$this->db->update('tbl_adminlogo', $logo_data);
+			}
+		}
+
+		$this->session->set_flashdata('msg_succ', 'Admin configuration updated successfully.');
+		redirect('master/addcustomer/adminconfiguration');
 	}
 	/** View Function **/
 	public function view($id){ 

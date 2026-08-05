@@ -1,592 +1,314 @@
+<?php
+	$income1 = $this->my_model->get_income_metercustomer();
+	extract($income1);
+	$income2 = $this->my_model->get_income_monthlycustomer();
+	extract($income2);
+	$intotal = (isset($total1) ? (float) $total1 : 0) + (isset($total2) ? (float) $total2 : 0);
 
-<!-- MAIN PANEL -->
-		<div id="main" role="main">
+	$expense1 = $this->my_model->get_outcome_expenses();
+	extract($expense1);
+	$expense2 = $this->my_model->get_outcome_payroll();
+	extract($expense2);
+	$extotal = (isset($extotal1) ? (float) $extotal1 : 0) + (isset($extotal2) ? (float) $extotal2 : 0);
 
-			<!-- RIBBON -->
-			<div id="ribbon">
+	$total_customer = $this->my_model->total_customer();
+	extract($total_customer);
 
-				<span class="ribbon-button-alignment"> 
-					<span id="refresh" class="btn btn-ribbon" data-action="resetWidgets" data-title="refresh"  rel="tooltip" data-placement="bottom" data-original-title="<i class='text-warning fa fa-warning'></i> Warning! This will reset all your widget settings." data-html="true">
-						<i class="fa fa-refresh"></i>
-					</span> 
-				</span>
+	$zone = (isset($zone) && is_array($zone)) ? $zone : array();
+	$billingperiod = (isset($billingperiod) && is_array($billingperiod)) ? $billingperiod : array();
+?>
+<link rel="stylesheet" media="screen, print" href="<?php echo base_url(); ?>sa4/css/datagrid/datatables/datatables.bundle.css">
+<main id="js-page-content" role="main" class="page-content">
+	<ol class="breadcrumb page-breadcrumb">
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>">Home</a></li>
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>addbillingperiod">Schedule Billing Period</a></li>
+		<li class="breadcrumb-item active">List View</li>
+		<li class="position-absolute pos-top pos-right d-none d-sm-block"><span class="js-get-date"></span></li>
+	</ol>
 
-				<!-- breadcrumb -->
-				<ol class="breadcrumb">
-					<li><a href="<?php echo ADMIN_URL;?>dashboard">Home</a></li>
-					<li><a href="<?php echo ADMIN_URL;?>addbillingperiod"> Schedule Billing Period </a></li>
-					<li>List View</li>
-				</ol>
-				
+	<div class="subheader">
+		<h1 class="subheader-title">
+			<i class="subheader-icon fal fa-calendar-alt"></i>
+			Manage <span class="fw-300">Billing Period</span>
+		</h1>
+		<div class="subheader-block d-lg-flex align-items-center">
+			<div class="d-inline-flex flex-column justify-content-center mr-3">
+				<span class="fw-300 fs-xs d-block opacity-50"><small>INCOME</small></span>
+				<span class="fw-500 fs-xl d-block color-primary-500">₱ <?php echo number_format($intotal, 2); ?></span>
 			</div>
-			<!-- END RIBBON -->
+			<span class="sparklines hidden-lg-down" sparkType="bar" sparkBarColor="#886ab5" sparkHeight="32px" sparkBarWidth="5px" values="3,4,3,6,7,3,3,6,2,6,4"></span>
+		</div>
+		<div class="subheader-block d-lg-flex align-items-center border-faded border-right-0 border-top-0 border-bottom-0 ml-3 pl-3">
+			<div class="d-inline-flex flex-column justify-content-center mr-3">
+				<span class="fw-300 fs-xs d-block opacity-50"><small>EXPENSE</small></span>
+				<span class="fw-500 fs-xl d-block color-danger-500">₱ <?php echo number_format($extotal, 2); ?></span>
+			</div>
+			<span class="sparklines hidden-lg-down" sparkType="bar" sparkBarColor="#fe6bb0" sparkHeight="32px" sparkBarWidth="5px" values="1,4,3,6,5,3,9,6,5,9,7"></span>
+		</div>
+		<div class="subheader-block d-lg-flex align-items-center border-faded border-right-0 border-top-0 border-bottom-0 ml-3 pl-3">
+			<div class="d-inline-flex flex-column justify-content-center mr-3">
+				<span class="fw-300 fs-xs d-block opacity-50"><small>TOTAL CUSTOMER</small></span>
+				<span class="fw-500 fs-xl d-block color-success-500"><?php echo (int) (isset($count_id) ? $count_id : 0); ?></span>
+			</div>
+			<span class="sparklines hidden-lg-down" sparkType="bar" sparkBarColor="#1dc9b7" sparkHeight="32px" sparkBarWidth="5px" values="2,5,3,7,4,6,3,8,5,4,6"></span>
+		</div>
+	</div>
 
-			<!-- MAIN CONTENT -->
-			<div id="content">
-			<?php
-//$bp_current_array = $this->session->userdata('current_billingperiod'); 
-//print_r($this->session->userdata('current_billingperiod'));
-//print_r($_SESSION['current_billingperiod']);
-//echo '<br/>';
-//print_r($current_billingperiod);
-//echo '<br/>';
-//echo 'month:'.$bp_current_array[0]['bp_period_month'];
-//exit;
-									?>
-				<div class="row">
-					<div class="col-xs-12 col-sm-7 col-md-7 col-lg-4">
-						<h1 class="page-title txt-color-blueDark"><i class="fa-fw fa fa-home"></i> View <span>> Schedule Billing Period</span></h1>
-					</div>
-					<div class="col-xs-12 col-sm-5 col-md-5 col-lg-8">
-						<ul id="sparks" class="">
-							<li class="sparks-info">
-								<h5> Billing Period <span class="txt-color-blue">
-									
-								<select  class="form-control" name="header_billingperiod" id="header_billingperiod" class="col-lg-12" required>
-									<option value="">--All--</option>
-									<?php
-									
-									foreach($billingperiod as $key =>$value){ 
-										$val_val = $value['bp_period_month'].' '.$value['bp_period_year'];
-										$selected_val = '';
-										if($_SESSION['current_billingperiod']==$val_val){
-											$selected_val = 'selected';
-										}
-									?>
-									<option value="<?php echo $value['bp_period_month'].' '.$value['bp_period_year']; ?>" <?php echo $selected_val;?>><?php echo $value['month_name'].' '.$value['bp_period_year'];?></option>
-									<?php } ?>
-								</select>								
-								</span></h5>
-							</li>
-							<li class="sparks-info">
-							<?php 
-							     $income1 = $this->comm_model->get_income_metercustomer();
-							     extract($income1);
-								 $income2 = $this->comm_model->get_income_monthlycustomer();
-								 extract($income2);
-								 $intotal = $total1 + $total2;
-							?>
-								<h5> Income <span class="txt-color-blue">PHP <?php print_r(number_format($intotal,2));?></span></h5>
-								<div class="sparkline txt-color-blue hidden-mobile hidden-md hidden-sm">
-									
-								</div>
-							</li>
-							<?php
-							     $expense1 = $this->my_model->get_outcome_expenses();
-							     extract($expense1);
-								 $expense2 = $this->my_model->get_outcome_payroll();
-								 extract($expense2);
-								 $extotal = $extotal1 + $extotal2;
-							?>
-							<li class="sparks-info">
-								<h5> Expense <span class="txt-color-purple">PHP <?php print_r(number_format($extotal,2));?></span></h5>
-								<div class="sparkline txt-color-purple hidden-mobile hidden-md hidden-sm">
-									
-								</div>
-							</li>
-							<?php 
-							     $total_customer = $this->my_model->total_customer();
-							     extract($total_customer); 
-							?>
-							<li class="sparks-info">
-								<h5> Total Customer <span class="txt-color-greenDark">&nbsp;<?php print_r($count_id);?></span></h5>
-								<div class="sparkline txt-color-greenDark hidden-mobile hidden-md hidden-sm">
-									
-								</div>
-							</li>
-						</ul>
+	<?php if ($this->session->flashdata('msg_succ')) { ?>
+	<div class="alert alert-success alert-dismissible fade show" role="alert">
+		<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+			<span aria-hidden="true"><i class="fal fa-times"></i></span>
+		</button>
+		<strong>Success!</strong> <?php echo $this->session->flashdata('msg_succ'); ?>
+	</div>
+	<?php } ?>
+
+	<div class="row">
+		<div class="col-xl-12">
+			<div id="panel-billingperiod" class="panel">
+				<div class="panel-hdr">
+					<h2>Billing Period <span class="fw-300"><i>Search</i></span></h2>
+					<div class="panel-toolbar">
+						<button class="btn btn-panel" data-action="panel-collapse" data-toggle="tooltip" data-offset="0,10" data-original-title="Collapse"></button>
+						<button class="btn btn-panel" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
 					</div>
 				</div>
-				<!-- widget grid -->
-				<section id="widget-grid" class="">
+				<div class="panel-container show">
+					<div class="panel-content">
+						<div class="row mb-3">
+							<div class="col-md-12 text-md-right">
+								<button type="button" class="btn btn-primary btn-sm mb-1" id="search" onclick="getaddcustomer_generate();">
+									<i class="fal fa-search mr-1"></i> Search
+								</button>
+								<a href="<?php echo ADMIN_URL; ?>addbillingperiod/add" class="btn btn-warning btn-sm mb-1">
+									<i class="fal fa-plus mr-1"></i> Add Billing Period
+								</a>
+								<a href="<?php echo ADMIN_URL; ?>createbalanceforward/" class="btn btn-success btn-sm mb-1">
+									<i class="fal fa-exchange mr-1"></i> Balance Forward
+								</a>
+								<a id="exporttoexcel" href="#" class="btn btn-primary btn-sm mb-1">
+									<i class="fal fa-file-excel mr-1"></i> Export Excel for Mobile
+								</a>
+								<a href="<?php echo ADMIN_URL; ?>addbillingperiod/import" class="btn btn-info btn-sm mb-1">
+									<i class="fal fa-file-import mr-1"></i> Import Excel from Mobile
+								</a>
+							</div>
+						</div>
 
-					<!-- row -->
-					<div class="row">
-				
-                    <!-- a blank row to get started -->
-						<div class="col-sm-6 col-lg-12">
-                            <!-- your contents here -->
-                            <div class="panel panel-default">
-                                
-                                <div class="widget-body">
-            
-                                    <div class="form-horizontal" >
-                                        
-                                        <?php if($msg != ''){?>
-                                        <div class="alert alert-block alert-success">
-                                            <button type="button" class="close" data-dismiss="alert">
-                                            <i class="icon-remove"></i>
-                                            </button>
-                                            <p>
-                                                <i class="icon-ok"></i>
-                                                <?php echo $msg?$msg:'';?>
-                                            </p>
-                                        </div>
-                                        <?php } ?>	
-                                        
-                                        <fieldset>
-                                            <legend>Billing Period Search
-                                            <div  class="pull-right" style="padding-right:20px;">
-                                                <input type="submit" class="btn btn-primary" name="search" id="search" value="search" onclick="getaddcustomer_generate();" style="margin-bottom: 5px;">
-                                                <a href="<?php echo ADMIN_URL.'addbillingperiod/add'; ?>"class="btn btn-sm btn-warning" style="margin-bottom: 5px;">Add Billing Period</a>
-                                                <a class="btn btn-sm btn-success" name="balanceforward" id="balanceforward" value="Close" data-toggle="modal" data-target="#myModal">Balance Forward</a>
-												<a id="exporttoexcel" href="<?php echo ADMIN_URL;?>addbillingperiod/fileDownloadunpaidSearch/<?php if($this->input->post('customer_type')!=''){ echo $this->input->post('customer_type'); }else{ echo 0;} ?>/<?php if($this->input->post('zone')!=''){ echo $this->input->post('zone'); }else{ echo 0;} ?>/<?php if($this->input->post('fromdate')!=''){ echo $this->input->post('fromdate'); }else{ echo 0;} ?>/<?php if($this->input->post('todate')!=''){ echo $this->input->post('todate'); }else{ echo 0;} ?>
-																		" class="btn btn-sm btn-primary" style="margin-bottom: 4px;">Export Excel for Mobile</a>
+						<div class="row">
+							<div class="col-md-6">
+								<div class="form-group">
+									<label class="form-label" for="zone">Zone</label>
+									<select class="form-control" name="zone" id="zone">
+										<option value="">--All--</option>
+										<?php foreach ($zone as $value) { ?>
+										<option value="<?php echo $value['id']; ?>"><?php echo htmlspecialchars($value['zone']); ?></option>
+										<?php } ?>
+									</select>
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div class="form-group">
+									<label class="form-label" for="billingperiod">Billing Period</label>
+									<select class="form-control" name="billingperiod" id="billingperiod">
+										<option value="">--All--</option>
+										<?php foreach ($billingperiod as $value) { ?>
+										<option value="<?php echo htmlspecialchars($value['bp_period_month'].' '.$value['bp_period_year']); ?>">
+											<?php echo htmlspecialchars($value['month_name'].' '.$value['bp_period_year']); ?>
+										</option>
+										<?php } ?>
+									</select>
+								</div>
+							</div>
+						</div>
 
-																		<a href="<?php echo ADMIN_URL.'addbillingperiod/import'; ?>"class="btn btn-sm btn-info" style="margin-bottom: 5px;">Import Excel from Mobile</a>
-                                            </div>
-                                            </legend>
-                                                
-                                                <div class="form-group col-lg-6">
-                                                    <div class="col-lg-12 controls">
-                                                        <div class="form-group">
-                                                    <span class="input-group-addon"><i class="icon-user"></i><strong>Zone : </strong></span>
-                                                            <select  class="form-control" name="zone" id="zone"  class="col-lg-12" required>
-                                                            <option value="">--All--</option>
-                                                            <?php foreach($zone as $key =>$value){ ?>
-                                                            <option value="<?php echo $value['id']; ?>"><?php echo $value['zone'];?></option>
-                                                            <?php } ?>
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="form-group col-lg-6">
-                                                    <div class="col-lg-12 controls">
-                                                        <div class="form-group">
-                                                        <span class="input-group-addon"><i class="icon-user"></i><strong>Billing Period : </strong></span>
-                                                            <select  class="form-control" name="billingperiod" id="billingperiod" class="col-lg-12" required>
-                                                            <option value="">--All--</option>
-                                                            <?php foreach($billingperiod as $key =>$value){ ?>
-                                                            <option value="<?php echo $value['bp_period_month'].' '.$value['bp_period_year']; ?>"><?php echo $value['month_name'].' '.$value['bp_period_year'];?></option>
-                                                            <?php } ?>
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                   
-                                                </div>
-                                                
-                                                        
-                                                </div>
-                                                    
-                                                
-                                        </fieldset>
-
-            
-                                </div>
-                                
-                                
-                            </div>	
-                        </div>
-                        <div class="col-sm-6 col-lg-12" id="billingPeriodDiv" style="margin-top: 13px;"></div>	
-                        </div>
-						
-				
+						<div id="billingPeriodDiv" class="mt-3"></div>
 					</div>
-				
-					<!-- end row -->
-
-					
-
-				</section>
-				<!-- end widget grid -->
-
+				</div>
 			</div>
-			<!-- END MAIN CONTENT -->
-
 		</div>
-		<!-- END MAIN PANEL -->
-		
+	</div>
+</main>
 
-
-
-
-				<!-- Modal -->
-				<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-					<div class="modal-dialog">
-						<div class="modal-content">
-							<div class="modal-header">
-								<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
-									&times;
-								</button>
-								<h4 class="modal-title" id="myModalLabel">Balance Forwarding</h4>
-							</div>
-							<div class="modal-body">
-								<div class="row">
-									<div class="col-md-12 controls">
-										<div class="form-group">
-											<label for="category">Current Billing Period</label>
-											<select  class="form-control" name="currentbillingperiod" id="currentbillingperiod" class="col-lg-12" required>
-												
-												<?php foreach($billingperiod as $key =>$value){ ?>
-												<option value="<?php echo $value['bp_period_month'].' '.$value['bp_period_year']; ?>"><?php echo $value['month_name'].' '.$value['bp_period_year'];?></option>
-												<?php } ?>
-											</select>
-										</div>
-									</div>
-									
-								</div>
-								
-								<div class="row">
-									<div class="col-md-12 controls">
-										<div class="form-group">
-											<label for="category">Next Billing Period</label>
-											<select  class="form-control" name="forwardbillingperiod" id="forwardbillingperiod" class="col-lg-12" required>
-												
-												<?php foreach($billingperiod as $key =>$value){ ?>
-												<option value="<?php echo $value['bp_period_month'].' '.$value['bp_period_year']; ?>"><?php echo $value['month_name'].' '.$value['bp_period_year'];?></option>
-												<?php } ?>
-											</select>
-										</div>
-									</div>
-									
-								</div>
-								<div class="row">
-									<div class="col-md-12 controls">
-										<div class="form-group">
-											<label for="category">Zone</label>
-											<select  class="form-control" name="zone_listing" id="zone_listing" class="col-lg-12" required>
-												
-												<?php foreach($zone_listing as $key =>$value){ ?>
-												<option value="<?php echo $value['id']; ?>"><?php echo $value['zone'];?></option>
-												<?php } ?>
-											</select>
-										</div>
-									</div>
-									
-								</div>
-				
-							</div>
-							<div class="modal-footer">
-								<button type="button" class="btn btn-default" data-dismiss="modal">
-									Cancel
-								</button>
-								<button type="button" class="btn btn-primary" id="btn_posting" data-dismiss="modal">
-									Balance Posting
-								</button>
-							</div>
-						</div><!-- /.modal-content -->
-					</div><!-- /.modal-dialog -->
-				</div><!-- /.modal -->
-
-
-		<?php include('footer.php');?>
-
-	</body>
-
+<?php include('footer.php'); ?>
+<script src="<?php echo base_url(); ?>sa4/js/statistics/sparkline/sparkline.bundle.js"></script>
+<script src="<?php echo base_url(); ?>sa4/js/datagrid/datatables/datatables.bundle.js"></script>
+</body>
 </html>
-<!-- PAGE RELATED PLUGIN(S) -->
-		<script src="<?php echo base_url();?>js/plugin/datatables/jquery.dataTables.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.colVis.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.tableTools.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.bootstrap.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatable-responsive/datatables.responsive.min.js"></script>
-		<script type="text/javascript">
-		
-		// DO NOT REMOVE : GLOBAL FUNCTIONS!
-		
-		$(document).ready(function() {
-			
-			pageSetUp();
-			
-			/* // DOM Position key index //
-		
-			l - Length changing (dropdown)
-			f - Filtering input (search)
-			t - The Table! (datatable)
-			i - Information (records)
-			p - Pagination (paging)
-			r - pRocessing 
-			< and > - div elements
-			<"#id" and > - div with an id
-			<"class" and > - div with a class
-			<"#id.class" and > - div with an id and class
-			
-			Also see: http://legacy.datatables.net/usage/features
-			*/	
-	
-			/* BASIC ;*/
-				var responsiveHelper_dt_basic = undefined;
-				var responsiveHelper_datatable_fixed_column = undefined;
-				var responsiveHelper_datatable_col_reorder = undefined;
-				var responsiveHelper_datatable_tabletools = undefined;
-				
-				var breakpointDefinition = {
-					tablet : 1024,
-					phone : 480
-				};
-	
-				$('#dt_basic').dataTable({
-					"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-12 hidden-xs'l>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
-					"autoWidth" : true,
-			        "oLanguage": {
-					    "sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-					},
-					"preDrawCallback" : function() {
-						// Initialize the responsive datatables helper once.
-						if (!responsiveHelper_dt_basic) {
-							responsiveHelper_dt_basic = new ResponsiveDatatablesHelper($('#dt_basic'), breakpointDefinition);
-						}
-					},
-					"rowCallback" : function(nRow) {
-						responsiveHelper_dt_basic.createExpandIcon(nRow);
-					},
-					"drawCallback" : function(oSettings) {
-						responsiveHelper_dt_basic.respond();
-					}
-				});
-	
-			/* END BASIC */
-			
-			/* COLUMN FILTER  */
-		    var otable = $('#datatable_fixed_column').DataTable({
-		    	//"bFilter": false,
-		    	//"bInfo": false,
-		    	//"bLengthChange": false
-		    	//"bAutoWidth": false,
-		    	//"bPaginate": false,
-		    	//"bStateSave": true // saves sort state using localStorage
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6 hidden-xs'f><'col-sm-6 col-xs-12 hidden-xs'<'toolbar'>>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
-				"autoWidth" : true,
-				"oLanguage": {
-					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-				},
-				"preDrawCallback" : function() {
-					// Initialize the responsive datatables helper once.
-					if (!responsiveHelper_datatable_fixed_column) {
-						responsiveHelper_datatable_fixed_column = new ResponsiveDatatablesHelper($('#datatable_fixed_column'), breakpointDefinition);
-					}
-				},
-				"rowCallback" : function(nRow) {
-					responsiveHelper_datatable_fixed_column.createExpandIcon(nRow);
-				},
-				"drawCallback" : function(oSettings) {
-					responsiveHelper_datatable_fixed_column.respond();
-				}		
-			
-		    });
-		    
-		    // custom toolbar
-		    $("div.toolbar").html('<div class="text-right"><img src="img/logo.png" alt="SmartAdmin" style="width: 111px; margin-top: 3px; margin-right: 10px;"></div>');
-		    	   
-		    // Apply the filter
-		    $("#datatable_fixed_column thead th input[type=text]").on( 'keyup change', function () {
-		    	
-		        otable
-		            .column( $(this).parent().index()+':visible' )
-		            .search( this.value )
-		            .draw();
-		            
-		    } );
-		    /* END COLUMN FILTER */   
-	    
-			/* COLUMN SHOW - HIDE */
-			$('#datatable_col_reorder').dataTable({
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-6 hidden-xs'C>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-sm-6 col-xs-12'p>>",
-				"autoWidth" : true,
-				"oLanguage": {
-					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-				},
-				"preDrawCallback" : function() {
-					// Initialize the responsive datatables helper once.
-					if (!responsiveHelper_datatable_col_reorder) {
-						responsiveHelper_datatable_col_reorder = new ResponsiveDatatablesHelper($('#datatable_col_reorder'), breakpointDefinition);
-					}
-				},
-				"rowCallback" : function(nRow) {
-					responsiveHelper_datatable_col_reorder.createExpandIcon(nRow);
-				},
-				"drawCallback" : function(oSettings) {
-					responsiveHelper_datatable_col_reorder.respond();
-				}			
+<script type="text/javascript">
+(function($) {
+	if (typeof pageSetUp === 'function') { pageSetUp(); }
+	if ($.fn.sparkline) {
+		$('.sparklines').each(function() {
+			var $el = $(this);
+			$el.sparkline('html', {
+				type: $el.attr('sparkType') || 'bar',
+				barColor: $el.attr('sparkBarColor') || '#886ab5',
+				height: $el.attr('sparkHeight') || '32px',
+				barWidth: $el.attr('sparkBarWidth') || '5px'
 			});
-			
-			/* END COLUMN SHOW - HIDE */
-	
-			/* TABLETOOLS */
-			$('#datatable_tabletools').dataTable({
-				
-				// Tabletools options: 
-				//   https://datatables.net/extensions/tabletools/button_options
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-6 hidden-xs'T>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-sm-6 col-xs-12'p>>",
-				"oLanguage": {
-					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-				},		
-		        "oTableTools": {
-		        	 "aButtons": [
-		             "copy",
-		             "csv",
-		             "xls",
-		                {
-		                    "sExtends": "pdf",
-		                    "sTitle": "SmartAdmin_PDF",
-		                    "sPdfMessage": "SmartAdmin PDF Export",
-		                    "sPdfSize": "letter"
-		                },
-		             	{
-	                    	"sExtends": "print",
-	                    	"sMessage": "Generated by SmartAdmin <i>(press Esc to close)</i>"
-	                	}
-		             ],
-		            "sSwfPath": "js/plugin/datatables/swf/copy_csv_xls_pdf.swf"
-		        },
-				"autoWidth" : true,
-				"preDrawCallback" : function() {
-					// Initialize the responsive datatables helper once.
-					if (!responsiveHelper_datatable_tabletools) {
-						responsiveHelper_datatable_tabletools = new ResponsiveDatatablesHelper($('#datatable_tabletools'), breakpointDefinition);
+		});
+	}
+
+	function updateExportLink() {
+		var zone = $('#zone').val() || '0';
+		var bp = ($('#billingperiod').val() || '').trim();
+		var month = '0';
+		var year = '0';
+		if (bp) {
+			var parts = bp.split(/\s+/);
+			month = parts[0] || '0';
+			year = parts[1] || '0';
+		}
+		$('#exporttoexcel').attr('href',
+			<?php echo json_encode(ADMIN_URL . 'addbillingperiod/fileDownloadBillingPeriodMobileSearch/'); ?> +
+			encodeURIComponent(zone) + '/' + encodeURIComponent(month) + '/' + encodeURIComponent(year)
+		);
+	}
+	updateExportLink();
+	$('#zone, #billingperiod').on('change', updateExportLink);
+
+	window.getaddcustomer_generate = function() {
+		updateExportLink();
+		if (typeof showSpinner === 'function') { showSpinner(); }
+		$.ajax({
+			type: 'POST',
+			url: <?php echo json_encode(base_url() . 'master/addbillingperiod/addbillingperiod_search'); ?>,
+			data: {
+				zone: $('#zone').val(),
+				billingperiod: $('#billingperiod').val()
+			},
+			complete: function(data) {
+				$('#billingPeriodDiv').html($.trim(data.responseText));
+				if ($.fn.DataTable) {
+					if ($.fn.DataTable.isDataTable('#dt_basic')) {
+						$('#dt_basic').DataTable().destroy();
 					}
-				},
-				"rowCallback" : function(nRow) {
-					responsiveHelper_datatable_tabletools.createExpandIcon(nRow);
-				},
-				"drawCallback" : function(oSettings) {
-					responsiveHelper_datatable_tabletools.respond();
-				}
-			});
-			
-			/* END TABLETOOLS */
-
-
-			$('#btn_posting').on('click', function(evt){
-				evt.preventDefault();
-
-				if(confirm('Continue Posting?')==true){
-						showSpinner(); // Call this to show the spinner
-						var selectedItems = [];
-						var billingperiodforward = $('#forwardbillingperiod').val();
-						var currentbillingperiod = $('#currentbillingperiod').val();
-						var zone_id = $('#zone_listing').val();
-						
-
-						/*$("input[name='delete_ids[]']:checked").each(function(){
-							selectedItems.push($(this).val());
-						});
-
-						if(selectedItems.length === 0) {
-							alert("Please select at least one checkbox.");
-							return;
-						}*/
-
-						$.ajax({
-							url: "<?php echo base_url();?>master/addbillingperiod/billingforwardposting", 
-							type: "POST",
-							data: {
-								//delete_ids: selectedItems,
-								billingperiodforward: billingperiodforward,
-								currentbillingperiod: currentbillingperiod,
-								zone_listing: zone_id
-							},
-							success: function(response){
-								//alert(response);
-								$('#search').trigger('click');
-								setTimeout(hideSpinner, 1000); // Simulate loading for 3 seconds
-							},
-							error: function(xhr, status, error){
-								console.log(error);
+					if ($('#dt_basic').length) {
+						$('#dt_basic').DataTable({
+							responsive: true,
+							pageLength: 25,
+							lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
+							order: [[1, 'asc']],
+							columnDefs: [{ orderable: false, targets: [0, 9] }],
+							language: {
+								search: '',
+								searchPlaceholder: 'Search billing periods...',
+								lengthMenu: '_MENU_',
+								info: 'Showing _START_ to _END_ of _TOTAL_ records',
+								zeroRecords: 'No matching records'
 							}
 						});
-						
-        				
-
-						return true;
-					}else{
-						return false;
 					}
+				}
+				if (typeof hideSpinner === 'function') { hideSpinner(); }
+			}
+		});
+	};
 
+	$('#dt_select_all').on('change', function() {
+		var checked = $(this).is(':checked');
+		$('#dt_basic tbody input[name="delete_ids[]"]').prop('checked', checked);
+	});
+	$(document).on('change', '#dt_select_all', function() {
+		var checked = $(this).is(':checked');
+		$('#billingPeriodDiv input[name="delete_ids[]"]').prop('checked', checked);
+	});
 
+	function selectedIds() {
+		var selectedItems = [];
+		$('#billingPeriodDiv input[name="delete_ids[]"]:checked').each(function() {
+			selectedItems.push($(this).val());
+		});
+		return selectedItems;
+	}
 
-				/*var checked_num = $('input[name="delete_ids[]"]:checked').length;
-				if (checked_num == 0) {
-					alert('Select Atleast One Check Box... ');
-					return false;
-				}else if (checked_num > 0){ 
-					
-				}*/
-
-
-				
-			});
-
-		
-
-			$('#header_billingperiod').on('change', function(evt){
-				evt.preventDefault();
-				var header_billing_period = $(this).val();
-				//showSpinner();
-				$.ajax({
-            		type : "POST",
-					url	: '<?php echo base_url();?>master/addbillingperiod/updated_headerbillingperiod',
-					data	: "billing_period="+header_billing_period,
-					complete: function(data){
-						console.log(data);
-						//if(data=='success'){
-							location.reload();
-							//window.location.replace(window.location.href);
-							//window.location.href = '<?php echo ADMIN_URL;?>addbillingperiod';
-						//}
+	$(document).on('click', '#delete', function(evt) {
+		evt.preventDefault();
+		var selectedItems = selectedIds();
+		if (!selectedItems.length) {
+			if (typeof Swal !== 'undefined') {
+				Swal.fire({ title: 'No selection', text: 'Select at least one checkbox...', icon: 'warning' });
+			} else {
+				alert('Select Atleast One Check Box... ');
+			}
+			return false;
+		}
+		var doDelete = function() {
+			if (typeof showSpinner === 'function') { showSpinner(); }
+			$.ajax({
+				url: <?php echo json_encode(ADMIN_URL . 'addbillingperiod/multi_delete'); ?>,
+				type: 'POST',
+				data: { delete_ids: selectedItems },
+				success: function() {
+					if (typeof hideSpinner === 'function') { hideSpinner(); }
+					$('#search').trigger('click');
+				},
+				error: function() {
+					if (typeof hideSpinner === 'function') { hideSpinner(); }
+					if (typeof Swal !== 'undefined') {
+						Swal.fire({ title: 'Error', text: 'Error deleting records. Please try again.', icon: 'error' });
+					} else {
+						alert('Error deleting records. Please try again.');
 					}
-				});
-
-				//alert($(this).val());
-			});
-
-
-			$('#exporttoexcel').on('click', function(evt){
-				evt.preventDefault();
-				//var membership_status = $("#membership_status").val();
-				var zone = $("#zone").val();
-				if(zone==''){
-					zone = 'all';
 				}
-				if($("#billingperiod").val()==''){
-					var billingmonth = 'all';
-					var billingyear = 'all';
-				}else{
-					var billingperiod = $("#billingperiod").val().split(" ");
-					var billingmonth = billingperiod[0];
-					var billingyear = billingperiod[1];
-				}
-				
-				//window.location.href = '<?php echo ADMIN_URL;?>addcustomer/fileDownloadunpaidSearch/'+membership_status+'/'+zone+'/'+billingperiod;
-				
-				//alert('<?php echo ADMIN_URL;?>addcustomer/fileDownloadunpaidSearch/'+membership_status+'/'+zone+'/'+billingperiod);
-				window.open('<?php echo ADMIN_URL;?>addbillingperiod/fileDownloadBillingPeriodMobileSearch/'+zone+'/'+billingmonth+'/'+billingyear, '_blank');
 			});
+		};
+		if (typeof window.sa4ConfirmAction === 'function') {
+			window.sa4ConfirmAction({
+				title: 'Are you sure?',
+				text: 'Selected billing periods will be permanently deleted.',
+				confirmButtonText: 'Yes, delete them!'
+			}).then(function(ok) { if (ok) { doDelete(); } });
+		} else if ((typeof sa4SwalConfirmed === 'function') ? false : confirm('Confirm Delete?')) {
+			doDelete();
+		}
+	});
 
-		})
+	$(document).on('click', '#close', function(evt) {
+		evt.preventDefault();
+		var selectedItems = selectedIds();
+		if (!selectedItems.length) {
+			alert('Select Atleast One Check Box... ');
+			return false;
+		}
+		if (!confirm('Confirm Close?')) { return false; }
+		if (typeof showSpinner === 'function') { showSpinner(); }
+		$.ajax({
+			url: <?php echo json_encode(ADMIN_URL . 'addbillingperiod/multi_close'); ?>,
+			type: 'POST',
+			data: { delete_ids: selectedItems },
+			success: function() {
+				if (typeof hideSpinner === 'function') { hideSpinner(); }
+				$('#search').trigger('click');
+			},
+			error: function() {
+				if (typeof hideSpinner === 'function') { hideSpinner(); }
+			}
+		});
+	});
 
-		</script>
-
-<script type="text/javascript">
-	
-    function getaddcustomer_generate(){
-        //alert('Hello');
-        
-        var zone = $("#zone").val();
-        var billingperiod = $("#billingperiod").val();
-        showSpinner(); // Call this to show the spinner
-		
-        $.ajax({
-            
-            type : "POST",
-            url	: '<?php echo base_url();?>master/addbillingperiod/addbillingperiod_search',
-            //data	: "customer_type="+customer_type+"&zone="+zone+"&fromdate="+fromdate+"&todate="+todate+",
-            data	: "zone="+zone+"&billingperiod="+billingperiod,
-            complete: function(data){
-                var op = data.responseText.trim();
-                //alert(op);
-                $("#billingPeriodDiv").html(op);
-            }
-        });
-        setTimeout(hideSpinner, 1000); // Simulate loading for 3 seconds
-    }
-
+	$(document).on('click', '#open', function(evt) {
+		evt.preventDefault();
+		var selectedItems = selectedIds();
+		if (!selectedItems.length) {
+			alert('Select Atleast One Check Box... ');
+			return false;
+		}
+		if (!confirm('Confirm Open?')) { return false; }
+		if (typeof showSpinner === 'function') { showSpinner(); }
+		$.ajax({
+			url: <?php echo json_encode(ADMIN_URL . 'addbillingperiod/multi_open'); ?>,
+			type: 'POST',
+			data: { delete_ids: selectedItems },
+			success: function() {
+				if (typeof hideSpinner === 'function') { hideSpinner(); }
+				$('#search').trigger('click');
+			},
+			error: function() {
+				if (typeof hideSpinner === 'function') { hideSpinner(); }
+			}
+		});
+	});
+})(jQuery);
 </script>

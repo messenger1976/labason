@@ -1,33 +1,36 @@
-				<div class="main-content">
-					<div class="breadcrumbs" id="breadcrumbs">
-						<script type="text/javascript">
-							try{ace.settings.check('breadcrumbs' , 'fixed')}catch(e){}
-						</script>
-						<ul class="breadcrumb">
-							<li>
-								<i class="icon-home home-icon"></i>
-								<a href="<?php echo ADMIN_URL;?>dashboard">Home</a>
-							</li>
-                           
-							<li>
-								<a href="<?php echo ADMIN_URL;?>practise">practise</a>
-							</li>
-							<li class="active">List View</li>
-						</ul><!-- .breadcrumb -->
-						<div class="nav-search" id="nav-search">
-						</div><!-- #nav-search -->
+<main id="js-page-content" role="main" class="page-content">
+	<ol class="breadcrumb page-breadcrumb">
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>">Home</a></li>
+		<li class="breadcrumb-item active">Page</li>
+		<li class="position-absolute pos-top pos-right d-sm-block"><span class="js-get-date"></span></li>
+	</ol>
+	<div class="subheader">
+		<h1 class="subheader-title">
+			<i class="subheader-icon fal fa-th-list"></i>
+			Manage <span class="fw-300">Practise</span>
+		</h1>
+	</div>
+
+	<div class="row">
+		<div class="col-xl-12">
+			<div class="panel">
+				<div class="panel-hdr"><h2>Practise</h2>
+					<div class="panel-toolbar">
+						<button class="btn btn-panel" data-action="panel-collapse" data-toggle="tooltip" data-offset="0,10" data-original-title="Collapse"></button>
+						<button class="btn btn-panel" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
 					</div>
-					<div class="page-content">
-						<div class="row">
-							<div class="col-xs-12">
+				</div>
+				<div class="panel-container show"><div class="panel-content">
+<div class="row">
+							<div class="col-12">
 								<!-- PAGE CONTENT BEGINS -->
 								<div class="row">
-									<div class="col-xs-12">
+									<div class="col-12">
 										<h3 class="header smaller lighter blue"><i><img src="<?php echo site_url();?>/assets/images/scroll-icon1.png" width="23" height="24" /></i> practise Scrolling</h3>
 										<form method="post" action="<?php echo ADMIN_URL;?>practise/multi_delete">
                                         
                                         <div class="row">
-                                        <div class="col-xs-8">
+                                        <div class="col-8">
                                         	<input type="submit" class="btn btn-sm btn-primary" name="add" id="add" value="Delete All" onClick="return deleteAllData();" />
                                          </div>
 										<script type="text/javascript">
@@ -46,13 +49,13 @@
                                             }
                                         }
                                         </script>
-                                        <div class="col-xs-4">
+                                        <div class="col-4">
                                           <div class="row">
-                                          <div class="col-xs-4">
+                                          <div class="col-4">
                                     <!--<a href="<?php echo ADMIN_URL; ?>news/fileDownload" class="add-link"><button class="btn btn-sm btn-primary" type="button">Export</button></a>--></div>
-                                    <div class="col-xs-4">
+                                    <div class="col-4">
                                     <!--<a href="#modal-form" role="button" class="blue" data-toggle="modal"><button class="btn btn-sm btn-primary" type="button">Import</button></a>--></div>
-                                    <div class="col-xs-4">
+                                    <div class="col-4">
                                     <a href="<?php echo ADMIN_URL;?>practise/add/"><button class="btn btn-sm btn-primary" type="button">ADD</button></a>
                                     </div>
                                     </div>
@@ -61,12 +64,12 @@
                                      </div>
                                      <div>&nbsp;</div>
 									<?php if($this->session->flashdata('msg_succ') != ''){?>
-                                    <div class="alert alert-block alert-success">
+                                    <div class="alert alert-success alert-dismissible fade show">
                                         <button type="button" class="close" data-dismiss="alert">
-                                        <i class="icon-remove"></i>
+                                        <i class="fal fa-times"></i>
                                         </button>
                                         <p>
-                                            <i class="icon-ok"></i>
+                                            <i class="fal fa-check"></i>
                                             <?php echo $this->session->flashdata('msg_succ')?$this->session->flashdata('msg_succ'):'';?>
                                         </p>
                                     </div>
@@ -82,7 +85,7 @@
 													<tr>
 														<th class="center">
 															<label>
-																<input type="checkbox" class="ace" />
+																<input type="checkbox" class="checkbox" />
 																<span class="lbl"></span>
 															</label>
 														</th>
@@ -105,7 +108,7 @@
 													<tr>
 														<td class="center">
 															<label>
-																<input type="checkbox" class="ace" name="delete_ids[]" id="delete_ids[]" value="<?php echo $row['id'];?>" />
+																<input type="checkbox" class="checkbox" name="delete_ids[]" id="delete_ids[]" value="<?php echo $row['id'];?>" />
 																<span class="lbl"></span>
 															</label>
 														</td>
@@ -113,10 +116,10 @@
 														<td><?php echo stripslashes($row['title']); ?></td>
 														<td><?php echo stripslashes(str_replace('\n','',$row['description'])); ?>	</td>
 														<td><?php echo $row['position']; ?>	</td>
-														<td><span <?php if($row['status']== 1){ echo " class='label label-success arrowed-in arrowed-in-right'"; } elseif($row['status']== 0){ echo "class='label label-danger arrowed'"; } ?>><a href="JavaScript:if(confirm('Are you sure want to Chanage the Status?')==true){window.location='<?php echo ADMIN_URL;?>practise/status/<?php echo $row['id']?>/<?php echo $row['status'];?>';}" style="color:#FFF; text-decoration:none;"><?php if($row['status']== 1){ echo "Active"; } elseif($row['status']== 0){ echo "De-Active"; } ?></a></span></td>
+														<td><span <?php if($row['status']== 1){ echo " class='badge badge-success arrowed-in arrowed-in-right'"; } elseif($row['status']== 0){ echo "class='badge badge-danger arrowed'"; } ?>><a href="JavaScript:if(confirm('Are you sure want to Chanage the Status?')==true){window.location='<?php echo ADMIN_URL;?>practise/status/<?php echo $row['id']?>/<?php echo $row['status'];?>';}" style="color:#FFF; text-decoration:none;"><?php if($row['status']== 1){ echo "Active"; } elseif($row['status']== 0){ echo "De-Active"; } ?></a></span></td>
                                                         
                                                         <td><?php echo date('d-m-Y h:i A',strtotime($row['create_date_time']));?></td>
-														<td><div class="visible-md visible-lg hidden-sm hidden-xs action-buttons">
+														<td><div class=" action-buttons">
                                                         
 																<a class="green" href="<?php echo ADMIN_URL;?>practise/edit/<?php echo $row['id']; ?>">
 																	<i class="icon-pencil bigger-130"></i>
@@ -125,12 +128,12 @@
 																	<i class="icon-trash bigger-130"></i>
 																</a>
 															</div>
-															<div class="visible-xs visible-sm hidden-md hidden-lg">
+															<div class="">
 																<div class="inline position-relative">
 																	<button class="btn btn-minier btn-yellow dropdown-toggle" data-toggle="dropdown">
-																		<i class="icon-caret-down icon-only bigger-120"></i>
+																		<i class="fal fa-caret-down icon-only bigger-120"></i>
 																	</button>
-																	<ul class="dropdown-menu dropdown-only-icon dropdown-yellow pull-right dropdown-caret dropdown-close">
+																	<ul class="dropdown-menu dropdown-only-icon dropdown-yellow float-right dropdown-caret dropdown-close">
 																		<li>
 																			<a href="<?php echo ADMIN_URL;?>practise/edit/<?php echo $row['id']; ?>" class="tooltip-success" data-rel="tooltip" title="Edit">
 																				<span class="green">
@@ -160,11 +163,11 @@
 										</div>
                                         
                                       </form>    
-									</div>
-								</div>
+									
+								
 								<!-- PAGE CONTENT ENDS -->
-							</div><!-- /.col -->
-						</div><!-- /.row -->
+							<!-- /.col -->
+						<!-- /.row -->
 					</div><!-- /.page-content -->
 				</div><!-- /.main-content -->
 			</div><!-- /.main-container-inner -->
@@ -200,3 +203,49 @@
 		</script>
 	</body>
 </html>
+
+				</div></div>
+			</div>
+		</div>
+	</div>
+</main>
+<?php include('footer.php'); ?>
+</body>
+</html>
+<script type="text/javascript">
+							try{ace.settings.check('breadcrumbs' , 'fixed')}catch(e){}
+						</script>
+<script type="text/javascript">
+                                        function deleteAllData(){ 
+                                            var checked_num = $('input[name="delete_ids[]"]:checked').length;
+                                            if (checked_num == 0) {
+                                                alert('Select Atleast One Check Box... ');
+                                                return false;
+                                            }else if (checked_num > 0){ 
+                                                if(confirm('Confirm Delete?')==true){
+                                                    //$('#careers').submit();
+                                                    return true;
+                                                }else{
+													return false;
+												}
+                                            }
+                                        }
+                                        </script>
+<script type="text/javascript">
+			window.jQuery || document.write("<script src='<?php echo site_url();?>/assets/js/jquery-2.0.3.min.js'>"+"<"+"/script>");
+		</script>
+<script type="text/javascript">
+			if("ontouchend" in document) document.write("<script src='<?php echo site_url();?>/assets/js/jquery.mobile.custom.min.js'>"+"<"+"/script>");
+		</script>
+<script type="text/javascript">
+			jQuery(function($) {
+				var oTable1 = $('#sample-table-2').dataTable( {
+				"aoColumns": [
+			      { "bSortable": false },
+			      null, null,null, null,null,null,null,
+				  { "bSortable": false }
+				] } );
+
+			})
+		</script>
+

@@ -1,198 +1,130 @@
-<!DOCTYPE html>
-<html lang="en-us">
-	<head>
-		<meta charset="utf-8">
-		<title> SmartAdmin </title>
-		<meta name="description" content="">
-		<meta name="author" content="">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-		<link rel="shortcut icon" href="img/favicon/favicon.ico" type="image/x-icon">
-		<link rel="icon" href="img/favicon/favicon.ico" type="image/x-icon">
-		<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,700italic,300,400,700">
-	</head>
-	
-<!-- MAIN PANEL -->
-		<div id="main" role="main">
+<?php
+	$sa4_loading_label = 'Global Settings';
+	$sa4_dt_entity = 'settings';
+	$sa4_panel_id = 'panel-global-settings';
+	$sa4_dt_export_cols = array(0, 1, 2, 3);
 
-			<!-- RIBBON -->
-			<div id="ribbon">
-				<span class="ribbon-button-alignment"> 
-					<span id="refresh" class="btn btn-ribbon" data-action="resetWidgets" data-title="refresh"  rel="tooltip" data-placement="bottom" data-original-title="<i class='text-warning fa fa-warning'></i> Warning! This will reset all your widget settings." data-html="true">
-						<i class="fa fa-refresh"></i>
-					</span> 
-				</span>
+	$this->load->model('common_model', 'kpi_model');
+	$income1 = $this->kpi_model->get_income_metercustomer();
+	extract($income1);
+	$income2 = $this->kpi_model->get_income_monthlycustomer();
+	extract($income2);
+	$intotal = (isset($total1) ? (float) $total1 : 0) + (isset($total2) ? (float) $total2 : 0);
 
-				<!-- breadcrumb -->
-				<ol class="breadcrumb">
-					<li><a href="<?php echo ADMIN_URL?>">Home</a></li>
-					<li><a href="<?php echo ADMIN_URL?>global_settings/"> Global Settings </a></li>
-					<li>List View</li>
-				</ol>
-				
+	$expense1 = $this->kpi_model->get_outcome_expenses();
+	extract($expense1);
+	$expense2 = $this->kpi_model->get_outcome_payroll();
+	extract($expense2);
+	$extotal = (isset($extotal1) ? (float) $extotal1 : 0) + (isset($extotal2) ? (float) $extotal2 : 0);
+
+	$total_customer = $this->kpi_model->total_customer();
+	extract($total_customer);
+
+	$records = (isset($record) && is_array($record)) ? $record : array();
+?>
+<link rel="stylesheet" media="screen, print" href="<?php echo base_url(); ?>sa4/css/datagrid/datatables/datatables.bundle.css">
+<main id="js-page-content" role="main" class="page-content">
+	<ol class="breadcrumb page-breadcrumb">
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>">Home</a></li>
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>global_settings">Global Settings</a></li>
+		<li class="breadcrumb-item active">List View</li>
+		<li class="position-absolute pos-top pos-right d-none d-sm-block"><span class="js-get-date"></span></li>
+	</ol>
+
+	<div class="subheader">
+		<h1 class="subheader-title">
+			<i class="subheader-icon fal fa-cog"></i>
+			Manage <span class="fw-300">Global Settings</span>
+		</h1>
+		<div class="subheader-block d-lg-flex align-items-center">
+			<div class="d-inline-flex flex-column justify-content-center mr-3">
+				<span class="fw-300 fs-xs d-block opacity-50"><small>INCOME</small></span>
+				<span class="fw-500 fs-xl d-block color-primary-500">₱ <?php echo number_format($intotal, 2); ?></span>
 			</div>
-			<!-- END RIBBON -->
+			<span class="sparklines hidden-lg-down" sparkType="bar" sparkBarColor="#886ab5" sparkHeight="32px" sparkBarWidth="5px" values="3,4,3,6,7,3,3,6,2,6,4"></span>
+		</div>
+		<div class="subheader-block d-lg-flex align-items-center border-faded border-right-0 border-top-0 border-bottom-0 ml-3 pl-3">
+			<div class="d-inline-flex flex-column justify-content-center mr-3">
+				<span class="fw-300 fs-xs d-block opacity-50"><small>EXPENSE</small></span>
+				<span class="fw-500 fs-xl d-block color-danger-500">₱ <?php echo number_format($extotal, 2); ?></span>
+			</div>
+			<span class="sparklines hidden-lg-down" sparkType="bar" sparkBarColor="#fe6bb0" sparkHeight="32px" sparkBarWidth="5px" values="1,4,3,6,5,3,9,6,5,9,7"></span>
+		</div>
+		<div class="subheader-block d-lg-flex align-items-center border-faded border-right-0 border-top-0 border-bottom-0 ml-3 pl-3">
+			<div class="d-inline-flex flex-column justify-content-center mr-3">
+				<span class="fw-300 fs-xs d-block opacity-50"><small>TOTAL CUSTOMER</small></span>
+				<span class="fw-500 fs-xl d-block color-success-500"><?php echo (int) (isset($count_id) ? $count_id : 0); ?></span>
+			</div>
+			<span class="sparklines hidden-lg-down" sparkType="bar" sparkBarColor="#1dc9b7" sparkHeight="32px" sparkBarWidth="5px" values="2,5,3,7,4,6,3,8,5,4,6"></span>
+		</div>
+	</div>
 
-			<!-- MAIN CONTENT -->
-			<div id="content">
+	<?php if ($this->session->flashdata('msg_succ')) { ?>
+	<div class="alert alert-success alert-dismissible fade show" role="alert">
+		<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+			<span aria-hidden="true"><i class="fal fa-times"></i></span>
+		</button>
+		<strong>Success!</strong> <?php echo $this->session->flashdata('msg_succ'); ?>
+	</div>
+	<?php } ?>
 
-				<div class="row">
-					<div class="col-xs-12 col-sm-7 col-md-7 col-lg-4">
-						<h1 class="page-title txt-color-blueDark"><i class="fa-fw fa fa-cog"></i> View <span>> Global Settings </span></h1>
+	<div class="row">
+		<div class="col-xl-12">
+			<div id="panel-global-settings" class="panel">
+				<div class="panel-hdr">
+					<h2>Global Settings <span class="fw-300"><i>Listing</i></span></h2>
+					<div class="panel-toolbar">
+						<button class="btn btn-panel" data-action="panel-collapse" data-toggle="tooltip" data-offset="0,10" data-original-title="Collapse"></button>
+						<button class="btn btn-panel" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
 					</div>
 				</div>
-				<!-- widget grid -->
-				<section id="widget-grid" class="">
-
-					<!-- row -->
-					<div class="row">
-				
-						<!-- NEW WIDGET START -->
-						<article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-				
-							<!-- Widget ID (each widget will need unique ID)-->
-							<div class="jarviswidget jarviswidget-color-darken" id="wid-id-0" data-widget-editbutton="false">
-								
-								<header style="height: 42px;">
-									<span class="widget-icon"> <i class="fa fa-cog"></i> </span>
-								<p style="padding: 5px 0 0 45px;font-size: 16px;"><strong>Global Settings</strong>
-								</p>
-								</header>
-				
-								<!-- widget div-->
-								<div>
-				
-									<!-- widget edit box -->
-									<div class="jarviswidget-editbox">
-										<!-- This area used as dropdown edit box -->
-									</div>
-									<!-- end widget edit box -->
-				                    
-										<!-- widget content -->
-										<div class="widget-body no-padding">
-										   <table id="dt_basic" class="table table-striped table-bordered table-hover" width="100%">
-											
-												<thead>			                
-													<tr>
-														<th>SNo</th>
-														<th>Code</th>
-														<th>Description</th>
-														<th>Value</th>
-														<th>Action</th>
-													</tr>
-												</thead>
-												<tbody>
-												  <?php
-														if(count($record) > 0){
-															$i=1;
-															foreach($record as $key => $row){ 
-													?>   
-													<tr>
-														<td><?php echo $i;?></td>
-														<td><?php echo stripslashes($row['code']);?></td>
-														<td><?php echo stripslashes($row['description']);?></td>
-														<td><?php echo number_format($row['value'], 2);?></td>
-                                                        <td>
-														    <div class="visible-md visible-lg hidden-sm hidden-xs action-buttons">
-																<a class="green" href="<?php echo ADMIN_URL;?>global_settings/edit/<?php echo $row['id']; ?>" title="Edit">
-																	<i class="fa fa-edit"></i>
-																</a>
-															</div>
-															<div class="visible-xs visible-sm hidden-md hidden-lg">
-																<div class="inline position-relative">
-																	<button class="btn btn-minier btn-yellow dropdown-toggle" data-toggle="dropdown">
-																		<i class="icon-caret-down icon-only bigger-120"></i>
-																	</button>
-																	<ul class="dropdown-menu dropdown-only-icon dropdown-yellow pull-right dropdown-caret dropdown-close">
-																		<li>
-																			<a href="<?php echo ADMIN_URL;?>global_settings/edit/<?php echo $row['id']; ?>" class="tooltip-success" data-rel="tooltip" title="Edit">
-																				<span class="green">
-																					<img src="<?php echo base_url();?>images/favicon/document-edit.gif">
-																				</span>
-																			</a>
-																		</li>
-																	</ul>
-																</div>
-															</div>
-														</td>
-													</tr>
-														<?php $i++;} }?>	
-												</tbody>
-											</table>
+				<div class="panel-container show">
+					<div class="panel-content">
+						<table id="dt_basic" class="table table-bordered table-hover table-striped w-100">
+							<thead>
+								<tr>
+									<th style="width:60px;">S No</th>
+									<th>Code</th>
+									<th>Description</th>
+									<th>Value</th>
+									<th style="width:90px;">Action</th>
+								</tr>
+							</thead>
+							<tbody>
+								<?php
+								if (count($records) > 0) {
+									$i = 1;
+									foreach ($records as $row) {
+								?>
+								<tr>
+									<td><?php echo $i; ?></td>
+									<td><?php echo htmlspecialchars(stripslashes($row['code'])); ?></td>
+									<td><?php echo htmlspecialchars(stripslashes($row['description'])); ?></td>
+									<td class="text-right"><?php echo number_format((float) $row['value'], 2); ?></td>
+									<td>
+										<div class="btn-group btn-group-sm" role="group">
+											<a href="<?php echo ADMIN_URL; ?>global_settings/edit/<?php echo (int) $row['id']; ?>" class="btn btn-outline-success" title="Edit" data-toggle="tooltip">
+												<i class="fal fa-edit"></i>
+											</a>
 										</div>
-										<!-- end widget content -->
-				                    
-								</div>
-								<!-- end widget div -->
-				
-							</div>
-							<!-- end widget -->
-				
-						</article>
-						<!-- WIDGET END -->
-				
+									</td>
+								</tr>
+								<?php
+										$i++;
+									}
+								}
+								?>
+							</tbody>
+						</table>
 					</div>
-				
-					<!-- end row -->
-
-				</section>
-				<!-- end widget grid -->
-
+				</div>
 			</div>
-			<!-- END MAIN CONTENT -->
-
 		</div>
-		<!-- END MAIN PANEL -->
-		
+	</div>
+</main>
 
-		<?php include('footer.php');?>
-
-	</body>
-
+<?php include(__DIR__ . '/partials/sa4_dt_loading.php'); ?>
+<?php include('footer.php'); ?>
+<?php include(__DIR__ . '/partials/sa4_dt_init.js.php'); ?>
+</body>
 </html>
-<!-- PAGE RELATED PLUGIN(S) -->
-		<script src="<?php echo base_url();?>js/plugin/datatables/jquery.dataTables.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.colVis.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.tableTools.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.bootstrap.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatable-responsive/datatables.responsive.min.js"></script>
-		<script type="text/javascript">
-		
-		// DO NOT REMOVE : GLOBAL FUNCTIONS!
-		
-		$(document).ready(function() {
-			
-			pageSetUp();
-			
-			/* BASIC */
-				var responsiveHelper_dt_basic = undefined;
-				var breakpointDefinition = {
-					tablet : 1024,
-					phone : 480
-				};
-	
-				$('#dt_basic').dataTable({
-					"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-12 hidden-xs'l>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
-					"autoWidth" : true,
-			        "oLanguage": {
-					    "sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-					},
-					"preDrawCallback" : function() {
-						if (!responsiveHelper_dt_basic) {
-							responsiveHelper_dt_basic = new ResponsiveDatatablesHelper($('#dt_basic'), breakpointDefinition);
-						}
-					},
-					"rowCallback" : function(nRow) {
-						responsiveHelper_dt_basic.createExpandIcon(nRow);
-					},
-					"drawCallback" : function(oSettings) {
-						responsiveHelper_dt_basic.respond();
-					}
-				});
-	
-			/* END BASIC */
-		
-		})
-
-		</script>

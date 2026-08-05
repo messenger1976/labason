@@ -6,7 +6,7 @@ Welcome to the Water Billing System documentation. This system is a comprehensiv
 
 This repository contains complete documentation for the Water Billing System:
 
-### 1. [Complete User Manual](WATER_BILLING_SYSTEM_MANUAL.md)
+### 1. [Complete User Manual](DOCUMENTS/WATER_BILLING_SYSTEM_MANUAL.md)
 **For**: End users, administrators, and system operators
 
 **Contents**:
@@ -23,7 +23,7 @@ This repository contains complete documentation for the Water Billing System:
 - Troubleshooting common issues
 - Understanding system capabilities
 
-### 2. [Quick Reference Guide](QUICK_REFERENCE_GUIDE.md)
+### 2. [Quick Reference Guide](DOCUMENTS/QUICK_REFERENCE_GUIDE.md)
 **For**: Daily users who need quick access to common tasks
 
 **Contents**:
@@ -37,7 +37,7 @@ This repository contains complete documentation for the Water Billing System:
 - You forget a specific URL or command
 - You need a quick status code reference
 
-### 3. [Developer Technical Guide](DEVELOPER_TECHNICAL_GUIDE.md)
+### 3. [Developer Technical Guide](DOCUMENTS/DEVELOPER_TECHNICAL_GUIDE.md)
 **For**: Developers, programmers, and technical staff
 
 **Contents**:
@@ -63,7 +63,7 @@ This repository contains complete documentation for the Water Billing System:
 1. Read the [Installation & Setup](#installation--setup) section in the User Manual
 2. Follow the setup instructions
 3. Refer to the [User Guide](#user-guide) section for specific tasks
-4. Use the [Quick Reference Guide](QUICK_REFERENCE_GUIDE.md) for daily operations
+4. Use the [Quick Reference Guide](DOCUMENTS/QUICK_REFERENCE_GUIDE.md) for daily operations
 
 ### For Developers
 
@@ -96,11 +96,15 @@ The Water Billing System is built with:
 ## 📖 Documentation Structure
 
 ```
-Documentation/
+/
 ├── README.md (this file)
-├── WATER_BILLING_SYSTEM_MANUAL.md (Complete manual)
-├── QUICK_REFERENCE_GUIDE.md (Quick reference)
-└── DEVELOPER_TECHNICAL_GUIDE.md (Technical guide)
+└── DOCUMENTS/
+    ├── README.md (document index)
+    ├── WATER_BILLING_SYSTEM_MANUAL.md
+    ├── QUICK_REFERENCE_GUIDE.md
+    ├── DEVELOPER_TECHNICAL_GUIDE.md
+    ├── HIERARCHICAL_ROLES_AND_PERMISSIONS.md
+    └── ... (other module docs)
 ```
 
 ## 🔍 Finding Information
@@ -108,28 +112,28 @@ Documentation/
 ### I want to...
 
 **...set up the system**
-→ See [Installation & Setup](WATER_BILLING_SYSTEM_MANUAL.md#installation--setup) in User Manual
+→ See [Installation & Setup](DOCUMENTS/WATER_BILLING_SYSTEM_MANUAL.md#installation--setup) in User Manual
 
 **...add a customer**
-→ See [Adding a New Customer](WATER_BILLING_SYSTEM_MANUAL.md#adding-a-new-customer) in User Manual or [Quick Reference](QUICK_REFERENCE_GUIDE.md#add-new-customer)
+→ See [Adding a New Customer](DOCUMENTS/WATER_BILLING_SYSTEM_MANUAL.md#adding-a-new-customer) in User Manual or [Quick Reference](DOCUMENTS/QUICK_REFERENCE_GUIDE.md#add-new-customer)
 
 **...process a payment**
-→ See [Processing Payment](WATER_BILLING_SYSTEM_MANUAL.md#processing-payment) in User Manual or [Quick Reference](QUICK_REFERENCE_GUIDE.md#process-payment)
+→ See [Processing Payment](DOCUMENTS/WATER_BILLING_SYSTEM_MANUAL.md#processing-payment) in User Manual or [Quick Reference](DOCUMENTS/QUICK_REFERENCE_GUIDE.md#process-payment)
 
 **...generate a report**
-→ See [Generating Reports](WATER_BILLING_SYSTEM_MANUAL.md#generating-reports) in User Manual
+→ See [Generating Reports](DOCUMENTS/WATER_BILLING_SYSTEM_MANUAL.md#generating-reports) in User Manual
 
 **...customize the system**
-→ See [Customization Guide](DEVELOPER_TECHNICAL_GUIDE.md#customization-guide) in Developer Guide
+→ See [Customization Guide](DOCUMENTS/DEVELOPER_TECHNICAL_GUIDE.md#customization-guide) in Developer Guide
 
 **...understand the code structure**
-→ See [Code Structure](DEVELOPER_TECHNICAL_GUIDE.md#code-structure) in Developer Guide
+→ See [Code Structure](DOCUMENTS/DEVELOPER_TECHNICAL_GUIDE.md#code-structure) in Developer Guide
 
 **...troubleshoot an issue**
-→ See [Troubleshooting](WATER_BILLING_SYSTEM_MANUAL.md#troubleshooting) in User Manual
+→ See [Troubleshooting](DOCUMENTS/WATER_BILLING_SYSTEM_MANUAL.md#troubleshooting) in User Manual
 
 **...understand database structure**
-→ See [Database Structure](WATER_BILLING_SYSTEM_MANUAL.md#database-structure) in User Manual or [Database Schema](DEVELOPER_TECHNICAL_GUIDE.md#database-schema) in Developer Guide
+→ See [Database Structure](DOCUMENTS/WATER_BILLING_SYSTEM_MANUAL.md#database-structure) in User Manual or [Database Schema](DOCUMENTS/DEVELOPER_TECHNICAL_GUIDE.md#database-schema) in Developer Guide
 
 ## 🛠️ System Requirements
 
@@ -176,9 +180,10 @@ This documentation is provided for the Water Billing System. All rights reserved
 
 ## 🎯 Next Steps
 
-1. **New Users**: Start with the [User Manual](WATER_BILLING_SYSTEM_MANUAL.md)
-2. **Daily Users**: Bookmark the [Quick Reference](QUICK_REFERENCE_GUIDE.md)
-3. **Developers**: Begin with the [Developer Guide](DEVELOPER_TECHNICAL_GUIDE.md)
+1. **New Users**: Start with the [User Manual](DOCUMENTS/WATER_BILLING_SYSTEM_MANUAL.md)
+2. **Daily Users**: Bookmark the [Quick Reference](DOCUMENTS/QUICK_REFERENCE_GUIDE.md)
+3. **Developers**: Begin with the [Developer Guide](DOCUMENTS/DEVELOPER_TECHNICAL_GUIDE.md)
+4. **Full index**: See [DOCUMENTS/README.md](DOCUMENTS/README.md)
 
 ---
 

@@ -60,7 +60,7 @@
 <h3 style="text-align: center;">DAILY COLLECTION REPORT - NO GROUPING</h3>
 <h6 style="text-align: center;"><?php echo $trans_date;?></h6>
 <div class="row">
-	<div class="col-lg-12 col-sm-12 col-xs-12 col-md-12">
+	<div class="col-lg-12 col-sm-12 col-12 col-md-12">
 		<?php
             if(count($record) > 0){
                 foreach($record as $key => $row){ 
@@ -352,9 +352,9 @@
 				};
 	
 				$('#dt_basic').dataTable({
-					"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-12 hidden-xs'l>r>"+
+					"sDom": "<'dt-toolbar'<'col-12 col-sm-6'f><'col-sm-6 col-12 hidden-xs'l>r>"+
 						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
+						"<'dt-toolbar-footer'<'col-sm-6 col-12 hidden-xs'i><'col-12 col-sm-6'p>>",
 					"autoWidth" : true,
 			        "oLanguage": {
 					    "sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
@@ -383,9 +383,9 @@
 		    	//"bAutoWidth": false,
 		    	//"bPaginate": false,
 		    	//"bStateSave": true // saves sort state using localStorage
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6 hidden-xs'f><'col-sm-6 col-xs-12 hidden-xs'<'toolbar'>>r>"+
+				"sDom": "<'dt-toolbar'<'col-12 col-sm-6 hidden-xs'f><'col-sm-6 col-12 hidden-xs'<'toolbar'>>r>"+
 						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
+						"<'dt-toolbar-footer'<'col-sm-6 col-12 hidden-xs'i><'col-12 col-sm-6'p>>",
 				"autoWidth" : true,
 				"oLanguage": {
 					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
@@ -421,9 +421,9 @@
 	    
 			/* COLUMN SHOW - HIDE */
 			$('#datatable_col_reorder').dataTable({
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-6 hidden-xs'C>r>"+
+				"sDom": "<'dt-toolbar'<'col-12 col-sm-6'f><'col-sm-6 col-6 hidden-xs'C>r>"+
 						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-sm-6 col-xs-12'p>>",
+						"<'dt-toolbar-footer'<'col-sm-6 col-12 hidden-xs'i><'col-sm-6 col-12'p>>",
 				"autoWidth" : true,
 				"oLanguage": {
 					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
@@ -449,9 +449,9 @@
 				
 				// Tabletools options: 
 				//   https://datatables.net/extensions/tabletools/button_options
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-6 hidden-xs'T>r>"+
+				"sDom": "<'dt-toolbar'<'col-12 col-sm-6'f><'col-sm-6 col-6 hidden-xs'T>r>"+
 						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
+						"<'dt-toolbar-footer'<'col-sm-6 col-12 hidden-xs'i><'col-12 col-sm-6'p>>",
 				"oLanguage": {
 					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
 				},		

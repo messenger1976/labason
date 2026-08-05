@@ -1,344 +1,320 @@
-<!DOCTYPE html>
-	
-<!-- MAIN PANEL -->
-		<div id="main" role="main">
+<?php
+	$income1 = $this->my_model->get_income_metercustomer();
+	extract($income1);
+	$income2 = $this->my_model->get_income_monthlycustomer();
+	extract($income2);
+	$intotal = (isset($total1) ? (float) $total1 : 0) + (isset($total2) ? (float) $total2 : 0);
 
-			<!-- RIBBON -->
-			<div id="ribbon">
+	$expense1 = $this->my_model->get_outcome_expenses();
+	extract($expense1);
+	$expense2 = $this->my_model->get_outcome_payroll();
+	extract($expense2);
+	$extotal = (isset($extotal1) ? (float) $extotal1 : 0) + (isset($extotal2) ? (float) $extotal2 : 0);
 
-				<span class="ribbon-button-alignment"> 
-					<span id="refresh" class="btn btn-ribbon" data-action="resetWidgets" data-title="refresh"  rel="tooltip" data-placement="bottom" data-original-title="<i class='text-warning fa fa-warning'></i> Warning! This will reset all your widget settings." data-html="true">
-						<i class="fa fa-refresh"></i>
-					</span> 
+	$total_customer = $this->my_model->total_customer();
+	extract($total_customer);
+?>
+<link rel="stylesheet" media="screen, print" href="<?php echo base_url(); ?>sa4/css/formplugins/bootstrap-datepicker/bootstrap-datepicker.css">
+<link rel="stylesheet" media="screen, print" href="<?php echo base_url(); ?>sa4/css/datagrid/datatables/datatables.bundle.css">
+<style>
+	#dt_arrears_monitoring tr.arrears-mismatch td {
+		background-color: #d9534f !important;
+		color: #fff !important;
+	}
+</style>
+<main id="js-page-content" role="main" class="page-content">
+	<ol class="breadcrumb page-breadcrumb">
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>">Home</a></li>
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>reports/arrears_monitoring_report/">Arrears Monitoring</a></li>
+		<li class="breadcrumb-item active">Search</li>
+		<li class="position-absolute pos-top pos-right d-none d-sm-block"><span class="js-get-date"></span></li>
+	</ol>
+
+	<div class="subheader">
+		<h1 class="subheader-title">
+			<i class="subheader-icon fal fa-chart-bar"></i>
+			Manage <span class="fw-300">Arrears Monitoring Report</span>
+		</h1>
+		<div class="subheader-block d-lg-flex align-items-center">
+			<div class="d-inline-flex flex-column justify-content-center mr-3">
+				<span class="fw-300 fs-xs d-block opacity-50">
+					<small>INCOME</small>
 				</span>
-
-				<!-- breadcrumb -->
-				<ol class="breadcrumb">
-					<li><a href="<?php echo ADMIN_URL;?>">Home</a></li>
-					<li><a href="<?php echo ADMIN_URL;?>reports/arrears_monitoring_report/">Arrears Monitoring</a></li>
-					<li>search</li>
-				</ol>
-				
+				<span class="fw-500 fs-xl d-block color-primary-500">
+					₱ <?php echo number_format($intotal, 2); ?>
+				</span>
 			</div>
-			<!-- END RIBBON -->
+			<span class="sparklines hidden-lg-down" sparkType="bar" sparkBarColor="#886ab5" sparkHeight="32px" sparkBarWidth="5px" values="3,4,3,6,7,3,3,6,2,6,4"></span>
+		</div>
+		<div class="subheader-block d-lg-flex align-items-center border-faded border-right-0 border-top-0 border-bottom-0 ml-3 pl-3">
+			<div class="d-inline-flex flex-column justify-content-center mr-3">
+				<span class="fw-300 fs-xs d-block opacity-50">
+					<small>EXPENSE</small>
+				</span>
+				<span class="fw-500 fs-xl d-block color-danger-500">
+					₱ <?php echo number_format($extotal, 2); ?>
+				</span>
+			</div>
+			<span class="sparklines hidden-lg-down" sparkType="bar" sparkBarColor="#fe6bb0" sparkHeight="32px" sparkBarWidth="5px" values="1,4,3,6,5,3,9,6,5,9,7"></span>
+		</div>
+		<div class="subheader-block d-lg-flex align-items-center border-faded border-right-0 border-top-0 border-bottom-0 ml-3 pl-3">
+			<div class="d-inline-flex flex-column justify-content-center mr-3">
+				<span class="fw-300 fs-xs d-block opacity-50">
+					<small>TOTAL CUSTOMER</small>
+				</span>
+				<span class="fw-500 fs-xl d-block color-success-500">
+					<?php echo (int) (isset($count_id) ? $count_id : 0); ?>
+				</span>
+			</div>
+			<span class="sparklines hidden-lg-down" sparkType="bar" sparkBarColor="#1dc9b7" sparkHeight="32px" sparkBarWidth="5px" values="2,5,3,7,4,6,3,8,5,4,6"></span>
+		</div>
+	</div>
 
-			<!-- MAIN CONTENT -->
-			<div id="content">
+	<?php if (!empty($msg)) { ?>
+	<div class="alert alert-success alert-dismissible fade show" role="alert">
+		<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+			<span aria-hidden="true"><i class="fal fa-times"></i></span>
+		</button>
+		<strong>Success!</strong> <?php echo $msg; ?>
+	</div>
+	<?php } ?>
 
-				<div class="row">
-					<div class="col-xs-12 col-sm-7 col-md-7 col-lg-4">
-						<h1 class="page-title txt-color-blueDark"><i class="glyphicon glyphicon-search"></i>Display <span>>  Arrears Monitoring Report </span></h1>
-					</div>
-					<div class="col-xs-12 col-sm-5 col-md-5 col-lg-8">
-						<ul id="sparks" class="">
-							<li class="sparks-info">
-							<?php 
-							     $income1 = $this->comm_model->get_income_metercustomer();
-							     extract($income1);
-								 $income2 = $this->comm_model->get_income_monthlycustomer();
-								 extract($income2);
-								 $intotal = $total1 + $total2;
-							?>
-								<h5> Income <span class="txt-color-blue">PHP <?php print_r(number_format($intotal,2));?></span></h5>
-								<div class="sparkline txt-color-blue hidden-mobile hidden-md hidden-sm">
-									
-								</div>
-							</li>
-							<?php
-							     $expense1 = $this->my_model->get_outcome_expenses();
-							     extract($expense1);
-								 $expense2 = $this->my_model->get_outcome_payroll();
-								 extract($expense2);
-								 $extotal = $extotal1 + $extotal2;
-							?>
-							<li class="sparks-info">
-								<h5> Expense <span class="txt-color-purple">PHP <?php print_r(number_format($extotal,2));?></span></h5>
-								<div class="sparkline txt-color-purple hidden-mobile hidden-md hidden-sm">
-									
-								</div>
-							</li>
-							<?php 
-							     $total_customer = $this->my_model->total_customer();
-							     extract($total_customer); 
-							?>
-							<li class="sparks-info">
-								<h5> Total Customer <span class="txt-color-greenDark">&nbsp;<?php print_r($count_id);?></span></h5>
-								<div class="sparkline txt-color-greenDark hidden-mobile hidden-md hidden-sm">
-									
-								</div>
-							</li>
-						</ul>
+	<div class="row">
+		<div class="col-xl-12">
+			<div id="panel-arrears-monitoring" class="panel">
+				<div class="panel-hdr">
+					<h2>Arrears Monitoring <span class="fw-300"><i>Search</i></span></h2>
+					<div class="panel-toolbar">
+						<button class="btn btn-panel" data-action="panel-collapse" data-toggle="tooltip" data-offset="0,10" data-original-title="Collapse"></button>
+						<button class="btn btn-panel" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
 					</div>
 				</div>
-				<!-- widget grid -->
-				<section id="widget-grid" class="">
-
-					<!-- row -->
-
-					<div class="row">
-
-						<!-- a blank row to get started -->
-						<div class="col-sm-6 col-lg-12">
-						
-
-								<!-- your contents here -->
-								<div class="panel panel-default">
-									
-									<div class="widget-body">
-				
-										
-										  	
-											<?php if($msg != ''){?>
-											<div class="alert alert-block alert-success">
-												<button type="button" class="close" data-dismiss="alert">
-												<i class="icon-remove"></i>
-												</button>
-												<p>
-													<i class="icon-ok"></i>
-													<?php echo $msg?$msg:'';?>
-												</p>
+				<div class="panel-container show">
+					<div class="panel-content">
+						<form name="arrears_monitoring_form" id="arrears_monitoring_form" method="post" action="javascript:void(0);">
+							<div class="row">
+								<div class="col-md-6">
+									<div class="form-group">
+										<label class="form-label" for="asofdate">As of Date</label>
+										<div class="input-group">
+											<input type="text" class="form-control" id="asofdate" name="asofdate" readonly placeholder="Select date" required>
+											<div class="input-group-append">
+												<span class="input-group-text fs-xl">
+													<i class="fal fa-calendar"></i>
+												</span>
 											</div>
-											<?php } ?>	
-											
-											<fieldset>
-														<legend>
-															Arrears Monitoring -Search 
-															<div  class="pull-right" style="padding-right:20px;">
-																<button type="submit" class="btn btn-sm btn-primary" name="display" id="display" style="margin-bottom: 5px;">Display</button>
-															</div>
-														</legend>
-														<div class="form-group col-lg-6">
-															<div class="col-lg-12 controls">
-																<div class="form-group">
-																	<span class="input-group-addon"><i class="icon-user"></i><strong>As of Date:</strong></span>
-																	<input class="form-control"  type="text" id="asofdate" name="asofdate"  placeholder="DD-MM-YYYY" value="" required>
-																</div>
-															</div>
-														</div>
-                                                        <div class="form-group col-lg-6">
-															<div class="col-lg-12 controls">
-																<div class="form-group">
-																	<span class="input-group-addon"><i class="icon-user"></i><strong> Zone:</strong></span>
-																	<select class="form-control" name="zone" id="zone" required>
-																		<option value="0">--All--</option>
-																		<?php foreach($zone as $key => $value){ ?>
-																		<option value="<?php echo $value['id'];?>"><?php echo $value['zone'];?></option>
-																		<?php } ?>
-																	</select>
-																</div>
-															</div>
-														</div>
-														<div class="form-group col-lg-6">
-                                                            <div class="col-lg-12 controls">
-                                                                <div class="form-group">
-                                                                <span class="input-group-addon"><i class="icon-user"></i><strong>Status : </strong></span>
-                                                                    <select  class="form-control" name="status" id="status" required>
-                                                                        <option value="">--All--</option>
-                                                                        <option value="1">Active</option>
-                                                                        <option value="0">Inactive</option>
-																		<option value="2">Disconnected</option>
-                                                                        
-                                                                    </select>
-                                                                </div>
-                                                            </div>
-                                                        
-                                                        </div>
-														<div style="clear:both"></div>
-														
-														<div class="col-xs-12" id="paidcustomerDiv" style="margin-top: 13px;"></div>
-															
-													</fieldset>
-													
-												</div> 
-														
-													    
-															
-												
-														
-														
-														
-										
+										</div>
 									</div>
-								    
-								
-								</div>	
-						</div>
-                        	
-				        </div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group">
+										<label class="form-label" for="zone">Zone</label>
+										<select class="form-control" name="zone" id="zone" required>
+											<option value="0">--All--</option>
+											<?php foreach ($zone as $key => $value) { ?>
+											<option value="<?php echo $value['id']; ?>"><?php echo htmlspecialchars($value['zone']); ?></option>
+											<?php } ?>
+										</select>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group">
+										<label class="form-label" for="status">Status</label>
+										<select class="form-control" name="status" id="status" required>
+											<option value="">--All--</option>
+											<option value="1">Active</option>
+											<option value="0">Inactive</option>
+											<option value="2">Disconnected</option>
+										</select>
+									</div>
+								</div>
+							</div>
+
+							<div class="form-group mb-0">
+								<button type="button" class="btn btn-primary" name="display" id="display">
+									<i class="fal fa-search mr-1"></i> Display
+								</button>
+							</div>
+						</form>
+
+						<div id="paidcustomerDiv" class="mt-3"></div>
 					</div>
-                    <!-- end row -->
-
-				</section>
-				<!-- end widget grid -->
-
-					
-
-				</section>
-				<!-- end widget grid -->
-
+				</div>
 			</div>
-			<!-- END MAIN CONTENT -->
-
 		</div>
-		<!-- END MAIN PANEL -->
-		
-
-		<?php include('footer.php');?>
-		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-	</body>
-
+	</div>
+</main>
+<?php include('footer.php'); ?>
+<script src="<?php echo base_url(); ?>sa4/js/statistics/sparkline/sparkline.bundle.js"></script>
+<script src="<?php echo base_url(); ?>sa4/js/formplugins/bootstrap-datepicker/bootstrap-datepicker.js"></script>
+<script src="<?php echo base_url(); ?>sa4/js/datagrid/datatables/datatables.bundle.js"></script>
+</body>
 </html>
-
-<!-- PAGE RELATED PLUGIN(S) -->
-		<script src="<?php echo base_url();?>js/plugin/datatables/jquery.dataTables.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.colVis.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.tableTools.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.bootstrap.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatable-responsive/datatables.responsive.min.js"></script>
-		<script type="text/javascript">
-		
-		// DO NOT REMOVE : GLOBAL FUNCTIONS!
-		
-		$(document).ready(function() {
-			
-			pageSetUp();
-			
-			/* // DOM Position key index //
-		
-			l - Length changing (dropdown)
-			f - Filtering input (search)
-			t - The Table! (datatable)
-			i - Information (records)
-			p - Pagination (paging)
-			r - pRocessing 
-			< and > - div elements
-			<"#id" and > - div with an id
-			<"class" and > - div with a class
-			<"#id.class" and > - div with an id and class
-			
-			Also see: http://legacy.datatables.net/usage/features
-			*/	
-	
-			/* BASIC ;*/
-				var responsiveHelper_dt_basic = undefined;
-				var responsiveHelper_datatable_fixed_column = undefined;
-				var responsiveHelper_datatable_col_reorder = undefined;
-				var responsiveHelper_datatable_tabletools = undefined;
-				
-				var breakpointDefinition = {
-					tablet : 1024,
-					phone : 480
-				};
-	
-				$('#dt_basic').dataTable({
-					"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-12 hidden-xs'l>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
-					"autoWidth" : true,
-			        "oLanguage": {
-					    "sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-					},
-					"preDrawCallback" : function() {
-						// Initialize the responsive datatables helper once.
-						if (!responsiveHelper_dt_basic) {
-							responsiveHelper_dt_basic = new ResponsiveDatatablesHelper($('#dt_basic'), breakpointDefinition);
-						}
-					},
-					"rowCallback" : function(nRow) {
-						responsiveHelper_dt_basic.createExpandIcon(nRow);
-					},
-					"drawCallback" : function(oSettings) {
-						responsiveHelper_dt_basic.respond();
-					}
-				});
-	
-			/* END BASIC */
-			
-			/* COLUMN FILTER  */
-		    var otable = $('#datatable_fixed_column').DataTable({
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6 hidden-xs'f><'col-sm-6 col-xs-12 hidden-xs'<'toolbar'>>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
-				"autoWidth" : true,
-				"oLanguage": {
-					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-				},
-				"preDrawCallback" : function() {
-					if (!responsiveHelper_datatable_fixed_column) {
-						responsiveHelper_datatable_fixed_column = new ResponsiveDatatablesHelper($('#datatable_fixed_column'), breakpointDefinition);
-					}
-				},
-				"rowCallback" : function(nRow) {
-					responsiveHelper_datatable_fixed_column.createExpandIcon(nRow);
-				},
-				"drawCallback" : function(oSettings) {
-					responsiveHelper_datatable_fixed_column.respond();
-				}		
-			
-		    });
-		    
-		    $("div.toolbar").html('<div class="text-right"><img src="img/logo.png" alt="SmartAdmin" style="width: 111px; margin-top: 3px; margin-right: 10px;"></div>');
-		    	   
-		    $("#datatable_fixed_column thead th input[type=text]").on( 'keyup change', function () {
-		    	
-		        otable
-		            .column( $(this).parent().index()+':visible' )
-		            .search( this.value )
-		            .draw();
-		            
-		    } );
-		    /* END COLUMN FILTER */   
-	    
-		})
-
-		</script>
-		
 <script type="text/javascript">
-var curDate = '<?php echo date('d-m-Y') ?>';	
-function fun_calendor(field){
-	$("#"+field).focus();
-} 
-
 $(document).ready(function(){
-	$("#asofdate").datepicker({
-		showAnim: null,
-		dateFormat: 'dd-mm-yy',
-		buttonImage: '/images/calender.jpg',
-		buttonImageOnly: true,
-		firstDay: 1,
-		nextText: '',
-		prevText: '',
-		numberOfMonths: [1, 1],
-	});
+	if (typeof pageSetUp === 'function') { pageSetUp(); }
+	if ($.fn.sparkline) {
+		$('.sparklines').each(function() {
+			var $el = $(this);
+			$el.sparkline('html', {
+				type: $el.attr('sparkType') || 'bar',
+				barColor: $el.attr('sparkBarColor') || '#886ab5',
+				height: $el.attr('sparkHeight') || '32px',
+				barWidth: $el.attr('sparkBarWidth') || '5px'
+			});
+		});
+	}
 
-    $('#display').on('click', function(evt){
-        evt.preventDefault();
-       
-        var asofdate = $("#asofdate").val();
-        var zone = $("#zone").val();
+	var controls = {
+		leftArrow: '<i class="fal fa-angle-left" style="font-size: 1.25rem"></i>',
+		rightArrow: '<i class="fal fa-angle-right" style="font-size: 1.25rem"></i>'
+	};
+
+	if ($.fn.datepicker) {
+		$('#asofdate').datepicker({
+			format: 'dd-mm-yyyy',
+			todayHighlight: true,
+			autoclose: true,
+			orientation: 'bottom left',
+			templates: controls
+		});
+		$('#asofdate').closest('.input-group').find('.input-group-text').on('click', function() {
+			$('#asofdate').datepicker('show');
+		});
+	}
+
+	function destroyArrearsTable() {
+		try {
+			if ($.fn.DataTable && $.fn.DataTable.isDataTable('#dt_arrears_monitoring')) {
+				$('#dt_arrears_monitoring').DataTable().destroy();
+			}
+		} catch (e) {
+			/* Previous init may have failed mid-way (e.g. colspan empty row). */
+		}
+	}
+
+	function initArrearsTable() {
+		if (!$.fn.DataTable || !$('#dt_arrears_monitoring').length) { return; }
+		destroyArrearsTable();
+		try {
+			$('#dt_arrears_monitoring').DataTable({
+				responsive: true,
+				pageLength: 25,
+				lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
+				order: [[0, 'asc']],
+				dom: "<'row mb-3'<'col-sm-12 col-md-4'l><'col-sm-12 col-md-8 d-flex justify-content-end flex-wrap'B>>" +
+					"<'row mb-2'<'col-sm-12'f>>" +
+					"<'row'<'col-sm-12'tr>>" +
+					"<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+				language: {
+					search: '',
+					searchPlaceholder: 'Search arrears...',
+					lengthMenu: '_MENU_',
+					info: 'Showing _START_ to _END_ of _TOTAL_ records',
+					infoEmpty: 'No records found for the selected filters.',
+					zeroRecords: 'No records found for the selected filters.',
+					emptyTable: 'No records found for the selected filters.'
+				},
+				buttons: [
+					{ extend: 'copyHtml5', text: '<i class="fal fa-copy mr-1"></i> Copy', className: 'btn-primary btn-sm mr-1 mb-1' },
+					{ extend: 'excelHtml5', text: '<i class="fal fa-file-excel mr-1"></i> Excel', className: 'btn-primary btn-sm mr-1 mb-1' },
+					{ extend: 'csvHtml5', text: '<i class="fal fa-file-csv mr-1"></i> CSV', className: 'btn-primary btn-sm mr-1 mb-1' },
+					{ extend: 'print', text: '<i class="fal fa-print mr-1"></i> Print', className: 'btn-primary btn-sm mr-1 mb-1' }
+				]
+			});
+		} catch (e) {
+			console.error('Arrears DataTable init failed', e);
+		}
+	}
+
+	$('#display').on('click', function(evt){
+		evt.preventDefault();
+		var asofdate = $("#asofdate").val();
+		var zone = $("#zone").val();
 		var status = $("#status").val();
 
-		if(asofdate === ''){
+		if (asofdate === '') {
 			alert("Please select As of Date");
 			return false;
 		}
 
-        showSpinner();
-        
-        $.ajax({
-            
-            type : "POST",
-            url	: '<?php echo ADMIN_URL;?>reports/getarrearsmonitoringsearch',
-            
-            data	: "asofdate="+asofdate+"&zone="+zone+"&status="+status,
-            complete: function(data){
-                var op = data.responseText.trim();
-                $("#paidcustomerDiv").html(op);
-                hideSpinner();
-            }
-        });
-    });
-});
+		destroyArrearsTable();
+		$("#paidcustomerDiv").html('<div class="text-center py-4 text-muted"><i class="fal fa-spinner fa-spin fa-2x mb-2"></i><div>Loading results…</div></div>');
 
-</script>	
+		$.ajax({
+			type: "POST",
+			url: '<?php echo ADMIN_URL;?>reports/getarrearsmonitoringsearch',
+			data: "asofdate="+asofdate+"&zone="+zone+"&status="+status,
+			complete: function(data){
+				destroyArrearsTable();
+				$("#paidcustomerDiv").html(data.responseText.trim());
+				initArrearsTable();
+			}
+		});
+	});
+
+	$(document).off('click.arrearsupdate', '.btn-update-arrears').on('click.arrearsupdate', '.btn-update-arrears', function(){
+		var $btn = $(this);
+		var customerId = $btn.data('customer-id');
+		var agingAmount = $btn.data('aging-amount');
+		var $row = $btn.closest('tr');
+
+		if (typeof Swal === 'undefined') {
+			if (!confirm('Update arrears to ' + parseFloat(agingAmount).toFixed(2) + '?')) { return; }
+			doUpdateArrears($btn, $row, customerId, agingAmount);
+			return;
+		}
+
+		Swal.fire({
+			title: "Update arrears?",
+			text: "This will replace current billing period arrears with Aging Amount (" + parseFloat(agingAmount).toFixed(2) + ").",
+			icon: "warning",
+			showCancelButton: true,
+			confirmButtonColor: "#d9534f",
+			confirmButtonText: "Yes, update it",
+			cancelButtonText: "Cancel"
+		}).then(function(result){
+			if (!result.isConfirmed) { return; }
+			doUpdateArrears($btn, $row, customerId, agingAmount);
+		});
+	});
+
+	function doUpdateArrears($btn, $row, customerId, agingAmount) {
+		$.ajax({
+			type: "POST",
+			url: "<?php echo ADMIN_URL;?>reports/updatearrearsmonitoring",
+			dataType: "json",
+			data: {
+				customer_id: customerId,
+				aging_amount: agingAmount
+			},
+			success: function(resp){
+				if (resp && resp.success) {
+					$row.removeClass('arrears-mismatch');
+					$row.find('.current-arrears-cell').text(parseFloat(resp.current_arrears).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}));
+					$btn.closest('td').html('<span class="badge badge-success">Updated</span>');
+					if (typeof Swal !== 'undefined') {
+						Swal.fire({ icon: "success", title: "Updated!", text: "Current Billing Period Arrears was updated." });
+					} else {
+						alert('Updated!');
+					}
+				} else {
+					var msg = resp && resp.message ? resp.message : "Unable to update arrears.";
+					if (typeof Swal !== 'undefined') {
+						Swal.fire({ icon: "error", title: "Failed", text: msg });
+					} else {
+						alert(msg);
+					}
+				}
+			},
+			error: function(){
+				if (typeof Swal !== 'undefined') {
+					Swal.fire({ icon: "error", title: "Failed", text: "Server error while updating arrears." });
+				} else {
+					alert('Server error while updating arrears.');
+				}
+			}
+		});
+	}
+});
+</script>

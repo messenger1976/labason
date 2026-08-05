@@ -1,0 +1,125 @@
+/* Temporary bridge: old SmartAdmin 1.8 view markup inside SA4 page-content-wrapper */
+#main {
+	width: 100%;
+	margin: 0 !important;
+	padding: 0;
+	float: none !important;
+	position: relative;
+	left: auto !important;
+	right: auto !important;
+}
+#ribbon {
+	background: transparent;
+	border: 0;
+	padding: 0.75rem 1rem 0;
+	margin: 0;
+}
+#ribbon .breadcrumb {
+	background: transparent;
+	margin: 0;
+	padding: 0;
+}
+#content {
+	padding: 1rem;
+	margin: 0;
+}
+/* BS3 leftovers inside chrome+panel forms */
+.panel.panel-default {
+	border: 0;
+	box-shadow: none;
+	background: transparent;
+	margin-bottom: 0;
+}
+.panel-default > .panel-heading,
+.panel-heading {
+	background: transparent;
+	border: 0;
+	padding: 0 0 .75rem;
+	font-weight: 500;
+}
+.panel-default > .panel-body,
+.panel-body {
+	padding: 0;
+}
+.form-actions {
+	padding-top: 1rem;
+	margin-top: 1rem;
+	border-top: 1px solid rgba(0,0,0,.08);
+}
+.well {
+	background: rgba(0,0,0,.03);
+	border: 1px solid rgba(0,0,0,.08);
+	border-radius: .2rem;
+	padding: 1rem;
+}
+.jarviswidget {
+	margin-bottom: 1rem;
+}
+.jarviswidget > header {
+	background: #fff;
+	border: 1px solid rgba(0,0,0,.08);
+	border-bottom: 0;
+	padding: .75rem 1rem;
+	border-radius: .2rem .2rem 0 0;
+}
+.jarviswidget > div {
+	background: #fff;
+	border: 1px solid rgba(0,0,0,.08);
+	border-radius: 0 0 .2rem .2rem;
+}
+.col-xs-1 { flex: 0 0 8.333333%; max-width: 8.333333%; }
+.col-xs-2 { flex: 0 0 16.666667%; max-width: 16.666667%; }
+.col-xs-3 { flex: 0 0 25%; max-width: 25%; }
+.col-xs-4 { flex: 0 0 33.333333%; max-width: 33.333333%; }
+.col-xs-5 { flex: 0 0 41.666667%; max-width: 41.666667%; }
+.col-xs-6 { flex: 0 0 50%; max-width: 50%; }
+.col-xs-7 { flex: 0 0 58.333333%; max-width: 58.333333%; }
+.col-xs-8 { flex: 0 0 66.666667%; max-width: 66.666667%; }
+.col-xs-9 { flex: 0 0 75%; max-width: 75%; }
+.col-xs-10 { flex: 0 0 83.333333%; max-width: 83.333333%; }
+.col-xs-11 { flex: 0 0 91.666667%; max-width: 91.666667%; }
+.col-xs-12 { flex: 0 0 100%; max-width: 100%; }
+.pull-right { float: right !important; }
+.pull-left { float: left !important; }
+.text-align-center { text-align: center !important; }
+.no-padding { padding: 0 !important; }
+.pricing-big .the-price h1 { font-size: 1.75rem; }
+.spinner-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(255, 255, 255, 0.8);
+	display: none;
+	align-items: center;
+	justify-content: center;
+	z-index: 9999;
+}
+.spinner {
+	width: 50px;
+	height: 50px;
+	border: 5px solid #f3f3f3;
+	border-top: 5px solid #3498db;
+	border-radius: 50%;
+	animation: sa4-spin 1s linear infinite;
+}
+@keyframes sa4-spin {
+	0% { transform: rotate(0deg); }
+	100% { transform: rotate(360deg); }
+}
+
+/* Panel header chrome: keep only pink close; hide collapse / fullscreen / ellipsis */
+.panel-hdr .btn-panel[data-action="panel-collapse"],
+.panel-hdr .js-panel-collapse,
+.panel-hdr .btn-panel[data-action="panel-fullscreen"],
+.panel-hdr .js-panel-fullscreen,
+.panel-hdr .btn-toolbar-master,
+.panel-hdr .btn-toolbar-master + .dropdown-menu {
+	display: none !important;
+}
+.panel-hdr .btn-panel[data-action="panel-close"],
+.panel-hdr .js-panel-close {
+	display: inline-block !important;
+	visibility: visible !important;
+}

@@ -1,0 +1,267 @@
+MASTER VIEWS TOTAL: 223
+Modules found: master only
+
+===== ALREADY_UPGRADED (4) =====
+application/modules/master/views/add_zone.php
+application/modules/master/views/addcustomer.php
+application/modules/master/views/dashboard.php
+application/modules/master/views/footer.php
+
+===== NEEDS_UPGRADE_LIST (79) =====
+application/modules/master/views/addaccountgroup.php
+application/modules/master/views/addaccountmetercustomer.php
+application/modules/master/views/addaccountmonthlycustomer.php
+application/modules/master/views/addassets.php
+application/modules/master/views/addassets_search _ajax.php  [ajax]
+application/modules/master/views/addassets_search.php
+application/modules/master/views/addbillingperiod.php
+application/modules/master/views/addbillingperiod_ajax.php  [ajax]
+application/modules/master/views/addcustomer_generatemetercustomersearch _ajax.php  [ajax]
+application/modules/master/views/addcustomer_income_reportsearch _ajax.php  [ajax]
+application/modules/master/views/addcustomer_income_reportsearch_monthly_ajax.php  [ajax]
+application/modules/master/views/addcustomer_metersearch _ajax.php  [ajax]
+application/modules/master/views/addcustomer_metersearch.php
+application/modules/master/views/addcustomer_monthlysearch _ajax.php  [ajax]
+application/modules/master/views/addcustomer_monthlysearch.php
+application/modules/master/views/addcustomer_paidsearch _ajax.php  [ajax]
+application/modules/master/views/addcustomer_paidsearch.php
+application/modules/master/views/addcustomer_search _ajax.php  [ajax]
+application/modules/master/views/addcustomer_search.php
+application/modules/master/views/addcustomer_technicalsearch _ajax.php  [ajax]
+application/modules/master/views/addcustomer_technicalsearch.php
+application/modules/master/views/addcustomer_unpaidsearch _ajax.php  [ajax]
+application/modules/master/views/addcustomer_unpaidsearch.php
+application/modules/master/views/adddaily_search _ajax.php  [ajax]
+application/modules/master/views/adddailyreportnogrouping_search_ajax.php  [ajax]
+application/modules/master/views/addemployee.php
+application/modules/master/views/addemployee_payrolssearch _ajax.php  [ajax]
+application/modules/master/views/addemployee_payrolssearch.php
+application/modules/master/views/addemployee_search _ajax.php  [ajax]
+application/modules/master/views/addemployee_search.php
+application/modules/master/views/addexpenses.php
+application/modules/master/views/addexpenses_bsearch _ajax.php  [ajax]
+application/modules/master/views/addexpenses_search _ajax.php  [ajax]
+application/modules/master/views/addexpenses_search.php
+application/modules/master/views/addexpensestype.php
+application/modules/master/views/addjournalvoucher.php
+application/modules/master/views/addledger.php
+application/modules/master/views/addledger_payrolssearch _ajax.php  [ajax]
+application/modules/master/views/addledger_payrolssearch.php
+application/modules/master/views/addledger_search _ajax.php  [ajax]
+application/modules/master/views/addledger_search.php
+application/modules/master/views/addmetercustomerreading.php
+application/modules/master/views/addmetercustomerreading_add _ajax.php  [ajax]
+application/modules/master/views/addmetercustomerreading_metersearch_ajax.php  [ajax]
+application/modules/master/views/addmetercustomerreading_search.php
+application/modules/master/views/addpaymentcustomer.php
+application/modules/master/views/addshareholder.php
+application/modules/master/views/addshareholder_search.php
+application/modules/master/views/addshareholder_search_ajax.php  [ajax]
+application/modules/master/views/addsubaccountgroup.php
+application/modules/master/views/adminconfiguration.php
+application/modules/master/views/aging_ar_report_ajax.php  [ajax]
+application/modules/master/views/amountrate.php
+application/modules/master/views/arrears_monitoring_report_ajax.php  [ajax]
+application/modules/master/views/classification.php
+application/modules/master/views/classification_category.php
+application/modules/master/views/createbalanceforward_ajax.php  [ajax]
+application/modules/master/views/dashboard_new.php
+application/modules/master/views/database_backup.php
+application/modules/master/views/employee-logins.php
+application/modules/master/views/feesplaning.php
+application/modules/master/views/global_settings.php
+application/modules/master/views/job_title.php
+application/modules/master/views/leakingentry.php
+application/modules/master/views/leakingentry_ledger.php
+application/modules/master/views/leakingentrycorrection.php
+application/modules/master/views/leakingentrycorrection_ledger.php
+application/modules/master/views/main-category.php
+application/modules/master/views/manual_or_series.php
+application/modules/master/views/monthly_billing_report_ajax.php  [ajax]
+application/modules/master/views/or_correction.php
+application/modules/master/views/paymentmonthlycustomer.php
+application/modules/master/views/paymentmonthlycustomer_add _ajax.php  [ajax]
+application/modules/master/views/payrols.php
+application/modules/master/views/practise.php
+application/modules/master/views/responsibilities.php
+application/modules/master/views/technicalproblems.php
+application/modules/master/views/transaction.php
+application/modules/master/views/web_settings.php
+
+===== NEEDS_UPGRADE_FORM (70) =====
+application/modules/master/views/add_zone_add.php
+application/modules/master/views/add_zone_edit.php
+application/modules/master/views/addaccountgroup_add.php
+application/modules/master/views/addaccountgroup_edit.php
+application/modules/master/views/addassets_add.php
+application/modules/master/views/addassets_edit.php
+application/modules/master/views/addassets_view.php
+application/modules/master/views/addbillingperiod_add.php
+application/modules/master/views/addbillingperiod_edit.php
+application/modules/master/views/addbillingperiod_import.php
+application/modules/master/views/addcustomer_add.php
+application/modules/master/views/addcustomer_edit.php
+application/modules/master/views/addcustomer_generatemetercustomer_search.php
+application/modules/master/views/addcustomer_view.php
+application/modules/master/views/adddailyreport_add.php
+application/modules/master/views/adddailyreportnogrouping_add.php
+application/modules/master/views/addemployee_add.php
+application/modules/master/views/addemployee_edit.php
+application/modules/master/views/addemployee_view.php
+application/modules/master/views/addexpenses_add.php
+application/modules/master/views/addexpenses_edit.php
+application/modules/master/views/addexpenses_view.php
+application/modules/master/views/addexpensestype_add.php
+application/modules/master/views/addexpensestype_edit.php
+application/modules/master/views/addjournalvoucher_add.php
+application/modules/master/views/addjournalvoucher_edit.php
+application/modules/master/views/addledger_add.php
+application/modules/master/views/addledger_edit.php
+application/modules/master/views/addledger_view.php
+application/modules/master/views/addmetercustomerreading_add.php
+application/modules/master/views/addmetercustomerreading_edit.php
+application/modules/master/views/addmetercustomerreading_search_edit.php
+application/modules/master/views/addpaymentcustomer_add.php
+application/modules/master/views/addpaymentcustomer_edit.php
+application/modules/master/views/addshareholder_add.php
+application/modules/master/views/addshareholder_edit.php
+application/modules/master/views/addshareholder_view.php
+application/modules/master/views/addsubaccountgroup_add.php
+application/modules/master/views/addsubaccountgroup_edit.php
+application/modules/master/views/adminconfiguration_edit.php
+application/modules/master/views/amountrate_add.php
+application/modules/master/views/amountrate_edit.php
+application/modules/master/views/classification_add.php
+application/modules/master/views/classification_category_add.php
+application/modules/master/views/classification_category_edit.php
+application/modules/master/views/classification_edit.php
+application/modules/master/views/employee-logins-add.php
+application/modules/master/views/employee-logins-edit.php
+application/modules/master/views/feesplaning_add.php
+application/modules/master/views/feesplaning_edit.php
+application/modules/master/views/global_settings-edit.php
+application/modules/master/views/job_title_add.php
+application/modules/master/views/job_title_edit.php
+application/modules/master/views/or_correction_edit.php
+application/modules/master/views/paymentmonthlycustomer_add.php
+application/modules/master/views/paymentmonthlycustomer_edit.php
+application/modules/master/views/paymentmonthlycustomer_generate.php
+application/modules/master/views/payrols_add.php
+application/modules/master/views/payrols_edit.php
+application/modules/master/views/practise_add.php
+application/modules/master/views/practise_edit.php
+application/modules/master/views/profit_addshareholder_add.php
+application/modules/master/views/responsibilities-add.php
+application/modules/master/views/responsibilities-edit.php
+application/modules/master/views/responsibilities-view.php
+application/modules/master/views/share_profitloss_view.php
+application/modules/master/views/technicalproblems_add.php
+application/modules/master/views/technicalproblems_edit.php
+application/modules/master/views/web_settings-edit.php
+application/modules/master/views/web_settings-view.php
+
+===== NEEDS_UPGRADE_REPORT (38) =====
+application/modules/master/views/addcustomer_income_reportsearch.php
+application/modules/master/views/adddailyreport_printtopdf.php
+application/modules/master/views/adddailyreportnogrouping_printtopdf.php
+application/modules/master/views/adminreport.php
+application/modules/master/views/aging_ar_report.php
+application/modules/master/views/agingarreport_printtopdf.php
+application/modules/master/views/arrears_monitoring_report.php
+application/modules/master/views/arrearsmonitoring_printtopdf.php
+application/modules/master/views/createbalanceforward.php
+application/modules/master/views/customer_invoice.php
+application/modules/master/views/customer_payment_monitoring_report.php
+application/modules/master/views/customer_payment_monitoring_report_ajax.php  [ajax]
+application/modules/master/views/customer_report.php
+application/modules/master/views/customer_report_ajax.php  [ajax]
+application/modules/master/views/customerbalancemonitor.php
+application/modules/master/views/customerbalancemonitor_ajax.php  [ajax]
+application/modules/master/views/customerreport_printtopdf.php
+application/modules/master/views/leaking_ar_report.php
+application/modules/master/views/leaking_soa_statement.php
+application/modules/master/views/leakingarreport_printtopdf.php
+application/modules/master/views/month_customer_invoice.php
+application/modules/master/views/monthly_billing_report.php
+application/modules/master/views/monthly_income_report_analytic.php
+application/modules/master/views/monthly_income_report_printtopdf.php
+application/modules/master/views/monthlybillingreport_printtopdf.php
+application/modules/master/views/paymentmonthlycustomer_invoice.php
+application/modules/master/views/print_income_meter.php
+application/modules/master/views/print_income_month.php
+application/modules/master/views/print_meter.php
+application/modules/master/views/print_meter_month.php
+application/modules/master/views/print_monthly.php
+application/modules/master/views/print_paid_customer.php
+application/modules/master/views/print_unpaid_customer.php
+application/modules/master/views/qrcode.php
+application/modules/master/views/statementofaccount.php
+application/modules/master/views/statementofaccount_search.php
+application/modules/master/views/trialbalance.php
+application/modules/master/views/trialbalance_search.php
+
+===== MOBILE_DEFER (5) =====
+application/modules/master/views/mobile_dashboard.php
+application/modules/master/views/mobile_tickets.php
+application/modules/master/views/mobilenotifications.php
+application/modules/master/views/mobilenotifications_dashboard.php
+application/modules/master/views/mobilenotifications_settings.php
+
+===== LOGIN_OTHER (4) =====
+application/modules/master/views/change-password.php
+application/modules/master/views/change-username.php
+application/modules/master/views/forgot-password.php
+application/modules/master/views/login.php
+
+===== AJAX_FRAGMENT (1) =====
+application/modules/master/views/addpaymentcustomer_add _ajax.php
+
+===== PRINT_STANDALONE (7) =====
+application/modules/master/views/addexpenses-print.php
+application/modules/master/views/addpaymentcustomer-print.php
+application/modules/master/views/customer-print.php
+application/modules/master/views/leakingentry_print_forms.php
+application/modules/master/views/paymentmonthlycustomer-print.php
+application/modules/master/views/payroles-print.php
+application/modules/master/views/print_receipt.php
+
+===== LAYOUT_PARTIAL (3) =====
+application/modules/master/views/header.php
+application/modules/master/views/include.php
+application/modules/master/views/mobile_footer.php
+
+===== BACKUP_COPY (4) =====
+application/modules/master/views/addcustomer_income_reportsearch.php- 04-aug
+application/modules/master/views/addpaymentcustomer.php-05-aug
+application/modules/master/views/paymentmonthlycustomer.php-05-aug
+application/modules/master/views/trialbalance_search - Copy.php
+
+===== OTHER (8) =====
+application/modules/master/views/addcustomer_edit_modal.php  [form-no-old-markers]
+application/modules/master/views/addcustomer_view_modal.php  [form-no-old-markers]
+application/modules/master/views/addexpenses_invoice.php
+application/modules/master/views/main-category-add.php  [form-no-old-markers]
+application/modules/master/views/main-category-edit.php  [form-no-old-markers]
+application/modules/master/views/main-category-view.php  [form-no-old-markers]
+application/modules/master/views/order-invoice.php
+application/modules/master/views/responsibilities-permissions.php  [form-no-old-markers]
+
+===== APPLICATION/VIEWS (17) =====
+application/views/admin-includes/dashboard_header.php  []
+application/views/admin-includes/header.php  [SA4]
+application/views/admin-includes/include.php  [oldDT]
+application/views/admin-includes/js.php  []
+application/views/admin-includes/mobile_header.php  []
+application/views/admin-includes/mobile_navigation.php  []
+application/views/admin-includes/navigation.php  [SA4]
+application/views/admin-includes/navigation.php26july  []
+application/views/admin-includes/navigation.php-27 july  []
+application/views/admin-includes/printpage.php  []
+application/views/admin-includes/public_header.php  [#main]
+application/views/admin-includes/seo-standards.php  []
+application/views/buttons.php  []
+application/views/ebs/Rc43.php  []
+application/views/incharge-includes/header.php  []
+application/views/incharge-includes/printpage.php  []
+application/views/incharge-includes/seo-standards.php  []
+application/views/index.html  []

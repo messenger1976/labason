@@ -1,36 +1,38 @@
-				<div class="main-content">
-					<div class="breadcrumbs" id="breadcrumbs">
-						<script type="text/javascript">
-							try{ace.settings.check('breadcrumbs' , 'fixed')}catch(e){}
-						</script>
-						<ul class="breadcrumb">
-							<li>
-								<i class="icon-home home-icon"></i>
-								<a href="#">Home</a>
-							</li>
-                          
-							<li>
-								<a href="<?php echo ADMIN_URL;?>payrols">payrols-Edit</a>
-							</li>
-							<li class="active">Edit</li>
-						</ul><!-- .breadcrumb -->
+<main id="js-page-content" role="main" class="page-content">
+	<ol class="breadcrumb page-breadcrumb">
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>">Home</a></li>
+		<li class="breadcrumb-item active">Page</li>
+		<li class="position-absolute pos-top pos-right d-sm-block"><span class="js-get-date"></span></li>
+	</ol>
+	<div class="subheader">
+		<h1 class="subheader-title">
+			<i class="subheader-icon fal fa-th-list"></i>
+			Manage <span class="fw-300">Payrols Edit</span>
+		</h1>
+	</div>
+
+	<div class="row">
+		<div class="col-xl-12">
+			<div class="panel">
+				<div class="panel-hdr"><h2>Payrols Edit</h2>
+					<div class="panel-toolbar">
+						<button class="btn btn-panel" data-action="panel-collapse" data-toggle="tooltip" data-offset="0,10" data-original-title="Collapse"></button>
+						<button class="btn btn-panel" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
 					</div>
-					<div class="page-content">
-							<h3 class="header smaller lighter blue">
-								payrols-Edit 
-							</h3>
-						<div class="row">
+				</div>
+				<div class="panel-container show"><div class="panel-content">
+<div class="row">
 														<form class="form-horizontal" role="form" name="myform" id="myform" method="post" action="" enctype="multipart/form-data">
-                      <div class="col-xs-12">
-							<div class="col-xs-5">
+                      <div class="col-12">
+							<div class="col-5">
 								<!-- PAGE CONTENT BEGINS -->
 							<?php if($msg != ''){?>
-                            <div class="alert alert-block alert-success">
+                            <div class="alert alert-success alert-dismissible fade show">
                                 <button type="button" class="close" data-dismiss="alert">
-                                <i class="icon-remove"></i>
+                                <i class="fal fa-times"></i>
                                 </button>
                                 <p>
-                                    <i class="icon-ok"></i>
+                                    <i class="fal fa-check"></i>
                                     <?php echo $msg?$msg:'';?>
                                 </p>
                             </div>
@@ -38,7 +40,7 @@
 							<div class="form-group">
 										<label class="col-sm-4 control-label no-padding-right" for="form-field-1">Name: </label>
 										<div class="col-sm-8">
-											 <select name="name" id="name" class="col-xs-10 col-sm-10" required>
+											 <select name="name" id="name" class="col-10 col-sm-10" required>
                                             <option value="">--Select--</option>
 											<?php foreach($addemployee as $key => $value){ ?>
 											 <option value="<?php  echo $value['employee_id']; ?>" <?php if($record['employee_id']==$value['Employee_id']){ ?> selected <?php } ?>><?php  echo $value['employee_id']; ?></option>
@@ -49,14 +51,14 @@
                                 <div class="form-group">
 										<label class="col-sm-4 control-label no-padding-right" for="form-field-1">  Amount : </label>
 										<div class="col-sm-8">
-											<input type="text" id="amount" name="amount" class="col-xs-10 col-sm-10" value="<?php echo $record['amount']; ?>" required/>
+											<input type="text" id="amount" name="amount" class="col-10 col-sm-10" value="<?php echo $record['amount']; ?>" required/>
                                             <?php echo form_error('amount'); ?>
 										</div>
 									</div>
 								   <div class="form-group">
 										<label class="col-sm-4 control-label no-padding-right" for="form-field-1">  Total : </label>
 										<div class="col-sm-8">
-											<input type="text" id="total" name="total" class="col-xs-10 col-sm-10" value="<?php echo $record['total']; ?>" required/>
+											<input type="text" id="total" name="total" class="col-10 col-sm-10" value="<?php echo $record['total']; ?>" required/>
                                             <?php echo form_error('total'); ?>
 										</div>
 									</div>
@@ -64,7 +66,7 @@
 									<div class="form-group">
 										<label class="col-sm-4 control-label no-padding-right" for="form-field-1">  Title : </label>
 										<div class="col-sm-8">
-											<input type="text" id="title" name="title" class="col-xs-10 col-sm-10" value="<?php echo $record['title']; ?>" required/>
+											<input type="text" id="title" name="title" class="col-10 col-sm-10" value="<?php echo $record['title']; ?>" required/>
                                             <?php echo form_error('title'); ?>
 										</div>
 									</div>
@@ -88,9 +90,9 @@
 									</div>
 						</div><!-- /.row -->
 						</form>
-					</div><!-- /.page-content -->
-				</div><!-- /.main-content -->
-			</div><!-- /.main-container-inner -->
+					<!-- /.page-content -->
+				<!-- /.main-content -->
+			<!-- /.main-container-inner -->
 			<a href="#" id="btn-scroll-up" class="btn-scroll-up btn btn-sm btn-inverse">
 				<i class="icon-double-angle-up icon-only bigger-110"></i>
 			</a>
@@ -205,3 +207,114 @@
 		</script>
 	</body>
 </html>
+
+				</div></div>
+			</div>
+		
+	
+</main>
+<?php include('footer.php'); ?>
+</body>
+</html>
+<script type="text/javascript">
+							try{ace.settings.check('breadcrumbs' , 'fixed')}catch(e){}
+						</script>
+<script type="text/javascript">
+			window.jQuery || document.write("<script src='<?php echo site_url();?>/assets/js/jquery-2.0.3.min.js'>"+"<"+"/script>");
+		</script>
+<script type="text/javascript">
+			if("ontouchend" in document) document.write("<script src='<?php echo site_url();?>/assets/js/jquery.mobile.custom.min.js'>"+"<"+"/script>");
+		</script>
+<script type="text/javascript">
+			jQuery(function($) {
+				
+				$('#editor').ace_wysiwyg({
+					toolbar:
+					[
+						{
+							name:'font',
+							title:'Custom tooltip',
+							values:['Some Special Font!','Arial','Verdana','Comic Sans MS','Custom Font!']
+						},
+						null,
+						{
+							name:'fontSize',
+							title:'Custom tooltip',
+							values:{1 : 'Size#1 Text' , 2 : 'Size#1 Text' , 3 : 'Size#3 Text' , 4 : 'Size#4 Text' , 5 : 'Size#5 Text'} 
+						},
+						null,
+						{name:'bold', title:'Custom tooltip'},
+						{name:'italic', title:'Custom tooltip'},
+						{name:'strikethrough', title:'Custom tooltip'},
+						{name:'underline', title:'Custom tooltip'},
+						null,
+						'insertunorderedlist',
+						'insertorderedlist',
+						'outdent',
+						'indent',
+						null,
+						{name:'justifyleft'},
+						{name:'justifycenter'},
+						{name:'justifyright'},
+						{name:'justifyfull'},
+						null,
+						{
+							name:'createLink',
+							placeholder:'Custom PlaceHolder Text',
+							button_class:'btn-purple',
+							button_text:'Custom TEXT'
+						},
+						{name:'unlink'},
+						null,
+						{
+							name:'insertImage',
+							placeholder:'Custom PlaceHolder Text',
+							button_class:'btn-inverse',
+							//choose_file:false,//hide choose file button
+							button_text:'Set choose_file:false to hide this',
+							button_insert_class:'btn-pink',
+							button_insert:'Insert Image'
+						},
+						null,
+						{
+							name:'foreColor',
+							title:'Custom Colors',
+							values:['red','green','blue','navy','orange'],
+							/**
+								You change colors as well
+							*/
+						},
+						/**null,
+						{
+							name:'backColor'
+						},*/
+						null,
+						{name:'undo'},
+						{name:'redo'},
+						null,
+						'viewSource'
+					],
+					//speech_button:false,//hide speech button on chrome
+					
+					'wysiwyg': {
+						hotKeys : {} //disable hotkeys
+					}
+					
+				}).prev().addClass('wysiwyg-style2');
+				
+				//handle form onsubmit event to send the wysiwyg's content to server
+				$('#myform').on('submit', function(){
+					
+					//put the editor's html content inside the hidden input to be sent to server
+					$('input[name=description]' , this).val($('#editor').html());
+					
+					//but for now we will show it inside a modal box
+					//$('#modal-wysiwyg-editor').modal('show');
+					//$('#wysiwyg-editor-value').css({'width':'99%', 'height':'200px'}).val($('#editor').html());
+					
+					return true;
+				});
+				
+			})
+		</script>
+

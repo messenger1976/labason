@@ -345,26 +345,21 @@ class addbillingperiod extends CI_Controller {
 		$this->db->join('tbl_addcustomer', 'tbl_addcustomer_reading.customer_id=tbl_addcustomer.customer_id','left');
 		$this->db->join('tbl_zone', 'tbl_addcustomer.zone=tbl_zone.id','left');
 		$this->db->join('tbl_classification', 'tbl_addcustomer.classification=tbl_classification.class_id','left');
-		
-		if($billingmonth !='all' && $billingyear !='all'){
+		$this->db->join('tbl_billing_period', 'tbl_addcustomer_reading.month=tbl_billing_period.bp_period_month AND tbl_addcustomer_reading.year=tbl_billing_period.bp_period_year AND tbl_addcustomer.zone=tbl_billing_period.bp_zone_id','left');
+
+		if($zone != '' && $zone != '0' && $zone != 'all'){
+			$this->db->where("tbl_addcustomer.zone", $zone);
+		}
+
+		if($billingmonth != '' && $billingmonth != '0' && $billingmonth != 'all' && $billingyear != '' && $billingyear != '0' && $billingyear != 'all'){
 			$this->db->where("tbl_addcustomer_reading.month",$billingmonth);
 			$this->db->where("tbl_addcustomer_reading.year",$billingyear);
 		}
-		
-		
-			
-		
-		
+
 		$this->db->order_by('tbl_addcustomer.last_name','ASC');
 		$this->db->order_by('tbl_addcustomer.first_name','ASC');
 		$query = $this->db->get();
-		
 
-
-
-
-		
-		
 		$this->load->helper('csv');
 		query_to_csv($query, TRUE, $this->excelfilename.'-'.date("d-m-Y").'.csv');
 	}

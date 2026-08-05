@@ -1,245 +1,212 @@
-<!DOCTYPE html>
-<!-- MAIN PANEL -->
-		<div id="main" role="main">
+<?php
+	$income1 = $this->my_model->get_income_metercustomer();
+	extract($income1);
+	$income2 = $this->my_model->get_income_monthlycustomer();
+	extract($income2);
+	$intotal = $total1 + $total2;
 
-			<!-- RIBBON -->
-			<div id="ribbon">
+	$expense1 = $this->my_model->get_outcome_expenses();
+	extract($expense1);
+	$expense2 = $this->my_model->get_outcome_payroll();
+	extract($expense2);
+	$extotal = $extotal1 + $extotal2;
 
-				<span class="ribbon-button-alignment"> 
-					<span id="refresh" class="btn btn-ribbon" data-action="resetWidgets" data-title="refresh"  rel="tooltip" data-placement="bottom" data-original-title="<i class='text-warning fa fa-warning'></i> Warning! This will reset all your widget settings." data-html="true">
-						<i class="fa fa-refresh"></i>
-					</span> 
+	$total_customer = $this->my_model->total_customer();
+	extract($total_customer);
+?>
+<main id="js-page-content" role="main" class="page-content">
+	<ol class="breadcrumb page-breadcrumb">
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>">Home</a></li>
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>addcustomer/search/">Search Customer</a></li>
+		<li class="breadcrumb-item active">List View</li>
+		<li class="position-absolute pos-top pos-right d-none d-sm-block"><span class="js-get-date"></span></li>
+	</ol>
+
+	<div class="subheader">
+		<h1 class="subheader-title">
+			<i class="subheader-icon fal fa-users"></i>
+			Manage <span class="fw-300">Customers</span>
+		</h1>
+		<div class="subheader-block d-lg-flex align-items-center">
+			<div class="d-inline-flex flex-column justify-content-center mr-3">
+				<span class="fw-300 fs-xs d-block opacity-50">
+					<small>INCOME</small>
 				</span>
-
-				<!-- breadcrumb -->
-				<ol class="breadcrumb">
-					<li><a href="<?php echo ADMIN_URL?>">Home</a></li>
-					<li><a href="<?php echo ADMIN_URL?>addcustomer/search/">Search Customer</a></li>
-					<li>List View</li>
-				</ol>
-				
+				<span class="fw-500 fs-xl d-block color-primary-500">
+					₱ <?php echo number_format($intotal, 2); ?>
+				</span>
 			</div>
-			<!-- END RIBBON -->
-           
-			<!-- MAIN CONTENT -->
-			<div id="content">
+			<span class="sparklines hidden-lg-down" sparkType="bar" sparkBarColor="#886ab5" sparkHeight="32px" sparkBarWidth="5px" values="3,4,3,6,7,3,3,6,2,6,4"></span>
+		</div>
+		<div class="subheader-block d-lg-flex align-items-center border-faded border-right-0 border-top-0 border-bottom-0 ml-3 pl-3">
+			<div class="d-inline-flex flex-column justify-content-center mr-3">
+				<span class="fw-300 fs-xs d-block opacity-50">
+					<small>EXPENSE</small>
+				</span>
+				<span class="fw-500 fs-xl d-block color-danger-500">
+					₱ <?php echo number_format($extotal, 2); ?>
+				</span>
+			</div>
+			<span class="sparklines hidden-lg-down" sparkType="bar" sparkBarColor="#fe6bb0" sparkHeight="32px" sparkBarWidth="5px" values="1,4,3,6,5,3,9,6,5,9,7"></span>
+		</div>
+		<div class="subheader-block d-lg-flex align-items-center border-faded border-right-0 border-top-0 border-bottom-0 ml-3 pl-3">
+			<div class="d-inline-flex flex-column justify-content-center mr-3">
+				<span class="fw-300 fs-xs d-block opacity-50">
+					<small>TOTAL CUSTOMER</small>
+				</span>
+				<span class="fw-500 fs-xl d-block color-success-500">
+					<?php echo (int) $count_id; ?>
+				</span>
+			</div>
+			<span class="sparklines hidden-lg-down" sparkType="bar" sparkBarColor="#1dc9b7" sparkHeight="32px" sparkBarWidth="5px" values="2,5,3,7,4,6,3,8,5,4,6"></span>
+		</div>
+	</div>
 
-				<div class="row">
-					<div class="col-xs-12 col-sm-7 col-md-7 col-lg-4">
-						<h1 class="page-title txt-color-blueDark"><i class="fa-fw fa fa-home"></i> View <span>> Customer </span></h1>
-					</div>
-					<div class="col-xs-12 col-sm-5 col-md-5 col-lg-8">
-						<ul id="sparks" class="">
-							<li class="sparks-info">
-							<?php 
-							     $income1 = $this->my_model->get_income_metercustomer();
-							     extract($income1);
-								 $income2 = $this->my_model->get_income_monthlycustomer();
-								 extract($income2);
-								 $intotal = $total1 + $total2;
-							?>
-								<h5> Income <span class="txt-color-blue">PHP <?php print_r(number_format($intotal,2));?></span></h5>
-								<div class="sparkline txt-color-blue hidden-mobile hidden-md hidden-sm">
-									
-								</div>
-							</li>
-							<?php
-							     $expense1 = $this->my_model->get_outcome_expenses();
-							     extract($expense1);
-								 $expense2 = $this->my_model->get_outcome_payroll();
-								 extract($expense2);
-								 $extotal = $extotal1 + $extotal2;
-							?>
-							<li class="sparks-info">
-								<h5>Expense <span class="txt-color-purple">PHP <?php print_r(number_format($extotal,2));?></span></h5>
-								<div class="sparkline txt-color-purple hidden-mobile hidden-md hidden-sm">
-									
-								</div>
-							</li>
-							<?php 
-							     $total_customer = $this->my_model->total_customer();
-							     extract($total_customer); 
-							?>
-							<li class="sparks-info">
-								<h5> Total Customer <span class="txt-color-greenDark">&nbsp;<?php print_r($count_id);?></span></h5>
-								<div class="sparkline txt-color-greenDark hidden-mobile hidden-md hidden-sm">
-									
-								</div>
-							</li>
-						</ul>
-					</div>
-				</div>
 				<!-- widget grid -->
 				<section id="widget-grid" class="">
+					<link rel="stylesheet" media="screen, print" href="<?php echo base_url(); ?>sa4/css/datagrid/datatables/datatables.bundle.css">
+					<link rel="stylesheet" media="screen, print" href="<?php echo base_url(); ?>sa4/css/formplugins/bootstrap-datepicker/bootstrap-datepicker.css">
 
 					<!-- row -->
 					<div class="row">
 				
 						<!-- NEW WIDGET START -->
-						<article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+						<div class="col-xl-12">
 				
-							<!-- Widget ID (each widget will need unique ID)-->
-							<div class="jarviswidget jarviswidget-color-darken" id="wid-id-0" data-widget-editbutton="false">
-								
-								<header style="height: 42px;">
-									<span class="widget-icon"> <i class="fa fa-users"></i> </span>
-								<p style="padding: 5px 0 0 45px;font-size: 16px;"><strong>Manage Customers</strong>
-								<button class="btn btn-sm btn-primary" style="float:right;"><a href="<?php echo ADMIN_URL?>addcustomer/add/" style="color: #fff;"><i class="fa fa-plus"></i> Add Customer</a></button>
-								</p>
-								
-
-								</header>
-				
-								<!-- widget div-->
-								<div>
-				
-									<!-- widget edit box -->
-									<div class="jarviswidget-editbox">
-										<!-- This area used as dropdown edit box -->
-				
+							<div id="panel-customers" class="panel">
+								<div class="panel-hdr">
+									<h2>
+										Customer <span class="fw-300"><i>Listing</i></span>
+									</h2>
+									<div class="panel-toolbar">
+										<button class="btn btn-panel" data-action="panel-collapse" data-toggle="tooltip" data-offset="0,10" data-original-title="Collapse"></button>
+										<button class="btn btn-panel" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
 									</div>
-									<!-- end widget edit box -->
-									<script type="text/javascript">
-                                        function deleteAllData(){ 
-                                            var checked_num = $('input[name="delete_ids[]"]:checked').length;
-                                            if (checked_num == 0) {
-                                                alert('Select Atleast One Check Box... ');
-                                                return false;
-                                            }else if (checked_num > 0){ 
-                                                if(confirm('Confirm Delete?')==true){
-                                                    //$('#careers').submit();
-                                                    return true;
-                                                }else{
-													return false;
-												}
-                                            }
-                                        }
-                                    </script>
-				                    <form method="post" action="<?php echo ADMIN_URL;?>addcustomer/multi_delete">
-										<!-- widget content -->
-										<div class="widget-body no-padding">
-										   <div class="row" style="margin: 10px 10px 0 10px;">
-											<div class="col-sm-3 col-md-2">
-												<label for="filter_zone" style="margin-bottom: 4px;">Filter by Zone:</label>
-												<select id="filter_zone" name="filter_zone" class="form-control">
+								</div>
+								<div class="panel-container show">
+									<div class="panel-content">
+										<div class="row mb-3 align-items-end">
+											<div class="col-sm-6 col-md-3 col-lg-2">
+												<label class="form-label" for="filter_zone">Filter by Zone</label>
+												<select id="filter_zone" name="filter_zone" class="form-control form-control-sm">
 													<option value="all">All</option>
 													<?php if(!empty($zone)) { foreach($zone as $z) { ?>
 													<option value="<?php echo $z['id']; ?>"><?php echo htmlspecialchars($z['zone']); ?></option>
 													<?php } } ?>
 												</select>
 											</div>
-										   </div>
-										   <table id="dt_basic" class="table table-striped table-bordered table-hover" width="100%">
-											    <thead>			                
-													<tr>
-														<th><input type="checkbox" class="ace" /></th>
-														<th>S No</th>
-														<th>Customer id</th>
-														<th>Name </th>
-														<!--<th>Gender</th>-->
-														<th>Address</th>
-														<!--th>Mobile2</th-->
-														<!--th>Address</th-->
-														<th>Meter Number</th>
-														<th>Zone</th>
-														<th>Classification</th>
-														<th>Status</th>
-														<th width="100">Action</th>
-													</tr>
-												</thead>
-												<tbody>
-													<!-- Data will be loaded via AJAX -->
-												</tbody>
-											</table>
-											
-
+											<div class="col-sm-6 col-md-9 col-lg-10 text-right">
+												<a href="<?php echo ADMIN_URL; ?>addcustomer/add/" class="btn btn-success btn-sm waves-effect waves-themed">
+													<i class="fal fa-plus mr-1"></i> Add Customer
+												</a>
+											</div>
 										</div>
-										<!-- end widget content -->
-				                    
-									 <!--<div>&nbsp;</div>
-									  <div class="row">
-									   <div class="col-lg-12">
-                                        	<input type="submit" class="btn btn-sm btn-primary" name="add" id="add" value="Delete All" onClick="return deleteAllData();" />
-                                         </div>
+										<table id="dt_basic" class="table table-bordered table-hover table-striped w-100">
+											<thead>
+												<tr>
+													<th style="width:28px;"><input type="checkbox" id="dt_select_all" class="ace" /></th>
+													<th>S No</th>
+													<th>Customer ID</th>
+													<th>Name</th>
+													<th>Address</th>
+													<th>Meter Number</th>
+													<th>Zone</th>
+													<th>Classification</th>
+													<th>Status</th>
+													<th style="width:120px;">Action</th>
+												</tr>
+											</thead>
+											<tbody>
+												<!-- Data will be loaded via AJAX -->
+											</tbody>
+										</table>
 									</div>
-									 <div>&nbsp;</div>-->
-									  </form> 
 								</div>
-								<!-- end widget div -->
-				
 							</div>
-							<!-- end widget -->
 				
-						</article>
+						</div>
 						<!-- WIDGET END -->
 				
 					</div>
 				
 					<!-- end row -->
 
-					
-
 				</section>
 				<!-- end widget grid -->
 
-			</div>
-			<!-- END MAIN CONTENT -->
-
-		</div>
-		<!-- END MAIN PANEL -->
+</main>
 		
 		<!-- Loading Modal Overlay -->
-		<div id="datatable-loading-modal" style="display: none;">
-			<div class="loading-overlay">
-				<div class="loading-content">
-					<div class="loading-spinner">
-						<i class="fa fa-spinner fa-spin fa-4x"></i>
-					</div>
-					<div class="loading-text">
-						<h3>Loading data...</h3>
-						<p>Please wait while we fetch the records</p>
+		<div id="datatable-loading-modal" class="dt-loading-modal" style="display: none;" aria-live="polite" aria-busy="true">
+			<div class="dt-loading-backdrop"></div>
+			<div class="dt-loading-card panel shadow-3">
+				<div class="panel-hdr bg-primary-600 bg-primary-gradient">
+					<h2 class="text-white">
+						Loading <span class="fw-300">Customers</span>
+					</h2>
+				</div>
+				<div class="panel-container show">
+					<div class="panel-content text-center py-4 px-4">
+						<div class="mb-3">
+							<div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+								<span class="sr-only">Loading...</span>
+							</div>
+						</div>
+						<h5 class="mb-1 fw-500" id="dt-loading-title">Fetching customer records</h5>
+						<p class="text-muted mb-3 fs-sm" id="dt-loading-subtitle">Please wait while we prepare the listing…</p>
+						<div class="progress progress-lg mb-2">
+							<div id="dt-loading-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary-500" role="progressbar" style="width: 8%;" aria-valuenow="8" aria-valuemin="0" aria-valuemax="100"></div>
+						</div>
+						<div class="d-flex justify-content-between fs-xs text-muted">
+							<span>Event progress</span>
+							<span id="dt-loading-percent">8%</span>
+						</div>
 					</div>
 				</div>
 			</div>
 		</div>
 		
 		<!-- Modal for Viewing Customer Details -->
-		<div class="modal fade" id="viewCustomerModal" tabindex="-1" role="dialog" aria-labelledby="viewCustomerModalLabel">
+		<div class="modal fade" id="viewCustomerModal" tabindex="-1" role="dialog" aria-labelledby="viewCustomerModalLabel" aria-hidden="true">
 			<div class="modal-dialog modal-lg" role="document">
 				<div class="modal-content">
 					<div class="modal-header">
-						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
-							&times;
+						<h5 class="modal-title" id="viewCustomerModalLabel">
+							<i class="fal fa-eye mr-1"></i> Customer Details
+						</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true"><i class="fal fa-times"></i></span>
 						</button>
-						<h4 class="modal-title" id="viewCustomerModalLabel">Customer Details</h4>
 					</div>
 					<div class="modal-body" id="viewCustomerModalBody">
-						<div class="text-center">
-							<i class="fa fa-spinner fa-spin fa-3x"></i>
-							<p>Loading customer details...</p>
+						<div class="text-center py-4">
+							<div class="spinner-border text-primary mb-2" role="status"></div>
+							<p class="mb-0 text-muted">Loading customer details...</p>
 						</div>
 					</div>
 					<div class="modal-footer">
-						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+						<button type="button" class="btn btn-secondary waves-effect waves-themed" data-dismiss="modal">Close</button>
 					</div>
 				</div>
 			</div>
 		</div>
 
 		<!-- Modal for Editing Customer Details -->
-		<div class="modal fade" id="editCustomerModal" tabindex="-1" role="dialog" aria-labelledby="editCustomerModalLabel">
-			<div class="modal-dialog modal-lg" role="document">
+		<div class="modal fade" id="editCustomerModal" tabindex="-1" role="dialog" aria-labelledby="editCustomerModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
 				<div class="modal-content">
 					<div class="modal-header">
-						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
-							&times;
+						<h5 class="modal-title" id="editCustomerModalLabel">
+							<i class="fal fa-edit mr-1"></i> Edit Customer
+						</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true"><i class="fal fa-times"></i></span>
 						</button>
-						<h4 class="modal-title" id="editCustomerModalLabel">Edit Customer</h4>
 					</div>
 					<div class="modal-body" id="editCustomerModalBody">
-						<div class="text-center">
-							<i class="fa fa-spinner fa-spin fa-3x"></i>
-							<p>Loading customer details...</p>
+						<div class="text-center py-4">
+							<div class="spinner-border text-primary mb-2" role="status"></div>
+							<p class="mb-0 text-muted">Loading customer details...</p>
 						</div>
 					</div>
 				</div>
@@ -247,29 +214,31 @@
 		</div>
 
 		<!-- Modal for Setting Customer Password -->
-		<div class="modal fade" id="passwordModal" tabindex="-1" role="dialog" aria-labelledby="passwordModalLabel">
-			<div class="modal-dialog">
+		<div class="modal fade" id="passwordModal" tabindex="-1" role="dialog" aria-labelledby="passwordModalLabel" aria-hidden="true">
+			<div class="modal-dialog" role="document">
 				<div class="modal-content">
 					<div class="modal-header">
-						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
-							&times;
+						<h5 class="modal-title" id="passwordModalLabel">
+							<i class="fal fa-key mr-1"></i> Set Customer Login Password
+						</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true"><i class="fal fa-times"></i></span>
 						</button>
-						<h4 class="modal-title" id="passwordModalLabel">Set Customer Login Password</h4>
 					</div>
 					<div class="modal-body">
 						<form id="passwordForm">
 							<input type="hidden" id="modal_customer_id" name="customer_id" value="">
 							<div class="form-group">
-								<label for="modal_customer_code">Customer ID:</label>
+								<label class="form-label" for="modal_customer_code">Customer ID</label>
 								<input type="text" class="form-control" id="modal_customer_code" readonly>
 							</div>
 							<div class="form-group">
-								<label for="modal_password">Password: <span class="text-danger">*</span></label>
+								<label class="form-label" for="modal_password">Password <span class="text-danger">*</span></label>
 								<input type="password" class="form-control" id="modal_password" name="password" required>
-								<small class="help-block">Enter a password for customer login</small>
+								<small class="form-text text-muted">Enter a password for customer login</small>
 							</div>
 							<div class="form-group">
-								<label for="modal_confirm_password">Confirm Password: <span class="text-danger">*</span></label>
+								<label class="form-label" for="modal_confirm_password">Confirm Password <span class="text-danger">*</span></label>
 								<input type="password" class="form-control" id="modal_confirm_password" name="confirm_password" required>
 							</div>
 							<div id="password_error" class="alert alert-danger" style="display:none;"></div>
@@ -277,354 +246,269 @@
 						</form>
 					</div>
 					<div class="modal-footer">
-						<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-						<button type="button" class="btn btn-primary" id="savePasswordBtn">Save Password</button>
+						<button type="button" class="btn btn-secondary waves-effect waves-themed" data-dismiss="modal">Cancel</button>
+						<button type="button" class="btn btn-primary waves-effect waves-themed" id="savePasswordBtn">Save Password</button>
 					</div>
 				</div>
 			</div>
 		</div>
 
 		<?php include('footer.php');?>
+		<script src="<?php echo base_url(); ?>sa4/js/statistics/sparkline/sparkline.bundle.js"></script>
+		<script src="<?php echo base_url(); ?>sa4/js/formplugins/bootstrap-datepicker/bootstrap-datepicker.js"></script>
 
 	</body>
 
 </html>
 <style>
-	/* Loading Modal Styles */
-	#datatable-loading-modal {
+	.dt-loading-modal {
 		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		z-index: 9999;
-		background-color: rgba(0, 0, 0, 0.7);
-		backdrop-filter: blur(2px);
-		display: none; /* Hidden by default, shown via JavaScript */
-	}
-	
-	.loading-overlay {
-		display: flex;
-		justify-content: center;
+		inset: 0;
+		z-index: 1055;
+		display: none;
 		align-items: center;
-		width: 100%;
-		height: 100%;
-		min-height: 100vh;
+		justify-content: center;
 	}
-	
-	.loading-content {
-		background: #ffffff;
-		border-radius: 10px;
-		padding: 40px 60px;
-		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-		text-align: center;
-		min-width: 300px;
-		border: 3px solid #3498db;
+	.dt-loading-modal.is-visible {
+		display: flex !important;
 	}
-	
-	.loading-spinner {
-		margin-bottom: 20px;
-		color: #3498db;
+	.dt-loading-backdrop {
+		position: absolute;
+		inset: 0;
+		background: rgba(33, 37, 41, 0.45);
+		backdrop-filter: blur(3px);
 	}
-	
-	.loading-spinner .fa-spinner {
-		animation: spin 1s linear infinite;
-	}
-	
-	@keyframes spin {
-		0% { transform: rotate(0deg); }
-		100% { transform: rotate(360deg); }
-	}
-	
-	.loading-text h3 {
-		color: #2c3e50;
-		margin: 0 0 10px 0;
-		font-size: 24px;
-		font-weight: bold;
-	}
-	
-	.loading-text p {
-		color: #7f8c8d;
+	.dt-loading-card {
+		position: relative;
+		z-index: 1;
+		width: min(420px, calc(100vw - 2rem));
 		margin: 0;
-		font-size: 14px;
+		border: 0;
+		overflow: hidden;
 	}
-	
-	/* Ensure table is visible but dimmed when loading */
+	.dt-loading-card .panel-hdr {
+		border-bottom: 0;
+	}
+	.dt-loading-card .progress {
+		height: 1rem;
+		border-radius: 999px;
+		background: rgba(136, 106, 181, 0.15);
+		overflow: hidden;
+	}
+	.dt-loading-card .progress-bar {
+		transition: width 0.25s ease;
+		border-radius: 999px;
+	}
 	.dataTables_wrapper {
 		position: relative;
 	}
-	
 	.dataTables_wrapper.processing {
-		opacity: 0.5;
+		opacity: 0.55;
 		pointer-events: none;
+		filter: grayscale(0.15);
+	}
+	/* Slim top event bar on the listing panel while processing */
+	#panel-customers.panel-loading::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		height: 3px;
+		width: 100%;
+		z-index: 5;
+		background: linear-gradient(90deg, transparent, var(--theme-primary, #886ab5), transparent);
+		background-size: 40% 100%;
+		animation: dt-panel-shimmer 1.1s linear infinite;
+	}
+	#panel-customers {
+		position: relative;
+	}
+	@keyframes dt-panel-shimmer {
+		0% { background-position: -40% 0; }
+		100% { background-position: 140% 0; }
 	}
 </style>
 <!-- PAGE RELATED PLUGIN(S) -->
-		<script src="<?php echo base_url();?>js/plugin/datatables/jquery.dataTables.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.colVis.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.tableTools.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.bootstrap.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatable-responsive/datatables.responsive.min.js"></script>
+		<script src="<?php echo base_url(); ?>sa4/js/datagrid/datatables/datatables.bundle.js"></script>
 		<script type="text/javascript">
-		
-		// DO NOT REMOVE : GLOBAL FUNCTIONS!
-		
 		$(document).ready(function() {
-			
 			pageSetUp();
-			
-			// Show loading modal immediately on page load
-			$('#datatable-loading-modal').show();
-			$('.dataTables_wrapper').addClass('processing');
-			
-			/* // DOM Position key index //
-		
-			l - Length changing (dropdown)
-			f - Filtering input (search)
-			t - The Table! (datatable)
-			i - Information (records)
-			p - Pagination (paging)
-			r - pRocessing 
-			< and > - div elements
-			<"#id" and > - div with an id
-			<"class" and > - div with a class
-			<"#id.class" and > - div with an id and class
-			
-			Also see: http://legacy.datatables.net/usage/features
-			*/	
-	
-			/* BASIC - Server-side Processing */
-				var responsiveHelper_dt_basic = undefined;
-				var responsiveHelper_datatable_fixed_column = undefined;
-				var responsiveHelper_datatable_col_reorder = undefined;
-				var responsiveHelper_datatable_tabletools = undefined;
-				
-				var breakpointDefinition = {
-					tablet : 1024,
-					phone : 480
-				};
-				
-				var isInitialLoad = true;
-	
-				var table = $('#dt_basic').DataTable({
-					"processing": true,
-					"serverSide": true,
-					"ajax": {
-						"url": "<?php echo ADMIN_URL;?>addcustomer/get_datatable_data",
-						"type": "POST",
-						"data": function(d) {
-							d.zone = ($('#filter_zone').length ? $('#filter_zone').val() : '') || 'all';
-						}
-					},
-					"columns": [
-						{ "data": 0, "orderable": false },
-						{ "data": 1, "orderable": false },
-						{ "data": 2, "orderable": true },
-						{ "data": 3, "orderable": true },
-						{ "data": 4, "orderable": true },
-						{ "data": 5, "orderable": true },
-						{ "data": 6, "orderable": true },
-						{ "data": 7, "orderable": true },
-						{ "data": 8, "orderable": true },
-						{ "data": 9, "orderable": false }
-					],
-					"order": [[6, 'asc'], [2, 'asc']],
-					"pageLength": 100,
-					"lengthMenu": [[10, 25, 50, 100], [10, 25, 50, 100]],
-					"searchDelay": 999999, // Disable auto-search on typing
-					"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-12 hidden-xs'l>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
-					"autoWidth" : true,
-			        "oLanguage": {
-					    "sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>',
-						"sProcessing": ""
-					},
-					"preDrawCallback" : function() {
-						// Initialize the responsive datatables helper once.
-						if (!responsiveHelper_dt_basic) {
-							responsiveHelper_dt_basic = new ResponsiveDatatablesHelper($('#dt_basic'), breakpointDefinition);
-						}
-					},
-					"rowCallback" : function(nRow) {
-						responsiveHelper_dt_basic.createExpandIcon(nRow);
-					},
-					"drawCallback" : function(oSettings) {
-						responsiveHelper_dt_basic.respond();
-						// Hide loading modal after first data load
-						if (isInitialLoad) {
-							isInitialLoad = false;
-							setTimeout(function() {
-								$('#datatable-loading-modal').fadeOut(200);
-								$('.dataTables_wrapper').removeClass('processing');
-							}, 300);
-						}
-					}
-				});
-				
-				// Custom search handling: only search on Enter key or blur
-				var searchInput = $('.dataTables_filter input');
-				var searchTimeout = null;
-				
-				// Remove default search event handlers
-				searchInput.off('keyup.DT input.DT');
-				
-				// Handle Enter key press
-				searchInput.on('keypress', function(e) {
-					if (e.which === 13) { // Enter key
-						e.preventDefault();
-						var searchValue = $(this).val();
-						table.search(searchValue).draw();
-					}
-				});
-				
-				// Handle blur event (when input loses focus)
-				searchInput.on('blur', function() {
-					var searchValue = $(this).val();
-					table.search(searchValue).draw();
-				});
-				
-				// Show/hide loading modal based on processing state
-				table.on('processing.dt', function(e, settings, processing) {
-					if (processing) {
-						// Only fade in if not already visible (to avoid flicker on initial load)
-						if (!$('#datatable-loading-modal').is(':visible')) {
-							$('#datatable-loading-modal').fadeIn(200);
-						}
-						$('.dataTables_wrapper').addClass('processing');
-					} else {
-						// Only fade out if it's not the initial load
-						if (!isInitialLoad) {
-							$('#datatable-loading-modal').fadeOut(200);
-							$('.dataTables_wrapper').removeClass('processing');
-						}
-					}
-				});
 
-				// Reload table when Zone filter changes
-				$('#filter_zone').on('change', function() {
-					table.ajax.reload();
+			var isInitialLoad = true;
+			var progressTimer = null;
+			var progressValue = 8;
+
+			function setProgress(pct) {
+				progressValue = Math.max(0, Math.min(100, pct));
+				$('#dt-loading-progress-bar')
+					.css('width', progressValue + '%')
+					.attr('aria-valuenow', Math.round(progressValue));
+				$('#dt-loading-percent').text(Math.round(progressValue) + '%');
+			}
+
+			function startProgress() {
+				clearInterval(progressTimer);
+				setProgress(8);
+				$('#dt-loading-title').text('Fetching customer records');
+				$('#dt-loading-subtitle').text('Please wait while we prepare the listing…');
+				progressTimer = setInterval(function() {
+					if (progressValue < 90) {
+						setProgress(progressValue + Math.max(0.6, (90 - progressValue) * 0.08));
+					}
+				}, 180);
+			}
+
+			function completeProgress(done) {
+				clearInterval(progressTimer);
+				setProgress(100);
+				$('#dt-loading-title').text('Almost done');
+				$('#dt-loading-subtitle').text('Rendering customer listing…');
+				setTimeout(done, 220);
+			}
+
+			function showLoader() {
+				$('#datatable-loading-modal').addClass('is-visible').show();
+				$('#panel-customers').addClass('panel-loading');
+				$('.dataTables_wrapper').addClass('processing');
+				startProgress();
+			}
+
+			function hideLoader() {
+				completeProgress(function() {
+					$('#datatable-loading-modal').removeClass('is-visible').fadeOut(180);
+					$('#panel-customers').removeClass('panel-loading');
+					$('.dataTables_wrapper').removeClass('processing');
+					setTimeout(function() { setProgress(8); }, 250);
 				});
-	
-			/* END BASIC */
-			
-			/* COLUMN FILTER  */
-		    var otable = $('#datatable_fixed_column').DataTable({
-		    	//"bFilter": false,
-		    	//"bInfo": false,
-		    	//"bLengthChange": false
-		    	//"bAutoWidth": false,
-		    	//"bPaginate": false,
-		    	//"bStateSave": true // saves sort state using localStorage
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6 hidden-xs'f><'col-sm-6 col-xs-12 hidden-xs'<'toolbar'>>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
-				"autoWidth" : true,
-				"oLanguage": {
-					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-				},
-				"preDrawCallback" : function() {
-					// Initialize the responsive datatables helper once.
-					if (!responsiveHelper_datatable_fixed_column) {
-						responsiveHelper_datatable_fixed_column = new ResponsiveDatatablesHelper($('#datatable_fixed_column'), breakpointDefinition);
+			}
+
+			showLoader();
+
+			var table = $('#dt_basic').DataTable({
+				processing: true,
+				serverSide: true,
+				responsive: true,
+				stateSave: false,
+				pageLength: 100,
+				lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+				order: [[6, 'asc'], [2, 'asc']],
+				searchDelay: 999999,
+				ajax: {
+					url: "<?php echo ADMIN_URL; ?>addcustomer/get_datatable_data",
+					type: "POST",
+					data: function(d) {
+						d.zone = ($('#filter_zone').length ? $('#filter_zone').val() : '') || 'all';
 					}
 				},
-				"rowCallback" : function(nRow) {
-					responsiveHelper_datatable_fixed_column.createExpandIcon(nRow);
-				},
-				"drawCallback" : function(oSettings) {
-					responsiveHelper_datatable_fixed_column.respond();
-				}		
-			
-		    });
-		    
-		    // custom toolbar
-		    $("div.toolbar").html('<div class="text-right"><img src="img/logo.png" alt="SmartAdmin" style="width: 111px; margin-top: 3px; margin-right: 10px;"></div>');
-		    	   
-		    // Apply the filter
-		    $("#datatable_fixed_column thead th input[type=text]").on( 'keyup change', function () {
-		    	
-		        otable
-		            .column( $(this).parent().index()+':visible' )
-		            .search( this.value )
-		            .draw();
-		            
-		    } );
-		    /* END COLUMN FILTER */   
-	    
-			/* COLUMN SHOW - HIDE */
-			$('#datatable_col_reorder').dataTable({
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-6 hidden-xs'C>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-sm-6 col-xs-12'p>>",
-				"autoWidth" : true,
-				"oLanguage": {
-					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-				},
-				"preDrawCallback" : function() {
-					// Initialize the responsive datatables helper once.
-					if (!responsiveHelper_datatable_col_reorder) {
-						responsiveHelper_datatable_col_reorder = new ResponsiveDatatablesHelper($('#datatable_col_reorder'), breakpointDefinition);
+				columns: [
+					{ data: 0, orderable: false, searchable: false, className: 'text-center' },
+					{ data: 1, orderable: false, className: 'text-center' },
+					{ data: 2, orderable: true },
+					{ data: 3, orderable: true },
+					{ data: 4, orderable: true },
+					{ data: 5, orderable: true },
+					{ data: 6, orderable: true },
+					{ data: 7, orderable: true },
+					{ data: 8, orderable: true, className: 'text-center' },
+					{ data: 9, orderable: false, searchable: false, className: 'text-center' }
+				],
+				dom: "<'row mb-3'<'col-sm-12 col-md-6 d-flex align-items-center justify-content-start'f><'col-sm-12 col-md-6 d-flex align-items-center justify-content-end'B>>" +
+					"<'row'<'col-sm-12'tr>>" +
+					"<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+				language: {
+					processing: '',
+					search: '',
+					searchPlaceholder: 'Search customers...',
+					lengthMenu: '_MENU_',
+					info: 'Showing _START_ to _END_ of _TOTAL_ customers',
+					infoEmpty: 'No customers found',
+					zeroRecords: 'No matching customers',
+					paginate: {
+						first: '<i class="fal fa-chevron-double-left"></i>',
+						last: '<i class="fal fa-chevron-double-right"></i>',
+						next: '<i class="fal fa-chevron-right"></i>',
+						previous: '<i class="fal fa-chevron-left"></i>'
 					}
 				},
-				"rowCallback" : function(nRow) {
-					responsiveHelper_datatable_col_reorder.createExpandIcon(nRow);
-				},
-				"drawCallback" : function(oSettings) {
-					responsiveHelper_datatable_col_reorder.respond();
-				}			
-			});
-			
-			/* END COLUMN SHOW - HIDE */
-	
-			/* TABLETOOLS */
-			$('#datatable_tabletools').dataTable({
-				
-				// Tabletools options: 
-				//   https://datatables.net/extensions/tabletools/button_options
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-6 hidden-xs'T>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-sm-6 col-xs-12'p>>",
-				"oLanguage": {
-					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-				},		
-		        "oTableTools": {
-		        	 "aButtons": [
-		             "copy",
-		             "csv",
-		             "xls",
-		                {
-		                    "sExtends": "pdf",
-		                    "sTitle": "SmartAdmin_PDF",
-		                    "sPdfMessage": "SmartAdmin PDF Export",
-		                    "sPdfSize": "letter"
-		                },
-		             	{
-	                    	"sExtends": "print",
-	                    	"sMessage": "Generated by SmartAdmin <i>(press Esc to close)</i>"
-	                	}
-		             ],
-		            "sSwfPath": "js/plugin/datatables/swf/copy_csv_xls_pdf.swf"
-		        },
-				"autoWidth" : true,
-				"preDrawCallback" : function() {
-					// Initialize the responsive datatables helper once.
-					if (!responsiveHelper_datatable_tabletools) {
-						responsiveHelper_datatable_tabletools = new ResponsiveDatatablesHelper($('#datatable_tabletools'), breakpointDefinition);
+				buttons: [
+					{
+						extend: 'copyHtml5',
+						text: '<i class="fal fa-copy mr-1"></i> Copy',
+						className: 'btn-primary btn-sm mr-1',
+						exportOptions: { columns: [1, 2, 3, 4, 5, 6, 7, 8] }
+					},
+					{
+						extend: 'excelHtml5',
+						text: '<i class="fal fa-file-excel mr-1"></i> Excel',
+						className: 'btn-primary btn-sm mr-1',
+						exportOptions: { columns: [1, 2, 3, 4, 5, 6, 7, 8] }
+					},
+					{
+						extend: 'csvHtml5',
+						text: '<i class="fal fa-file-csv mr-1"></i> CSV',
+						className: 'btn-primary btn-sm mr-1',
+						exportOptions: { columns: [1, 2, 3, 4, 5, 6, 7, 8] }
+					},
+					{
+						extend: 'pdfHtml5',
+						text: '<i class="fal fa-file-pdf mr-1"></i> PDF',
+						className: 'btn-primary btn-sm mr-1',
+						exportOptions: { columns: [1, 2, 3, 4, 5, 6, 7, 8] }
+					},
+					{
+						extend: 'print',
+						text: '<i class="fal fa-print mr-1"></i> Print',
+						className: 'btn-primary btn-sm mr-1',
+						exportOptions: { columns: [1, 2, 3, 4, 5, 6, 7, 8] }
+					},
+					{
+						text: '<i class="fal fa-sync mr-1"></i> Refresh',
+						className: 'btn-primary btn-sm',
+						action: function(e, dt) {
+							dt.ajax.reload(null, false);
+						}
 					}
-				},
-				"rowCallback" : function(nRow) {
-					responsiveHelper_datatable_tabletools.createExpandIcon(nRow);
-				},
-				"drawCallback" : function(oSettings) {
-					responsiveHelper_datatable_tabletools.respond();
+				],
+				drawCallback: function() {
+					if (isInitialLoad) {
+						isInitialLoad = false;
+						hideLoader();
+					}
 				}
 			});
-			
-			/* END TABLETOOLS */
-		
-		})
 
+			// Search only on Enter or blur (keeps previous UX)
+			var searchInput = $('.dataTables_filter input');
+			searchInput.off('keyup.DT search.DT input.DT paste.DT cut.DT');
+			searchInput.on('keypress', function(e) {
+				if (e.which === 13) {
+					e.preventDefault();
+					table.search($(this).val()).draw();
+				}
+			});
+			searchInput.on('blur', function() {
+				table.search($(this).val()).draw();
+			});
+
+			table.on('processing.dt', function(e, settings, processing) {
+				if (processing) {
+					if (!$('#datatable-loading-modal').hasClass('is-visible')) {
+						showLoader();
+					}
+				} else if (!isInitialLoad) {
+					hideLoader();
+				}
+			});
+
+			$('#filter_zone').on('change', function() {
+				table.ajax.reload();
+			});
+
+			$('#dt_select_all').on('change', function() {
+				var checked = $(this).is(':checked');
+				$('#dt_basic tbody input[name="delete_ids[]"]').prop('checked', checked);
+			});
+		});
 		</script>
 
 		
@@ -636,7 +520,7 @@ $(document).ready(function() {
 		var customerId = $(this).data('customer-id');
 		
 		// Show loading state
-		$('#viewCustomerModalBody').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x"></i><p>Loading customer details...</p></div>');
+		$('#viewCustomerModalBody').html('<div class="text-center py-4"><div class="spinner-border text-primary mb-2" role="status"></div><p class="mb-0 text-muted">Loading customer details...</p></div>');
 		
 		// Show modal
 		$('#viewCustomerModal').modal('show');
@@ -660,7 +544,7 @@ $(document).ready(function() {
 		var customerId = $(this).data('customer-id');
 		
 		// Show loading state
-		$('#editCustomerModalBody').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x"></i><p>Loading customer details...</p></div>');
+		$('#editCustomerModalBody').html('<div class="text-center py-4"><div class="spinner-border text-primary mb-2" role="status"></div><p class="mb-0 text-muted">Loading customer details...</p></div>');
 		
 		// Show modal
 		$('#editCustomerModal').modal('show');

@@ -1,124 +1,120 @@
-<!-- PAGE FOOTER -->
-		<div class="page-footer">
-			<div class="row">
-				<div class="col-xs-12 col-sm-6">
-					<!--<span class="txt-color-white">SmartAdmin 1.8.2 <span class="hidden-xs"> - Web Application Framework</span> © 2014-2015</span>-->
-				</div>
-
-				<div class="col-xs-6 col-sm-6 text-right hidden-xs">
-					<div class="txt-color-white inline-block">
-						<i class="txt-color-blueLight hidden-mobile"><i class="fa fa-clock-o"></i> <strong>
-						<?php
-
-echo "Current timezone: " . date_default_timezone_get();
-// Output the current time in the Philippines
-echo " Current time: " . date('Y-m-d H:i:s');
-?>	
-						</strong> </i>
-						<div class="btn-group dropup">
-							<button class="btn btn-xs dropdown-toggle bg-color-blue txt-color-white" data-toggle="dropdown">
-								<i class="fa fa-link"></i> <span class="caret"></span>
-							</button>
-							<ul class="dropdown-menu pull-right text-left">
-								<li>
-									<div class="padding-5">
-										<p class="txt-color-darken font-sm no-margin">Download Progress</p>
-										<div class="progress progress-micro no-margin">
-											<div class="progress-bar progress-bar-success" style="width: 50%;"></div>
-										</div>
-									</div>
-								</li>
-								<li class="divider"></li>
-								<li>
-									<div class="padding-5">
-										<p class="txt-color-darken font-sm no-margin">Server Load</p>
-										<div class="progress progress-micro no-margin">
-											<div class="progress-bar progress-bar-success" style="width: 20%;"></div>
-										</div>
-									</div>
-								</li>
-								<li class="divider"></li>
-								<li>
-									<div class="padding-5">
-										<p class="txt-color-darken font-sm no-margin">Memory Load <span class="text-danger">*critical*</span></p>
-										<div class="progress progress-micro no-margin">
-											<div class="progress-bar progress-bar-danger" style="width: 70%;"></div>
-										</div>
-									</div>
-								</li>
-								<li class="divider"></li>
-								<li>
-									<div class="padding-5">
-										<button class="btn btn-block btn-default">refresh</button>
-									</div>
-								</li>
-							</ul>
+					<footer class="page-footer" role="contentinfo">
+						<div class="d-flex align-items-center flex-1 text-muted">
+							<span class="hidden-md-down fw-700">
+								<?php echo htmlspecialchars(trim((string)$this->session->userdata('admininfo_name')) ?: 'Billing System', ENT_QUOTES, 'UTF-8'); ?>
+								&copy; <?php echo date('Y'); ?>
+								<span class="hidden-sm-down"> · <?php echo date('Y-m-d H:i:s'); ?> (<?php echo date_default_timezone_get(); ?>)</span>
+							</span>
 						</div>
-					</div>
+					</footer>
+					<!-- Color profile refs used by SA4 app.bundle.js (rgb2hex) -->
+					<p id="js-color-profile" class="d-none">
+						<span class="color-primary-50"></span>
+						<span class="color-primary-100"></span>
+						<span class="color-primary-200"></span>
+						<span class="color-primary-300"></span>
+						<span class="color-primary-400"></span>
+						<span class="color-primary-500"></span>
+						<span class="color-primary-600"></span>
+						<span class="color-primary-700"></span>
+						<span class="color-primary-800"></span>
+						<span class="color-primary-900"></span>
+						<span class="color-info-50"></span>
+						<span class="color-info-100"></span>
+						<span class="color-info-200"></span>
+						<span class="color-info-300"></span>
+						<span class="color-info-400"></span>
+						<span class="color-info-500"></span>
+						<span class="color-info-600"></span>
+						<span class="color-info-700"></span>
+						<span class="color-info-800"></span>
+						<span class="color-info-900"></span>
+						<span class="color-danger-50"></span>
+						<span class="color-danger-100"></span>
+						<span class="color-danger-200"></span>
+						<span class="color-danger-300"></span>
+						<span class="color-danger-400"></span>
+						<span class="color-danger-500"></span>
+						<span class="color-danger-600"></span>
+						<span class="color-danger-700"></span>
+						<span class="color-danger-800"></span>
+						<span class="color-danger-900"></span>
+						<span class="color-warning-50"></span>
+						<span class="color-warning-100"></span>
+						<span class="color-warning-200"></span>
+						<span class="color-warning-300"></span>
+						<span class="color-warning-400"></span>
+						<span class="color-warning-500"></span>
+						<span class="color-warning-600"></span>
+						<span class="color-warning-700"></span>
+						<span class="color-warning-800"></span>
+						<span class="color-warning-900"></span>
+						<span class="color-success-50"></span>
+						<span class="color-success-100"></span>
+						<span class="color-success-200"></span>
+						<span class="color-success-300"></span>
+						<span class="color-success-400"></span>
+						<span class="color-success-500"></span>
+						<span class="color-success-600"></span>
+						<span class="color-success-700"></span>
+						<span class="color-success-800"></span>
+						<span class="color-success-900"></span>
+						<span class="color-fusion-50"></span>
+						<span class="color-fusion-100"></span>
+						<span class="color-fusion-200"></span>
+						<span class="color-fusion-300"></span>
+						<span class="color-fusion-400"></span>
+						<span class="color-fusion-500"></span>
+						<span class="color-fusion-600"></span>
+						<span class="color-fusion-700"></span>
+						<span class="color-fusion-800"></span>
+						<span class="color-fusion-900"></span>
+					</p>
 				</div>
 			</div>
 		</div>
-		<!-- END PAGE FOOTER -->
-		
-		<!--================================================== -->
+		<!-- END Page Wrapper -->
 
-		<!-- PACE LOADER - turn this on if you want ajax loading to show (caution: uses lots of memory on iDevices)-->
-		<!--<script data-pace-options='{ "restartOnRequestAfter": true }' src="js/plugin/pace/pace.min.js"></script>-->
+		<nav class="shortcut-menu d-none d-sm-block">
+			<input type="checkbox" class="menu-open" name="menu-open" id="menu_open" />
+			<label for="menu_open" class="menu-open-button">
+				<span class="app-shortcut-icon d-block"></span>
+			</label>
+			<a href="#" class="menu-item btn" data-toggle="tooltip" data-placement="left" title="Scroll Top" data-action="scroll-top">
+				<i class="fal fa-arrow-up"></i>
+			</a>
+			<a href="<?php echo site_url(); ?>master/logout" class="menu-item btn" data-toggle="tooltip" data-placement="left" title="Logout">
+				<i class="fal fa-sign-out"></i>
+			</a>
+			<a href="#" class="menu-item btn" data-action="app-fullscreen" data-toggle="tooltip" data-placement="left" title="Full Screen">
+				<i class="fal fa-expand"></i>
+			</a>
+			<a href="#" class="menu-item btn" data-action="app-print" data-toggle="tooltip" data-placement="left" title="Print page">
+				<i class="fal fa-print"></i>
+			</a>
+		</nav>
 
-		<!-- Link to Google CDN's jQuery + jQueryUI; fall back to local -->
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+		<script src="<?php echo base_url(); ?>sa4/js/vendors.bundle.js"></script>
 		<script>
-			if (!window.jQuery) {
-				document.write('<script src="<?php echo base_url();?>js/libs/jquery-2.1.1.min.js"><\/script>');
-			}
+			// SA4 rgb2hex crashes when .css('color') is undefined; harden it
+			(function () {
+				var orig = window.rgb2hex;
+				if (typeof orig === 'function') {
+					window.rgb2hex = function (rgb) {
+						if (!rgb || typeof rgb !== 'string') {
+							return null;
+						}
+						try {
+							return orig(rgb);
+						} catch (e) {
+							return null;
+						}
+					};
+				}
+			})();
 		</script>
-
-		<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
-		<script>
-			if (!window.jQuery.ui) {
-				document.write('<script src="<?php echo base_url();?>js/libs/jquery-ui-1.10.3.min.js"><\/script>');
-			}
-		</script>
-
-		<!-- IMPORTANT: APP CONFIG -->
-		<script src="<?php echo base_url();?>js/app.config.js"></script>
-
-		<!-- JS TOUCH : include this plugin for mobile drag / drop touch events-->
-		<script src="<?php echo base_url();?>js/plugin/jquery-touch/jquery.ui.touch-punch.min.js"></script> 
-
-		<!-- BOOTSTRAP JS -->
-		<script src="<?php echo base_url();?>js/bootstrap/bootstrap.min.js"></script>
-
-		<!-- CUSTOM NOTIFICATION -->
-		<script src="<?php echo base_url();?>js/notification/SmartNotification.min.js"></script>
-
-		<!-- JARVIS WIDGETS -->
-		<script src="<?php echo base_url();?>js/smartwidgets/jarvis.widget.min.js"></script>
-
-		<!-- SPARKLINES -->
-		<script src="<?php echo base_url();?>js/plugin/sparkline/jquery.sparkline.min.js"></script>
-
-		<!-- browser msie issue fix -->
-		<script src="<?php echo base_url();?>js/plugin/msie-fix/jquery.mb.browser.min.js"></script>
-
-		<!-- FastClick: For mobile devices -->
-		<script src="<?php echo base_url();?>js/plugin/fastclick/fastclick.min.js"></script>
-
-		<!-- FastClick: For mobile devices -->
-		<script src="<?php echo base_url();?>js/plugin/fastclick/fastclick.min.js"></script>
-		
-		<script src="<?php echo base_url();?>js/select2.min.js"></script>
-		<!--[if IE 8]>
-
-		<h1>Your browser is out of date, please update your browser by going to www.microsoft.com/download</h1>
-
-		<![endif]-->
-
-		<!-- Demo purpose only -->
-		<script src="<?php echo base_url();?>js/demo.min.js"></script>
-
-		<!-- MAIN APP JS FILE -->
-		<script src="<?php echo base_url();?>js/app.min.js"></script>
+		<script src="<?php echo base_url(); ?>sa4/js/app.bundle.js"></script>
+		<?php include(__DIR__ . '/partials/sa4_swal_delete.js.php'); ?>
 		<?php
 			$logged_in_user_name = trim((string) $this->session->userdata('name'));
 			if ($logged_in_user_name === '') {
@@ -126,17 +122,43 @@ echo " Current time: " . date('Y-m-d H:i:s');
 			}
 		?>
 		<script>window.LOGGED_IN_USER_NAME = <?php echo json_encode($logged_in_user_name); ?>;</script>
-		<script src="<?php echo base_url();?>js/logout-user-name.js?v=2"></script>
+		<?php if (file_exists(FCPATH . 'js/logout-user-name.js')) { ?>
+		<script src="<?php echo base_url(); ?>js/logout-user-name.js?v=2"></script>
+		<?php } ?>
+		<script>
+			// Compatibility stub for legacy SmartAdmin 1.8 page scripts
+			if (typeof window.pageSetUp !== 'function') {
+				window.pageSetUp = function () {};
+			}
+			(function ($) {
+				if ($('#js-page-content').length && typeof $.fn.smartPanel === 'function') {
+					// Keep only pink close; do not inject collapse/fullscreen/ellipsis (avoids doubles)
+					$('#js-page-content').smartPanel({
+						closeButton: true,
+						fullscreenButton: false,
+						collapseButton: false,
+						lockedButton: false,
+						refreshButton: false,
+						colorButton: false,
+						resetButton: false,
+						customButton: false
+					});
+				}
 
-		<!-- ENHANCEMENT PLUGINS : NOT A REQUIREMENT -->
-		<!-- Voice command : plugin -->
-		<script src="<?php echo base_url();?>js/speech/voicecommand.min.js"></script>
+				function syncSkinChecks() {
+					var isDark = document.body.classList.contains('mod-skin-dark');
+					$('.js-skin-light-check').toggleClass('d-none', isDark);
+					$('.js-skin-dark-check').toggleClass('d-none', !isDark);
+				}
 
-		<!-- SmartChat UI : plugin -->
-		<script src="<?php echo base_url();?>js/smart-chat-ui/smart.chat.ui.min.js"></script>
-		<script src="<?php echo base_url();?>js/smart-chat-ui/smart.chat.manager.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/moment/moment.min.js"></script>
-		<!-- PAGE RELATED PLUGIN(S) -->
-		
-		
-		
+				syncSkinChecks();
+				$('#btn-skin-light, #btn-skin-dark').on('click', function () {
+					setTimeout(function () {
+						syncSkinChecks();
+						if (typeof saveSettings === 'function') {
+							saveSettings();
+						}
+					}, 50);
+				});
+			})(jQuery);
+		</script>

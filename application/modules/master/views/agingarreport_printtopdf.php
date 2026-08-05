@@ -57,7 +57,7 @@ if($status==='99' || $status===''){
 ?>
 </h6>
 <div class="row">
-	<div class="col-lg-12 col-sm-12 col-xs-12 col-md-12">
+	<div class="col-lg-12 col-sm-12 col-12 col-md-12">
 		<?php
             if(count($record) > 0){
                 foreach($record as $key => $row){ 
@@ -90,18 +90,25 @@ if($status==='99' || $status===''){
 			</thead>
 			<tbody>
 				<?php
-                    if(count($zone) > 0){
-                        $index = 0;
-						
-                        $grand_total_30days = 0;
-						$grand_total_60days = 0;
-						$grand_total_90days = 0;
-						$grand_total_120days = 0;
-						$grand_total_150daysup = 0;
-						$grand_total_amount =0;
+                    $index = 0;
+                    $grand_total_current = 0;
+                    $grand_total_30days = 0;
+                    $grand_total_60days = 0;
+                    $grand_total_90days = 0;
+                    $grand_total_120days = 0;
+                    $grand_total_150daysup = 0;
+                    $grand_total_amount = 0;
 
-                        
+                    if(count($zone) > 0){
                         foreach($zone as $key => $row){ 
+                 //$mysql_transdate = date('Y-m-d',strtotime($trans_date));
+                 //$get_dailytrans = $this->my_model->get_metercustomer_records($mysql_transdate,$row['id']);
+                 $get_dailytrans = $this->report_model->get_aging_ar_report_records($asofdate,$row['id'],$status);
+
+                 // Skip zones with no aging rows (no header / no TOTAL)
+                 if(empty($get_dailytrans) || count($get_dailytrans) === 0){
+                     continue;
+                 }
 				?>                                            
 					<tr>
 						<td></td>
@@ -109,10 +116,7 @@ if($status==='99' || $status===''){
 						<td colspan="8"></td>
 					</tr>
                 <?php
-                //$mysql_transdate = date('Y-m-d',strtotime($trans_date));
-                 //$get_dailytrans = $this->my_model->get_metercustomer_records($mysql_transdate,$row['id']);
-                 $get_dailytrans = $this->report_model->get_aging_ar_report_records($asofdate,$row['id'],$status);
-                 
+				 $grand_total_current_zone = 0;
 				 $grand_total_30days_zone = 0;
 				 $grand_total_60days_zone = 0;
 				 $grand_total_90days_zone = 0;
@@ -172,15 +176,6 @@ if($status==='99' || $status===''){
 				  <th style="text-align:right">'.number_format($grand_total_amount_zone,2).'</th>
                   <th></th>
                  </tr>';
-                
-                
-                    
-                    $grand_total_amount += $total_amount_zone; 
-                    $grand_total_penalty += $total_penalty_zone;
-                    $grand_total_reading += $total_reading_zone;
-                    $grand_total_billamount += $total_billamount_zone;
-                    
-
             
                 } 
                 ?>
@@ -314,9 +309,9 @@ if($status==='99' || $status===''){
 				};
 	
 				$('#dt_basic').dataTable({
-					"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-12 hidden-xs'l>r>"+
+					"sDom": "<'dt-toolbar'<'col-12 col-sm-6'f><'col-sm-6 col-12 hidden-xs'l>r>"+
 						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
+						"<'dt-toolbar-footer'<'col-sm-6 col-12 hidden-xs'i><'col-12 col-sm-6'p>>",
 					"autoWidth" : true,
 			        "oLanguage": {
 					    "sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
@@ -345,9 +340,9 @@ if($status==='99' || $status===''){
 		    	//"bAutoWidth": false,
 		    	//"bPaginate": false,
 		    	//"bStateSave": true // saves sort state using localStorage
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6 hidden-xs'f><'col-sm-6 col-xs-12 hidden-xs'<'toolbar'>>r>"+
+				"sDom": "<'dt-toolbar'<'col-12 col-sm-6 hidden-xs'f><'col-sm-6 col-12 hidden-xs'<'toolbar'>>r>"+
 						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
+						"<'dt-toolbar-footer'<'col-sm-6 col-12 hidden-xs'i><'col-12 col-sm-6'p>>",
 				"autoWidth" : true,
 				"oLanguage": {
 					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
@@ -383,9 +378,9 @@ if($status==='99' || $status===''){
 	    
 			/* COLUMN SHOW - HIDE */
 			$('#datatable_col_reorder').dataTable({
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-6 hidden-xs'C>r>"+
+				"sDom": "<'dt-toolbar'<'col-12 col-sm-6'f><'col-sm-6 col-6 hidden-xs'C>r>"+
 						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-sm-6 col-xs-12'p>>",
+						"<'dt-toolbar-footer'<'col-sm-6 col-12 hidden-xs'i><'col-sm-6 col-12'p>>",
 				"autoWidth" : true,
 				"oLanguage": {
 					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
@@ -411,9 +406,9 @@ if($status==='99' || $status===''){
 				
 				// Tabletools options: 
 				//   https://datatables.net/extensions/tabletools/button_options
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-6 hidden-xs'T>r>"+
+				"sDom": "<'dt-toolbar'<'col-12 col-sm-6'f><'col-sm-6 col-6 hidden-xs'T>r>"+
 						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-sm-6 col-xs-12'p>>",
+						"<'dt-toolbar-footer'<'col-sm-6 col-12 hidden-xs'i><'col-sm-6 col-12'p>>",
 				"oLanguage": {
 					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
 				},		

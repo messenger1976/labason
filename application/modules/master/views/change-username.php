@@ -1,377 +1,148 @@
-<!DOCTYPE html>
-<html lang="en-us">
-	<head>
-		<meta charset="utf-8">
-		<!--<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">-->
+<?php
+	$income1 = $this->comm_model->get_income_metercustomer();
+	extract($income1);
+	$income2 = $this->comm_model->get_income_monthlycustomer();
+	extract($income2);
+	$intotal = (isset($total1) ? (float) $total1 : 0) + (isset($total2) ? (float) $total2 : 0);
 
-		<title> SmartAdmin </title>
-		<meta name="description" content="">
-		<meta name="author" content="">
-			
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	$expense1 = $this->comm_model->get_outcome_expenses();
+	extract($expense1);
+	$expense2 = $this->comm_model->get_outcome_payroll();
+	extract($expense2);
+	$extotal = (isset($extotal1) ? (float) $extotal1 : 0) + (isset($extotal2) ? (float) $extotal2 : 0);
 
-		<!-- FAVICONS -->
-		<link rel="shortcut icon" href="img/favicon/favicon.ico" type="image/x-icon">
-		<link rel="icon" href="img/favicon/favicon.ico" type="image/x-icon">
+	$total_customer = $this->comm_model->total_customer();
+	extract($total_customer);
 
-		<!-- GOOGLE FONT -->
-		<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,700italic,300,400,700">
+	$cur_username = (string) $this->input->post('cur_username');
+	$new_username = (string) $this->input->post('new_username');
+	$conf_username = (string) $this->input->post('conf_username');
+?>
+<main id="js-page-content" role="main" class="page-content">
+	<ol class="breadcrumb page-breadcrumb">
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>">Home</a></li>
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>profile">Profile</a></li>
+		<li class="breadcrumb-item active">Change Username</li>
+		<li class="position-absolute pos-top pos-right d-none d-sm-block"><span class="js-get-date"></span></li>
+	</ol>
 
-	</head>
-	
-<!-- MAIN PANEL -->
-		<div id="main" role="main">
-
-			<!-- RIBBON -->
-			<div id="ribbon">
-
-				<span class="ribbon-button-alignment"> 
-					<span id="refresh" class="btn btn-ribbon" data-action="resetWidgets" data-title="refresh"  rel="tooltip" data-placement="bottom" data-original-title="<i class='text-warning fa fa-warning'></i> Warning! This will reset all your widget settings." data-html="true">
-						<i class="fa fa-refresh"></i>
-					</span> 
-				</span>
-
-				<!-- breadcrumb -->
-				<ol class="breadcrumb">
-					<li><a href="<?php echo ADMIN_URL;?>">Home</a></li>
-					<li><a href="<?php echo ADMIN_URL?>change_username"> Change Username</a></li>
-					<li>add</li>
-				</ol>
-				
+	<div class="subheader">
+		<h1 class="subheader-title">
+			<i class="subheader-icon fal fa-user"></i>
+			Change <span class="fw-300">Username</span>
+		</h1>
+		<div class="subheader-block d-lg-flex align-items-center">
+			<div class="d-inline-flex flex-column justify-content-center mr-3">
+				<span class="fw-300 fs-xs d-block opacity-50"><small>INCOME</small></span>
+				<span class="fw-500 fs-xl d-block color-primary-500">₱ <?php echo number_format($intotal, 2); ?></span>
 			</div>
-			<!-- END RIBBON -->
+			<span class="sparklines hidden-lg-down" sparkType="bar" sparkBarColor="#886ab5" sparkHeight="32px" sparkBarWidth="5px" values="3,4,3,6,7,3,3,6,2,6,4"></span>
+		</div>
+		<div class="subheader-block d-lg-flex align-items-center border-faded border-right-0 border-top-0 border-bottom-0 ml-3 pl-3">
+			<div class="d-inline-flex flex-column justify-content-center mr-3">
+				<span class="fw-300 fs-xs d-block opacity-50"><small>EXPENSE</small></span>
+				<span class="fw-500 fs-xl d-block color-danger-500">₱ <?php echo number_format($extotal, 2); ?></span>
+			</div>
+			<span class="sparklines hidden-lg-down" sparkType="bar" sparkBarColor="#fe6bb0" sparkHeight="32px" sparkBarWidth="5px" values="1,4,3,6,5,3,9,6,5,9,7"></span>
+		</div>
+		<div class="subheader-block d-lg-flex align-items-center border-faded border-right-0 border-top-0 border-bottom-0 ml-3 pl-3">
+			<div class="d-inline-flex flex-column justify-content-center mr-3">
+				<span class="fw-300 fs-xs d-block opacity-50"><small>TOTAL CUSTOMER</small></span>
+				<span class="fw-500 fs-xl d-block color-success-500"><?php echo (int) (isset($count_id) ? $count_id : 0); ?></span>
+			</div>
+			<span class="sparklines hidden-lg-down" sparkType="bar" sparkBarColor="#1dc9b7" sparkHeight="32px" sparkBarWidth="5px" values="2,5,3,7,4,6,3,8,5,4,6"></span>
+		</div>
+	</div>
 
-			<!-- MAIN CONTENT -->
-			<div id="content">
+	<?php if ($this->session->flashdata('msg_succ')) { ?>
+	<div class="alert alert-success alert-dismissible fade show" role="alert">
+		<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+			<span aria-hidden="true"><i class="fal fa-times"></i></span>
+		</button>
+		<strong>Success!</strong> <?php echo $this->session->flashdata('msg_succ'); ?>
+	</div>
+	<?php } ?>
 
-				<div class="row">
-					<div class="col-xs-12 col-sm-7 col-md-7 col-lg-4">
-						<h1 class="page-title txt-color-blueDark"><i class="fa fa-pencil-square-o fa-fw"></i>change <span>>  username </span></h1>
-					</div>
-					<div class="col-xs-12 col-sm-5 col-md-5 col-lg-8">
-						
+	<?php if (!empty($msg)) { ?>
+	<div class="alert alert-danger alert-dismissible fade show" role="alert">
+		<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+			<span aria-hidden="true"><i class="fal fa-times"></i></span>
+		</button>
+		<?php echo $msg; ?>
+	</div>
+	<?php } ?>
+
+	<div class="row">
+		<div class="col-xl-12">
+			<div id="panel-change-username" class="panel">
+				<div class="panel-hdr">
+					<h2>Username <span class="fw-300"><i>Update</i></span></h2>
+					<div class="panel-toolbar">
+						<button class="btn btn-panel" data-action="panel-collapse" data-toggle="tooltip" data-offset="0,10" data-original-title="Collapse"></button>
+						<button class="btn btn-panel" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
 					</div>
 				</div>
-				<!-- widget grid -->
-				<section id="widget-grid" class="">
-
-					<!-- row -->
-
-					<div class="row">
-
-						<!-- a blank row to get started -->
-						<div class="col-sm-6 col-lg-12">
-						
-
-								<!-- your contents here -->
-								<div class="panel panel-default">
-									
-									<div class="widget-body">
-				
-										<form class="form-horizontal" role="form" name="myform" id="myform" method="post" action="" enctype="multipart/form-data">
-										  	
-											<?php if($msg != ''){?>
-											<div class="alert alert-block alert-success">
-												<button type="button" class="close" data-dismiss="alert">
-												<i class="icon-remove"></i>
-												</button>
-												<p>
-													<i class="icon-ok"></i>
-													<?php echo $msg?$msg:'';?>
-												</p>
-											</div>
-											<?php } ?>	
-											
-											<fieldset>
-														<legend>Change-Username </legend>
-												<div class="form-group col-lg-6">
-													<div class="col-lg-12 controls">
-														<div class="form-group">
-															<span class="input-group-addon"><i class="icon-user"></i><strong>Current User Name : </strong></span>
-																<input  class="form-control"  type="text" id="cur_username" name="cur_username" value="<?php echo $this->input->post('cur_username'); ?>" required/>
-																<?php echo form_error('cur_username'); ?>
-														</div>
-													</div>
-												</div>
-												<div class="form-group col-lg-6">
-													<div class="col-lg-12 controls">
-														<div class="form-group"> 
-															<span class="input-group-addon"><i class="icon-user"></i><strong>New User Name :</strong></span>
-																<input  class="form-control"  type="text" id="new_username" name="new_username" value="<?php echo $this->input->post('new_username'); ?>" required/>
-																<?php echo form_error('new_username'); ?>
-														</div>
-													</div>
-												</div>
-												<div class="form-group col-lg-6">
-													<div class="col-lg-12 controls">
-														<div class="form-group"> 
-															<span class="input-group-addon"><i class="icon-user"></i><strong> Confirm User name : </strong></span>
-																<input  class="form-control"  type="text" id="conf_username" name="conf_username" value="<?php echo $this->input->post('conf_username'); ?>" required/>
-																<?php echo form_error('conf_username'); ?>
-														</div>
-													</div>
-												</div>
-														
-													</fieldset>
-
-													<div class="form-actions">
-														<div class="row">
-															<div class="col-md-12">
-																
-																 <a href="<?php echo ADMIN_URL;?>dashboard/" class="btn btn-default">Cancel</a>
-																<input type="submit" class="btn btn-primary" name="add" id="add" value="save">
-															</div>
-														</div>
-													
-										</form>
-				
+				<div class="panel-container show">
+					<div class="panel-content">
+						<form name="myform" id="myform" method="post" action="" enctype="multipart/form-data">
+							<div class="row">
+								<div class="col-md-6">
+									<div class="form-group">
+										<label class="form-label" for="cur_username">Current Username</label>
+										<input class="form-control" type="text" id="cur_username" name="cur_username" value="<?php echo htmlspecialchars($cur_username); ?>" required autocomplete="username">
+										<?php echo form_error('cur_username'); ?>
 									</div>
-								    
-								
-								</div>	
-						</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group">
+										<label class="form-label" for="new_username">New Username</label>
+										<input class="form-control" type="text" id="new_username" name="new_username" value="<?php echo htmlspecialchars($new_username); ?>" required autocomplete="off">
+										<?php echo form_error('new_username'); ?>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group">
+										<label class="form-label" for="conf_username">Confirm Username</label>
+										<input class="form-control" type="text" id="conf_username" name="conf_username" value="<?php echo htmlspecialchars($conf_username); ?>" required autocomplete="off">
+										<?php echo form_error('conf_username'); ?>
+									</div>
+								</div>
+							</div>
+
+							<div class="row mt-3">
+								<div class="col-md-12">
+									<a href="<?php echo ADMIN_URL; ?>profile" class="btn btn-secondary waves-effect waves-themed">
+										<i class="fal fa-times mr-1"></i> Cancel
+									</a>
+									<button type="submit" class="btn btn-primary waves-effect waves-themed" name="add" id="add" value="save">
+										<i class="fal fa-check mr-1"></i> Save
+									</button>
+								</div>
+							</div>
+						</form>
 					</div>
-                    	
-					<!-- end row -->
-
-				</section>
-				<!-- end widget grid -->
-
-					
-
-				</section>
-				<!-- end widget grid -->
-
+				</div>
 			</div>
-			<!-- END MAIN CONTENT -->
-
 		</div>
-		<!-- END MAIN PANEL -->
-		
-
-		<?php include('footer.php');?>
-
-	</body>
-
-</html>
-
-<!-- PAGE RELATED PLUGIN(S) -->
-		<script src="<?php echo base_url();?>js/plugin/datatables/jquery.dataTables.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.colVis.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.tableTools.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.bootstrap.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatable-responsive/datatables.responsive.min.js"></script>
-		<script type="text/javascript">
-		
-		// DO NOT REMOVE : GLOBAL FUNCTIONS!
-		
-		$(document).ready(function() {
-			
-			pageSetUp();
-			
-			/* // DOM Position key index //
-		
-			l - Length changing (dropdown)
-			f - Filtering input (search)
-			t - The Table! (datatable)
-			i - Information (records)
-			p - Pagination (paging)
-			r - pRocessing 
-			< and > - div elements
-			<"#id" and > - div with an id
-			<"class" and > - div with a class
-			<"#id.class" and > - div with an id and class
-			
-			Also see: http://legacy.datatables.net/usage/features
-			*/	
-	
-			/* BASIC ;*/
-				var responsiveHelper_dt_basic = undefined;
-				var responsiveHelper_datatable_fixed_column = undefined;
-				var responsiveHelper_datatable_col_reorder = undefined;
-				var responsiveHelper_datatable_tabletools = undefined;
-				
-				var breakpointDefinition = {
-					tablet : 1024,
-					phone : 480
-				};
-	
-				$('#dt_basic').dataTable({
-					"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-12 hidden-xs'l>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
-					"autoWidth" : true,
-			        "oLanguage": {
-					    "sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-					},
-					"preDrawCallback" : function() {
-						// Initialize the responsive datatables helper once.
-						if (!responsiveHelper_dt_basic) {
-							responsiveHelper_dt_basic = new ResponsiveDatatablesHelper($('#dt_basic'), breakpointDefinition);
-						}
-					},
-					"rowCallback" : function(nRow) {
-						responsiveHelper_dt_basic.createExpandIcon(nRow);
-					},
-					"drawCallback" : function(oSettings) {
-						responsiveHelper_dt_basic.respond();
-					}
-				});
-	
-			/* END BASIC */
-			
-			/* COLUMN FILTER  */
-		    var otable = $('#datatable_fixed_column').DataTable({
-		    	//"bFilter": false,
-		    	//"bInfo": false,
-		    	//"bLengthChange": false
-		    	//"bAutoWidth": false,
-		    	//"bPaginate": false,
-		    	//"bStateSave": true // saves sort state using localStorage
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6 hidden-xs'f><'col-sm-6 col-xs-12 hidden-xs'<'toolbar'>>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
-				"autoWidth" : true,
-				"oLanguage": {
-					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-				},
-				"preDrawCallback" : function() {
-					// Initialize the responsive datatables helper once.
-					if (!responsiveHelper_datatable_fixed_column) {
-						responsiveHelper_datatable_fixed_column = new ResponsiveDatatablesHelper($('#datatable_fixed_column'), breakpointDefinition);
-					}
-				},
-				"rowCallback" : function(nRow) {
-					responsiveHelper_datatable_fixed_column.createExpandIcon(nRow);
-				},
-				"drawCallback" : function(oSettings) {
-					responsiveHelper_datatable_fixed_column.respond();
-				}		
-			
-		    });
-		    
-		    // custom toolbar
-		    $("div.toolbar").html('<div class="text-right"><img src="img/logo.png" alt="SmartAdmin" style="width: 111px; margin-top: 3px; margin-right: 10px;"></div>');
-		    	   
-		    // Apply the filter
-		    $("#datatable_fixed_column thead th input[type=text]").on( 'keyup change', function () {
-		    	
-		        otable
-		            .column( $(this).parent().index()+':visible' )
-		            .search( this.value )
-		            .draw();
-		            
-		    } );
-		    /* END COLUMN FILTER */   
-	    
-			/* COLUMN SHOW - HIDE */
-			$('#datatable_col_reorder').dataTable({
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-6 hidden-xs'C>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-sm-6 col-xs-12'p>>",
-				"autoWidth" : true,
-				"oLanguage": {
-					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-				},
-				"preDrawCallback" : function() {
-					// Initialize the responsive datatables helper once.
-					if (!responsiveHelper_datatable_col_reorder) {
-						responsiveHelper_datatable_col_reorder = new ResponsiveDatatablesHelper($('#datatable_col_reorder'), breakpointDefinition);
-					}
-				},
-				"rowCallback" : function(nRow) {
-					responsiveHelper_datatable_col_reorder.createExpandIcon(nRow);
-				},
-				"drawCallback" : function(oSettings) {
-					responsiveHelper_datatable_col_reorder.respond();
-				}			
+	</div>
+</main>
+<?php include('footer.php'); ?>
+<script src="<?php echo base_url(); ?>sa4/js/statistics/sparkline/sparkline.bundle.js"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+	if (typeof pageSetUp === 'function') { pageSetUp(); }
+	if ($.fn.sparkline) {
+		$('.sparklines').each(function() {
+			var $el = $(this);
+			$el.sparkline('html', {
+				type: $el.attr('sparkType') || 'bar',
+				barColor: $el.attr('sparkBarColor') || '#886ab5',
+				height: $el.attr('sparkHeight') || '32px',
+				barWidth: $el.attr('sparkBarWidth') || '5px'
 			});
-			
-			/* END COLUMN SHOW - HIDE */
-	
-			/* TABLETOOLS */
-			$('#datatable_tabletools').dataTable({
-				
-				// Tabletools options: 
-				//   https://datatables.net/extensions/tabletools/button_options
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-6 hidden-xs'T>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-sm-6 col-xs-12'p>>",
-				"oLanguage": {
-					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-				},		
-		        "oTableTools": {
-		        	 "aButtons": [
-		             "copy",
-		             "csv",
-		             "xls",
-		                {
-		                    "sExtends": "pdf",
-		                    "sTitle": "SmartAdmin_PDF",
-		                    "sPdfMessage": "SmartAdmin PDF Export",
-		                    "sPdfSize": "letter"
-		                },
-		             	{
-	                    	"sExtends": "print",
-	                    	"sMessage": "Generated by SmartAdmin <i>(press Esc to close)</i>"
-	                	}
-		             ],
-		            "sSwfPath": "js/plugin/datatables/swf/copy_csv_xls_pdf.swf"
-		        },
-				"autoWidth" : true,
-				"preDrawCallback" : function() {
-					// Initialize the responsive datatables helper once.
-					if (!responsiveHelper_datatable_tabletools) {
-						responsiveHelper_datatable_tabletools = new ResponsiveDatatablesHelper($('#datatable_tabletools'), breakpointDefinition);
-					}
-				},
-				"rowCallback" : function(nRow) {
-					responsiveHelper_datatable_tabletools.createExpandIcon(nRow);
-				},
-				"drawCallback" : function(oSettings) {
-					responsiveHelper_datatable_tabletools.respond();
-				}
-			});
-			
-			/* END TABLETOOLS */
-		
-		})
-
-		</script>
-		<script type="text/javascript">
-		
-		function customer_type_values(){
-			$("#showcustomers").hide();			
-			if($("#customer_type").val()=='monthlycustomer'){
-				$("#showcustomers").show();
-			}
-			else if($("#customer_type").val()=='metercustomer'){
-				$("#showcustomers").hide();
-			}
-		}
-	
-		</script>
-		<script type="text/javascript">
-var curDate = '<?php echo date('d-m-Y') ?>';	
-function fun_calendor(field){
-	$("#"+field).focus();
-} 
-$(document).ready(function(){
-	$("#dob").datepicker({
-		showAnim: null,
-		dateFormat: 'dd-mm-yy',
-		// showOn: 'both',
-		buttonImage: '<?php echo site_url();?>images/calender.jpg',
-		buttonImageOnly: true,
-		firstDay: 1,
-		nextText: '',
-		prevText: '',
-		numberOfMonths: [1, 1],
-		//defaultDate: new Date(curDate),
-		//minDate: curDate,
-		//maxDate: ''
-	});
-	
+		});
+	}
 });
-
-</script>	
+</script>
+</body>
+</html>

@@ -1,452 +1,304 @@
-<!DOCTYPE html>
-<html lang="en-us">
-	<head>
-		<meta charset="utf-8">
-		<!--<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">-->
+<?php
+	$sa4_loading_label = 'Meter Rate';
+	$sa4_panel_id = 'panel-amountrate';
 
-		<title> SmartAdmin </title>
-		<meta name="description" content="">
-		<meta name="author" content="">
-			
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	$income1 = $this->my_model->get_income_metercustomer();
+	extract($income1);
+	$income2 = $this->my_model->get_income_monthlycustomer();
+	extract($income2);
+	$intotal = (isset($total1) ? (float) $total1 : 0) + (isset($total2) ? (float) $total2 : 0);
 
-		<!-- FAVICONS -->
-		<link rel="shortcut icon" href="img/favicon/favicon.ico" type="image/x-icon">
-		<link rel="icon" href="img/favicon/favicon.ico" type="image/x-icon">
+	$expense1 = $this->my_model->get_outcome_expenses();
+	extract($expense1);
+	$expense2 = $this->my_model->get_outcome_payroll();
+	extract($expense2);
+	$extotal = (isset($extotal1) ? (float) $extotal1 : 0) + (isset($extotal2) ? (float) $extotal2 : 0);
 
-		<!-- GOOGLE FONT -->
-		<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,700italic,300,400,700">
+	$total_customer = $this->my_model->total_customer();
+	extract($total_customer);
 
-	</head>
-	
-<!-- MAIN PANEL -->
-		<div id="main" role="main">
+	$classification = (isset($classification) && is_array($classification)) ? $classification : array();
+?>
+<link rel="stylesheet" media="screen, print" href="<?php echo base_url(); ?>sa4/css/datagrid/datatables/datatables.bundle.css">
+<main id="js-page-content" role="main" class="page-content">
+	<ol class="breadcrumb page-breadcrumb">
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>">Home</a></li>
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>amountrate">Meter Rate</a></li>
+		<li class="breadcrumb-item active">List View</li>
+		<li class="position-absolute pos-top pos-right d-none d-sm-block"><span class="js-get-date"></span></li>
+	</ol>
 
-			<!-- RIBBON -->
-			<div id="ribbon">
-
-				<span class="ribbon-button-alignment"> 
-					<span id="refresh" class="btn btn-ribbon" data-action="resetWidgets" data-title="refresh"  rel="tooltip" data-placement="bottom" data-original-title="<i class='text-warning fa fa-warning'></i> Warning! This will reset all your widget settings." data-html="true">
-						<i class="fa fa-refresh"></i>
-					</span> 
-				</span>
-
-				<!-- breadcrumb -->
-				<ol class="breadcrumb">
-					<li><a href="<?php echo ADMIN_URL?>">Home</a></li>
-					<li> Meter-rate</li>
-					<li>List View</li>
-				</ol>
-				
+	<div class="subheader">
+		<h1 class="subheader-title">
+			<i class="subheader-icon fal fa-tachometer"></i>
+			Manage <span class="fw-300">Meter Rate</span>
+		</h1>
+		<div class="subheader-block d-lg-flex align-items-center">
+			<div class="d-inline-flex flex-column justify-content-center mr-3">
+				<span class="fw-300 fs-xs d-block opacity-50"><small>INCOME</small></span>
+				<span class="fw-500 fs-xl d-block color-primary-500">₱ <?php echo number_format($intotal, 2); ?></span>
 			</div>
-			<!-- END RIBBON -->
+			<span class="sparklines hidden-lg-down" sparkType="bar" sparkBarColor="#886ab5" sparkHeight="32px" sparkBarWidth="5px" values="3,4,3,6,7,3,3,6,2,6,4"></span>
+		</div>
+		<div class="subheader-block d-lg-flex align-items-center border-faded border-right-0 border-top-0 border-bottom-0 ml-3 pl-3">
+			<div class="d-inline-flex flex-column justify-content-center mr-3">
+				<span class="fw-300 fs-xs d-block opacity-50"><small>EXPENSE</small></span>
+				<span class="fw-500 fs-xl d-block color-danger-500">₱ <?php echo number_format($extotal, 2); ?></span>
+			</div>
+			<span class="sparklines hidden-lg-down" sparkType="bar" sparkBarColor="#fe6bb0" sparkHeight="32px" sparkBarWidth="5px" values="1,4,3,6,5,3,9,6,5,9,7"></span>
+		</div>
+		<div class="subheader-block d-lg-flex align-items-center border-faded border-right-0 border-top-0 border-bottom-0 ml-3 pl-3">
+			<div class="d-inline-flex flex-column justify-content-center mr-3">
+				<span class="fw-300 fs-xs d-block opacity-50"><small>TOTAL CUSTOMER</small></span>
+				<span class="fw-500 fs-xl d-block color-success-500"><?php echo (int) (isset($count_id) ? $count_id : 0); ?></span>
+			</div>
+			<span class="sparklines hidden-lg-down" sparkType="bar" sparkBarColor="#1dc9b7" sparkHeight="32px" sparkBarWidth="5px" values="2,5,3,7,4,6,3,8,5,4,6"></span>
+		</div>
+	</div>
 
-			<!-- MAIN CONTENT -->
-			<div id="content">
+	<?php if ($this->session->flashdata('msg_succ')) { ?>
+	<div class="alert alert-success alert-dismissible fade show" role="alert">
+		<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+			<span aria-hidden="true"><i class="fal fa-times"></i></span>
+		</button>
+		<strong>Success!</strong> <?php echo $this->session->flashdata('msg_succ'); ?>
+	</div>
+	<?php } ?>
 
-				<div class="row">
-					<div class="col-xs-12 col-sm-7 col-md-7 col-lg-4">
-						<h1 class="page-title txt-color-blueDark"><i class="fa-fw fa fa-home"></i> View <span>>  Meter-rate  </span></h1>
-					</div>
-					<div class="col-xs-12 col-sm-5 col-md-5 col-lg-8">
-						<ul id="sparks" class="">
-							<li class="sparks-info">
-							<?php 
-							     $income1 = $this->my_model->get_income_metercustomer();
-							     extract($income1);
-								 $income2 = $this->my_model->get_income_monthlycustomer();
-								 extract($income2);
-								 $intotal = $total1 + $total2;
-							?>
-								<h5> Income <span class="txt-color-blue">PHP <?php print_r(number_format($intotal,2));?></span></h5>
-								<div class="sparkline txt-color-blue hidden-mobile hidden-md hidden-sm">
-									
-								</div>
-							</li>
-							<?php
-							     $expense1 = $this->my_model->get_outcome_expenses();
-							     extract($expense1);
-								 $expense2 = $this->my_model->get_outcome_payroll();
-								 extract($expense2);
-								 $extotal = $extotal1 + $extotal2;
-							?>
-							<li class="sparks-info">
-								<h5> Expense <span class="txt-color-purple">PHP <?php print_r(number_format($extotal,2));?></span></h5>
-								<div class="sparkline txt-color-purple hidden-mobile hidden-md hidden-sm">
-									
-								</div>
-							</li>
-							<?php 
-							     $total_customer = $this->my_model->total_customer();
-							     extract($total_customer); 
-							?>
-							<li class="sparks-info">
-								<h5> Total Customer <span class="txt-color-greenDark">&nbsp;<?php print_r($count_id);?></span></h5>
-								<div class="sparkline txt-color-greenDark hidden-mobile hidden-md hidden-sm">
-									
-								</div>
-							</li>
-						</ul>
+	<div class="row">
+		<div class="col-xl-12">
+			<div id="panel-amountrate" class="panel">
+				<div class="panel-hdr">
+					<h2>Meter Rate <span class="fw-300"><i>Listing</i></span></h2>
+					<div class="panel-toolbar">
+						<button class="btn btn-panel" data-action="panel-collapse" data-toggle="tooltip" data-offset="0,10" data-original-title="Collapse"></button>
+						<button class="btn btn-panel" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
 					</div>
 				</div>
-				<!-- widget grid -->
-				<section id="widget-grid" class="">
-
-					<!-- row -->
-					<div class="row">
-				
-						<!-- NEW WIDGET START -->
-						<article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-				
-							<!-- Widget ID (each widget will need unique ID)-->
-							<div class="jarviswidget jarviswidget-color-darken" id="wid-id-0" data-widget-editbutton="false">
-								
-							<header style="height: 42px;">
-								<span class="widget-icon"> <i class="fa fa-users"></i> </span>
-								<p style="padding: 5px 0 0 45px;font-size: 16px;"><strong>Meter Rate</strong>
-								<button class="btn btn-sm btn-primary" style="float:right;"><a href="<?php echo ADMIN_URL?>amountrate/add/" style="color: #fff;"><i class="fa fa-plus"></i> Add Meter Rate</a></button>
-								</p>
-							</header>
-							
-							<!-- Classification Filter -->
-							<div style="padding: 10px 15px; background: #f5f5f5; border-bottom: 1px solid #ddd;">
-								<div class="row">
-									<div class="col-md-4">
-										<label><strong>Filter by Classification:</strong></label>
-										<select class="form-control" id="filter_classification" style="width: 100%;">
-											<option value="0">All Classifications</option>
-											<?php if(isset($classification) && count($classification) > 0) { 
-												foreach($classification as $key => $value){ ?>
-													<option value="<?php echo $value['class_id'];?>"><?php echo $value['class_name'];?></option>
-											<?php } } ?>
-										</select>
-									</div>
-									<div class="col-md-4" style="padding-top: 25px;">
-										<a href="#" id="exportExcelBtn" class="btn btn-sm btn-success">
-											<i class="fa fa-file-excel-o"></i> Export to Excel
-										</a>
-									</div>
-								</div>
+				<div class="panel-container show">
+					<div class="panel-content">
+						<div class="row mb-3 align-items-end">
+							<div class="col-sm-6 col-md-3 col-lg-3">
+								<label class="form-label" for="filter_classification">Filter by Classification</label>
+								<select id="filter_classification" class="form-control form-control-sm">
+									<option value="0">All Classifications</option>
+									<?php foreach ($classification as $value) { ?>
+									<option value="<?php echo (int) $value['class_id']; ?>"><?php echo htmlspecialchars($value['class_name']); ?></option>
+									<?php } ?>
+								</select>
 							</div>
-				
-								<!-- widget div-->
-								<div>
-				
-									<!-- widget edit box -->
-									<div class="jarviswidget-editbox">
-										<!-- This area used as dropdown edit box -->
-				
-									</div>
-									<!-- end widget edit box -->
-									<script type="text/javascript">
-                                        function deleteAllData(){ 
-                                            var checked_num = $('input[name="delete_ids[]"]:checked').length;
-                                            if (checked_num == 0) {
-                                                alert('Select Atleast One Check Box... ');
-                                                return false;
-                                            }else if (checked_num > 0){ 
-                                                if(confirm('Confirm Delete?')==true){
-                                                    //$('#careers').submit();
-                                                    return true;
-                                                }else{
-													return false;
-												}
-                                            }
-                                        }
-                                    </script>
-				                    <form method="post" action="<?php echo ADMIN_URL;?>addcustomer/multi_delete">
-									<!-- widget content -->
-									<div class="widget-body no-padding">
-									   <table id="dt_basic" class="table table-striped table-bordered table-hover" width="100%">
-										
-										<thead>			                
-											<tr>
-												<th>S No</th>
-												<th>Classification</th>
-												<th>Cubic Meter</th>
-												<th>Meter Rate</th>
-												<th>Charges/Consumption</th>
-												<th>Status</th>
-												<th>Action</th>
-											</tr>
-										</thead>
-										<tbody>
-											<!-- Data will be loaded via AJAX -->
-										</tbody>
-									</table>
-											
-
-										</div>
-										<!-- end widget content -->
-				                    </form>  
-									 <!--<div>&nbsp;</div>
-									  <div class="row">
-									   <div class="col-lg-12">
-                                        	<input type="submit" class="btn btn-sm btn-primary" name="add" id="add" value="Delete All" onClick="return deleteAllData();" />
-                                         </div>
-									</div>-->
-									 <div>&nbsp;</div>
-								</div>
-								<!-- end widget div -->
-				
+							<div class="col-sm-6 col-md-9 col-lg-9 text-right">
+								<a href="#" id="exportExcelBtn" class="btn btn-primary btn-sm waves-effect waves-themed mr-1">
+									<i class="fal fa-file-excel mr-1"></i> Export to Excel
+								</a>
+								<a href="<?php echo ADMIN_URL; ?>amountrate/add/" class="btn btn-success btn-sm waves-effect waves-themed">
+									<i class="fal fa-plus mr-1"></i> Add Meter Rate
+								</a>
 							</div>
-							<!-- end widget -->
-				
-						</article>
-						<!-- WIDGET END -->
-				
+						</div>
+
+						<table id="dt_basic" class="table table-bordered table-hover table-striped w-100">
+							<thead>
+								<tr>
+									<th style="width:60px;">S No</th>
+									<th>Classification</th>
+									<th>Cubic Meter</th>
+									<th>Meter Rate</th>
+									<th>Charges/Consumption</th>
+									<th>Status</th>
+									<th style="width:90px;">Action</th>
+								</tr>
+							</thead>
+							<tbody></tbody>
+						</table>
 					</div>
-				
-					<!-- end row -->
-
-					
-
-				</section>
-				<!-- end widget grid -->
-
+				</div>
 			</div>
-			<!-- END MAIN CONTENT -->
-
 		</div>
-		<!-- END MAIN PANEL -->
-		
+	</div>
+</main>
 
-		<?php include('footer.php');?>
+<?php
+	$sa4_loading_label = 'meter rates';
+	include(__DIR__ . '/partials/sa4_dt_loading.php');
+	include('footer.php');
+?>
+<script src="<?php echo base_url(); ?>sa4/js/datagrid/datatables/datatables.bundle.js"></script>
+<script src="<?php echo base_url(); ?>sa4/js/statistics/sparkline/sparkline.bundle.js"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+	if (typeof pageSetUp === 'function') { pageSetUp(); }
 
-	</body>
+	if ($.fn.sparkline) {
+		$('.sparklines').each(function() {
+			var $el = $(this);
+			$el.sparkline('html', {
+				type: $el.attr('sparkType') || 'bar',
+				barColor: $el.attr('sparkBarColor') || '#886ab5',
+				height: $el.attr('sparkHeight') || '32px',
+				barWidth: $el.attr('sparkBarWidth') || '5px'
+			});
+		});
+	}
 
+	var isInitialLoad = true;
+	var progressTimer = null;
+	var progressValue = 8;
+
+	function setProgress(pct) {
+		progressValue = Math.max(0, Math.min(100, pct));
+		$('#dt-loading-progress-bar').css('width', progressValue + '%').attr('aria-valuenow', Math.round(progressValue));
+		$('#dt-loading-percent').text(Math.round(progressValue) + '%');
+	}
+	function startProgress() {
+		clearInterval(progressTimer);
+		setProgress(8);
+		$('#dt-loading-title').text('Fetching meter rates');
+		$('#dt-loading-subtitle').text('Please wait while we prepare the listing…');
+		progressTimer = setInterval(function() {
+			if (progressValue < 90) {
+				setProgress(progressValue + Math.max(0.6, (90 - progressValue) * 0.08));
+			}
+		}, 180);
+	}
+	function completeProgress(done) {
+		clearInterval(progressTimer);
+		setProgress(100);
+		$('#dt-loading-title').text('Almost done');
+		$('#dt-loading-subtitle').text('Rendering listing…');
+		setTimeout(done, 220);
+	}
+	function showLoader() {
+		$('#datatable-loading-modal').addClass('is-visible').show();
+		$('#panel-amountrate').addClass('panel-loading');
+		$('.dataTables_wrapper').addClass('processing');
+		startProgress();
+	}
+	function hideLoader() {
+		completeProgress(function() {
+			$('#datatable-loading-modal').removeClass('is-visible').fadeOut(180);
+			$('#panel-amountrate').removeClass('panel-loading');
+			$('.dataTables_wrapper').removeClass('processing');
+			setTimeout(function() { setProgress(8); }, 250);
+		});
+	}
+
+	showLoader();
+
+	var table = $('#dt_basic').DataTable({
+		processing: true,
+		serverSide: true,
+		responsive: true,
+		stateSave: false,
+		pageLength: 25,
+		lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+		order: [[2, 'asc']],
+		ajax: {
+			url: "<?php echo ADMIN_URL; ?>amountrate/get_datatable_data",
+			type: "POST",
+			data: function(d) {
+				d.classification_id = $('#filter_classification').val() || '0';
+			}
+		},
+		columns: [
+			{ data: 0, orderable: false, searchable: false, className: 'text-center' },
+			{ data: 1, orderable: true },
+			{ data: 2, orderable: true, className: 'text-center' },
+			{ data: 3, orderable: false, className: 'text-right' },
+			{ data: 4, orderable: false, className: 'text-right' },
+			{ data: 5, orderable: false, className: 'text-center' },
+			{ data: 6, orderable: false, searchable: false, className: 'text-center' }
+		],
+		dom: "<'row mb-3'<'col-sm-12 col-md-6 d-flex align-items-center justify-content-start'f><'col-sm-12 col-md-6 d-flex align-items-center justify-content-end'B>>" +
+			"<'row'<'col-sm-12'tr>>" +
+			"<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+		language: {
+			processing: '',
+			search: '',
+			searchPlaceholder: 'Search meter rates...',
+			lengthMenu: '_MENU_',
+			info: 'Showing _START_ to _END_ of _TOTAL_ rates',
+			infoEmpty: 'No rates found',
+			zeroRecords: 'No matching rates',
+			paginate: {
+				first: '<i class="fal fa-chevron-double-left"></i>',
+				last: '<i class="fal fa-chevron-double-right"></i>',
+				next: '<i class="fal fa-chevron-right"></i>',
+				previous: '<i class="fal fa-chevron-left"></i>'
+			}
+		},
+		buttons: [
+			{
+				extend: 'copyHtml5',
+				text: '<i class="fal fa-copy mr-1"></i> Copy',
+				className: 'btn-primary btn-sm mr-1',
+				exportOptions: { columns: [0, 1, 2, 3, 4, 5] }
+			},
+			{
+				extend: 'excelHtml5',
+				text: '<i class="fal fa-file-excel mr-1"></i> Excel',
+				className: 'btn-primary btn-sm mr-1',
+				exportOptions: { columns: [0, 1, 2, 3, 4, 5] }
+			},
+			{
+				extend: 'csvHtml5',
+				text: '<i class="fal fa-file-csv mr-1"></i> CSV',
+				className: 'btn-primary btn-sm mr-1',
+				exportOptions: { columns: [0, 1, 2, 3, 4, 5] }
+			},
+			{
+				extend: 'pdfHtml5',
+				text: '<i class="fal fa-file-pdf mr-1"></i> PDF',
+				className: 'btn-primary btn-sm mr-1',
+				exportOptions: { columns: [0, 1, 2, 3, 4, 5] }
+			},
+			{
+				extend: 'print',
+				text: '<i class="fal fa-print mr-1"></i> Print',
+				className: 'btn-primary btn-sm mr-1',
+				exportOptions: { columns: [0, 1, 2, 3, 4, 5] }
+			},
+			{
+				text: '<i class="fal fa-sync mr-1"></i> Refresh',
+				className: 'btn-primary btn-sm',
+				action: function(e, dt) { dt.ajax.reload(null, false); }
+			}
+		],
+		drawCallback: function() {
+			if (isInitialLoad) {
+				isInitialLoad = false;
+				hideLoader();
+			}
+			if ($.fn.tooltip) { $('[data-toggle="tooltip"]').tooltip(); }
+		}
+	});
+
+	$('#filter_classification').on('change', function() {
+		table.ajax.reload();
+	});
+
+	$('#exportExcelBtn').on('click', function(e) {
+		e.preventDefault();
+		var classificationId = $('#filter_classification').val() || '0';
+		window.location.href = "<?php echo ADMIN_URL; ?>amountrate/export_excel/" + classificationId;
+	});
+
+	$(document).on('click', '.btn-status-toggle', function(e) {
+		e.preventDefault();
+		var url = $(this).data('url');
+		var go = function() { window.location.href = url; };
+		if (typeof window.sa4ConfirmAction === 'function') {
+			window.sa4ConfirmAction({
+				title: 'Change status?',
+				text: 'Are you sure you want to change the status of this meter rate?',
+				confirmButtonText: 'Yes, change it',
+				confirmButtonColor: '#3085d6'
+			}).then(function(ok) { if (ok) { go(); } });
+		} else if (confirm('Are you sure you want to change the status?')) {
+			go();
+		}
+	});
+});
+</script>
+</body>
 </html>
-<!-- PAGE RELATED PLUGIN(S) -->
-		<script src="<?php echo base_url();?>js/plugin/datatables/jquery.dataTables.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.colVis.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.tableTools.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.bootstrap.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatable-responsive/datatables.responsive.min.js"></script>
-		<script type="text/javascript">
-		
-		// DO NOT REMOVE : GLOBAL FUNCTIONS!
-		
-		$(document).ready(function() {
-			
-			pageSetUp();
-			
-			/* // DOM Position key index //
-		
-			l - Length changing (dropdown)
-			f - Filtering input (search)
-			t - The Table! (datatable)
-			i - Information (records)
-			p - Pagination (paging)
-			r - pRocessing 
-			< and > - div elements
-			<"#id" and > - div with an id
-			<"class" and > - div with a class
-			<"#id.class" and > - div with an id and class
-			
-			Also see: http://legacy.datatables.net/usage/features
-			*/	
-	
-			/* BASIC - Server-side Processing */
-				var responsiveHelper_dt_basic = undefined;
-				var responsiveHelper_datatable_fixed_column = undefined;
-				var responsiveHelper_datatable_col_reorder = undefined;
-				var responsiveHelper_datatable_tabletools = undefined;
-				
-				var breakpointDefinition = {
-					tablet : 1024,
-					phone : 480
-				};
-
-				var table = $('#dt_basic').DataTable({
-					"processing": true,
-					"serverSide": true,
-					"ajax": {
-						"url": "<?php echo ADMIN_URL;?>amountrate/get_datatable_data",
-						"type": "POST",
-						"data": function(d) {
-							d.classification_id = $('#filter_classification').val();
-						}
-					},
-					"columns": [
-						{ "data": 0, "orderable": false },
-						{ "data": 1, "orderable": true },
-						{ "data": 2, "orderable": true },
-						{ "data": 3, "orderable": false },
-						{ "data": 4, "orderable": false },
-						{ "data": 5, "orderable": false },
-						{ "data": 6, "orderable": false }
-					],
-					"order": [[2, 'asc']],
-					"pageLength": 10,
-					"lengthMenu": [[10, 25, 50, 100], [10, 25, 50, 100]],
-					"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-12 hidden-xs'l>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
-					"autoWidth" : true,
-			        "oLanguage": {
-					    "sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>',
-						"sProcessing": "Loading data..."
-					},
-					"preDrawCallback" : function() {
-						// Initialize the responsive datatables helper once.
-						if (!responsiveHelper_dt_basic) {
-							responsiveHelper_dt_basic = new ResponsiveDatatablesHelper($('#dt_basic'), breakpointDefinition);
-						}
-					},
-					"rowCallback" : function(nRow) {
-						responsiveHelper_dt_basic.createExpandIcon(nRow);
-					},
-					"drawCallback" : function(oSettings) {
-						responsiveHelper_dt_basic.respond();
-					}
-				});
-				
-				// Reload table when classification filter changes
-				$('#filter_classification').on('change', function() {
-					table.ajax.reload();
-				});
-				
-				// Export to Excel button click handler
-				$('#exportExcelBtn').on('click', function(e) {
-					e.preventDefault();
-					var classificationId = $('#filter_classification').val() || '0';
-					var url = "<?php echo ADMIN_URL;?>amountrate/export_excel/" + classificationId;
-					window.location.href = url;
-				});
-
-			/* END BASIC */
-			
-			/* COLUMN FILTER  */
-		    var otable = $('#datatable_fixed_column').DataTable({
-		    	//"bFilter": false,
-		    	//"bInfo": false,
-		    	//"bLengthChange": false
-		    	//"bAutoWidth": false,
-		    	//"bPaginate": false,
-		    	//"bStateSave": true // saves sort state using localStorage
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6 hidden-xs'f><'col-sm-6 col-xs-12 hidden-xs'<'toolbar'>>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
-				"autoWidth" : true,
-				"oLanguage": {
-					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-				},
-				"preDrawCallback" : function() {
-					// Initialize the responsive datatables helper once.
-					if (!responsiveHelper_datatable_fixed_column) {
-						responsiveHelper_datatable_fixed_column = new ResponsiveDatatablesHelper($('#datatable_fixed_column'), breakpointDefinition);
-					}
-				},
-				"rowCallback" : function(nRow) {
-					responsiveHelper_datatable_fixed_column.createExpandIcon(nRow);
-				},
-				"drawCallback" : function(oSettings) {
-					responsiveHelper_datatable_fixed_column.respond();
-				}		
-			
-		    });
-		    
-		    // custom toolbar
-		    $("div.toolbar").html('<div class="text-right"><img src="img/logo.png" alt="SmartAdmin" style="width: 111px; margin-top: 3px; margin-right: 10px;"></div>');
-		    	   
-		    // Apply the filter
-		    $("#datatable_fixed_column thead th input[type=text]").on( 'keyup change', function () {
-		    	
-		        otable
-		            .column( $(this).parent().index()+':visible' )
-		            .search( this.value )
-		            .draw();
-		            
-		    } );
-		    /* END COLUMN FILTER */   
-	    
-			/* COLUMN SHOW - HIDE */
-			$('#datatable_col_reorder').dataTable({
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-6 hidden-xs'C>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-sm-6 col-xs-12'p>>",
-				"autoWidth" : true,
-				"oLanguage": {
-					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-				},
-				"preDrawCallback" : function() {
-					// Initialize the responsive datatables helper once.
-					if (!responsiveHelper_datatable_col_reorder) {
-						responsiveHelper_datatable_col_reorder = new ResponsiveDatatablesHelper($('#datatable_col_reorder'), breakpointDefinition);
-					}
-				},
-				"rowCallback" : function(nRow) {
-					responsiveHelper_datatable_col_reorder.createExpandIcon(nRow);
-				},
-				"drawCallback" : function(oSettings) {
-					responsiveHelper_datatable_col_reorder.respond();
-				}			
-			});
-			
-			/* END COLUMN SHOW - HIDE */
-	
-			/* TABLETOOLS */
-			$('#datatable_tabletools').dataTable({
-				
-				// Tabletools options: 
-				//   https://datatables.net/extensions/tabletools/button_options
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-6 hidden-xs'T>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-sm-6 col-xs-12'p>>",
-				"oLanguage": {
-					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-				},		
-		        "oTableTools": {
-		        	 "aButtons": [
-		             "copy",
-		             "csv",
-		             "xls",
-		                {
-		                    "sExtends": "pdf",
-		                    "sTitle": "SmartAdmin_PDF",
-		                    "sPdfMessage": "SmartAdmin PDF Export",
-		                    "sPdfSize": "letter"
-		                },
-		             	{
-	                    	"sExtends": "print",
-	                    	"sMessage": "Generated by SmartAdmin <i>(press Esc to close)</i>"
-	                	}
-		             ],
-		            "sSwfPath": "js/plugin/datatables/swf/copy_csv_xls_pdf.swf"
-		        },
-				"autoWidth" : true,
-				"preDrawCallback" : function() {
-					// Initialize the responsive datatables helper once.
-					if (!responsiveHelper_datatable_tabletools) {
-						responsiveHelper_datatable_tabletools = new ResponsiveDatatablesHelper($('#datatable_tabletools'), breakpointDefinition);
-					}
-				},
-				"rowCallback" : function(nRow) {
-					responsiveHelper_datatable_tabletools.createExpandIcon(nRow);
-				},
-				"drawCallback" : function(oSettings) {
-					responsiveHelper_datatable_tabletools.respond();
-				}
-			});
-			
-			/* END TABLETOOLS */
-		
-		})
-
-		</script>
-
-		<!-- Your GOOGLE ANALYTICS CODE Below -->
-		<script type="text/javascript">
-			var _gaq = _gaq || [];
-			_gaq.push(['_setAccount', 'UA-XXXXXXXX-X']);
-			_gaq.push(['_trackPageview']);
-			
-			(function() {
-			var ga = document.createElement('script');
-			ga.type = 'text/javascript';
-			ga.async = true;
-			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-			var s = document.getElementsByTagName('script')[0];
-			s.parentNode.insertBefore(ga, s);
-			})();
-		</script>

@@ -1,576 +1,301 @@
-<!DOCTYPE html>
-	
-<!-- MAIN PANEL -->
-		<div id="main" role="main">
+<?php
+	$income1 = $this->my_model->get_income_metercustomer();
+	extract($income1);
+	$income2 = $this->my_model->get_income_monthlycustomer();
+	extract($income2);
+	$intotal = (isset($total1) ? (float) $total1 : 0) + (isset($total2) ? (float) $total2 : 0);
 
-			<!-- RIBBON -->
-			<div id="ribbon">
+	$expense1 = $this->my_model->get_outcome_expenses();
+	extract($expense1);
+	$expense2 = $this->my_model->get_outcome_payroll();
+	extract($expense2);
+	$extotal = (isset($extotal1) ? (float) $extotal1 : 0) + (isset($extotal2) ? (float) $extotal2 : 0);
 
-				<span class="ribbon-button-alignment"> 
-					<span id="refresh" class="btn btn-ribbon" data-action="resetWidgets" data-title="refresh"  rel="tooltip" data-placement="bottom" data-original-title="<i class='text-warning fa fa-warning'></i> Warning! This will reset all your widget settings." data-html="true">
-						<i class="fa fa-refresh"></i>
-					</span> 
+	$total_customer = $this->my_model->total_customer();
+	extract($total_customer);
+?>
+<link rel="stylesheet" media="screen, print" href="<?php echo base_url(); ?>sa4/css/datagrid/datatables/datatables.bundle.css">
+<main id="js-page-content" role="main" class="page-content">
+	<ol class="breadcrumb page-breadcrumb">
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>">Home</a></li>
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>reports/customer_report">Customer Report</a></li>
+		<li class="breadcrumb-item active">Search</li>
+		<li class="position-absolute pos-top pos-right d-none d-sm-block"><span class="js-get-date"></span></li>
+	</ol>
+
+	<div class="subheader">
+		<h1 class="subheader-title">
+			<i class="subheader-icon fal fa-user-friends"></i>
+			Manage <span class="fw-300">Customer Report</span>
+		</h1>
+		<div class="subheader-block d-lg-flex align-items-center">
+			<div class="d-inline-flex flex-column justify-content-center mr-3">
+				<span class="fw-300 fs-xs d-block opacity-50">
+					<small>INCOME</small>
 				</span>
-
-				<!-- breadcrumb -->
-				<ol class="breadcrumb">
-					<li><a href="<?php echo ADMIN_URL;?>">Home</a></li>
-					<li><a href="<?php echo ADMIN_URL;?>reports/customer_report">Customer Reports</a></li>
-					<li>search</li>
-				</ol>
-				
+				<span class="fw-500 fs-xl d-block color-primary-500">
+					₱ <?php echo number_format($intotal, 2); ?>
+				</span>
 			</div>
-			<!-- END RIBBON -->
+			<span class="sparklines hidden-lg-down" sparkType="bar" sparkBarColor="#886ab5" sparkHeight="32px" sparkBarWidth="5px" values="3,4,3,6,7,3,3,6,2,6,4"></span>
+		</div>
+		<div class="subheader-block d-lg-flex align-items-center border-faded border-right-0 border-top-0 border-bottom-0 ml-3 pl-3">
+			<div class="d-inline-flex flex-column justify-content-center mr-3">
+				<span class="fw-300 fs-xs d-block opacity-50">
+					<small>EXPENSE</small>
+				</span>
+				<span class="fw-500 fs-xl d-block color-danger-500">
+					₱ <?php echo number_format($extotal, 2); ?>
+				</span>
+			</div>
+			<span class="sparklines hidden-lg-down" sparkType="bar" sparkBarColor="#fe6bb0" sparkHeight="32px" sparkBarWidth="5px" values="1,4,3,6,5,3,9,6,5,9,7"></span>
+		</div>
+		<div class="subheader-block d-lg-flex align-items-center border-faded border-right-0 border-top-0 border-bottom-0 ml-3 pl-3">
+			<div class="d-inline-flex flex-column justify-content-center mr-3">
+				<span class="fw-300 fs-xs d-block opacity-50">
+					<small>TOTAL CUSTOMER</small>
+				</span>
+				<span class="fw-500 fs-xl d-block color-success-500">
+					<?php echo (int) (isset($count_id) ? $count_id : 0); ?>
+				</span>
+			</div>
+			<span class="sparklines hidden-lg-down" sparkType="bar" sparkBarColor="#1dc9b7" sparkHeight="32px" sparkBarWidth="5px" values="2,5,3,7,4,6,3,8,5,4,6"></span>
+		</div>
+	</div>
 
-			<!-- MAIN CONTENT -->
-			<div id="content">
+	<?php if (!empty($msg)) { ?>
+	<div class="alert alert-success alert-dismissible fade show" role="alert">
+		<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+			<span aria-hidden="true"><i class="fal fa-times"></i></span>
+		</button>
+		<strong>Success!</strong> <?php echo $msg; ?>
+	</div>
+	<?php } ?>
 
-				<div class="row">
-					<div class="col-xs-12 col-sm-7 col-md-7 col-lg-4">
-						<h1 class="page-title txt-color-blueDark"><i class="glyphicon glyphicon-search"></i>Reports <span>>  Customer Report </span></h1>
-					</div>
-					<div class="col-xs-12 col-sm-5 col-md-5 col-lg-8">
-						<ul id="sparks" class="">
-							<li class="sparks-info">
-							<?php 
-							     $income1 = $this->comm_model->get_income_metercustomer();
-							     extract($income1);
-								 $income2 = $this->comm_model->get_income_monthlycustomer();
-								 extract($income2);
-								 $intotal = $total1 + $total2;
-							?>
-								<h5> Income <span class="txt-color-blue">PHP <?php print_r(number_format($intotal,2));?></span></h5>
-								<div class="sparkline txt-color-blue hidden-mobile hidden-md hidden-sm">
-									
-								</div>
-							</li>
-							<?php
-							     $expense1 = $this->my_model->get_outcome_expenses();
-							     extract($expense1);
-								 $expense2 = $this->my_model->get_outcome_payroll();
-								 extract($expense2);
-								 $extotal = $extotal1 + $extotal2;
-							?>
-							<li class="sparks-info">
-								<h5> Expense <span class="txt-color-purple">PHP <?php print_r(number_format($extotal,2));?></span></h5>
-								<div class="sparkline txt-color-purple hidden-mobile hidden-md hidden-sm">
-									
-								</div>
-							</li>
-							<?php 
-							     $total_customer = $this->my_model->total_customer();
-							     extract($total_customer); 
-							?>
-							<li class="sparks-info">
-								<h5> Total Customer <span class="txt-color-greenDark">&nbsp;<?php print_r($count_id);?></span></h5>
-								<div class="sparkline txt-color-greenDark hidden-mobile hidden-md hidden-sm">
-									
-								</div>
-							</li>
-						</ul>
+	<div class="row">
+		<div class="col-xl-12">
+			<div id="panel-customer-report" class="panel">
+				<div class="panel-hdr">
+					<h2>Customer Report <span class="fw-300"><i>Search</i></span></h2>
+					<div class="panel-toolbar">
+						<button class="btn btn-panel" data-action="panel-collapse" data-toggle="tooltip" data-offset="0,10" data-original-title="Collapse"></button>
+						<button class="btn btn-panel" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
 					</div>
 				</div>
-				<!-- widget grid -->
-				<section id="widget-grid" class="">
-
-					<!-- row -->
-
-					<div class="row">
-
-						<!-- a blank row to get started -->
-						<div class="col-sm-6 col-lg-12">
-						
-
-							<!-- your contents here -->
-							<div class="panel panel-default">
-								
-								<div class="widget-body">
-				
-										
-										  	
-											<?php if($msg != ''){?>
-											<div class="alert alert-block alert-success">
-												<button type="button" class="close" data-dismiss="alert">
-												<i class="icon-remove"></i>
-												</button>
-												<p>
-													<i class="icon-ok"></i>
-													<?php echo $msg?$msg:'';?>
-												</p>
-											</div>
-											<?php } ?>	
-											
-											<fieldset>
-														<legend>
-															Customer Report -Search 
-															<div  class="pull-right" style="padding-right:20px;">
-																<input type="submit" class="btn btn-primary" name="search" id="search" value="search" style="margin-bottom: 5px;">
-																<a id="printtopdf" class="btn btn-sm btn-warning" style="margin-bottom: 5px;">Print</a>
-																<a id="exporttoexcel" class="btn btn-sm btn-success" style="margin-bottom: 5px;">Export to Excel</a>
-															</div>
-														</legend>
-														<div class="form-group col-lg-6">
-                                                            <div class="col-lg-12 controls">
-                                                                <div class="form-group">
-                                                                <span class="input-group-addon"><i class="icon-user"></i><strong>Status : </strong></span>
-                                                                    <select  class="form-control" name="status" id="status" class="col-lg-12" required>
-                                                                        <option value="">--All--</option>
-                                                                        <option value="1">Active</option>
-                                                                        <option value="0">Inactive</option>
-                                                                        <option value="2">Disconnected</option>
-                                                                    </select>
-                                                                </div>
-                                                            </div>
-                                                        
-                                                        </div>
-														<div class="form-group col-lg-6">
-															<div class="col-lg-12 controls">
-																<div class="form-group">
-																	<span class="input-group-addon"><i class="icon-user"></i><strong> Special Priviledge:</strong></span>
-																	<input class="form-check" value="1" type="checkbox" name="special_priviledge" id="special_priviledge">
-																</div>
-															</div>
-														</div>
-                                                        <div class="form-group col-lg-6">
-															<div class="col-lg-12 controls">
-																<div class="form-group">
-																	<span class="input-group-addon"><i class="icon-user"></i><strong> Zone:</strong></span>
-																	<select class="form-control" name="zone" id="zone" required>
-																		<option value="0">--All--</option>
-																		<?php foreach($zone as $key => $value){ ?>
-																		<option value="<?php echo $value['id'];?>"><?php echo $value['zone'];?></option>
-																		<?php } ?>
-																	</select>
-																</div>
-															</div>
-														</div>
-														<div class="form-group col-lg-6">
-															<div class="col-lg-12 controls">
-																<div class="form-group">
-																	<span class="input-group-addon"><i class="icon-user"></i><strong> Prepared by:</strong></span>
-																	<select class="form-control" name="preparedby" id="preparedby" required>
-																		
-																		<?php foreach($employee as $key => $emp){ ?>
-																		<option value="<?php echo $emp['id'];?>"><?php echo strtoupper($emp['first_name']).' '.strtoupper($emp['middle_name']).' '.strtoupper($emp['last_name']).' - '.$emp['jobtitle'];?></option>
-																		<?php } ?>
-																	</select>
-																</div>
-															</div>
-														</div>
-														<div class="form-group col-lg-6">
-															<div class="col-lg-12 controls">
-																<div class="form-group">
-																	<span class="input-group-addon"><i class="icon-user"></i><strong> Checked/Verified by:</strong></span>
-																	<select class="form-control" name="verifiedby" id="verifiedby" required>
-																		
-																		<?php foreach($employee as $key => $emp){ ?>
-																		<option value="<?php echo $emp['id'];?>"><?php echo strtoupper($emp['first_name']).' '.strtoupper($emp['middle_name']).' '.strtoupper($emp['last_name']).' - '.$emp['jobtitle'];?></option>
-																		<?php } ?>
-																	</select>
-																</div>
-															</div>
-														</div>
-														<div class="form-group col-lg-6">
-															<div class="col-lg-12 controls">
-																<div class="form-group">
-																	<span class="input-group-addon"><i class="icon-user"></i><strong> Approved by:</strong></span>
-																	<select class="form-control" name="approvedby" id="approvedby" required>
-																		
-																		<?php foreach($employee as $key => $emp){ ?>
-																		<option value="<?php echo $emp['id'];?>"><?php echo strtoupper($emp['first_name']).' '.strtoupper($emp['middle_name']).' '.strtoupper($emp['last_name']).' - '.$emp['jobtitle'];?></option>
-																		<?php } ?>
-																	</select>
-																</div>
-															</div>
-														</div>
-														<div style="clear:both"></div>
-														
-														<div class="col-xs-12" id="paidcustomerDiv" style="margin-top: 13px;"></div>
-															
-													</fieldset>
-													
-												</div> 
-													
-												    
-													<div class="pay_setting_1">
-														<div class="form-actions">
-															<div class="row">
-																<div class="col-md-12">
-																
-																	
-																</div>
-															</div>
-														</div>
-												    </div>	
-											
-													
-													
-													
-										
+				<div class="panel-container show">
+					<div class="panel-content">
+						<form name="customer_report_form" id="customer_report_form" method="post" action="javascript:void(0);">
+							<div class="row">
+								<div class="col-md-6">
+									<div class="form-group">
+										<label class="form-label" for="status">Status</label>
+										<select class="form-control" name="status" id="status" required>
+											<option value="">--All--</option>
+											<option value="1">Active</option>
+											<option value="0">Inactive</option>
+											<option value="2">Disconnected</option>
+										</select>
 									</div>
-								    
-								
-								</div>	
-						</div>
-                        	
-				        </div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group">
+										<label class="form-label" for="special_priviledge">Special Privilege</label>
+										<div class="custom-control custom-checkbox mt-2">
+											<input type="checkbox" class="custom-control-input" value="1" name="special_priviledge" id="special_priviledge">
+											<label class="custom-control-label" for="special_priviledge">Special Privilege only</label>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group">
+										<label class="form-label" for="zone">Zone</label>
+										<select class="form-control" name="zone" id="zone" required>
+											<option value="0">--All--</option>
+											<?php foreach ($zone as $key => $value) { ?>
+											<option value="<?php echo $value['id']; ?>"><?php echo htmlspecialchars($value['zone']); ?></option>
+											<?php } ?>
+										</select>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group">
+										<label class="form-label" for="preparedby">Prepared by</label>
+										<select class="form-control" name="preparedby" id="preparedby" required>
+											<?php foreach ($employee as $key => $emp) { ?>
+											<option value="<?php echo $emp['id']; ?>"><?php echo strtoupper($emp['first_name']).' '.strtoupper($emp['middle_name']).' '.strtoupper($emp['last_name']).' - '.$emp['jobtitle']; ?></option>
+											<?php } ?>
+										</select>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group">
+										<label class="form-label" for="verifiedby">Checked / Verified by</label>
+										<select class="form-control" name="verifiedby" id="verifiedby" required>
+											<?php foreach ($employee as $key => $emp) { ?>
+											<option value="<?php echo $emp['id']; ?>"><?php echo strtoupper($emp['first_name']).' '.strtoupper($emp['middle_name']).' '.strtoupper($emp['last_name']).' - '.$emp['jobtitle']; ?></option>
+											<?php } ?>
+										</select>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group">
+										<label class="form-label" for="approvedby">Approved by</label>
+										<select class="form-control" name="approvedby" id="approvedby" required>
+											<?php foreach ($employee as $key => $emp) { ?>
+											<option value="<?php echo $emp['id']; ?>"><?php echo strtoupper($emp['first_name']).' '.strtoupper($emp['middle_name']).' '.strtoupper($emp['last_name']).' - '.$emp['jobtitle']; ?></option>
+											<?php } ?>
+										</select>
+									</div>
+								</div>
+							</div>
+
+							<div class="form-group mb-0">
+								<button type="button" class="btn btn-primary" name="search" id="search">
+									<i class="fal fa-search mr-1"></i> Search
+								</button>
+								<a href="javascript:void(0);" id="printtopdf" class="btn btn-warning">
+									<i class="fal fa-print mr-1"></i> Print
+								</a>
+								<a href="javascript:void(0);" id="exporttoexcel" class="btn btn-success">
+									<i class="fal fa-file-excel mr-1"></i> Export to Excel
+								</a>
+							</div>
+						</form>
+
+						<div id="paidcustomerDiv" class="mt-3"></div>
 					</div>
-                    <!-- end row -->
-
-				</section>
-				<!-- end widget grid -->
-
-					
-
-				</section>
-				<!-- end widget grid -->
-
+				</div>
 			</div>
-			<!-- END MAIN CONTENT -->
-
 		</div>
-		<!-- END MAIN PANEL -->
-		
-
-		<?php 
-		// Use absolute path for footer to avoid path issues on Linux
-		$footerPath = APPPATH . 'modules/master/views/footer.php';
-		if (file_exists($footerPath)) {
-			include($footerPath);
-		} else {
-			log_message('error', 'Footer file not found: ' . $footerPath);
-		}
-		?>
-
-	</body>
-
+	</div>
+</main>
+<?php include('footer.php'); ?>
+<script src="<?php echo base_url(); ?>sa4/js/statistics/sparkline/sparkline.bundle.js"></script>
+<script src="<?php echo base_url(); ?>sa4/js/datagrid/datatables/datatables.bundle.js"></script>
+</body>
 </html>
-
-<!-- PAGE RELATED PLUGIN(S) -->
-		<script src="<?php echo base_url();?>js/plugin/datatables/jquery.dataTables.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.colVis.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.tableTools.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatables/dataTables.bootstrap.min.js"></script>
-		<script src="<?php echo base_url();?>js/plugin/datatable-responsive/datatables.responsive.min.js"></script>
-		<script type="text/javascript">
-		
-		// DO NOT REMOVE : GLOBAL FUNCTIONS!
-		
-		$(document).ready(function() {
-			
-			pageSetUp();
-			
-			/* // DOM Position key index //
-		
-			l - Length changing (dropdown)
-			f - Filtering input (search)
-			t - The Table! (datatable)
-			i - Information (records)
-			p - Pagination (paging)
-			r - pRocessing 
-			< and > - div elements
-			<"#id" and > - div with an id
-			<"class" and > - div with a class
-			<"#id.class" and > - div with an id and class
-			
-			Also see: http://legacy.datatables.net/usage/features
-			*/	
-
-			/* BASIC ;*/
-				var responsiveHelper_dt_basic = undefined;
-				var responsiveHelper_datatable_fixed_column = undefined;
-				var responsiveHelper_datatable_col_reorder = undefined;
-				var responsiveHelper_datatable_tabletools = undefined;
-				
-				var breakpointDefinition = {
-					tablet : 1024,
-					phone : 480
-				};
-
-				$('#dt_basic').dataTable({
-					"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-12 hidden-xs'l>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
-					"autoWidth" : true,
-			        "oLanguage": {
-					    "sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-					},
-					"preDrawCallback" : function() {
-						// Initialize the responsive datatables helper once.
-						if (!responsiveHelper_dt_basic) {
-							responsiveHelper_dt_basic = new ResponsiveDatatablesHelper($('#dt_basic'), breakpointDefinition);
-						}
-					},
-					"rowCallback" : function(nRow) {
-						responsiveHelper_dt_basic.createExpandIcon(nRow);
-					},
-					"drawCallback" : function(oSettings) {
-						responsiveHelper_dt_basic.respond();
-					}
-				});
-
-			/* END BASIC */
-			
-			/* COLUMN FILTER  */
-		    var otable = $('#datatable_fixed_column').DataTable({
-		    	//"bFilter": false,
-		    	//"bInfo": false,
-		    	//"bLengthChange": false
-		    	//"bAutoWidth": false,
-		    	//"bPaginate": false,
-		    	//"bStateSave": true // saves sort state using localStorage
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6 hidden-xs'f><'col-sm-6 col-xs-12 hidden-xs'<'toolbar'>>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
-				"autoWidth" : true,
-				"oLanguage": {
-					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-				},
-				"preDrawCallback" : function() {
-					// Initialize the responsive datatables helper once.
-					if (!responsiveHelper_datatable_fixed_column) {
-						responsiveHelper_datatable_fixed_column = new ResponsiveDatatablesHelper($('#datatable_fixed_column'), breakpointDefinition);
-					}
-				},
-				"rowCallback" : function(nRow) {
-					responsiveHelper_datatable_fixed_column.createExpandIcon(nRow);
-				},
-				"drawCallback" : function(oSettings) {
-					responsiveHelper_datatable_fixed_column.respond();
-				}		
-			
-		    });
-		    
-		    // custom toolbar
-		    $("div.toolbar").html('<div class="text-right"><img src="img/logo.png" alt="SmartAdmin" style="width: 111px; margin-top: 3px; margin-right: 10px;"></div>');
-		    	   
-		    // Apply the filter
-		    $("#datatable_fixed_column thead th input[type=text]").on( 'keyup change', function () {
-		    	
-		        otable
-		            .column( $(this).parent().index()+':visible' )
-		            .search( this.value )
-		            .draw();
-		            
-		    } );
-		    /* END COLUMN FILTER */   
-	    
-			/* COLUMN SHOW - HIDE */
-			$('#datatable_col_reorder').dataTable({
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-6 hidden-xs'C>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-sm-6 col-xs-12'p>>",
-				"autoWidth" : true,
-				"oLanguage": {
-					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-				},
-				"preDrawCallback" : function() {
-					// Initialize the responsive datatables helper once.
-					if (!responsiveHelper_datatable_col_reorder) {
-						responsiveHelper_datatable_col_reorder = new ResponsiveDatatablesHelper($('#datatable_col_reorder'), breakpointDefinition);
-					}
-				},
-				"rowCallback" : function(nRow) {
-					responsiveHelper_datatable_col_reorder.createExpandIcon(nRow);
-				},
-				"drawCallback" : function(oSettings) {
-					responsiveHelper_datatable_col_reorder.respond();
-				}			
-			});
-			
-			/* END COLUMN SHOW - HIDE */
-
-			/* TABLETOOLS */
-			$('#datatable_tabletools').dataTable({
-				
-				// Tabletools options: 
-				//   https://datatables.net/extensions/tabletools/button_options
-				"sDom": "<'dt-toolbar'<'col-xs-12 col-sm-6'f><'col-sm-6 col-xs-6 hidden-xs'T>r>"+
-						"t"+
-						"<'dt-toolbar-footer'<'col-sm-6 col-xs-12 hidden-xs'i><'col-xs-12 col-sm-6'p>>",
-				"oLanguage": {
-					"sSearch": '<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>'
-				},		
-		        "oTableTools": {
-		        	 "aButtons": [
-		             "copy",
-		             "csv",
-		             "xls",
-		                {
-		                    "sExtends": "pdf",
-		                    "sTitle": "SmartAdmin_PDF",
-		                    "sPdfMessage": "SmartAdmin PDF Export",
-		                    "sPdfSize": "letter"
-		                },
-		             	{
-	                    	"sExtends": "print",
-	                    	"sMessage": "Generated by SmartAdmin <i>(press Esc to close)</i>"
-	                	}
-		             ],
-		            "sSwfPath": "js/plugin/datatables/swf/copy_csv_xls_pdf.swf"
-		        },
-				"autoWidth" : true,
-				"preDrawCallback" : function() {
-					// Initialize the responsive datatables helper once.
-					if (!responsiveHelper_datatable_tabletools) {
-						responsiveHelper_datatable_tabletools = new ResponsiveDatatablesHelper($('#datatable_tabletools'), breakpointDefinition);
-					}
-				},
-				"rowCallback" : function(nRow) {
-					responsiveHelper_datatable_tabletools.createExpandIcon(nRow);
-				},
-				"drawCallback" : function(oSettings) {
-					responsiveHelper_datatable_tabletools.respond();
-				}
-			});
-			
-			/* END TABLETOOLS */
-		
-		})
-
-		</script>
-		
 <script type="text/javascript">
-    var curDate = '<?php echo date('d-m-Y') ?>';	
-    function fun_calendor(field){
-        $("#"+field).focus();
-    } 
+$(document).ready(function(){
+	if (typeof pageSetUp === 'function') { pageSetUp(); }
+	if ($.fn.sparkline) {
+		$('.sparklines').each(function() {
+			var $el = $(this);
+			$el.sparkline('html', {
+				type: $el.attr('sparkType') || 'bar',
+				barColor: $el.attr('sparkBarColor') || '#886ab5',
+				height: $el.attr('sparkHeight') || '32px',
+				barWidth: $el.attr('sparkBarWidth') || '5px'
+			});
+		});
+	}
 
-    $(document).ready(function(){
-        $("#fromdate").datepicker({
-            showAnim: null,
-            dateFormat: 'dd-mm-yy',
-            // showOn: 'both',
-            buttonImage: '/images/calender.jpg',
-            buttonImageOnly: true,
-            firstDay: 1,
-            nextText: '',
-            prevText: '',
-            numberOfMonths: [1, 1],
-            //defaultDate: new Date(curDate),
-            //minDate: curDate,
-            //maxDate: ''
-        });
-        $("#todate").datepicker({
-            showAnim: null,
-            dateFormat: 'dd-mm-yy',
-            // showOn: 'both',
-            buttonImage: '/images/calender.jpg',
-            buttonImageOnly: true,
-            firstDay: 1,
-            nextText: '',
-            prevText: '',
-            numberOfMonths: [1, 1],
-            //defaultDate: new Date(curDate),
-            //minDate: curDate,
-            //maxDate: ''
-        });
+	function destroyCustomerReportTable() {
+		if ($.fn.DataTable && $.fn.DataTable.isDataTable('#dt_customer_report')) {
+			$('#dt_customer_report').DataTable().destroy();
+		}
+	}
 
-        $('#printtopdf').on('click',function(evt){
-            evt.preventDefault();
-            var zone = $("#zone").val();
-            var preparedby = $("#preparedby").val();
-            var verifiedby = $("#verifiedby").val();
-            var approvedby = $("#approvedby").val();
-            var status = $("#status").val();
-			var specialPriviledge = $("#special_priviledge").is(":checked") ? 1 : 0;
+	function initCustomerReportTable() {
+		if (!$.fn.DataTable || !$('#dt_customer_report').length) { return; }
+		destroyCustomerReportTable();
+		$('#dt_customer_report').DataTable({
+			responsive: true,
+			pageLength: 25,
+			lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
+			order: [[0, 'asc']],
+			dom: "<'row mb-3'<'col-sm-12 col-md-4'l><'col-sm-12 col-md-8 d-flex justify-content-end flex-wrap'B>>" +
+				"<'row mb-2'<'col-sm-12'f>>" +
+				"<'row'<'col-sm-12'tr>>" +
+				"<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+			language: {
+				search: '',
+				searchPlaceholder: 'Search customers...',
+				lengthMenu: '_MENU_',
+				info: 'Showing _START_ to _END_ of _TOTAL_ records',
+				infoEmpty: 'No records found',
+				zeroRecords: 'No matching records'
+			},
+			buttons: [
+				{ extend: 'copyHtml5', text: '<i class="fal fa-copy mr-1"></i> Copy', className: 'btn-primary btn-sm mr-1 mb-1' },
+				{ extend: 'excelHtml5', text: '<i class="fal fa-file-excel mr-1"></i> Excel', className: 'btn-primary btn-sm mr-1 mb-1' },
+				{ extend: 'csvHtml5', text: '<i class="fal fa-file-csv mr-1"></i> CSV', className: 'btn-primary btn-sm mr-1 mb-1' },
+				{ extend: 'print', text: '<i class="fal fa-print mr-1"></i> Print', className: 'btn-primary btn-sm mr-1 mb-1' }
+			]
+		});
+	}
 
-            if(status===''){
-                status=99;
-            }
-            if(zone==='' || zone===0){
-                zone=0;
-            }
-            if(preparedby===''){
-                alert("Please select Prepared by");
-                return false;
-            }
-            if(verifiedby===''){
-                alert("Please select Verified by");
-                return false;
-            }
-            if(approvedby===''){
-                alert("Please select Approved by");
-                return false;
-            }
-            // Use current protocol to avoid mixed content issues
-			var printUrl = window.location.protocol + '//' + window.location.host + '/master/reports/customerprinttopdf/'+status+'/'+zone+'/'+preparedby+'/'+verifiedby+'/'+approvedby+'/'+specialPriviledge;
-            const popup = window.open(
-                printUrl, // URL to display 
-                "PopupWindowPrint", // Name of the window
-                "width=1200,height=600,resizable=yes,scrollbars=yes" // Window settings
-            );
+	$('#printtopdf').on('click', function(evt){
+		evt.preventDefault();
+		var zone = $("#zone").val();
+		var preparedby = $("#preparedby").val();
+		var verifiedby = $("#verifiedby").val();
+		var approvedby = $("#approvedby").val();
+		var status = $("#status").val();
+		var specialPriviledge = $("#special_priviledge").is(":checked") ? 1 : 0;
 
-            // Optional: Check if the popup was blocked
-            if (!popup || popup.closed || typeof popup.closed == "undefined") {
-                alert("Popup was blocked! Please allow popups for this site.");
-            }
+		if (status === '') { status = 99; }
+		if (zone === '' || zone === 0) { zone = 0; }
+		if (preparedby === '') { alert("Please select Prepared by"); return false; }
+		if (verifiedby === '') { alert("Please select Verified by"); return false; }
+		if (approvedby === '') { alert("Please select Approved by"); return false; }
 
-        });
+		var printUrl = '<?php echo ADMIN_URL; ?>reports/customerprinttopdf/'+status+'/'+zone+'/'+preparedby+'/'+verifiedby+'/'+approvedby+'/'+specialPriviledge;
+		const popup = window.open(printUrl, "PopupWindowPrint", "width=1200,height=600,resizable=yes,scrollbars=yes");
 
-        $('#exporttoexcel').on('click',function(evt){
-            evt.preventDefault();
-            var zone = $("#zone").val();
-            var preparedby = $("#preparedby").val();
-            var verifiedby = $("#verifiedby").val();
-            var approvedby = $("#approvedby").val();
-            var status = $("#status").val();
-			var specialPriviledge = $("#special_priviledge").is(":checked") ? 1 : 0;
+		if (!popup || popup.closed || typeof popup.closed == "undefined") {
+			alert("Popup was blocked! Please allow popups for this site.");
+		}
+	});
 
-            if(status===''){
-                status=99;
-            }
-            if(zone==='' || zone===0){
-                zone=0;
-            }
-            
-            // Redirect to export function
-			window.location.href = "<?php echo ADMIN_URL;?>reports/customerexporttoexcel/"+status+'/'+zone+'/'+preparedby+'/'+verifiedby+'/'+approvedby+'/'+specialPriviledge;
-        });
+	$('#exporttoexcel').on('click', function(evt){
+		evt.preventDefault();
+		var zone = $("#zone").val();
+		var preparedby = $("#preparedby").val();
+		var verifiedby = $("#verifiedby").val();
+		var approvedby = $("#approvedby").val();
+		var status = $("#status").val();
+		var specialPriviledge = $("#special_priviledge").is(":checked") ? 1 : 0;
 
-        $('#search').on('click', function(evt){
-            evt.preventDefault();
-            var zone = $("#zone").val();
-            var status = $("#status").val();
-			var specialPriviledge = $("#special_priviledge").is(":checked") ? 1 : 0;
+		if (status === '') { status = 99; }
+		if (zone === '' || zone === 0) { zone = 0; }
 
-            // Show loading indicator
-            $("#paidcustomerDiv").html('<div class="alert alert-info">Loading...</div>');
+		window.location.href = "<?php echo ADMIN_URL;?>reports/customerexporttoexcel/"+status+'/'+zone+'/'+preparedby+'/'+verifiedby+'/'+approvedby+'/'+specialPriviledge;
+	});
 
-            // Use relative URL to avoid mixed content issues
-            var ajaxUrl = window.location.protocol + '//' + window.location.host + '/master/reports/getcustomerreportsearch';
-            $.ajax({
-                type    : "POST",
-                url	    : ajaxUrl,
-				data	: "zone="+zone+'&status='+status+'&special_priviledge='+specialPriviledge,
-                success: function(response){
-                    if(response && typeof response === 'string' && response.trim().length > 0){
-                        $("#paidcustomerDiv").html(response.trim());
-                    } else {
-                        $("#paidcustomerDiv").html('<div class="alert alert-warning">No data found.</div>');
-                    }
-                },
-                error: function(xhr, status, error){
-                    console.error('AJAX Error:', status, error);
-                    console.error('Response Status:', xhr.status);
-                    console.error('Response Text:', xhr.responseText);
-                    var errorMsg = 'Error loading data. Please try again.';
-                    if(xhr && xhr.responseText){
-                        // Try to extract error message from response
-                        var responseText = xhr.responseText;
-                        // If it's HTML with error, try to extract
-                        if(responseText.indexOf('Fatal error') !== -1 || responseText.indexOf('Parse error') !== -1 || responseText.indexOf('Warning') !== -1){
-                            errorMsg = 'Server error occurred. Please check server logs.';
-                        } else if(responseText.length > 0 && responseText.length < 500){
-                            // If response is short, might be an error message
-                            errorMsg = responseText.substring(0, 200);
-                        }
-                    }
-                    $("#paidcustomerDiv").html('<div class="alert alert-danger"><strong>Error:</strong> ' + errorMsg + '<br><small>Status: ' + xhr.status + '</small></div>');
-                }
-            });
-        });
-    });
+	$('#search').on('click', function(evt){
+		evt.preventDefault();
+		var zone = $("#zone").val();
+		var status = $("#status").val();
+		var specialPriviledge = $("#special_priviledge").is(":checked") ? 1 : 0;
 
-</script>	
+		destroyCustomerReportTable();
+		$("#paidcustomerDiv").html('<div class="text-center py-4 text-muted"><i class="fal fa-spinner fa-spin fa-2x mb-2"></i><div>Loading results…</div></div>');
 
+		$.ajax({
+			type: "POST",
+			url: '<?php echo ADMIN_URL; ?>reports/getcustomerreportsearch',
+			data: "zone="+zone+'&status='+status+'&special_priviledge='+specialPriviledge,
+			success: function(response){
+				if (response && typeof response === 'string' && response.trim().length > 0) {
+					$("#paidcustomerDiv").html(response.trim());
+					initCustomerReportTable();
+				} else {
+					$("#paidcustomerDiv").html('<div class="alert alert-warning">No data found.</div>');
+				}
+			},
+			error: function(xhr){
+				var errorMsg = 'Error loading data. Please try again.';
+				if (xhr && xhr.responseText) {
+					var responseText = xhr.responseText;
+					if (responseText.indexOf('Fatal error') !== -1 || responseText.indexOf('Parse error') !== -1) {
+						errorMsg = 'Server error occurred. Please check server logs.';
+					} else if (responseText.length > 0 && responseText.length < 500) {
+						errorMsg = responseText.substring(0, 200);
+					}
+				}
+				$("#paidcustomerDiv").html('<div class="alert alert-danger"><strong>Error:</strong> ' + errorMsg + '</div>');
+			}
+		});
+	});
+});
+</script>

@@ -106,9 +106,12 @@ class responsibilities_model extends CI_Model {
 
   	/** In Function Add records for select table **/
 	public function add_record(){
-
-		foreach($this->input->post('module') as $key => $value){
-			$roles_data[$value]=  1;
+		$roles_data = array();
+		$posted = $this->input->post('module');
+		if(is_array($posted)){
+			foreach($posted as $key => $value){
+				$roles_data[$value]=  1;
+			}
 		}
 
 		$set_data = array(
@@ -123,12 +126,13 @@ class responsibilities_model extends CI_Model {
 
 	/** Module names Array here 	**/
 	public function module_name(){
-		return $modules_name = array(
+		return array(
 				'dashboard' => '0',
 				'addcustomer' => '0',
 				'add_zone' => '0',
+				'addmetercustomerreading' => '0',
 				'addpaymentcustomer' => '0',
-				'amountrate' => '0',
+				'leakingentry' => '0',
 				'feesplaning' => '0',
 				'paymentmonthlycustomer' => '0',
 				'metersearch' => '0',
@@ -142,16 +146,27 @@ class responsibilities_model extends CI_Model {
 				'payrolssearch' => '0',
 				'addexpenses' => '0',
 				'bsearch' => '0',
+				'adddailyreport' => '0',
+				'customerbalancemonitor' => '0',
 				'addassets' => '0',
+				'addledger' => '0',
 				'technicalproblems' => '0',
 				'technicalsearch' => '0',
 				'web_settings' => '0',
+				'mobile_notifications' => '0',
 				'admin' => '0',
-				'adddailyreport' => '0',
-				'leakingentry' => '0',
-				'database_backup' => '0',
+				'responsibilities' => '0',
+				'employee_logins' => '0',
 				'manual_or_series' => '0',
-				'customerbalancemonitor' => '0'
+				'addbillingperiod' => '0',
+				'createbalanceforward' => '0',
+				'or_correction' => '0',
+				'meter_reading_correction' => '0',
+				'leaking_entry_correction' => '0',
+				'database_backup' => '0',
+				'classification_category' => '0',
+				'classification' => '0',
+				'amountrate' => '0'
 				);
 	}
 
@@ -167,25 +182,23 @@ class responsibilities_model extends CI_Model {
 
  
   	/** In Function Update records for select table **/
-	public function update_record($id){
+  	public function update_record($id){
 
 		$modules_name = $this->module_name();
-		foreach($this->input->post('module') as $key => $value){
-			$roles_data[$value]=  1;
+		$roles_data = array();
+		$posted = $this->input->post('module');
+		if(is_array($posted)){
+			foreach($posted as $key => $value){
+				$roles_data[$value]=  1;
+			}
 		}
-		//echo '<pre>';print_r($modules_name);
-		//echo '<pre>';print_r($roles_data);
 		
 		$update_empty = array_diff_key($modules_name, $roles_data);
 		$newArr = array_merge($roles_data,$update_empty);
-		//echo '<pre>';print_r($newArr);
 		$set_data = array(
 			'role_name' => ucfirst($this->input->post('role_name')),
 		);
-		//$full_data = array_merge($set_data,$roles_data);
 		$full_data = array_merge($set_data,$newArr);
-		//echo '<pre>';print_r($roles_data);
-		//echo '<pre>';print_r($full_data);exit;
 		$this->db->where('id',$id);
 		$result = $this->db->update($this->table_name, $full_data); 
 		return $result;

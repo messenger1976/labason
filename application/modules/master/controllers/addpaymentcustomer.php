@@ -75,9 +75,9 @@ class addpaymentcustomer extends CI_Controller {
 				$search = trim($search_post['value']);
 			}
 
-			// Billing period filter (always apply to speed up query - filter by session or default current period)
-			$billing_period = '';
-			if(isset($_SESSION['current_billingperiod']) && $_SESSION['current_billingperiod'] != '') {
+			// Billing period filter - prefer POST (dropdown), then session, then current period
+			$billing_period = trim($this->input->post('billing_period') ?: '');
+			if($billing_period === '' && isset($_SESSION['current_billingperiod']) && $_SESSION['current_billingperiod'] != '') {
 				$billing_period = $_SESSION['current_billingperiod'];
 			}
 			if($billing_period == '') {
@@ -126,54 +126,41 @@ class addpaymentcustomer extends CI_Controller {
 			$total_records = $this->my_model->get_total_count('', $billing_period);
 			$filtered_records = $this->my_model->get_total_count($search, $billing_period);
 			
-			// Format data for DataTables
+			// Format data for DataTables (SA4-styled cells/actions)
 			$data = array();
 			$i = $start + 1;
 			foreach($records as $row) {
 				$row_id = isset($row['id']) ? $row['id'] : 0;
-				
-				$action_html = '<input type="hidden" name="customerid_'.$i.'" id="customerid_'.$i.'" value="'.(isset($row['customer_id']) ? $row['customer_id'] : '').'">
-								<input type="hidden" name="month_'.$i.'" id="month_'.$i.'" value="'.(isset($row['month']) ? $row['month'] : '').'">
-								<input type="hidden" name="year_'.$i.'" id="year_'.$i.'" value="'.(isset($row['year']) ? $row['year'] : '').'">
-								<input type="hidden" name="invoiceid_'.$i.'" id="invoiceid_'.$i.'" value="'.(isset($row['invoice_id']) ? $row['invoice_id'] : '').'">
-								<a href="#" title="Print">
-									<i class="print_button_new1 fa fa-print" id="print_button_new1'.$i.'" data-print-val-id="'.$i.'"></i>
-								</a>&nbsp;&nbsp;&nbsp;
-								<a href="#" title="Secondary Print">
-									<i class="print_button_new2 fa fa-print" id="print_button_new2'.$i.'" data-print-val-id="'.$i.'" style="color: #5bc0de;"></i>
-								</a>&nbsp;&nbsp;&nbsp;
-								<div class="visible-xs visible-sm hidden-md hidden-lg">
-									<div class="inline position-relative">
-										<button class="btn btn-minier btn-yellow dropdown-toggle" data-toggle="dropdown">
-											<i class="icon-caret-down icon-only bigger-120"></i>
-										</button>
-										
-										<ul class="dropdown-menu dropdown-only-icon dropdown-yellow pull-right dropdown-caret dropdown-close">
-											<li>
-												<a href="JavaScript:if(confirm(\'Confirm Delete?\')==true){window.location=\''.ADMIN_URL.'addpaymentcustomer/delete/'.$row_id.'\';}" class="tooltip-error" data-rel="tooltip" title="Delete">
-													<span class="red">
-														<img src="'.base_url().'images/favicon/delete.png">
-													</span>
-												</a>
-											</li>
-										</ul>
-									</div>
-								</div>';
-				
+				$customer_id = isset($row['customer_id']) ? $row['customer_id'] : '';
+				$full_name = trim((isset($row['last_name']) ? $row['last_name'] : '').', '.(isset($row['first_name']) ? $row['first_name'] : '').' '.(isset($row['middle_name']) ? $row['middle_name'] : ''));
+				$or_number = isset($row['or_number']) ? sprintf('%07d', $row['or_number']) : '';
+				$total = isset($row['total']) ? (float)$row['total'] : 0;
+				$leaking = isset($row['leaking_amount']) ? (float)$row['leaking_amount'] : 0;
+				$vat = isset($row['vat_amount']) ? (float)$row['vat_amount'] : 0;
+				$grand = isset($row['grand_total']) ? (float)$row['grand_total'] : 0;
+				$paid_date = (!empty($row['date']) && $row['date'] != '0000-00-00') ? date('m/d/Y', strtotime($row['date'])) : '';
+
+				$action_html = '<input type="hidden" name="customerid_'.$i.'" id="customerid_'.$i.'" value="'.htmlspecialchars($customer_id, ENT_QUOTES, 'UTF-8').'">'
+					.'<input type="hidden" name="month_'.$i.'" id="month_'.$i.'" value="'.htmlspecialchars(isset($row['month']) ? $row['month'] : '', ENT_QUOTES, 'UTF-8').'">'
+					.'<input type="hidden" name="year_'.$i.'" id="year_'.$i.'" value="'.htmlspecialchars(isset($row['year']) ? $row['year'] : '', ENT_QUOTES, 'UTF-8').'">'
+					.'<input type="hidden" name="invoiceid_'.$i.'" id="invoiceid_'.$i.'" value="'.htmlspecialchars(isset($row['invoice_id']) ? $row['invoice_id'] : '', ENT_QUOTES, 'UTF-8').'">'
+					.'<div class="btn-group btn-group-sm" role="group">'
+					.'<a href="javascript:void(0);" class="btn btn-outline-primary print_button_new1" id="print_button_new1'.$i.'" data-print-val-id="'.$i.'" title="Print Receipt" data-toggle="tooltip"><i class="fal fa-print"></i></a>'
+					.'<a href="javascript:void(0);" class="btn btn-outline-info print_button_new2" id="print_button_new2'.$i.'" data-print-val-id="'.$i.'" title="Secondary Print" data-toggle="tooltip"><i class="fal fa-file-invoice"></i></a>'
+					.'<a href="javascript:void(0);" class="btn btn-outline-danger sa4-confirm-delete" data-sa4-delete-url="'.ADMIN_URL.'addpaymentcustomer/delete/'.$row_id.'" title="Delete" data-toggle="tooltip"><i class="fal fa-trash-alt"></i></a>'
+					.'</div>';
+
 				$data[] = array(
-					'<label>
-						<input type="checkbox" class="ace" name="delete_ids[]" id="delete_ids[]" value="'.$row_id.'" />
-						<span class="lbl"></span>
-					</label>',
+					'<input type="checkbox" class="ace" name="delete_ids[]" value="'.$row_id.'" />',
 					$i++,
-					'<a href="'.ADMIN_URL.'addpaymentcustomer/get_monthly_customer_invoice/'.$row_id.'">'.stripslashes(isset($row['customer_id']) ? $row['customer_id'] : '').'</a>',
-					stripslashes((isset($row['last_name']) ? $row['last_name'] : '').', '.(isset($row['first_name']) ? $row['first_name'] : '').' '.(isset($row['middle_name']) ? $row['middle_name'] : '')),
-					stripslashes(isset($row['or_number']) ? sprintf('%07d',$row['or_number']) : ''),
-					'<div align="right">'.stripslashes(isset($row['total']) ? number_format($row['total'],2) : '0.00').'</div>',
-					'<div align="right">'.stripslashes(isset($row['leaking_amount']) ? number_format($row['leaking_amount'],2) : '0.00').'</div>',
-					'<div align="right">'.stripslashes(isset($row['vat_amount']) ? number_format($row['vat_amount'],2) : '0.00').'</div>',
-					'<div align="right">'.stripslashes(isset($row['grand_total']) ? number_format($row['grand_total'],2) : '0.00').'</div>',
-					isset($row['date']) ? date('m/d/Y',strtotime($row['date'])) : '',
+					'<a href="'.ADMIN_URL.'addpaymentcustomer/get_monthly_customer_invoice/'.$row_id.'" class="badge badge-primary badge-pill">'.htmlspecialchars(stripslashes($customer_id), ENT_QUOTES, 'UTF-8').'</a>',
+					htmlspecialchars(stripslashes($full_name), ENT_QUOTES, 'UTF-8'),
+					'<span class="badge badge-secondary">'.htmlspecialchars($or_number, ENT_QUOTES, 'UTF-8').'</span>',
+					'<span class="text-right d-block">'.number_format($total, 2).'</span>',
+					'<span class="text-right d-block text-danger">'.number_format($leaking, 2).'</span>',
+					'<span class="text-right d-block text-warning">'.number_format($vat, 2).'</span>',
+					'<span class="text-right d-block fw-700 text-success">'.number_format($grand, 2).'</span>',
+					$paid_date !== '' ? '<span class="badge badge-info badge-pill">'.$paid_date.'</span>' : '',
 					$action_html
 				);
 			}
@@ -544,38 +531,58 @@ class addpaymentcustomer extends CI_Controller {
     }
 	
 	public function get_custmer_name(){ 
-		$cust_id=$this->input->post('id');
-        $data['record'] = $this->my_model->get_name($cust_id);	
-		$fulladdress = $data['record']['address'].' '.$data['record']['city'].' '.$data['record']['state'];
-		$selBox ='
-		      <input type="hidden" name="cust_id" id="cust_id" value="'.$data['record']['customer_id'].'"/>
-		      <div class="form-group">
-				  <label class="col-sm-1 control-label" style="width: 12%;">Name : </label>
-				  <div class="col-sm-3">		
-				     <input class="form-control" type="text" name="first_name" id="first_name" value="'.$data['record']['first_name'].'&nbsp;'.$data['record']['middle_name'].'&nbsp;'.$data['record']['last_name'].'"required  readonly >
-				     <input class="form-control" type="hidden" name="tab_id" id="tab_id" value="'.$data['record']['id'].'"required  readonly >
-				  </div>
-				  <label class="col-sm-1 control-label" style="width: 12%;">Meter NUmber : </label>
-				  <div class="col-sm-2">		
-				     <input class="form-control" type="text" name="meter_number" id="meter_number" value="'.$data['record']['meter_number'].'"required  readonly >
-				  </div>
-				  <label class="col-sm-1 control-label" style="width: 12%;">Meter Brand : </label>
-				  <div class="col-sm-2">		
-				     <input class="form-control" type="text" name="meter_brand" id="meter_brand" value="'.$data['record']['meter_brand'].'"required  readonly >
-				  </div>
-			  </div>
-		     <div class="form-group">
-				  <label class="col-sm-1 control-label" style="width: 12%;">Customer ID : </label>
-				  <div class="col-sm-3">		
-				     <input class="form-control" type="text" name="customer_id_display" id="customer_id_display" value="'.$data['record']['customer_id'].'"required  readonly >
-				  </div>
-		          <label class="col-sm-1 control-label" style="width: 12%;">Address : </label>
-				  <div class="col-sm-5">		
-				     <input class="form-control" type="text" name="address" id="address" value="'.$fulladdress.'"required  readonly >
-				  </div>
-			  </div>';
-			  
-		echo $selBox;
+		$cust_id = $this->input->post('id');
+		$data['record'] = $this->my_model->get_name($cust_id);
+		$r = $data['record'];
+		$full_name = trim(
+			(isset($r['first_name']) ? $r['first_name'] : '') . ' ' .
+			(isset($r['middle_name']) ? $r['middle_name'] : '') . ' ' .
+			(isset($r['last_name']) ? $r['last_name'] : '')
+		);
+		$fulladdress = trim(
+			(isset($r['address']) ? $r['address'] : '') . ' ' .
+			(isset($r['city']) ? $r['city'] : '') . ' ' .
+			(isset($r['state']) ? $r['state'] : '')
+		);
+		$h = function ($v) {
+			return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
+		};
+
+		echo '
+		<input type="hidden" name="cust_id" id="cust_id" value="'.$h($r['customer_id']).'"/>
+		<input type="hidden" name="tab_id" id="tab_id" value="'.$h($r['id']).'"/>
+		<div class="row">
+			<div class="col-md-6">
+				<div class="form-group">
+					<label class="form-label" for="first_name">Name</label>
+					<input class="form-control" type="text" name="first_name" id="first_name" value="'.$h($full_name).'" required readonly>
+				</div>
+			</div>
+			<div class="col-md-6">
+				<div class="form-group">
+					<label class="form-label" for="meter_number">Meter Number</label>
+					<input class="form-control" type="text" name="meter_number" id="meter_number" value="'.$h(isset($r['meter_number']) ? $r['meter_number'] : '').'" required readonly>
+				</div>
+			</div>
+			<div class="col-md-6">
+				<div class="form-group">
+					<label class="form-label" for="meter_brand">Meter Brand</label>
+					<input class="form-control" type="text" name="meter_brand" id="meter_brand" value="'.$h(isset($r['meter_brand']) ? $r['meter_brand'] : '').'" required readonly>
+				</div>
+			</div>
+			<div class="col-md-6">
+				<div class="form-group">
+					<label class="form-label" for="customer_id_display">Customer ID</label>
+					<input class="form-control" type="text" name="customer_id_display" id="customer_id_display" value="'.$h(isset($r['customer_id']) ? $r['customer_id'] : '').'" required readonly>
+				</div>
+			</div>
+			<div class="col-md-12">
+				<div class="form-group mb-0">
+					<label class="form-label" for="address">Address</label>
+					<input class="form-control" type="text" name="address" id="address" value="'.$h($fulladdress).'" required readonly>
+				</div>
+			</div>
+		</div>';
 	}
 	public function get_calculation(){ 
 	

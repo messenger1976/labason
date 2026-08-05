@@ -182,27 +182,17 @@ class Employee_logins_model extends CI_Model {
     }	
 	
 	public function exit_id($exit_data,$local_id) {
-        $this->db->select("*");
+		$this->db->select("id");
 		$this->db->from($this->table_name);
 		$this->db->where($exit_data);
+		if ($local_id != '') {
+			$this->db->where('id !=', $local_id);
+		}
 		$query = $this->db->get();
-		$result = $query->num_rows();
-		if($result > 0){
-			$this->db->select("*");
-			$this->db->from($this->table_name);
-			$this->db->where($exit_data);
-			$query = $this->db->get();
-			$result = $query->row_array();
-			if($result['id'] == $local_id){
-				$result ='0';
-			}
-		}else{
-			$result =1;
-		} 
-		return $result;
+		return $query->num_rows();
     }
     public function get_income_metercustomer(){
-		$this->db->select('SUM(pay_amount) as total1');
+		$this->db->select('SUM(grand_total) as total1');
 		$this->db->from($this->table_meter);
 		$query = $this->db->get();
 		$result = $query->row_array();

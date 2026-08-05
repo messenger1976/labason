@@ -10,9 +10,26 @@
 						if ($logged_in_user === '') {
 							$logged_in_user = trim((string) $this->session->userdata('username'));
 						}
+					$avatar_relative = 'assets/avatars/avatar.png';
+					$avatar_dir = FCPATH . 'uploads/profile/';
+					$avatar_key = preg_replace('/[^a-z0-9_-]/i', '', strtolower((string) $this->session->userdata('usertype'))) . '_' . (int) $this->session->userdata('userid');
+					$avatar_mtime = 0;
+					foreach (array('jpg', 'jpeg', 'png', 'gif', 'webp') as $avatar_ext) {
+						$avatar_abs = $avatar_dir . $avatar_key . '.' . $avatar_ext;
+						if (is_file($avatar_abs)) {
+							$avatar_relative = 'uploads/profile/' . $avatar_key . '.' . $avatar_ext;
+							$avatar_mtime = @filemtime($avatar_abs);
+							break;
+						}
+					}
+						if (!$avatar_mtime) {
+							$avatar_default_abs = FCPATH . $avatar_relative;
+							$avatar_mtime = @filemtime($avatar_default_abs) ?: time();
+						}
+						$avatar_url = base_url($avatar_relative) . '?v=' . $avatar_mtime;
 					?>
 					<a href="javascript:void(0);" id="show-shortcut" data-action="toggleShortcut" data-user-name="<?php echo htmlspecialchars($logged_in_user, ENT_QUOTES, 'UTF-8'); ?>">
-						<img src="<?php echo base_url(); ?>/assets/avatars/avatar.png" alt="me" class="online" /> 
+						<img src="<?php echo htmlspecialchars($avatar_url, ENT_QUOTES, 'UTF-8'); ?>" alt="me" class="online" style="object-fit:cover;" /> 
 						<span>
 							<?php echo htmlspecialchars($logged_in_user, ENT_QUOTES, 'UTF-8'); ?>
 						</span>
