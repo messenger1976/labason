@@ -119,27 +119,32 @@
 			</thead>
 			<tbody>
 				<?php
-                    if(count($zone) > 0){
-						$cr = 0;
-                        $grand_total_current = 0;
-                        $grand_total_penalty =0;
-						$grand_total_wmmf =0;
-                        $grand_total_leaking =0;
-                        $grand_total_ar_leaking =0;
-                        $grand_total_ar_leaking_balance =0;
-                        $grand_total_sc =0;
-                        $grand_total_franchise_fee =0;
-                        foreach($zone as $key => $row){ 
-				?>                                            
+					$cr = 0;
+					$grand_total_current = 0;
+					$grand_total_arrears = 0;
+					$grand_total_penalty = 0;
+					$grand_total_wmmf = 0;
+					$grand_total_leaking = 0;
+					$grand_total_ar_leaking = 0;
+					$grand_total_ar_leaking_balance = 0;
+					$grand_total_sc = 0;
+					$grand_total_franchise_fee = 0;
+					$mysql_transdate = !empty($trans_date_mysql) ? $trans_date_mysql : date('Y-m-d', strtotime($trans_date));
+					$current_billing_period_year = date('Y', strtotime($mysql_transdate));
+                    if(is_array($zone) && count($zone) > 0){
+                        foreach($zone as $key => $row){
+                 $get_dailytrans = $this->my_model->get_metercustomer_records($mysql_transdate,$row['id'], isset($grouping) ? (int)$grouping : 1, isset($cashier) ? (int)$cashier : 0);
+				 // Skip zones with no collection records
+				 if(!is_array($get_dailytrans) || count($get_dailytrans) == 0){
+					 continue;
+				 }
+				?>
 					<tr>
 						<td></td>
 						<td><b><?php echo stripslashes($row['zone']); ?></b></td>
 						<td colspan="10"></td>
 					</tr>
                 <?php
-                $mysql_transdate = date('Y-m-d',strtotime($trans_date));
-				$current_billing_period_year = date('Y',strtotime($trans_date));
-                 $get_dailytrans = $this->my_model->get_metercustomer_records($mysql_transdate,$row['id'], isset($grouping) ? (int)$grouping : 1, isset($cashier) ? (int)$cashier : 0);
                  $total_grand_zone = 0;
                  $total_current_zone = 0;
 				 $total_arrears_zone = 0;
@@ -187,12 +192,19 @@
 						$display_arrears_amount = $display_arrears_amount + $display_penalty_amount;
 						$display_penalty_amount = 0;
 					}
-					$ar_leaking = 0;
+					$ar_leaking = array('leaking_total_amount' => 0, 'leaking_balance' => 0);
                     if($gdailytrans['leaking_amount']>0){
-						$ornumber_search = sprintf('%07d',$gdailytrans['or_number']);
-						$ar_leaking = $this->leakingentry_model->get_soa_statement_OR($ornumber_search);
-
-						$gdailytrans['grand_total'] = $gdailytrans['grand_total']-$ar_leaking['leaking_balance'];
+						$ar_leaking = $this->leakingentry_model->get_ar_leaking_for_daily_report(
+							$gdailytrans['or_number'],
+							isset($gdailytrans['customer_id']) ? $gdailytrans['customer_id'] : null
+						);
+						// Amount paid on this OR only (do not subtract current A/R balance —
+						// later leaking-ledger payments stay under LEAKING A/R PAYMENT REPORT)
+						$gdailytrans['grand_total'] = $this->leakingentry_model->get_collected_amount_for_leaking_payment(
+							$gdailytrans['grand_total'],
+							isset($gdailytrans['pay_amount']) ? $gdailytrans['pay_amount'] : 0,
+							isset($gdailytrans['or_number']) ? $gdailytrans['or_number'] : null
+						);
 					}
 					//print_r($ar_leaking['leaking_total_amount']);
                     echo '<tr>';
@@ -287,11 +299,17 @@
 								$display_penalty_amount = 0;
 							}
 
-							$ar_leaking = 0;
+							$ar_leaking = array('leaking_total_amount' => 0, 'leaking_balance' => 0);
 							if($gdailytrans['leaking_amount']>0){
-								$ornumber_search = sprintf('%07d',$gdailytrans['or_number']);
-								$ar_leaking = $this->leakingentry_model->get_soa_statement_OR($ornumber_search);
-								$gdailytrans['grand_total'] = $gdailytrans['grand_total']-$ar_leaking['leaking_balance'];
+								$ar_leaking = $this->leakingentry_model->get_ar_leaking_for_daily_report(
+									$gdailytrans['or_number'],
+									isset($gdailytrans['customer_id']) ? $gdailytrans['customer_id'] : null
+								);
+								$gdailytrans['grand_total'] = $this->leakingentry_model->get_collected_amount_for_leaking_payment(
+									$gdailytrans['grand_total'],
+									isset($gdailytrans['pay_amount']) ? $gdailytrans['pay_amount'] : 0,
+									isset($gdailytrans['or_number']) ? $gdailytrans['or_number'] : null
+								);
 							}
 
 							echo '<tr>';
@@ -358,8 +376,11 @@
 
 				
                 <?php
-				$mysql_transdate1 = date('Y-m-d',strtotime($trans_date));
+				$mysql_transdate1 = !empty($trans_date_mysql) ? $trans_date_mysql : date('Y-m-d', strtotime($trans_date));
 				$get_dailytrans1 = $this->leakingentry_model->get_soa_statement_transdate($mysql_transdate1);
+				if(!is_array($get_dailytrans1)){
+					$get_dailytrans1 = array();
+				}
 				$total_leaking_ar = 0;
 				//print_r($get_dailytrans1);
 				foreach($get_dailytrans1 as $key => $gdailytrans1){

@@ -287,13 +287,100 @@ class leakingentry_model extends CI_Model {
 	}
 
 	public function get_soa_statement_OR($orno){
-		$this->db->select('*');
+		$or_int = (int) $orno;
+		$or_padded = sprintf('%07d', $or_int);
+		$or_raw = (string) $or_int;
+		$or_in = array_unique(array(
+			(string) $orno,
+			$or_padded,
+			$or_raw,
+		));
+
+		$this->db->select($this->table_leaking_ledger_details.'.*, '.$this->table_leaking_ledger.'.*');
 		$this->db->from($this->table_leaking_ledger_details);
 		$this->db->join($this->table_leaking_ledger,$this->table_leaking_ledger_details.'.leaking_id = '.$this->table_leaking_ledger.'.leaking_id','left');
-		$this->db->where('leakingledgerdetails_or_number',$orno);
+		$this->db->where_in('leakingledgerdetails_or_number', $or_in);
+		$this->db->order_by($this->table_leaking_ledger_details.'.leakingledgerdetails_created_datetime', 'DESC');
 		$query = $this->db->get();
+		if ($query === FALSE) {
+			return array();
+		}
 		$result = $query->row_array();
-		return $result;
+		return $result ? $result : array();
+	}
+
+	/**
+	 * Latest posted/full-paid leaking A/R header for a customer (fallback when OR detail is missing).
+	 */
+	public function get_leaking_ar_by_customer($customer_id){
+		if ($customer_id === '' || $customer_id === null) {
+			return array();
+		}
+		$this->db->select('*');
+		$this->db->from($this->table_leaking_ledger);
+		$this->db->where('leaking_customer_id', $customer_id);
+		$this->db->where_in('leaking_status', array(4, 5)); // Posted / Full Paid
+		$this->db->order_by('leaking_updated_datetime', 'DESC');
+		$this->db->limit(1);
+		$query = $this->db->get();
+		if ($query === FALSE) {
+			return array();
+		}
+		$result = $query->row_array();
+		return $result ? $result : array();
+	}
+
+	/**
+	 * Resolve A/R Leaking + Balance for Daily Collection Report rows.
+	 * Tries OR ledger details first, then customer leaking header.
+	 */
+	public function get_ar_leaking_for_daily_report($or_number, $customer_id = null){
+		$defaults = array(
+			'leaking_total_amount' => 0,
+			'leaking_balance' => 0,
+			'leakingledgerdetails_amount' => 0,
+		);
+
+		$row = $this->get_soa_statement_OR($or_number);
+		$from_or_detail = !empty($row);
+		if (empty($row) && $customer_id !== null && $customer_id !== '') {
+			$row = $this->get_leaking_ar_by_customer($customer_id);
+		}
+		if (empty($row)) {
+			return $defaults;
+		}
+
+		return array(
+			'leaking_total_amount' => (float) (isset($row['leaking_total_amount']) ? $row['leaking_total_amount'] : 0),
+			'leaking_balance' => (float) (isset($row['leaking_balance']) ? $row['leaking_balance'] : 0),
+			'leakingledgerdetails_amount' => ($from_or_detail && isset($row['leakingledgerdetails_amount']))
+				? (float) $row['leakingledgerdetails_amount']
+				: 0,
+		);
+	}
+
+	/**
+	 * Total Amount Collected for a meter payment that has a leaking discount.
+	 * Uses the amount paid on that OR only — never current leaking_balance
+	 * (later payments from Leaking Ledger Details belong in LEAKING A/R PAYMENT REPORT).
+	 */
+	public function get_collected_amount_for_leaking_payment($grand_total, $pay_amount = 0, $or_number = null){
+		$due = (float) $grand_total;
+		$paid = (float) $pay_amount;
+
+		if ($paid > 0) {
+			// Cap at due so overtender/change does not inflate collection
+			return ($due > 0 && $paid > $due) ? $due : $paid;
+		}
+
+		if ($or_number !== null && $or_number !== '' && (int) $or_number > 0) {
+			$detail = $this->get_soa_statement_OR($or_number);
+			if (!empty($detail['leakingledgerdetails_amount'])) {
+				return (float) $detail['leakingledgerdetails_amount'];
+			}
+		}
+
+		return $due;
 	}
 
 	public function get_soa_statement_transdate($transdate){
@@ -304,8 +391,11 @@ class leakingentry_model extends CI_Model {
 		$this->db->where('leakingledgerdetails_transdate',$transdate);
 		$this->db->where('leakingledgerdetails_source_module','leaking');
 		$query = $this->db->get();
+		if ($query === FALSE) {
+			return array();
+		}
 		$result = $query->result_array();
-		return $result;
+		return is_array($result) ? $result : array();
 	}
 
 	public function get_meterreading_refno($refno){

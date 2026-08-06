@@ -85,7 +85,7 @@ For groups without a saved parent key (Customers, Finance, Reports), the main-me
 | Main menu | Parent key (saved) | Child keys |
 |-----------|-------------------|------------|
 | Dashboard | `dashboard` | — |
-| Customers | *(virtual)* | `addcustomer`, `add_zone` |
+| Customers | *(virtual)* | `addcustomer`, `add_zone`, `delete_customer` (action: delete on Customers Listing; not a sidebar link) |
 | Finance | *(virtual)* | `addmetercustomerreading`, `addpaymentcustomer`, `leakingentry`, `feesplaning`, `paymentmonthlycustomer`, `metersearch`, `monthlysearch`, `generatemetercustomer_search`, `income_reportsearch`, `paidsearch`, `unpaidsearch` |
 | Employee | `addemployee` | `payrols`, `payrolssearch` (nav payroll often commented; Job Title uses same parent gate) |
 | Expenses | `addexpenses` | `bsearch` (Accounting menu also gated by `addexpenses`) |
@@ -138,10 +138,11 @@ For groups without a saved parent key (Customers, Finance, Reports), the main-me
 Script (safe to re-run):
 
 - `sql/add_hierarchical_permission_columns.sql`
+- `sql/add_delete_customer_permission.sql` — adds `delete_customer` (Delete Customer under Customers; gates listing delete UI + `addcustomer/delete` / `multi_delete`)
 
 Apply to the active database (`waterbilling1` and/or `labasonsandbox` per environment config).
 
-**Note:** New columns default to `0`. Existing roles that previously relied on ungated Admin children (e.g. OR Correction when only `admin = 1`) MUST be re-edited to grant those child keys explicitly.
+**Note:** New columns default to `0`. Existing roles that previously relied on ungated Admin children (e.g. OR Correction when only `admin = 1`) MUST be re-edited to grant those child keys explicitly. Full admin (`usertype` = `admin`) always retains delete access; sub-admins need `delete_customer = 1`.
 
 ---
 

@@ -370,7 +370,7 @@ class Report_model extends CI_Model {
 		$leaking_or_cache = array();
 
 		// Meter customers: one line per OR (matches Daily Collection Report grouping).
-		$this->db->select('date, or_number, customer_id, MAX(COALESCE(grand_total, pay_amount, amount, 0)) as grand_total, MAX(COALESCE(leaking_amount, 0)) as leaking_amount', FALSE);
+		$this->db->select('date, or_number, customer_id, MAX(COALESCE(grand_total, pay_amount, amount, 0)) as grand_total, MAX(COALESCE(pay_amount, 0)) as pay_amount, MAX(COALESCE(leaking_amount, 0)) as leaking_amount', FALSE);
 		$this->db->from($this->table_meter);
 		$this->db->where('date >=', $start_ymd);
 		$this->db->where('date <=', $end_ymd);
@@ -386,12 +386,18 @@ class Report_model extends CI_Model {
 				if ((float) $row['leaking_amount'] > 0 && !empty($row['or_number'])) {
 					$or_key = sprintf('%07d', $row['or_number']);
 					if (!isset($leaking_or_cache[$or_key])) {
-						$ar_leaking = $CI->leakingentry_model->get_soa_statement_OR($or_key);
-						$leaking_or_cache[$or_key] = ($ar_leaking && is_array($ar_leaking)) ? $ar_leaking : array();
+						$leaking_or_cache[$or_key] = true;
 					}
-					if (isset($leaking_or_cache[$or_key]['leaking_balance'])) {
-						$grand -= (float) $leaking_or_cache[$or_key]['leaking_balance'];
+					// Use amount paid on this OR only (not current leaking balance)
+					$pay_amt = 0;
+					if (isset($row['pay_amount'])) {
+						$pay_amt = (float) $row['pay_amount'];
 					}
+					$grand = $CI->leakingentry_model->get_collected_amount_for_leaking_payment(
+						$grand,
+						$pay_amt,
+						$row['or_number']
+					);
 				}
 				$daily[$day] += $grand;
 			}

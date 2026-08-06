@@ -104,7 +104,7 @@
 										<table id="dt_basic" class="table table-bordered table-hover table-striped w-100">
 											<thead>
 												<tr>
-													<th style="width:28px;"><input type="checkbox" id="dt_select_all" class="ace" /></th>
+													<th style="width:28px;"><?php if (!empty($can_delete_customer)) { ?><input type="checkbox" id="dt_select_all" class="ace" /><?php } ?></th>
 													<th>S No</th>
 													<th>Customer ID</th>
 													<th>Name</th>

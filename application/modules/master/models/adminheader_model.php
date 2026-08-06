@@ -30,6 +30,7 @@ class adminheader_model extends CI_Model {
 				'dashboard' => 'Dashboard',
 				'addcustomer' => 'Customers Listing',
 				'add_zone' => 'Zone Names',
+				'delete_customer' => 'Delete Customer',
 				'addmetercustomerreading' => 'Add Meter Customers Reading',
 				'addpaymentcustomer' => 'Meter Customers Bills',
 				'leakingentry' => 'Leaking Entry',

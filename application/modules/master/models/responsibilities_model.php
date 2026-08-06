@@ -130,6 +130,7 @@ class responsibilities_model extends CI_Model {
 				'dashboard' => '0',
 				'addcustomer' => '0',
 				'add_zone' => '0',
+				'delete_customer' => '0',
 				'addmetercustomerreading' => '0',
 				'addpaymentcustomer' => '0',
 				'leakingentry' => '0',

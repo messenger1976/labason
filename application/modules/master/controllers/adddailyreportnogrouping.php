@@ -166,19 +166,19 @@ class adddailyreportnogrouping extends CI_Controller {
 			$ar_leaking = array('leaking_total_amount' => 0, 'leaking_balance' => 0);
 			if(isset($gdailytrans['leaking_amount']) && $gdailytrans['leaking_amount'] > 0){
 				$ornumber_search = sprintf('%07d', $gdailytrans['or_number']);
-				// Use pre-loaded lookup instead of querying database
 				if(isset($leaking_ar_lookup[$ornumber_search])){
 					$ar_leaking = $leaking_ar_lookup[$ornumber_search];
-					if(isset($ar_leaking['leaking_balance'])){
-						$gdailytrans['grand_total'] = $gdailytrans['grand_total'] - $ar_leaking['leaking_balance'];
-					}
 				} else {
-					// Fallback to direct query if not in lookup
-					$ar_leaking = $this->leakingentry_model->get_soa_statement_OR($ornumber_search);
-					if(isset($ar_leaking['leaking_balance'])){
-						$gdailytrans['grand_total'] = $gdailytrans['grand_total'] - $ar_leaking['leaking_balance'];
-					}
+					$ar_leaking = $this->leakingentry_model->get_ar_leaking_for_daily_report(
+						$gdailytrans['or_number'],
+						isset($gdailytrans['customer_id']) ? $gdailytrans['customer_id'] : null
+					);
 				}
+				$gdailytrans['grand_total'] = $this->leakingentry_model->get_collected_amount_for_leaking_payment(
+					$gdailytrans['grand_total'],
+					isset($gdailytrans['pay_amount']) ? $gdailytrans['pay_amount'] : 0,
+					isset($gdailytrans['or_number']) ? $gdailytrans['or_number'] : null
+				);
 			}
 
 			$penalty_val = (float)$gdailytrans['total_penalty'];
@@ -348,7 +348,13 @@ class adddailyreportnogrouping extends CI_Controller {
 				}
 				if($this->input->post('fromdate') !=''){
 					$fromdate = $this->input->post('fromdate');
-					$from = date('Y-m-d', strtotime($fromdate));
+					// fromdate is dd-mm-yyyy
+					$date_parts = explode('-', $fromdate);
+					if(count($date_parts) == 3 && strlen($date_parts[2]) == 4){
+						$from = $date_parts[2] . '-' . $date_parts[1] . '-' . $date_parts[0];
+					} else {
+						$from = date('Y-m-d', strtotime($fromdate));
+					}
 					
 					// Always set grouping to 0 (no grouping) and no zone filter
 					$grouping = 0;
@@ -357,6 +363,8 @@ class adddailyreportnogrouping extends CI_Controller {
 						$this->my_model->get_metercustomer_records($from, '', $grouping),
 						$this->my_model->get_metercustomer_orphan_records($from, 0, $grouping)
 					);
+					$leaking_ar = $this->leakingentry_model->get_soa_statement_transdate($from);
+					$data['leaking_record'] = is_array($leaking_ar) ? $leaking_ar : array();
 					$this->load->view($this->searchPage,$data);
 				}		
 			}else{

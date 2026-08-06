@@ -67,6 +67,7 @@ class responsibilities extends CI_Controller
 				'dashboard' => 'Dashboard',
 				'addcustomer' => 'Customers Listing',
 				'add_zone' => 'Zone Names',
+				'delete_customer' => 'Delete Customer',
 				'addmetercustomerreading' => 'Add Meter Customers Reading',
 				'addpaymentcustomer' => 'Meter Customers Bills',
 				'leakingentry' => 'Leaking Entry',
@@ -125,7 +126,7 @@ class responsibilities extends CI_Controller
 				'label' => 'Customers',
 				'icon' => 'fa-user',
 				'parent_key' => null,
-				'children' => array('addcustomer', 'add_zone')
+				'children' => array('addcustomer', 'add_zone', 'delete_customer')
 			),
 			array(
 				'id' => 'finance',

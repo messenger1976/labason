@@ -57,6 +57,19 @@ class addcustomer extends CI_Controller {
 		ini_set('display_errors','off'); 				
 		$this->load->model('adminheader_model','top_model');
     }
+
+	/** Admin always; sub-admin only when Roles & Responsibilities Delete Customer is granted. **/
+	protected function can_delete_customer() {
+		if ($this->session->userdata('usertype') == 'admin') {
+			return true;
+		}
+		$roleResponsible = $this->top_model->get_responsibilities();
+		return (
+			is_array($roleResponsible)
+			&& array_key_exists('delete_customer', $roleResponsible)
+			&& (string) $roleResponsible['delete_customer'] === '1'
+		);
+	}
 	public function index(){ 		 //*****  View Loading  *****//
 		if($this->session->userdata('usertype') == 'subadmin'){
 			$this->head['roleResponsible'] = $this->top_model->get_responsibilities();
@@ -70,6 +83,7 @@ class addcustomer extends CI_Controller {
 		// No longer loading all records - using server-side pagination instead
 		$data['record'] = array();
 		$data['zone'] = $this->my_model->get_zone();
+		$data['can_delete_customer'] = $this->can_delete_customer();
 		//$header['host'] = $this->comm_model->get_single_record();				
 		//$header['record_info'] = $this->top_model->get_last_login_details(1);
 		$this->load->view($this->headerPage,$this->head);
@@ -142,6 +156,7 @@ class addcustomer extends CI_Controller {
 			$records = $this->my_model->get_paginated_records($start, $length, $search, $order_column, $order_dir, $zone);
 			$total_records = $this->my_model->get_total_count('', $zone);
 			$filtered_records = $this->my_model->get_total_count($search, $zone);
+			$can_delete_customer = $this->can_delete_customer();
 			
 			// Format data for DataTables
 			$data = array();
@@ -159,6 +174,13 @@ class addcustomer extends CI_Controller {
 					$status_html = '<a href="JavaScript:if(confirm(\'Are you sure want to Change the Status?\')==true){window.location=\''.ADMIN_URL.'addcustomer/status/'.$row_id.'/'.$row_status.'\';}" class="badge badge-danger badge-pill">Disconnected</a>';
 				}
 				
+				$delete_btn_html = '';
+				if ($can_delete_customer) {
+					$delete_btn_html = '<a class="btn btn-outline-danger sa4-confirm-delete" href="javascript:void(0);" data-sa4-delete-url="'.ADMIN_URL.'addcustomer/delete/'.$row_id.'" title="Delete" data-toggle="tooltip">
+										<i class="fal fa-times"></i>
+									</a>';
+				}
+
 				$action_html = '<input type="hidden" name="id_'.$i.'" id="id_'.$i.'" value="'.$row_id.'">
 								<input type="hidden" name="customerid_'.$i.'" id="customerid_'.$i.'" value="'.(isset($row['customer_id']) ? $row['customer_id'] : '').'">
 								<input type="hidden" name="billingplansid_'.$i.'" id="billingplansid_'.$i.'" value="'.(isset($row['billingplans']) ? $row['billingplans'] : '').'">
@@ -172,13 +194,15 @@ class addcustomer extends CI_Controller {
 									<a class="btn btn-outline-warning set-password-btn" href="javascript:void(0);" data-customer-id="'.$row_id.'" data-customer-code="'.(isset($row['customer_id']) ? htmlspecialchars($row['customer_id'], ENT_QUOTES, 'UTF-8') : '').'" title="Set Login Password" data-toggle="tooltip">
 										<i class="fal fa-key"></i>
 									</a>
-									<a class="btn btn-outline-danger sa4-confirm-delete" href="javascript:void(0);" data-sa4-delete-url="'.ADMIN_URL.'addcustomer/delete/'.$row_id.'" title="Delete" data-toggle="tooltip">
-										<i class="fal fa-times"></i>
-									</a>
+									'.$delete_btn_html.'
 								</div>';
+
+				$checkbox_html = $can_delete_customer
+					? '<input type="checkbox" class="ace" name="delete_ids[]" id="delete_ids[]" value="'.$row_id.'" />'
+					: '';
 				
 				$data[] = array(
-					'<input type="checkbox" class="ace" name="delete_ids[]" id="delete_ids[]" value="'.$row_id.'" />',
+					$checkbox_html,
 					$i++,
 					stripslashes(isset($row['customer_id']) ? $row['customer_id'] : ''),
 					stripslashes((isset($row['last_name']) ? $row['last_name'] : '').',  '.(isset($row['first_name']) ? $row['first_name'] : '').'  '.(isset($row['middle_name']) ? $row['middle_name'] : '')),
@@ -978,6 +1002,11 @@ class addcustomer extends CI_Controller {
 	/** Delete Function **/
 	public function delete($id){ 
 		$data['msg'] ='';
+		if (!$this->can_delete_customer()) {
+			$this->session->set_flashdata('msg_succ', 'You are not authorized to delete customers.');
+			redirect($this->listPage_redirect);
+			return;
+		}
 		if($id){
 			$result = $this->my_model->delete_record($id);
 			if($result){
@@ -992,6 +1021,11 @@ class addcustomer extends CI_Controller {
 	/** Multiple Delete Function **/
 	public function multi_delete(){
 		$data['msg'] ='';
+		if (!$this->can_delete_customer()) {
+			$this->session->set_flashdata('msg_succ', 'You are not authorized to delete customers.');
+			redirect($this->listPage_redirect);
+			return;
+		}
 		if($this->input->post('delete_ids') != ''){
 			$delete_ids = $this->input->post('delete_ids');
 			for($i=0;$i<count($delete_ids);$i++){

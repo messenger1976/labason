@@ -1,9 +1,13 @@
 # SmartAdmin 4 (SA4) Template Migration — labasonsandbox
 
-**Date:** 2026-07-24  
+**Date:** 2026-07-24 (initial) · **Polish pass documented:** 2026-07-30  
 **Branch:** `labasonsandbox`  
-**Status:** Working tree changes (not committed as of end of day)  
+**Status:** Shell migration + ongoing UI polish (see changelog)  
 **Purpose:** Reference guide for applying the same SA4 template upgrade to **waterbilling1**
+
+> **Detailed polish changelog (pages, bugs, models):**  
+> [`SA4_CHANGELOG_2026-07-29.md`](./SA4_CHANGELOG_2026-07-29.md)  
+> Use that file for the full list of pages updated after the initial shell migration (Customers modals, Zones KPI header, reports, SweetAlert2, `grand_total` income fixes, etc.).
 
 ---
 
@@ -359,13 +363,16 @@ When updating waterbilling1, open these labasonsandbox files as templates:
 1. `application/views/admin-includes/header.php`
 2. `application/views/admin-includes/navigation.php`
 3. `application/modules/master/views/footer.php`
-4. `application/modules/master/views/addcustomer.php`
+4. `application/modules/master/views/addcustomer.php` (+ `addcustomer_add.php`, view/edit modals)
 5. `application/modules/master/views/addpaymentcustomer.php`
 6. `application/modules/master/views/dashboard.php`
 7. `application/modules/master/views/add_zone.php`
-8. `application/modules/master/views/partials/*`
+8. `application/modules/master/views/partials/*` (KPI, DT init/loading, SweetAlert delete)
 9. `sa4/css/legacy-bridge.css`
+10. A polished report form, e.g. `adddailyreport_add.php`
+
+Also read: [`SA4_CHANGELOG_2026-07-29.md`](./SA4_CHANGELOG_2026-07-29.md) for the full polish inventory.
 
 ---
 
-*Generated as a wrap-up of labasonsandbox changes on 2026-07-24 for porting the SA4 template to waterbilling1.*
+*Generated as a wrap-up of labasonsandbox changes on 2026-07-24 for porting the SA4 template to waterbilling1. Extended 2026-07-30 with link to polish changelog.*
