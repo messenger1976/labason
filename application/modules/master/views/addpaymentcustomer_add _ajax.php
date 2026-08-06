@@ -61,6 +61,7 @@
 
 					$record_reading = $this->my_model->get_metercustomer_add_all_records($id, $mon_id, $year);
 					$result = count($record_reading);
+					$has_last_reading = isset($row['reading']) && trim((string)$row['reading']) !== '';
 
 					if ($result != 0) {
 						$trans_date_raw = $record_reading[0]['trans_date'];
@@ -100,7 +101,7 @@
 			?>
 				<tr>
 					<td>
-						<?php if ($result == 0) { ?>
+						<?php if ($result == 0 && $has_last_reading) { ?>
 						<input type="checkbox" name="checkbox[]" id="<?php echo $i; ?>" value="<?php echo $i; ?>" class="my_check">
 						<?php } else { ?>
 						<input type="checkbox" name="checkbox[]" id="<?php echo $i; ?>" value="<?php echo $i; ?>" class="my_check" disabled>
@@ -152,7 +153,7 @@
 					</td>
 					<td>
 						<?php if ($result == 0) { ?>
-						<button type="button" class="btn btn-danger btn-xs waves-effect waves-themed pay_button" id="paybutton_<?php echo $i; ?>" data-pay-val-id="<?php echo $i; ?>">Unpaid</button>
+						<button type="button" class="btn btn-danger btn-xs waves-effect waves-themed pay_button" id="paybutton_<?php echo $i; ?>" data-pay-val-id="<?php echo $i; ?>"<?php echo $has_last_reading ? '' : ' disabled'; ?>>Unpaid</button>
 						<?php } else { ?>
 						<button type="button" class="btn btn-secondary btn-xs waves-effect waves-themed pay_button" id="paybutton_<?php echo $i; ?>" data-pay-val-id="<?php echo $i; ?>" disabled>Paid</button>
 						<?php } ?>

@@ -126,11 +126,15 @@
                             $prev_year = get_customer_unpaid_records($gdailytrans['customer_id'],'12',$current_billing_period_year-1);
                             $ar_leaking = array('leaking_total_amount' => 0, 'leaking_balance' => 0);
                             if(isset($gdailytrans['leaking_amount']) && $gdailytrans['leaking_amount'] > 0){
-                                $ornumber_search = sprintf('%07d',$gdailytrans['or_number']);
-                                $ar_leaking = $this->leakingentry_model->get_soa_statement_OR($ornumber_search);
-                                if(isset($ar_leaking['leaking_balance'])){
-                                    $gdailytrans['grand_total'] = $gdailytrans['grand_total']-$ar_leaking['leaking_balance'];
-                                }
+                                $ar_leaking = $this->leakingentry_model->get_ar_leaking_for_daily_report(
+                                    $gdailytrans['or_number'],
+                                    isset($gdailytrans['customer_id']) ? $gdailytrans['customer_id'] : null
+                                );
+                                $gdailytrans['grand_total'] = $this->leakingentry_model->get_collected_amount_for_leaking_payment(
+                                    $gdailytrans['grand_total'],
+                                    isset($gdailytrans['pay_amount']) ? $gdailytrans['pay_amount'] : 0,
+                                    isset($gdailytrans['or_number']) ? $gdailytrans['or_number'] : null
+                                );
                             }
 
 							$penalty_val = (float)$gdailytrans['total_penalty'];
