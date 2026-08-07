@@ -246,19 +246,28 @@ $avatar_url = base_url($avatar_relative) . '?v=' . $avatar_mtime;
 					</li>
 				</ul>
 			</li>
-			<li class="<?php if($this->uri->segment(2)=='addaccountgroup'){echo 'active open';}?>
-						   <?php if($this->uri->segment(2)=='addsubaccountgroup'){echo 'active open';}?>">
+			<?php } ?>
+
+			<?php
+			$show_accounting_nav = ($this->session->userdata('usertype') == 'admin')
+				|| (array_key_exists('addexpenses',$roleResponsible) && ($roleResponsible['addexpenses'] == 1))
+				|| (array_key_exists('addledger',$roleResponsible) && ($roleResponsible['addledger'] == 1))
+				|| (array_key_exists('ar_adjustment',$roleResponsible) && ($roleResponsible['ar_adjustment'] == 1));
+			if ($show_accounting_nav) {
+			?>
+			<li class="<?php if(in_array($this->uri->segment(2), array('addaccountgroup','addsubaccountgroup','addjournalvoucher','trialbalance','aradjustment'), true)){echo 'active open';}?>">
 				<a href="#" title="Accounting">
-					<i class="fal fa-edit"></i>
+					<i class="fal fa-book"></i>
 					<span class="nav-link-text">Accounting</span>
 				</a>
 				<ul>
-					<li class="<?php if($this->uri->segment(2)=='addaccountgroup' && $this->uri->segment(2)=='addaccountgroup'){echo 'active';}?>">
+					<?php if((array_key_exists('addexpenses',$roleResponsible) && ($roleResponsible['addexpenses'] == 1)) || ($this->session->userdata('usertype') == 'admin')){ ?>
+					<li class="<?php if($this->uri->segment(2)=='addaccountgroup'){echo 'active';}?>">
 						<a href="<?php echo ADMIN_URL;?>addaccountgroup" title="Add Account Expenses Type">
 							<span class="nav-link-text">Add Account Expenses Type</span>
 						</a>
 					</li>
-					<li class="<?php if($this->uri->segment(2)=='addsubaccountgroup' && $this->uri->segment(2)=='addaccountgroup'){echo 'active';}?>">
+					<li class="<?php if($this->uri->segment(2)=='addsubaccountgroup'){echo 'active';}?>">
 						<a href="<?php echo ADMIN_URL;?>addsubaccountgroup" title="Add Sub Account Group">
 							<span class="nav-link-text">Add Sub Account Group</span>
 						</a>
@@ -278,6 +287,14 @@ $avatar_url = base_url($avatar_relative) . '?v=' . $avatar_mtime;
 							<span class="nav-link-text">Journal Report</span>
 						</a>
 					</li>
+					<?php } ?>
+					<?php if((array_key_exists('ar_adjustment',$roleResponsible) && ($roleResponsible['ar_adjustment'] == 1)) || ($this->session->userdata('usertype') == 'admin')){ ?>
+					<li class="<?php if($this->uri->segment(2)=='aradjustment') echo 'active';?>">
+						<a href="<?php echo ADMIN_URL;?>aradjustment" title="AR Adjustment">
+							<span class="nav-link-text">AR Adjustment</span>
+						</a>
+					</li>
+					<?php } ?>
 				</ul>
 			</li>
 			<?php } ?>

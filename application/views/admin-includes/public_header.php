@@ -134,6 +134,20 @@ header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
 					padding: 10px !important;
 				}
 			}
+
+			@media print {
+				html, body {
+					background: #fff !important;
+					margin: 0 !important;
+					padding: 0 !important;
+				}
+				#main, #content {
+					margin: 0 !important;
+					padding: 0 !important;
+					width: 100% !important;
+					max-width: 100% !important;
+				}
+			}
 		</style>
 	</head>
 

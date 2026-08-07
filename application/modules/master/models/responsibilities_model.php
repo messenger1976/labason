@@ -151,6 +151,8 @@ class responsibilities_model extends CI_Model {
 				'customerbalancemonitor' => '0',
 				'addassets' => '0',
 				'addledger' => '0',
+				'ar_adjustment' => '0',
+				'ar_adjustment_approve' => '0',
 				'technicalproblems' => '0',
 				'technicalsearch' => '0',
 				'web_settings' => '0',

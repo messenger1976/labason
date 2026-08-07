@@ -95,7 +95,14 @@
 															</tr>
 															<tr>
 																<td><strong>Current Billing Balance:</strong></td>
-																<td><strong class="text-danger">PHP <?php echo number_format($current_balance, 2); ?></strong></td>
+																<td class="<?php echo ($current_balance > 0.009) ? 'soa-balance-alert' : ''; ?>">
+																	<strong class="<?php echo ($current_balance > 0.009) ? 'text-danger' : 'text-success'; ?>">
+																		PHP <?php echo number_format($current_balance, 2); ?>
+																	</strong>
+																	<?php if ($current_balance > 0.009) { ?>
+																		<br><small class="soa-balance-alert-note">Outstanding / underpaid balance</small>
+																	<?php } ?>
+																</td>
 															</tr>
 														</table>
 													</div>
@@ -124,6 +131,35 @@
 												<tbody>
 													<?php 
 													if(!empty($ledger_entries)) {
+														// Mark billing periods where payments+discounts did not fully cover the bill
+														$period_debits = array();
+														$period_credits = array();
+														foreach ($ledger_entries as $e) {
+															if (isset($e['type']) && $e['type'] === 'billing') {
+																$raw = isset($e['raw_data']) && is_array($e['raw_data']) ? $e['raw_data'] : array();
+																if (isset($raw['month']) && isset($raw['year'])) {
+																	$pk = $raw['month'].'_'.$raw['year'];
+																	$period_debits[$pk] = (isset($period_debits[$pk]) ? $period_debits[$pk] : 0) + floatval($e['debit']);
+																}
+															}
+															if (isset($e['type']) && in_array($e['type'], array('payment', 'leaking_discount', 'adjustment'), true)) {
+																$bp_data = isset($e['billing_periods_data']) && is_array($e['billing_periods_data']) ? $e['billing_periods_data'] : array();
+																foreach ($bp_data as $pk => $pd) {
+																	// Credit adjustments reduce shortfall; debit adjustments increase period obligation
+																	$signed = floatval($e['credit']) - floatval($e['debit']);
+																	$period_credits[$pk] = (isset($period_credits[$pk]) ? $period_credits[$pk] : 0) + $signed;
+																}
+															}
+														}
+														$short_periods = array();
+														foreach ($period_debits as $pk => $deb) {
+															$cred = isset($period_credits[$pk]) ? $period_credits[$pk] : 0;
+															$gap = $deb - $cred;
+															if ($gap > 0.009) {
+																$short_periods[$pk] = $gap;
+															}
+														}
+
 														$sn = 1;
 														foreach($ledger_entries as $entry) {
 															$entry_date = date('d-m-Y', strtotime($entry['date']));
@@ -131,12 +167,38 @@
 															$debit = $entry['debit'] > 0 ? number_format($entry['debit'], 2) : '';
 															$credit = $entry['credit'] > 0 ? number_format($entry['credit'], 2) : '';
 															$balance = number_format($entry['balance'], 2);
+
+															$row_shortfall = false;
+															$shortfall_amt = 0;
+															if ($entry['type'] === 'billing') {
+																$raw = isset($entry['raw_data']) && is_array($entry['raw_data']) ? $entry['raw_data'] : array();
+																if (isset($raw['month']) && isset($raw['year'])) {
+																	$pk = $raw['month'].'_'.$raw['year'];
+																	if (isset($short_periods[$pk])) {
+																		$row_shortfall = true;
+																		$shortfall_amt = $short_periods[$pk];
+																	}
+																}
+															} elseif (in_array($entry['type'], array('payment', 'leaking_discount', 'adjustment'), true)) {
+																$bp_data = isset($entry['billing_periods_data']) && is_array($entry['billing_periods_data']) ? $entry['billing_periods_data'] : array();
+																foreach ($bp_data as $pk => $pd) {
+																	if (isset($short_periods[$pk])) {
+																		$row_shortfall = true;
+																		$shortfall_amt = $short_periods[$pk];
+																		break;
+																	}
+																}
+															}
+															$row_class = $row_shortfall ? 'soa-row-shortfall' : '';
 													?>
-													<tr>
+													<tr class="<?php echo $row_class; ?>"<?php echo $row_shortfall ? ' title="Underpayment / shortfall for this billing period: PHP '.number_format($shortfall_amt, 2).'"' : ''; ?>>
 														<td style="text-align: center;" data-order="<?php echo $entry_date_sort; ?>"><?php echo $entry_date; ?></td>
 														<td style="text-align: center;"><?php echo $entry['refno']; ?></td>
 														<td style="text-align: left;">
-															<?php echo $entry['description']; ?>
+															<?php echo htmlspecialchars($entry['description'], ENT_QUOTES, 'UTF-8'); ?>
+															<?php if ($row_shortfall && $entry['type'] === 'payment') { ?>
+																<br><small class="soa-shortfall-note">Underpaid — shortfall PHP <?php echo number_format($shortfall_amt, 2); ?> carried as balance</small>
+															<?php } ?>
 															<?php if($entry['type'] == 'billing' && isset($entry['consumed'])) { ?>
 																<br><small class="text-muted">
 																	Reading: <?php echo $entry['previous_reading']; ?> - <?php echo $entry['reading']; ?> 
@@ -144,12 +206,21 @@
 																	<?php if(isset($entry['penalty']) && $entry['penalty'] > 0) { ?>
 																		| Penalty: PHP <?php echo number_format($entry['penalty'], 2); ?>
 																	<?php } ?>
+																	<?php if(isset($entry['arrears']) && floatval($entry['arrears']) > 0) { ?>
+																		| Arrears on bill: PHP <?php echo number_format((float)$entry['arrears'], 2); ?>
+																	<?php } ?>
 																</small>
+															<?php } elseif($entry['type'] == 'leaking_discount') { ?>
+																<br><small class="text-muted">Approved leaking discount applied to bill</small>
+															<?php } elseif($entry['type'] == 'leaking_payment') { ?>
+																<br><small class="text-muted">Payment posted from Leaking Entry A/R</small>
+															<?php } elseif($entry['type'] == 'adjustment') { ?>
+																<br><small class="text-muted">Posted AR Adjustment (Accounting)</small>
 															<?php } ?>
 														</td>
 														<td style="text-align: right;"><?php echo $debit ? 'PHP '.$debit : '-'; ?></td>
 														<td style="text-align: right;"><?php echo $credit ? 'PHP '.$credit : '-'; ?></td>
-														<td style="text-align: right;">
+														<td style="text-align: right;" class="<?php echo $row_shortfall ? 'soa-balance-cell-alert' : ''; ?>">
 															<strong>PHP <?php echo $balance; ?></strong>
 														</td>
 													</tr>
@@ -179,7 +250,7 @@
 																echo number_format($total_credit, 2); 
 															?></strong>
 														</th>
-														<th style="text-align: right;" class="<?php echo $current_balance > 0 ? 'text-danger' : 'text-success'; ?>">
+														<th style="text-align: right;" class="<?php echo $current_balance > 0.009 ? 'text-danger soa-balance-cell-alert' : 'text-success'; ?>">
 															<strong>PHP <?php echo number_format($current_balance, 2); ?></strong>
 														</th>
 													</tr>
@@ -188,7 +259,7 @@
 											</table>
 										</div>
 										</div>
-										<!-- Print-only ledger (no DataTables — reliable in Firefox) -->
+										<!-- Print-only ledger (no DataTables ? reliable in Firefox) -->
 										<div class="ledger-print-only" id="ledger_print_only_wrap" aria-hidden="true"></div>
 									</div>
 								</div>
@@ -596,6 +667,35 @@
 		margin-top: 2px;
 	}
 
+	/* Shortfall / underpayment contrast */
+	.soa-balance-alert {
+		background: #ffe3e8 !important;
+		border-left: 3px solid #e35d6a;
+		padding: 6px 10px !important;
+	}
+	.soa-balance-alert-note {
+		color: #a33b46;
+		font-weight: 600;
+	}
+	.soa-row-shortfall > td {
+		background-color: #ffe8ec !important;
+	}
+	.soa-row-shortfall:hover > td {
+		background-color: #ffd6de !important;
+	}
+	.soa-shortfall-note {
+		color: #a33b46;
+		font-weight: 600;
+	}
+	.soa-balance-cell-alert {
+		background-color: #ffd0d8 !important;
+		color: #8b1e2b !important;
+	}
+	#ledger_table tbody tr.soa-row-shortfall.odd > td,
+	#ledger_table tbody tr.soa-row-shortfall.even > td {
+		background-color: #ffe8ec !important;
+	}
+
 	/* Screen: horizontal scroll for wide ledger */
 	#ledger_table {
 		width: 100%;
@@ -607,27 +707,41 @@
 	}
 
 	@media print {
-		/* Hide non-essential elements */
-		#ribbon, .btn, .jarviswidget-editbox, .dt-toolbar, 
-		button, .no-print, .dataTables_wrapper .dataTables_filter,
+		/* Hide chrome / non-print UI (page header, footer, tools) */
+		#ribbon, #header, #left-panel, #shortcut, aside, nav,
+		.page-header, .page-footer, .breadcrumb, .subheader, .panel-hdr,
+		.page-content > .breadcrumb, .page-content > .subheader,
+		.btn, .jarviswidget-editbox, .dt-toolbar,
+		button, .no-print, .action-buttons,
+		.dataTables_wrapper .dataTables_filter,
 		.dataTables_wrapper .dataTables_length, .dataTables_wrapper .dataTables_info,
 		.dataTables_wrapper .dataTables_paginate,
 		.modal, #resetPasswordModal, .modal-backdrop, .modal-dialog, .modal-content {
 			display: none !important;
 		}
 		
-		/* Page setup */
+		/* Page setup - fit printable area */
 		@page {
 			size: A4 portrait;
-			margin: 0.8cm 1cm;
+			margin: 0.5cm 0.6cm;
 		}
 		
-		/* Body and container */
-		body {
+		/* Body and shell containers */
+		html, body {
 			background: white !important;
 			color: black !important;
-			font-size: 10pt;
-			line-height: 1.35;
+			font-size: 9pt;
+			line-height: 1.3;
+			width: 100% !important;
+			margin: 0 !important;
+			padding: 0 !important;
+		}
+
+		#main, #content, #js-page-content, .page-content {
+			margin: 0 !important;
+			padding: 0 !important;
+			width: 100% !important;
+			max-width: 100% !important;
 		}
 
 		/* Screen ledger hidden; print-only clone used (Firefox-safe) */
@@ -643,6 +757,14 @@
 			overflow: hidden !important;
 		}
 
+		.statement-container {
+			max-width: 100% !important;
+			margin: 0 !important;
+			padding: 0 !important;
+			box-shadow: none !important;
+			background: white !important;
+		}
+
 		.statement-container,
 		.statement-container .card,
 		.statement-container .card-body,
@@ -652,6 +774,26 @@
 			max-width: 100% !important;
 			box-sizing: border-box !important;
 			overflow: visible !important;
+			float: none !important;
+		}
+
+		.statement-container .card-body {
+			padding: 0 !important;
+		}
+
+		.report-header {
+			margin: 0 0 6px 0 !important;
+		}
+		.report-logo img {
+			height: 48px !important;
+			width: auto !important;
+		}
+		.report-title {
+			font-size: 12pt !important;
+		}
+		.report-subtitle {
+			font-size: 8pt !important;
+			color: #000 !important;
 		}
 
 		#ledger_table_print.soa-ledger-print {
@@ -722,6 +864,19 @@
 			background: #f5f5f5 !important;
 		}
 
+		#ledger_table_print tbody tr.soa-row-shortfall td {
+			background: #ffe8ec !important;
+		}
+		#ledger_table_print tbody tr.soa-row-shortfall td.soa-balance-cell-alert {
+			background: #ffd0d8 !important;
+			font-weight: bold;
+		}
+		.soa-balance-alert {
+			background: #ffe3e8 !important;
+			-webkit-print-color-adjust: exact !important;
+			print-color-adjust: exact !important;
+		}
+
 		#ledger_table_print tfoot th {
 			background: #e8e8e8 !important;
 			font-weight: bold;
@@ -758,60 +913,52 @@
 		}
 		
 		.card-body {
-			padding: 10px 0 !important;
-		}
-
-		/* Ensure header image prints nicely */
-		.report-header {
-			margin-bottom: 10px !important;
-		}
-		.report-title {
-			font-size: 14pt !important;
-		}
-		.report-subtitle {
-			font-size: 10pt !important;
-			color: #000 !important;
+			padding: 0 !important;
 		}
 
 		/* Signature block print tuning */
 		.signature-block {
 			border-top: 1px solid #000 !important;
-			margin-top: 20px !important;
-			padding-top: 8px !important;
+			margin-top: 12px !important;
+			padding-top: 6px !important;
 		}
 		.sig-label {
-			margin-bottom: 35px !important;
+			margin-bottom: 22px !important;
 			color: #000 !important;
 		}
 		.sig-line {
 			border-top: 1px solid #000 !important;
 		}
+		.sig-item {
+			min-width: 0 !important;
+			flex: 1 1 30% !important;
+		}
 		
 		.panel {
 			border: 1px solid #000 !important;
 			box-shadow: none !important;
-			margin-bottom: 15px !important;
+			margin-bottom: 8px !important;
 			page-break-inside: avoid;
 		}
 		
 		.panel-heading {
 			background: #f5f5f5 !important;
-			border-bottom: 2px solid #000 !important;
-			padding: 8px 12px !important;
+			border-bottom: 1px solid #000 !important;
+			padding: 4px 8px !important;
 			font-weight: bold;
-			font-size: 12pt;
+			font-size: 9pt;
 		}
 		
 		.panel-body {
-			padding: 12px !important;
+			padding: 6px !important;
 		}
 		
 		/* Table styling */
 		.table {
 			width: 100% !important;
 			border-collapse: collapse !important;
-			font-size: 9pt;
-			margin-bottom: 10px !important;
+			font-size: 8pt;
+			margin-bottom: 6px !important;
 		}
 		
 		.table thead {
@@ -829,7 +976,7 @@
 		.table th,
 		.table td {
 			border: 1px solid #000 !important;
-			padding: 6px 8px !important;
+			padding: 3px 5px !important;
 			text-align: left;
 			vertical-align: top;
 		}
@@ -838,7 +985,7 @@
 			background: #f0f0f0 !important;
 			font-weight: bold;
 			text-align: center;
-			font-size: 9pt;
+			font-size: 8pt;
 		}
 		
 		.table-bordered {
@@ -856,8 +1003,8 @@
 		
 		/* Customer info tables */
 		.table-bordered td {
-			font-size: 10pt;
-			padding: 6px 10px !important;
+			font-size: 8pt;
+			padding: 3px 5px !important;
 		}
 		
 		/* Text styling */
@@ -897,7 +1044,7 @@
 		}
 		
 		[class*="col-"] {
-			padding: 0 10px !important;
+			padding: 0 !important;
 		}
 		
 		/* Remove shadows and effects */

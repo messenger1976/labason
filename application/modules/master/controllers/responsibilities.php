@@ -88,6 +88,8 @@ class responsibilities extends CI_Controller
 				'customerbalancemonitor' => 'Customer Balance Monitor',
 				'addassets' => 'Assets',
 				'addledger' => 'Ledger',
+				'ar_adjustment' => 'AR Adjustment',
+				'ar_adjustment_approve' => 'AR Adjustment Approve',
 				'technicalproblems' => 'Technical Problems',
 				'technicalsearch' => 'Technical Problems View',
 				'web_settings' => 'Admin Address',
@@ -181,6 +183,13 @@ class responsibilities extends CI_Controller
 				'icon' => 'fa-pencil-square-o',
 				'parent_key' => 'addledger',
 				'children' => array()
+			),
+			array(
+				'id' => 'accounting',
+				'label' => 'Accounting',
+				'icon' => 'fa-book',
+				'parent_key' => null,
+				'children' => array('ar_adjustment', 'ar_adjustment_approve')
 			),
 			array(
 				'id' => 'technical',
