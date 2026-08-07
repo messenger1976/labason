@@ -1,28 +1,9 @@
-<main id="js-page-content" role="main" class="page-content">
-	<ol class="breadcrumb page-breadcrumb">
-		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>">Home</a></li>
-		<li class="breadcrumb-item active">Page</li>
-		<li class="position-absolute pos-top pos-right d-none d-sm-block"><span class="js-get-date"></span></li>
-	</ol>
-	<div class="subheader">
-		<h1 class="subheader-title">
-			<i class="subheader-icon fal fa-th-list"></i>
-			Manage <span class="fw-300">Statementofaccount Search</span>
-		</h1>
-	</div>
-
-	<div class="row">
-		<div class="col-xl-12">
-			<div class="panel">
-				<div class="panel-hdr"><h2>Statementofaccount Search</h2>
-					<div class="panel-toolbar">
-						<button class="btn btn-panel" data-action="panel-collapse" data-toggle="tooltip" data-offset="0,10" data-original-title="Collapse"></button>
-						<button class="btn btn-panel" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
-					</div>
-				</div>
-				<div class="panel-container show"><div class="panel-content">
-<div class="row">
-			<div class="col-12 col-sm-12 col-md-8 col-lg-6 col-md-offset-2 col-lg-offset-3">
+<!-- Content starts here - no header/sidebar -->
+<div style="max-width: 1200px; margin: 0 auto; background: #fff; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); min-height: 100vh;">
+		
+		<!-- Card Design -->
+		<div class="row">
+			<div class="col-xs-12 col-sm-12 col-md-8 col-lg-6 col-md-offset-2 col-lg-offset-3">
 				<div class="card" style="border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden; background: #fff;">
 					<div class="card-body" style="padding: 30px 20px;">
 								<?php if($msg != ''){ ?>
@@ -41,7 +22,7 @@
 								<div class="panel panel-primary" style="border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
 									<div class="panel-body" style="padding: 30px 20px;">
 										<h3 style="margin-top: 0; margin-bottom: 25px; color: #31708f; text-align: center; font-size: 24px;">
-											<i class="fal fa-id-card"></i> Enter Customer ID & Password
+											<i class="fa fa-id-card"></i> Enter Customer ID & Password
 										</h3>
 										<form method="post" action="<?php echo base_url();?>master/statementofaccount/search" id="statementSearchForm">
 											<div class="form-group" style="margin-bottom: 20px;">
@@ -50,7 +31,7 @@
 												</label>
 												<div class="input-group input-group-lg" style="width: 100%;">
 													<span class="input-group-addon" style="background: #5bc0de; color: #fff; border: 1px solid #5bc0de; min-width: 50px;">
-														<i class="fal fa-id-card"></i>
+														<i class="fa fa-id-card"></i>
 													</span>
 													<input type="text" class="form-control" id="direct_customer_id" name="customer_id" 
 														placeholder="Enter Customer ID" 
@@ -58,7 +39,7 @@
 														autofocus required autocomplete="off" inputmode="text" value="<?php echo isset($_POST['customer_id']) ? htmlspecialchars($_POST['customer_id']) : ''; ?>">
 												</div>
 												<small class="help-block" style="margin-top: 10px; color: #777; font-size: 14px; text-align: center; display: block;">
-													<i class="fal fa-info-circle"></i> Type your customer ID
+													<i class="fa fa-info-circle"></i> Type your customer ID
 												</small>
 											</div>
 											<div class="form-group" style="margin-bottom: 20px;">
@@ -67,7 +48,7 @@
 												</label>
 												<div class="input-group input-group-lg" style="width: 100%;">
 													<span class="input-group-addon" style="background: #5bc0de; color: #fff; border: 1px solid #5bc0de; min-width: 50px;">
-														<i class="fal fa-lock"></i>
+														<i class="fa fa-lock"></i>
 													</span>
 													<input type="password" class="form-control" id="customer_password" name="password" 
 														placeholder="Enter Password" 
@@ -75,12 +56,12 @@
 														required autocomplete="off">
 												</div>
 												<small class="help-block" style="margin-top: 10px; color: #777; font-size: 14px; text-align: center; display: block;">
-													<i class="fal fa-info-circle"></i> Enter your customer login password
+													<i class="fa fa-info-circle"></i> Enter your customer login password
 												</small>
 											</div>
 											<div class="form-group" style="margin-top: 25px;">
 												<button type="submit" class="btn btn-primary btn-lg btn-block" id="viewStatementBtn" style="padding: 15px; font-size: 18px; font-weight: 600; -webkit-tap-highlight-color: rgba(0,0,0,0.1);">
-													<i class="fal fa-search"></i> View Statement
+													<i class="fa fa-search"></i> View Statement
 												</button>
 											</div>
 										</form>
@@ -247,42 +228,4 @@
 </body>
 
 </html>
-
-
-				</div></div>
-			</div>
-		</div>
-	</div>
-</main>
-<?php include('footer.php'); ?>
-</body>
-</html>
-<script type="text/javascript">
-	// Wait for jQuery to be loaded
-	(function() {
-		function initScripts() {
-			if (typeof jQuery === 'undefined') {
-				setTimeout(initScripts, 100);
-				return;
-			}
-			
-			// DO NOT REMOVE : GLOBAL FUNCTIONS!
-			jQuery(document).ready(function($) {
-				// Enable Enter key on form inputs
-				$('#statementSearchForm input').on('keypress', function(e) {
-					if(e.which == 13) {
-						e.preventDefault();
-						$('#statementSearchForm').submit();
-					}
-				});
-				
-				// Focus on customer ID input field when page loads
-				$('#direct_customer_id').focus();
-			});
-		}
-		
-		initScripts();
-	})();
-	
-</script>
 

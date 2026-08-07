@@ -34,6 +34,7 @@ Root `README.md` stays at the project root. All other project markdown docs live
 | [BILLING_AND_PAYMENT_COMPUTATION.md](BILLING_AND_PAYMENT_COMPUTATION.md) | Billing and payment computation |
 | [SENIOR_CITIZEN_DISCOUNT_DOCUMENTATION.md](SENIOR_CITIZEN_DISCOUNT_DOCUMENTATION.md) | Senior citizen discount |
 | [FRANCHISE_FEE_IMPLEMENTATION.md](FRANCHISE_FEE_IMPLEMENTATION.md) | Franchise fee implementation |
+| [AR_ADJUSTMENT_MODULE.md](AR_ADJUSTMENT_MODULE.md) | AR Adjustment (credit/debit memo, write-off, SOA + GL) |
 | [CSV_IMPORT_MAPPING.md](CSV_IMPORT_MAPPING.md) | CSV import mapping |
 | [GLOBAL_SETTINGS_MODULE_CHANGES.md](GLOBAL_SETTINGS_MODULE_CHANGES.md) | Global settings module changes |
 | [GITHUB_AUTH_SETUP.md](GITHUB_AUTH_SETUP.md) | GitHub auth setup |

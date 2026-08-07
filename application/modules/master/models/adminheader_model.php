@@ -51,6 +51,8 @@ class adminheader_model extends CI_Model {
 				'customerbalancemonitor' => 'Customer Balance Monitor',
 				'addassets' => 'Assets',
 				'addledger' => 'Ledger',
+				'ar_adjustment' => 'AR Adjustment',
+				'ar_adjustment_approve' => 'AR Adjustment Approve',
 				'technicalproblems' => 'Technical Problems',
 				'technicalsearch' => 'Technical Problems View',
 				'web_settings' => 'Admin Address',

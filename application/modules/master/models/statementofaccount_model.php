@@ -14,7 +14,72 @@ class statementofaccount_model extends CI_Model {
         parent::__construct();
 		ini_set('date.timezone', 'Asia/Manila');	
     }
-	
+
+	/**
+	 * Normalize payment dates stored as d-m-Y or Y-m-d.
+	 */
+	private function _normalize_ledger_date($date_raw, $year = null, $month = null) {
+		$entry_date = '';
+		if (!empty($date_raw)) {
+			if (strpos($date_raw, '-') !== false && strlen($date_raw) == 10) {
+				$date_parts = explode('-', $date_raw);
+				if (count($date_parts) == 3 && strlen($date_parts[0]) == 2) {
+					$entry_date = $date_parts[2].'-'.$date_parts[1].'-'.$date_parts[0];
+				} else {
+					$entry_date = $date_raw;
+				}
+			} else {
+				$entry_date = $date_raw;
+			}
+		} elseif ($year !== null && $month !== null) {
+			$entry_date = $year.'-'.str_pad($month, 2, '0', STR_PAD_LEFT).'-01';
+		}
+		return $entry_date;
+	}
+
+	/**
+	 * Resolve meter-payment cash credit + leaking discount credit for SOA.
+	 * Meter payment `total` is the bill amount (paid_total_amount) and remains the
+	 * settlement source of truth. When a leaking discount exists, split that total
+	 * into cash + discount for display without changing the net credit.
+	 */
+	private function _resolve_payment_credits($payment) {
+		$total = isset($payment['total']) ? floatval($payment['total']) : 0;
+		$pay_amount = isset($payment['pay_amount']) ? floatval($payment['pay_amount']) : 0;
+		$grand_total = isset($payment['grand_total']) ? floatval($payment['grand_total']) : 0;
+		$leaking_amount = isset($payment['leaking_amount']) ? floatval($payment['leaking_amount']) : 0;
+		$leaking_payment = isset($payment['leaking_payment']) ? floatval($payment['leaking_payment']) : 0;
+
+		if ($total <= 0 && $pay_amount > 0) {
+			$total = $pay_amount;
+		}
+
+		$cash_credit = $total;
+		$discount_credit = 0;
+
+		if ($leaking_amount > 0.009) {
+			$discount_credit = $leaking_amount;
+			if ($total > 0) {
+				// Keep net credit == payment.total (historical SOA behavior)
+				$cash_credit = max(0, $total - $leaking_amount);
+			} elseif ($grand_total > 0) {
+				$cash_credit = ($pay_amount > 0) ? min($pay_amount, $grand_total) : $grand_total;
+			} else {
+				$cash_credit = max(0, $pay_amount);
+			}
+		} elseif ($leaking_payment > 0.009 && $grand_total > ($total + 0.009)) {
+			// Paying open leaking A/R together with the current bill (bundled on one OR)
+			$cash_credit = ($pay_amount > 0) ? min($pay_amount, $grand_total) : $grand_total;
+		}
+
+		return array(
+			'cash_credit' => $cash_credit,
+			'discount_credit' => $discount_credit,
+			'leaking_amount' => $leaking_amount,
+			'leaking_payment' => $leaking_payment,
+		);
+	}
+
 	/** Get customer information **/
 	public function get_customer_info($customer_id='') {
         $this->db->select($this->table_customer.".*,".$this->table_zone.".zone,".$this->table_classification.".class_name,".$this->table_customer_type.".cust_type_name");
@@ -131,12 +196,18 @@ class statementofaccount_model extends CI_Model {
 			
 			// Calculate debit amount - use penalty if payment is after due date, otherwise use amount
 			$debit_amount = $use_penalty_amount && $penalty_amount > 0 ? $penalty_amount : $billing_amount;
+			$arrears_amount = isset($reading['arrears']) ? floatval($reading['arrears']) : 0;
+
+			$billing_description = 'Billing - '.$reading['month_name'].' '.$reading['year'];
+			if ($arrears_amount > 0.009) {
+				$billing_description .= ' (includes arrears note: PHP '.number_format($arrears_amount, 2).')';
+			}
 			
 			$ledger_entries[] = array(
 				'date' => $entry_date,
 				'type' => 'billing',
 				'refno' => isset($reading['refno']) ? $reading['refno'] : '',
-				'description' => 'Billing - '.$reading['month_name'].' '.$reading['year'],
+				'description' => $billing_description,
 				'debit' => $debit_amount,
 				'credit' => 0,
 				'reading' => isset($reading['reading']) ? $reading['reading'] : '',
@@ -146,7 +217,7 @@ class statementofaccount_model extends CI_Model {
 				'penalty' => $penalty_amount,
 				'penalty_included' => ($use_penalty_amount && $penalty_amount > 0) ? true : false,
 				'sc_discount' => isset($reading['sc_discount']) ? $reading['sc_discount'] : '',
-				'arrears' => isset($reading['arrears']) ? $reading['arrears'] : '',
+				'arrears' => $arrears_amount,
 				'maintenance_fee' => isset($reading['maintenance_fee']) ? $reading['maintenance_fee'] : '',
 				'due_date' => $due_date,
 				'raw_data' => $reading
@@ -160,66 +231,55 @@ class statementofaccount_model extends CI_Model {
 			
 			// Use OR number as key for grouping
 			if(!isset($payment_groups[$or_number])) {
-				// Handle date format for the first payment in group
-				$entry_date = '';
-				if(!empty($payment['date'])){
-					// Check if date is in d-m-Y format
-					if(strpos($payment['date'], '-') !== false && strlen($payment['date']) == 10){
-						$date_parts = explode('-', $payment['date']);
-						if(count($date_parts) == 3 && strlen($date_parts[0]) == 2){
-							// d-m-Y format, convert to Y-m-d
-							$entry_date = $date_parts[2].'-'.$date_parts[1].'-'.$date_parts[0];
-						} else {
-							$entry_date = $payment['date'];
-						}
-					} else {
-						$entry_date = $payment['date'];
-					}
-				} else {
-					$entry_date = $payment['year'].'-'.str_pad($payment['month'], 2, '0', STR_PAD_LEFT).'-01';
-				}
-				
-			// Get credit amount for first payment (don't sum)
-			$payment_credit = isset($payment['total']) ? floatval($payment['total']) : (isset($payment['pay_amount']) ? floatval($payment['pay_amount']) : 0);
+				$entry_date = $this->_normalize_ledger_date(
+					isset($payment['date']) ? $payment['date'] : '',
+					isset($payment['year']) ? $payment['year'] : null,
+					isset($payment['month']) ? $payment['month'] : null
+				);
+
+				$credits = $this->_resolve_payment_credits($payment);
 			
-			$payment_groups[$or_number] = array(
-				'date' => $entry_date,
-				'refno' => $or_number,
-				'credit' => $payment_credit, // Use first payment's amount, don't sum
-				'billing_periods' => array(), // For display
-				'billing_periods_data' => array(), // For matching: array of ['month' => X, 'year' => Y]
-				'raw_data' => $payment // Keep first payment's raw data
-			);
-		}
+				$payment_groups[$or_number] = array(
+					'date' => $entry_date,
+					'refno' => $or_number,
+					'credit' => $credits['cash_credit'],
+					'discount_credit' => $credits['discount_credit'],
+					'leaking_amount' => $credits['leaking_amount'],
+					'leaking_payment' => $credits['leaking_payment'],
+					'billing_periods' => array(),
+					'billing_periods_data' => array(),
+					'raw_data' => $payment
+				);
+			}
 		
-		// Collect billing period info
-		if(isset($payment['month_name']) && !empty($payment['month_name']) && isset($payment['year']) && !empty($payment['year'])) {
-			$period_key = $payment['month_name'].' '.$payment['year'];
-			if(!in_array($period_key, $payment_groups[$or_number]['billing_periods'])) {
-				$payment_groups[$or_number]['billing_periods'][] = $period_key;
+			// Collect billing period info
+			if(isset($payment['month_name']) && !empty($payment['month_name']) && isset($payment['year']) && !empty($payment['year'])) {
+				$period_key = $payment['month_name'].' '.$payment['year'];
+				if(!in_array($period_key, $payment_groups[$or_number]['billing_periods'])) {
+					$payment_groups[$or_number]['billing_periods'][] = $period_key;
+				}
+				// Store month/year for matching
+				$period_data_key = $payment['month'].'_'.$payment['year'];
+				if(!isset($payment_groups[$or_number]['billing_periods_data'][$period_data_key])) {
+					$payment_groups[$or_number]['billing_periods_data'][$period_data_key] = array(
+						'month' => $payment['month'],
+						'year' => $payment['year']
+					);
+				}
+			} elseif(isset($payment['month']) && !empty($payment['month']) && isset($payment['year']) && !empty($payment['year'])) {
+				$period_key = 'Month '.$payment['month'].' '.$payment['year'];
+				if(!in_array($period_key, $payment_groups[$or_number]['billing_periods'])) {
+					$payment_groups[$or_number]['billing_periods'][] = $period_key;
+				}
+				// Store month/year for matching
+				$period_data_key = $payment['month'].'_'.$payment['year'];
+				if(!isset($payment_groups[$or_number]['billing_periods_data'][$period_data_key])) {
+					$payment_groups[$or_number]['billing_periods_data'][$period_data_key] = array(
+						'month' => $payment['month'],
+						'year' => $payment['year']
+					);
+				}
 			}
-			// Store month/year for matching
-			$period_data_key = $payment['month'].'_'.$payment['year'];
-			if(!isset($payment_groups[$or_number]['billing_periods_data'][$period_data_key])) {
-				$payment_groups[$or_number]['billing_periods_data'][$period_data_key] = array(
-					'month' => $payment['month'],
-					'year' => $payment['year']
-				);
-			}
-		} elseif(isset($payment['month']) && !empty($payment['month']) && isset($payment['year']) && !empty($payment['year'])) {
-			$period_key = 'Month '.$payment['month'].' '.$payment['year'];
-			if(!in_array($period_key, $payment_groups[$or_number]['billing_periods'])) {
-				$payment_groups[$or_number]['billing_periods'][] = $period_key;
-			}
-			// Store month/year for matching
-			$period_data_key = $payment['month'].'_'.$payment['year'];
-			if(!isset($payment_groups[$or_number]['billing_periods_data'][$period_data_key])) {
-				$payment_groups[$or_number]['billing_periods_data'][$period_data_key] = array(
-					'month' => $payment['month'],
-					'year' => $payment['year']
-				);
-			}
-		}
 		}
 		
 		// Add grouped payment entries to ledger
@@ -233,6 +293,9 @@ class statementofaccount_model extends CI_Model {
 					$payment_description .= ' (Billing Periods: '.implode(', ', $group['billing_periods']).')';
 				}
 			}
+			if (!empty($group['leaking_payment']) && $group['leaking_payment'] > 0.009) {
+				$payment_description .= ' [incl. leaking A/R PHP '.number_format($group['leaking_payment'], 2).']';
+			}
 			
 			$ledger_entries[] = array(
 				'date' => $group['date'],
@@ -240,13 +303,74 @@ class statementofaccount_model extends CI_Model {
 				'refno' => $group['refno'],
 				'description' => $payment_description,
 				'debit' => 0,
-				'credit' => $group['credit'], // Use first payment's amount, not summed
+				'credit' => $group['credit'],
 				'raw_data' => $group['raw_data'],
-				'billing_periods_data' => $group['billing_periods_data'] // Store for matching logic
+				'billing_periods_data' => $group['billing_periods_data']
 			);
+
+			// Explicit leaking discount credit (bill was reduced by approved leaking entry)
+			if (!empty($group['discount_credit']) && $group['discount_credit'] > 0.009) {
+				$disc_desc = 'Leaking Discount - OR# '.$group['refno'];
+				if (!empty($group['billing_periods'])) {
+					$disc_desc .= ' ('.implode(', ', $group['billing_periods']).')';
+				}
+				$disc_desc .= ' PHP '.number_format($group['discount_credit'], 2);
+				$ledger_entries[] = array(
+					'date' => $group['date'],
+					'type' => 'leaking_discount',
+					'refno' => $group['refno'],
+					'description' => $disc_desc,
+					'debit' => 0,
+					'credit' => $group['discount_credit'],
+					'raw_data' => $group['raw_data'],
+					'billing_periods_data' => $group['billing_periods_data']
+				);
+			}
 		}
-		
-		// Keep original billing amounts - do not adjust based on payments
+
+		// Posted AR Adjustments (credit notes / write-offs / debit memos)
+		$this->load->model('aradjustment_model');
+		$ar_adjustments = $this->aradjustment_model->get_posted_for_customer($customer_id);
+		if (!empty($ar_adjustments)) {
+			foreach ($ar_adjustments as $adj) {
+				$adj_date = !empty($adj['adj_date']) ? $adj['adj_date'] : date('Y-m-d');
+				$amount = isset($adj['adj_amount']) ? floatval($adj['adj_amount']) : 0;
+				if ($amount <= 0) {
+					continue;
+				}
+				$direction = isset($adj['adj_direction']) ? strtolower($adj['adj_direction']) : 'credit';
+				$type_label = $this->aradjustment_model->type_label(isset($adj['adj_type']) ? $adj['adj_type'] : '');
+				$desc = 'AR Adjustment '.$adj['adj_no'].' - '.$type_label;
+				if (!empty($adj['month']) && !empty($adj['year'])) {
+					$desc .= ' (Period '.$adj['month'].'/'.$adj['year'].')';
+				}
+				if (!empty($adj['reason'])) {
+					$reason_short = mb_substr(trim($adj['reason']), 0, 80);
+					$desc .= ' — '.$reason_short;
+				}
+
+				$bp_data = array();
+				if (!empty($adj['month']) && !empty($adj['year'])) {
+					$pk = $adj['month'].'_'.$adj['year'];
+					$bp_data[$pk] = array('month' => (int) $adj['month'], 'year' => (int) $adj['year']);
+				}
+
+				$ledger_entries[] = array(
+					'date' => $adj_date,
+					'type' => 'adjustment',
+					'refno' => isset($adj['adj_no']) ? $adj['adj_no'] : '',
+					'description' => $desc,
+					'debit' => ($direction === 'debit') ? $amount : 0,
+					'credit' => ($direction === 'credit') ? $amount : 0,
+					'raw_data' => $adj,
+					'billing_periods_data' => $bp_data
+				);
+			}
+		}
+
+		// Leaking Entry A/R collections have their own Leaking SOA.
+		// Do not add them here: meter payment `total` already settles the water bill,
+		// and adding these credits would double-count and inflate/deflate balance.
 		
 		// Sort by date descending (newest first)
 		usort($ledger_entries, function($a, $b) {
@@ -262,41 +386,33 @@ class statementofaccount_model extends CI_Model {
 			}
 			
 			if ($dateA == $dateB) {
-				// If same date, put payments before billings
-				if($a['type'] == 'payment' && $b['type'] == 'billing') return -1;
-				if($a['type'] == 'billing' && $b['type'] == 'payment') return 1;
+				// Credits before billings when same date (newest-first display)
+				$credit_types = array('payment', 'leaking_discount', 'leaking_payment', 'adjustment');
+				$a_credit = in_array($a['type'], $credit_types, true);
+				$b_credit = in_array($b['type'], $credit_types, true);
+				if($a_credit && $b['type'] == 'billing') return -1;
+				if($a['type'] == 'billing' && $b_credit) return 1;
 				return 0;
 			}
 			// Sort descending (newest first) - reverse the comparison
 			return $dateB - $dateA;
 		});
 		
-		// Second pass: Check if due billings are paid and add penalty to debit if needed
-		// We need to process chronologically (oldest first) to check payment status accurately
-		$ledger_entries_chronological = $ledger_entries;
-		usort($ledger_entries_chronological, function($a, $b) {
-			$dateA = strtotime($a['date']);
-			$dateB = strtotime($b['date']);
-			
-			if($dateA === false) $dateA = 0;
-			if($dateB === false) $dateB = 0;
-			
-			if ($dateA == $dateB) {
-				if($a['type'] == 'billing' && $b['type'] == 'payment') return -1;
-				if($a['type'] == 'payment' && $b['type'] == 'billing') return 1;
-				return 0;
-			}
-			return $dateA - $dateB; // Ascending order (oldest first)
-		});
-		
-		// Keep original billing amounts - no second pass modifications
-		
 		return $ledger_entries;
 	}
 	
 	/** Calculate running balance for ledger entries **/
 	public function calculate_running_balance($ledger_entries) {
-		// Sort chronologically (oldest first) for correct balance calculation
+		if (empty($ledger_entries) || !is_array($ledger_entries)) {
+			return $ledger_entries;
+		}
+
+		// Preserve original positions so balances map reliably after sorting
+		foreach ($ledger_entries as $i => &$entry) {
+			$entry['_idx'] = $i;
+		}
+		unset($entry);
+
 		$entries_chronological = $ledger_entries;
 		usort($entries_chronological, function($a, $b) {
 			$dateA = strtotime($a['date']);
@@ -306,39 +422,32 @@ class statementofaccount_model extends CI_Model {
 			if($dateB === false) $dateB = 0;
 			
 			if ($dateA == $dateB) {
-				// If same date, put billings before payments for chronological calculation
-				if($a['type'] == 'billing' && $b['type'] == 'payment') return -1;
-				if($a['type'] == 'payment' && $b['type'] == 'billing') return 1;
-				return 0;
+				// Billings before credits on the same date
+				$a_credit = in_array($a['type'], array('payment', 'leaking_discount', 'leaking_payment', 'adjustment'), true);
+				$b_credit = in_array($b['type'], array('payment', 'leaking_discount', 'leaking_payment', 'adjustment'), true);
+				if($a['type'] == 'billing' && $b_credit) return -1;
+				if($a_credit && $b['type'] == 'billing') return 1;
+				// Stable tie-break
+				return (isset($a['_idx']) ? $a['_idx'] : 0) - (isset($b['_idx']) ? $b['_idx'] : 0);
 			}
 			return $dateA - $dateB; // Ascending order (oldest first)
 		});
 		
-		// Calculate running balance chronologically (oldest to newest)
 		$balance = 0;
-		foreach($entries_chronological as &$entry){
-			$balance = $balance + $entry['debit'] - $entry['credit'];
-			$entry['balance'] = $balance;
-		}
-		
-		// Create a map of balance by entry index for quick lookup
-		$balance_map = array();
-		foreach($entries_chronological as $index => $entry) {
-			// Use a unique key based on type, date, refno, and description
-			$key = $entry['type'].'_'.$entry['date'].'_'.(isset($entry['refno']) ? $entry['refno'] : '').'_'.md5($entry['description']);
-			$balance_map[$key] = $entry['balance'];
-		}
-		
-		// Apply balances to original order (newest first)
-		foreach($ledger_entries as &$entry) {
-			$key = $entry['type'].'_'.$entry['date'].'_'.(isset($entry['refno']) ? $entry['refno'] : '').'_'.md5($entry['description']);
-			if(isset($balance_map[$key])) {
-				$entry['balance'] = $balance_map[$key];
-			} else {
-				// Fallback: calculate on the fly if key not found
-				$entry['balance'] = 0;
+		$balance_by_idx = array();
+		foreach ($entries_chronological as $entry) {
+			$balance = $balance + floatval($entry['debit']) - floatval($entry['credit']);
+			$idx = isset($entry['_idx']) ? $entry['_idx'] : null;
+			if ($idx !== null) {
+				$balance_by_idx[$idx] = $balance;
 			}
 		}
+		
+		foreach ($ledger_entries as $i => &$entry) {
+			$entry['balance'] = isset($balance_by_idx[$i]) ? $balance_by_idx[$i] : 0;
+			unset($entry['_idx']);
+		}
+		unset($entry);
 		
 		return $ledger_entries;
 	}
@@ -436,7 +545,7 @@ class statementofaccount_model extends CI_Model {
 				if ($m === $cur_m && $y === $cur_y) {
 					continue;
 				}
-			} elseif ($type === 'payment') {
+			} elseif ($type === 'payment' || $type === 'leaking_discount' || $type === 'adjustment') {
 				$bp_data = isset($entry['billing_periods_data']) && is_array($entry['billing_periods_data']) ? $entry['billing_periods_data'] : array();
 				if (count($bp_data) === 1) {
 					$only_key = key($bp_data);
@@ -444,6 +553,8 @@ class statementofaccount_model extends CI_Model {
 						continue;
 					}
 				}
+			} elseif ($type === 'leaking_payment') {
+				// Leaking A/R collections are always part of outstanding balance calc
 			}
 			$total_debit += isset($entry['debit']) ? floatval($entry['debit']) : 0;
 			$total_credit += isset($entry['credit']) ? floatval($entry['credit']) : 0;
