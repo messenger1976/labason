@@ -47,12 +47,42 @@ class Master extends CI_Controller {
 			if ($this->form_validation->run('loginform') == TRUE){
 				$checkUser = $this->my_model->get_admin_username_check($this->input->post('username'));
 				if($checkUser == 0){
+					if (function_exists('log_system_activity')) {
+						log_system_activity(array(
+							'category' => 'auth',
+							'action' => 'failed_login',
+							'module' => 'master',
+							'controller' => 'master',
+							'method' => 'index',
+							'username' => (string) $this->input->post('username'),
+							'user_name' => '',
+							'user_id' => 0,
+							'usertype' => '',
+							'summary' => 'Failed login: invalid username',
+							'details' => array('reason' => 'invalid_username'),
+						));
+					}
 					$this->session->set_flashdata( 'message', 'Invalid User Name...' );
 					redirect($this->login_redirect);
 				}else{
 					//Username And Password Check here
 					$user_details = $this->my_model->get_admin_username_pwd_check($this->input->post('username'),$this->input->post('password'));
 					if(empty($user_details) && count($user_details) == 0){
+						if (function_exists('log_system_activity')) {
+							log_system_activity(array(
+								'category' => 'auth',
+								'action' => 'failed_login',
+								'module' => 'master',
+								'controller' => 'master',
+								'method' => 'index',
+								'username' => (string) $this->input->post('username'),
+								'user_name' => '',
+								'user_id' => 0,
+								'usertype' => '',
+								'summary' => 'Failed login: invalid password',
+								'details' => array('reason' => 'invalid_password'),
+							));
+						}
 						//Username And Password Not match here today once
 						$this->session->set_flashdata( 'message', 'Invalid Password...' );
 						redirect($this->login_redirect);

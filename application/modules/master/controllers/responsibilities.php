@@ -97,6 +97,7 @@ class responsibilities extends CI_Controller
 				'admin' => 'Admin',
 				'responsibilities' => 'Roles & Responsibilities',
 				'employee_logins' => 'Employee Login',
+				'system_activity' => 'System Activity',
 				'manual_or_series' => 'Manual OR Series',
 				'addbillingperiod' => 'Setup Schedule Billing Period',
 				'createbalanceforward' => 'Create Balance Forward',
@@ -220,6 +221,7 @@ class responsibilities extends CI_Controller
 				'children' => array(
 					'responsibilities',
 					'employee_logins',
+					'system_activity',
 					'manual_or_series',
 					'addbillingperiod',
 					'createbalanceforward',
@@ -262,6 +264,19 @@ class responsibilities extends CI_Controller
 			if($exit_details == 0){
 				$result = $this->my_model->add_record();
 				if($result){
+					if (function_exists('log_system_activity')) {
+						log_system_activity(array(
+							'category' => 'admin',
+							'action' => 'create',
+							'module' => 'responsibilities',
+							'controller' => 'responsibilities',
+							'method' => 'add',
+							'entity_type' => 'role',
+							'entity_id' => (string) $result,
+							'reference_no' => (string) $this->input->post('role_name'),
+							'summary' => 'Role created: '.$this->input->post('role_name'),
+						));
+					}
 					$this->session->set_flashdata('msg_succ', 'Inserted Successfully...');
 					redirect($this->listPage_redirect);
 				}else{
@@ -287,6 +302,19 @@ class responsibilities extends CI_Controller
 		if($this->input->post('edit') != ''){
 			$result = $this->my_model->update_record($id);
 			if($result){
+				if (function_exists('log_system_activity')) {
+					log_system_activity(array(
+						'category' => 'admin',
+						'action' => 'update',
+						'module' => 'responsibilities',
+						'controller' => 'responsibilities',
+						'method' => 'edit',
+						'entity_type' => 'role',
+						'entity_id' => (string) $id,
+						'reference_no' => isset($data['record']['role_name']) ? $data['record']['role_name'] : (string) $this->input->post('role_name'),
+						'summary' => 'Role permissions updated',
+					));
+				}
 				$this->session->set_flashdata('msg_succ', 'Updated Successfully...');
 				redirect($this->listPage_redirect);
 			}else{
@@ -339,6 +367,18 @@ class responsibilities extends CI_Controller
 		if($id){
 			$result = $this->my_model->delete_record($id);
 			if($result){
+				if (function_exists('log_system_activity')) {
+					log_system_activity(array(
+						'category' => 'admin',
+						'action' => 'delete',
+						'module' => 'responsibilities',
+						'controller' => 'responsibilities',
+						'method' => 'delete',
+						'entity_type' => 'role',
+						'entity_id' => (string) $id,
+						'summary' => 'Role deleted',
+					));
+				}
 				$this->session->set_flashdata('msg_succ', 'Deleted Successfully...');
 				redirect($this->listPage_redirect);
 			}else{

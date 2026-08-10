@@ -10,7 +10,13 @@
 |
 */
 
-
+$hook['post_controller'] = array(
+	'class'    => 'System_activity_hook',
+	'function' => 'capture',
+	'filename' => 'System_activity_hook.php',
+	'filepath' => 'hooks',
+	'params'   => array()
+);
 
 /* End of file hooks.php */
 /* Location: ./application/config/hooks.php */

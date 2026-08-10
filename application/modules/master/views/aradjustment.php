@@ -9,7 +9,11 @@
 		}
 		return '<span class="badge badge-warning">Draft</span>';
 	};
+	$sa4_page_icon = 'fal fa-balance-scale-right';
+	$sa4_page_title = 'AR Adjustment';
+	$sa4_page_subtitle = 'Accounts Receivable';
 ?>
+<link rel="stylesheet" media="screen, print" href="<?php echo base_url(); ?>sa4/css/datagrid/datatables/datatables.bundle.css">
 <main id="js-page-content" role="main" class="page-content">
 	<ol class="breadcrumb page-breadcrumb">
 		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>">Home</a></li>
@@ -17,35 +21,37 @@
 		<li class="breadcrumb-item active">AR Adjustment</li>
 		<li class="position-absolute pos-top pos-right d-none d-sm-block"><span class="js-get-date"></span></li>
 	</ol>
-	<div class="subheader">
-		<h1 class="subheader-title">
-			<i class="subheader-icon fal fa-balance-scale-right"></i>
-			AR Adjustment <span class="fw-300">Accounts Receivable</span>
-		</h1>
-	</div>
+
+	<?php include(dirname(__FILE__).'/partials/sa4_kpi_subheader.php'); ?>
 
 	<?php if ($this->session->flashdata('msg_succ')) { ?>
 	<div class="alert alert-success alert-dismissible fade show" role="alert">
-		<button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
-		<?php echo $this->session->flashdata('msg_succ'); ?>
+		<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+			<span aria-hidden="true"><i class="fal fa-times"></i></span>
+		</button>
+		<strong>Success!</strong> <?php echo $this->session->flashdata('msg_succ'); ?>
 	</div>
 	<?php } ?>
 	<?php if ($this->session->flashdata('msg_err')) { ?>
 	<div class="alert alert-danger alert-dismissible fade show" role="alert">
-		<button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
-		<?php echo $this->session->flashdata('msg_err'); ?>
+		<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+			<span aria-hidden="true"><i class="fal fa-times"></i></span>
+		</button>
+		<strong>Error!</strong> <?php echo $this->session->flashdata('msg_err'); ?>
 	</div>
 	<?php } ?>
 
 	<div class="row">
 		<div class="col-xl-12">
-			<div class="panel">
+			<div id="panel-ar-adjustment-list" class="panel">
 				<div class="panel-hdr">
 					<h2>AR Adjustment <span class="fw-300"><i>Listing</i></span></h2>
 					<div class="panel-toolbar">
-						<a href="<?php echo ADMIN_URL; ?>aradjustment/add" class="btn btn-primary btn-sm">
-							<i class="fal fa-plus"></i> New Adjustment
+						<a href="<?php echo ADMIN_URL; ?>aradjustment/add" class="btn btn-primary btn-sm waves-effect waves-themed mr-2">
+							<i class="fal fa-plus mr-1"></i> New Adjustment
 						</a>
+						<button class="btn btn-panel" data-action="panel-collapse" data-toggle="tooltip" data-offset="0,10" data-original-title="Collapse"></button>
+						<button class="btn btn-panel" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
 					</div>
 				</div>
 				<div class="panel-container show">
@@ -88,7 +94,7 @@
 										<td><?php echo strtoupper(htmlspecialchars($row['adj_direction'], ENT_QUOTES, 'UTF-8')); ?></td>
 										<td><?php echo $status_badge($row['status']); ?></td>
 										<td>
-											<div class="btn-group btn-group-sm">
+											<div class="btn-group btn-group-sm" role="group">
 												<a class="btn btn-outline-info" href="<?php echo ADMIN_URL; ?>aradjustment/view/<?php echo $adj_id; ?>" title="View"><i class="fal fa-eye"></i></a>
 												<?php if ((int) $row['status'] === 1) { ?>
 												<a class="btn btn-outline-primary" href="<?php echo ADMIN_URL; ?>aradjustment/edit/<?php echo $adj_id; ?>" title="Edit"><i class="fal fa-edit"></i></a>
@@ -117,3 +123,28 @@
 	</div>
 </main>
 <?php include('footer.php'); ?>
+<script src="<?php echo base_url(); ?>sa4/js/statistics/sparkline/sparkline.bundle.js"></script>
+<script src="<?php echo base_url(); ?>sa4/js/datagrid/datatables/datatables.bundle.js"></script>
+<script>
+$(document).ready(function(){
+	if (typeof pageSetUp === 'function') { pageSetUp(); }
+	if ($.fn.sparkline) {
+		$('.sparklines').each(function() {
+			var $el = $(this);
+			$el.sparkline('html', {
+				type: $el.attr('sparkType') || 'bar',
+				barColor: $el.attr('sparkBarColor') || '#886ab5',
+				height: $el.attr('sparkHeight') || '32px',
+				barWidth: $el.attr('sparkBarWidth') || '5px'
+			});
+		});
+	}
+	if ($.fn.DataTable && $('#ar_adj_table tbody tr td[colspan]').length === 0) {
+		$('#ar_adj_table').DataTable({
+			responsive: true,
+			order: [[0, 'desc']],
+			pageLength: 25
+		});
+	}
+});
+</script>

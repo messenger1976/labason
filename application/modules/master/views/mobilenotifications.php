@@ -4,19 +4,19 @@
 	$sa4_panel_id = 'panel-mobilenotifications';
 	$sa4_dt_export_cols = array(0, 1, 2, 3, 4, 5, 6);
 
-	$income1 = $this->my_model->get_income_metercustomer();
+	$income1 = $this->comm_model->get_income_metercustomer();
 	extract($income1);
-	$income2 = $this->my_model->get_income_monthlycustomer();
+	$income2 = $this->comm_model->get_income_monthlycustomer();
 	extract($income2);
 	$intotal = (isset($total1) ? (float) $total1 : 0) + (isset($total2) ? (float) $total2 : 0);
 
-	$expense1 = $this->my_model->get_outcome_expenses();
+	$expense1 = $this->comm_model->get_outcome_expenses();
 	extract($expense1);
-	$expense2 = $this->my_model->get_outcome_payroll();
+	$expense2 = $this->comm_model->get_outcome_payroll();
 	extract($expense2);
 	$extotal = (isset($extotal1) ? (float) $extotal1 : 0) + (isset($extotal2) ? (float) $extotal2 : 0);
 
-	$total_customer = $this->my_model->total_customer();
+	$total_customer = $this->comm_model->total_customer();
 	extract($total_customer);
 
 	$notifications = (isset($notifications) && is_array($notifications)) ? $notifications : array();

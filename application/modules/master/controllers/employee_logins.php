@@ -55,6 +55,19 @@ class employee_logins extends CI_Controller {
 			if($exit_detail == 0){			
 				$result = $this->my_model->add_record();
 				if($result){
+					if (function_exists('log_system_activity')) {
+						log_system_activity(array(
+							'category' => 'admin',
+							'action' => 'create',
+							'module' => 'employee_logins',
+							'controller' => 'employee_logins',
+							'method' => 'add',
+							'entity_type' => 'employee_login',
+							'entity_id' => (string) $result,
+							'reference_no' => (string) $this->input->post('username'),
+							'summary' => 'Employee login account created',
+						));
+					}
 					$this->session->set_flashdata('msg_succ', 'Inserted Successfully...');
 					redirect($this->listPage_redirect);
 				}else{
@@ -84,6 +97,19 @@ class employee_logins extends CI_Controller {
 			if($exit_detail == 0){			
 				$result = $this->my_model->update_record($id);
 				if($result){
+					if (function_exists('log_system_activity')) {
+						log_system_activity(array(
+							'category' => 'admin',
+							'action' => 'update',
+							'module' => 'employee_logins',
+							'controller' => 'employee_logins',
+							'method' => 'edit',
+							'entity_type' => 'employee_login',
+							'entity_id' => (string) $id,
+							'reference_no' => (string) $this->input->post('username'),
+							'summary' => 'Employee login account updated',
+						));
+					}
 					$this->session->set_flashdata('msg_succ', 'Updated Successfully...');
 					redirect($this->listPage_redirect);
 				}else{
@@ -112,6 +138,18 @@ class employee_logins extends CI_Controller {
 		if($id){
 			$result = $this->my_model->delete_record($id);
 			if($result){
+				if (function_exists('log_system_activity')) {
+					log_system_activity(array(
+						'category' => 'admin',
+						'action' => 'delete',
+						'module' => 'employee_logins',
+						'controller' => 'employee_logins',
+						'method' => 'delete',
+						'entity_type' => 'employee_login',
+						'entity_id' => (string) $id,
+						'summary' => 'Employee login account deleted',
+					));
+				}
 				$this->session->set_flashdata('msg_succ', 'Deleted Successfully...');
 				redirect($this->listPage_redirect);
 			}else{

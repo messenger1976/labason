@@ -227,6 +227,23 @@ class master_model extends CI_Model {
 		$setdata =  array_merge($login_st_data,$ip_details);
 		$admin_result=$this->db->insert('tbl_admin_login_users', $setdata);
 		$current_product_id=$this->db->insert_id();
+		$this->session->set_userdata('login_history_id', $current_product_id);
+		if (function_exists('log_system_activity')) {
+			log_system_activity(array(
+				'category' => 'auth',
+				'action' => 'login',
+				'module' => 'master',
+				'controller' => 'master',
+				'method' => 'login',
+				'entity_type' => 'login_session',
+				'entity_id' => (string) $current_product_id,
+				'summary' => 'User logged in',
+				'details' => array(
+					'browser' => $yourbrowser,
+					'ip' => $this->input->ip_address(),
+				),
+			));
+		}
 		//$this->remove_sent_sms_email($this->session->userdata('usertype'),$this->session->userdata('userid'));
 		return $current_product_id;
 	}
@@ -238,7 +255,19 @@ class master_model extends CI_Model {
 		 $this->db->where('session_info',$this->session->userdata('session_id'));
 		 $this->db->where('id',$this->session->userdata('login_history_id'));
 		 //$this->db->update();
-		 $this->db->update('tbl_admin_login_users', $logout_st_data); 
+		 $this->db->update('tbl_admin_login_users', $logout_st_data);
+		if (function_exists('log_system_activity')) {
+			log_system_activity(array(
+				'category' => 'auth',
+				'action' => 'logout',
+				'module' => 'logout',
+				'controller' => 'logout',
+				'method' => 'index',
+				'entity_type' => 'login_session',
+				'entity_id' => (string) $this->session->userdata('login_history_id'),
+				'summary' => 'User logged out',
+			));
+		}
 	}
 	public function getBrowser() {
 		$u_agent = $_SERVER['HTTP_USER_AGENT'];

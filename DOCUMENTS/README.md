@@ -21,5 +21,6 @@ Canonical Labason Water District documentation lives in **Company Knowledge** on
 - **Create and update all docs in LWDKB** (`Company-Knowledge/LWDKB/…`).
 - **Do not add new markdown guides in this folder.**
 - This `README.md` is a pointer only (docs moved 2026-08-09).
+- Sibling app `waterbilling1/DOCUMENTS/` is also pointer-only (same LWDKB tree).
 
 Implementation truth (PHP / SQL / schema) remains in this application repository.
