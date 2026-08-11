@@ -276,7 +276,7 @@ $config['encryption_key'] = 'test';
 |
 */
 $config['sess_cookie_name']		= 'ci_session';
-$config['sess_expiration']		= 7200;
+$config['sess_expiration']		= 0;
 //$config['sess_expire_on_close']	= FALSE;  //default set this one
 $config['sess_expire_on_close']	= FALSE;
 $config['sess_encrypt_cookie']	= FALSE;
