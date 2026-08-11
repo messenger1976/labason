@@ -12,6 +12,7 @@ class aradjustment extends CI_Controller {
 	public function __construct() {
 		parent::__construct();
 		$this->load->model('aradjustment_model', 'my_model');
+		$this->load->model('common_model', 'comm_model');
 		$this->load->model('adminheader_model', 'top_model');
 		$this->load->library('form_validation');
 		$this->form_validation->set_error_delimiters('<div class="error" style="color:red;">', '</div>');

@@ -60,6 +60,7 @@ class adminheader_model extends CI_Model {
 				'admin' => 'Admin',
 				'responsibilities' => 'Roles & Responsibilities',
 				'employee_logins' => 'Employee Login',
+				'system_activity' => 'System Activity',
 				'manual_or_series' => 'Manual OR Series',
 				'addbillingperiod' => 'Setup Schedule Billing Period',
 				'createbalanceforward' => 'Create Balance Forward',

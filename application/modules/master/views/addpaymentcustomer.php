@@ -23,6 +23,26 @@
 		<li class="position-absolute pos-top pos-right d-none d-sm-block"><span class="js-get-date"></span></li>
 	</ol>
 
+	<?php
+		// Restore filters from session (cleared only on logout)
+		$header_transdate = date('m/d/Y');
+		if (!empty($_SESSION['trans_date'])) {
+			$raw_td = trim($_SESSION['trans_date']);
+			if (preg_match('/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/', $raw_td, $m)) {
+				$header_transdate = sprintf('%02d/%02d/%04d', (int) $m[1], (int) $m[2], (int) $m[3]);
+			} elseif (preg_match('/^(\d{1,2})-(\d{1,2})-(\d{4})$/', $raw_td, $m)) {
+				// dd-mm-yyyy (other pages) → mm/dd/yyyy
+				$header_transdate = sprintf('%02d/%02d/%04d', (int) $m[2], (int) $m[1], (int) $m[3]);
+			} else {
+				$td_ts = strtotime(str_replace('-', '/', $raw_td));
+				if ($td_ts) {
+					$header_transdate = date('m/d/Y', $td_ts);
+				}
+			}
+		}
+		$session_billingperiod = isset($_SESSION['current_billingperiod']) ? trim($_SESSION['current_billingperiod']) : '';
+	?>
+	<link rel="stylesheet" media="screen, print" href="<?php echo base_url(); ?>sa4/css/formplugins/bootstrap-datepicker/bootstrap-datepicker.css">
 	<div class="subheader">
 		<h1 class="subheader-title">
 			<i class="subheader-icon fal fa-wallet"></i>
@@ -30,12 +50,25 @@
 		</h1>
 		<div class="subheader-block d-lg-flex align-items-center">
 			<div class="d-inline-flex flex-column justify-content-center mr-3">
+				<span class="fw-300 fs-xs d-block opacity-50"><small>TRANSACTION DATE</small></span>
+				<div class="input-group input-group-sm" style="min-width:150px;max-width:170px;">
+					<input type="text" class="form-control" name="header_transdate" id="header_transdate" value="<?php echo htmlspecialchars($header_transdate); ?>" readonly placeholder="Select date">
+					<div class="input-group-append">
+						<span class="input-group-text fs-xl">
+							<i class="fal fa-calendar"></i>
+						</span>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="subheader-block d-lg-flex align-items-center border-faded border-right-0 border-top-0 border-bottom-0 ml-3 pl-3">
+			<div class="d-inline-flex flex-column justify-content-center mr-3">
 				<span class="fw-300 fs-xs d-block opacity-50"><small>BILLING PERIOD</small></span>
 				<select class="form-control form-control-sm" name="header_billingperiod" id="header_billingperiod" style="min-width:160px;">
-					<option value="">--All--</option>
+					<option value="" <?php echo ($session_billingperiod === '') ? 'selected' : ''; ?>>--All--</option>
 					<?php if (!empty($billingperiod)) { foreach ($billingperiod as $value) {
 						$val_val = $value['bp_period_month'] . ' ' . $value['bp_period_year'];
-						$selected_val = (isset($_SESSION['current_billingperiod']) && $_SESSION['current_billingperiod'] == $val_val) ? 'selected' : '';
+						$selected_val = ($session_billingperiod === $val_val) ? 'selected' : '';
 					?>
 					<option value="<?php echo htmlspecialchars($val_val); ?>" <?php echo $selected_val; ?>><?php echo htmlspecialchars($value['month_name'] . ' ' . $value['bp_period_year']); ?></option>
 					<?php } } ?>
@@ -153,6 +186,7 @@
 
 <?php include('footer.php'); ?>
 <script src="<?php echo base_url(); ?>sa4/js/statistics/sparkline/sparkline.bundle.js"></script>
+<script src="<?php echo base_url(); ?>sa4/js/formplugins/bootstrap-datepicker/bootstrap-datepicker.js"></script>
 </body>
 </html>
 <style>
@@ -223,6 +257,23 @@ $(document).ready(function() {
 
 	showLoader();
 
+	var datepickerControls = {
+		leftArrow: '<i class="fal fa-angle-left" style="font-size: 1.25rem"></i>',
+		rightArrow: '<i class="fal fa-angle-right" style="font-size: 1.25rem"></i>'
+	};
+	if ($.fn.datepicker && $('#header_transdate').length) {
+		$('#header_transdate').datepicker({
+			todayHighlight: true,
+			autoclose: true,
+			orientation: 'bottom left',
+			format: 'mm/dd/yyyy',
+			templates: datepickerControls
+		});
+		$('#header_transdate').closest('.input-group').find('.input-group-text').on('click', function() {
+			$('#header_transdate').datepicker('show');
+		});
+	}
+
 	var table = $('#dt_basic').DataTable({
 		processing: true,
 		serverSide: true,
@@ -237,6 +288,7 @@ $(document).ready(function() {
 			type: "POST",
 			data: function(d) {
 				d.billing_period = $('#header_billingperiod').val() || '';
+				d.transaction_date = $('#header_transdate').val() || '';
 			}
 		},
 		columns: [
@@ -317,6 +369,21 @@ $(document).ready(function() {
 			type: 'POST',
 			url: '<?php echo ADMIN_URL; ?>addbillingperiod/updated_headerbillingperiod',
 			data: 'billing_period=' + encodeURIComponent(header_billing_period),
+			complete: function() {
+				table.ajax.reload(null, false);
+			},
+			error: function() { hideLoader(); }
+		});
+	});
+
+	// Persist transaction date in session (cleared only on logout)
+	$('#header_transdate').on('changeDate', function() {
+		var header_trans_date = $(this).val();
+		showLoader();
+		$.ajax({
+			type: 'POST',
+			url: '<?php echo ADMIN_URL; ?>addbillingperiod/updated_headertransdate',
+			data: { trans_date: header_trans_date },
 			complete: function() {
 				table.ajax.reload(null, false);
 			},

@@ -149,6 +149,25 @@ class createbalanceforward extends CI_Controller {
 			'complete' => $is_complete,
 			'message' => $is_complete ? 'Processing completed!' : 'Processing batch...'
 		);
+
+		if ($is_complete && function_exists('log_system_activity')) {
+			log_system_activity(array(
+				'category' => 'accounting',
+				'action' => 'balance_forward_complete',
+				'module' => 'createbalanceforward',
+				'controller' => 'createbalanceforward',
+				'method' => 'processbatch',
+				'entity_type' => 'balance_forward',
+				'entity_id' => (string) $batch_data['zone_id'],
+				'reference_no' => $batch_data['bp_month'].'-'.$batch_data['bp_year'],
+				'summary' => 'Balance forward completed ('.$batch_data['processed'].' of '.$batch_data['total'].')',
+				'details' => array(
+					'zone_id' => $batch_data['zone_id'],
+					'forward_period' => $batch_data['bp_month'].' '.$batch_data['bp_year'],
+					'current_period' => $batch_data['bp_current_month'].' '.$batch_data['bp_current_year'],
+				),
+			));
+		}
 		
 		echo json_encode($response);
 	}

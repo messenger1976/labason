@@ -1114,16 +1114,18 @@ class addpaymentcustomer_model extends CI_Model {
 	}
 	
 	/** Server-side pagination: Get paginated records with filtering **/
-	public function get_paginated_records($start = 0, $length = 10, $search = '', $order_column = 'tbl_addmetercustomer.id', $order_dir = 'desc', $billing_period = '') {
+	public function get_paginated_records($start = 0, $length = 10, $search = '', $order_column = 'tbl_addmetercustomer.id', $order_dir = 'desc', $billing_period = '', $paid_date = '') {
 		$this->db->select($this->table_name.".*,SUM(".$this->table_name.".amount) as gross_amount,".$this->table_customername.".*,".$this->table_name.".id as id");
 		$this->db->from($this->table_name);
 		$this->db->join($this->table_customername, $this->table_name.".customer_id = ".$this->table_customername.".customer_id", 'left');
 		
-		// Apply billing period filter (from $_SESSION['current_billingperiod']) - reduces rows scanned for performance
+		// Billing period takes priority; otherwise filter by Paid Date (transaction date)
 		if($billing_period != ''){
 			$billperiod = explode(' ',$billing_period);
 			$this->db->where($this->table_name.'.month',$billperiod[0]);
 			$this->db->where($this->table_name.'.year',$billperiod[1]);
+		} elseif ($paid_date != '') {
+			$this->db->where($this->table_name.'.date', $paid_date);
 		}
 		
 		// Apply search filter
@@ -1154,16 +1156,18 @@ class addpaymentcustomer_model extends CI_Model {
 	}
 	
 	/** Server-side pagination: Get total count with filtering **/
-	public function get_total_count($search = '', $billing_period = '') {
+	public function get_total_count($search = '', $billing_period = '', $paid_date = '') {
 		$this->db->select("COUNT(DISTINCT ".$this->table_name.".invoice_id) as total");
 		$this->db->from($this->table_name);
 		$this->db->join($this->table_customername, $this->table_name.".customer_id = ".$this->table_customername.".customer_id", 'left');
 		
-		// Apply billing period filter (from $_SESSION['current_billingperiod']) - reduces rows scanned for performance
+		// Billing period takes priority; otherwise filter by Paid Date (transaction date)
 		if($billing_period != ''){
 			$billperiod = explode(' ',$billing_period);
 			$this->db->where($this->table_name.'.month',$billperiod[0]);
 			$this->db->where($this->table_name.'.year',$billperiod[1]);
+		} elseif ($paid_date != '') {
+			$this->db->where($this->table_name.'.date', $paid_date);
 		}
 		
 		// Apply search filter

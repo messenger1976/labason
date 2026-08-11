@@ -424,6 +424,18 @@ class addmetercustomerreading extends CI_Controller {
 		if($this->input->post('edit') != ''){
 			$result = $this->my_model->update_record($id);
 			if($result){
+				if (function_exists('log_system_activity')) {
+					log_system_activity(array(
+						'category' => 'accounting',
+						'action' => 'meter_reading_correction',
+						'module' => 'addmetercustomerreading',
+						'controller' => 'addmetercustomerreading',
+						'method' => 'edit',
+						'entity_type' => 'meter_reading',
+						'entity_id' => (string) $id,
+						'summary' => 'Meter reading corrected #'.$id,
+					));
+				}
 				$this->session->set_flashdata('msg_succ', 'Updated Successfully...');
 				redirect($this->listPage_redirect);
 			}else{

@@ -160,6 +160,7 @@ class responsibilities_model extends CI_Model {
 				'admin' => '0',
 				'responsibilities' => '0',
 				'employee_logins' => '0',
+				'system_activity' => '0',
 				'manual_or_series' => '0',
 				'addbillingperiod' => '0',
 				'createbalanceforward' => '0',

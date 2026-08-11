@@ -275,7 +275,28 @@ class aradjustment_model extends CI_Model {
 		if (!$ok) {
 			return array('ok' => false, 'message' => 'Failed to save draft.');
 		}
-		return array('ok' => true, 'adj_id' => (int) $this->db->insert_id(), 'adj_no' => $adj_no);
+		$adj_id = (int) $this->db->insert_id();
+		if (function_exists('log_system_activity')) {
+			log_system_activity(array(
+				'category' => 'accounting',
+				'action' => 'create_draft',
+				'module' => 'aradjustment',
+				'controller' => 'aradjustment',
+				'method' => 'add',
+				'entity_type' => 'ar_adjustment',
+				'entity_id' => (string) $adj_id,
+				'reference_no' => $adj_no,
+				'amount' => isset($data['adj_amount']) ? $data['adj_amount'] : null,
+				'status_before' => '',
+				'status_after' => 'draft',
+				'summary' => 'AR Adjustment draft '.$adj_no.' created',
+				'details' => array(
+					'account_no' => isset($data['account_no']) ? $data['account_no'] : '',
+					'adj_type' => isset($data['adj_type']) ? $data['adj_type'] : '',
+				),
+			));
+		}
+		return array('ok' => true, 'adj_id' => $adj_id, 'adj_no' => $adj_no);
 	}
 
 	public function update_draft($id) {
@@ -292,6 +313,22 @@ class aradjustment_model extends CI_Model {
 		$this->db->where('adj_id', (int) $id);
 		$this->db->where('status', self::STATUS_DRAFT);
 		$ok = $this->db->update($this->table_name, $data);
+		if ($ok && function_exists('log_system_activity')) {
+			log_system_activity(array(
+				'category' => 'accounting',
+				'action' => 'update_draft',
+				'module' => 'aradjustment',
+				'controller' => 'aradjustment',
+				'method' => 'edit',
+				'entity_type' => 'ar_adjustment',
+				'entity_id' => (string) $id,
+				'reference_no' => isset($existing['adj_no']) ? $existing['adj_no'] : '',
+				'amount' => isset($data['adj_amount']) ? $data['adj_amount'] : (isset($existing['adj_amount']) ? $existing['adj_amount'] : null),
+				'status_before' => 'draft',
+				'status_after' => 'draft',
+				'summary' => 'AR Adjustment draft updated',
+			));
+		}
 		return $ok
 			? array('ok' => true)
 			: array('ok' => false, 'message' => 'Update failed.');
@@ -360,6 +397,27 @@ class aradjustment_model extends CI_Model {
 			return array('ok' => false, 'message' => 'Posting failed.');
 		}
 		$this->db->trans_commit();
+		if (function_exists('log_system_activity')) {
+			log_system_activity(array(
+				'category' => 'accounting',
+				'action' => 'post',
+				'module' => 'aradjustment',
+				'controller' => 'aradjustment',
+				'method' => 'post',
+				'entity_type' => 'ar_adjustment',
+				'entity_id' => (string) $id,
+				'reference_no' => $voucher,
+				'amount' => $amount,
+				'status_before' => 'draft',
+				'status_after' => 'posted',
+				'summary' => 'AR Adjustment '.$voucher.' posted to SOA/GL',
+				'details' => array(
+					'dr_ledger_id' => (int) $existing['dr_ledger_id'],
+					'cr_ledger_id' => (int) $existing['cr_ledger_id'],
+					'account_no' => isset($existing['account_no']) ? $existing['account_no'] : '',
+				),
+			));
+		}
 		return array('ok' => true);
 	}
 
@@ -421,6 +479,22 @@ class aradjustment_model extends CI_Model {
 			return array('ok' => false, 'message' => 'Void failed.');
 		}
 		$this->db->trans_commit();
+		if (function_exists('log_system_activity')) {
+			log_system_activity(array(
+				'category' => 'accounting',
+				'action' => 'void',
+				'module' => 'aradjustment',
+				'controller' => 'aradjustment',
+				'method' => 'void_entry',
+				'entity_type' => 'ar_adjustment',
+				'entity_id' => (string) $id,
+				'reference_no' => isset($existing['adj_no']) ? $existing['adj_no'] : '',
+				'amount' => $amount,
+				'status_before' => 'posted',
+				'status_after' => 'void',
+				'summary' => 'AR Adjustment '.$existing['adj_no'].' voided (reversing GL)',
+			));
+		}
 		return array('ok' => true);
 	}
 
@@ -431,6 +505,23 @@ class aradjustment_model extends CI_Model {
 		}
 		$this->db->where('adj_id', (int) $id);
 		$this->db->where('status', self::STATUS_DRAFT);
-		return $this->db->delete($this->table_name);
+		$ok = $this->db->delete($this->table_name);
+		if ($ok && function_exists('log_system_activity')) {
+			log_system_activity(array(
+				'category' => 'accounting',
+				'action' => 'delete_draft',
+				'module' => 'aradjustment',
+				'controller' => 'aradjustment',
+				'method' => 'delete',
+				'entity_type' => 'ar_adjustment',
+				'entity_id' => (string) $id,
+				'reference_no' => isset($existing['adj_no']) ? $existing['adj_no'] : '',
+				'amount' => isset($existing['adj_amount']) ? $existing['adj_amount'] : null,
+				'status_before' => 'draft',
+				'status_after' => 'deleted',
+				'summary' => 'AR Adjustment draft deleted',
+			));
+		}
+		return $ok;
 	}
 }

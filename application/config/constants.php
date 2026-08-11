@@ -43,16 +43,34 @@ define('DIR_WRITE_MODE', 0777);
 //define('HOME_ADS_NO_IMG5', 'http://'.$_SERVER['SERVER_NAME'].'/beta/waterbillingsystem/images/no-images/inner-ads-2.jpg');
 //define('HOME_ADS_NO_IMG6', 'http://'.$_SERVER['SERVER_NAME'].'/beta/waterbillingsystem/images/no-images/inner-ads-2.jpg');
 $isSecure = false;
-if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') {
-    $isSecure = true;
+if (!empty($_SERVER['HTTPS']) && strtolower((string) $_SERVER['HTTPS']) !== 'off') {
+	$isSecure = true;
+} elseif (!empty($_SERVER['SERVER_PORT']) && (string) $_SERVER['SERVER_PORT'] === '443') {
+	$isSecure = true;
+} elseif (!empty($_SERVER['REQUEST_SCHEME']) && strtolower((string) $_SERVER['REQUEST_SCHEME']) === 'https') {
+	$isSecure = true;
+} elseif (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+	$fwdParts = explode(',', (string) $_SERVER['HTTP_X_FORWARDED_PROTO']);
+	$fwd = strtolower(trim($fwdParts[0]));
+	if ($fwd === 'https') {
+		$isSecure = true;
+	}
+} elseif (!empty($_SERVER['HTTP_X_FORWARDED_SSL']) && strtolower((string) $_SERVER['HTTP_X_FORWARDED_SSL']) === 'on') {
+	$isSecure = true;
+} elseif (!empty($_SERVER['HTTP_FRONT_END_HTTPS']) && strtolower((string) $_SERVER['HTTP_FRONT_END_HTTPS']) === 'on') {
+	$isSecure = true;
 }
-elseif (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https' || !empty($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] == 'on') {
-    $isSecure = true;
+$host = isset($_SERVER['HTTP_HOST']) ? strtolower((string) $_SERVER['HTTP_HOST']) : '';
+if (!$isSecure && $host !== '' && (
+	strpos($host, '.tempcloudsite.com') !== false
+	|| strpos($host, '.cloudwaysapps.com') !== false
+)) {
+	$isSecure = true;
 }
 $REQUEST_PROTOCOL = $isSecure ? 'https' : 'http';
 /* end code */
 
-$webserveruri = $REQUEST_PROTOCOL.'://'.$_SERVER['SERVER_NAME'];
+$webserveruri = $REQUEST_PROTOCOL.'://'.(isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : $_SERVER['SERVER_NAME']);
 
 define('ADMIN_URL', $webserveruri.'/master/');
 define('ADMIN_CSS_URL', $webserveruri.'/styles/admin/styles/');

@@ -448,6 +448,7 @@ $avatar_url = base_url($avatar_relative) . '?v=' . $avatar_mtime;
 							<?php if($this->uri->segment(2)=='addbillingperiod'){echo 'active open';}?>
 							<?php if($this->uri->segment(2)=='createbalanceforward'){echo 'active open';}?>
 						   <?php if($this->uri->segment(2)=='employee_logins'){echo 'active open';}?>
+						   <?php if($this->uri->segment(2)=='system_activity'){echo 'active open';}?>
 						   <?php if($this->uri->segment(2)=='manual_or_series'){echo 'active open';}?>
 						   <?php if($this->uri->segment(2)=='mobilenotifications'){echo 'active open';}?>
 						   <?php if($this->uri->segment(2)=='classification_category'){echo 'active open';}?>
@@ -471,6 +472,14 @@ $avatar_url = base_url($avatar_relative) . '?v=' . $avatar_mtime;
 					<li class="<?php if($this->uri->segment(2)=='employee_logins' && $this->uri->segment(2)=='employee_logins') echo 'active';?>">
 						<a href="<?php echo ADMIN_URL;?>employee_logins/" title="Employee Login">
 							<span class="nav-link-text">Employee Login</span>
+						</a>
+					</li>
+					<?php } ?>
+
+					<?php if((array_key_exists('system_activity',$roleResponsible) && ($roleResponsible['system_activity'] == 1 || (is_array($roleResponsible['system_activity']) && count($roleResponsible['system_activity']) > 0) || (is_string($roleResponsible['system_activity']) && $roleResponsible['system_activity'] !== '' && $roleResponsible['system_activity'] !== '0')) ) || ($this->session->userdata('usertype') == 'admin')){ ?>
+					<li class="<?php if($this->uri->segment(2)=='system_activity') echo 'active';?>">
+						<a href="<?php echo ADMIN_URL;?>system_activity/" title="System Activity">
+							<span class="nav-link-text">System Activity</span>
 						</a>
 					</li>
 					<?php } ?>

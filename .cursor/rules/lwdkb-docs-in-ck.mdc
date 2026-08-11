@@ -1,0 +1,14 @@
+---
+description: Labason sandbox — put all docs in Company Knowledge LWDKB
+alwaysApply: true
+---
+
+# Documentation location (labasonsandbox)
+
+**Canonical docs live in Company Knowledge:** `Company-Knowledge/LWDKB/PLATFORM_KNOWLEDGE/`
+
+- Create or update guides **only** under LWDKB (see `04_APP_DOCS_INDEX.md`).
+- `DOCUMENTS/` in this app is a **pointer README only** — do not add new `.md` guides here.
+- Code, SQL, and runtime assets stay in this repository.
+
+Entry: `Company-Knowledge/LWDKB/AGENTS.md`

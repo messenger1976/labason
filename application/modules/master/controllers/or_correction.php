@@ -62,6 +62,20 @@ class or_correction extends CI_Controller {
              //echo'<pre>';print_r($_POST);
 				$result = $this->my_model->add_record();
 				if($result){
+					if (function_exists('log_system_activity')) {
+						log_system_activity(array(
+							'category' => 'accounting',
+							'action' => 'create',
+							'module' => 'or_correction',
+							'controller' => 'or_correction',
+							'method' => 'add',
+							'entity_type' => 'or_correction',
+							'entity_id' => (string) $result,
+							'reference_no' => (string) $this->input->post('or_number'),
+							'amount' => $this->input->post('amount') !== false ? $this->input->post('amount') : null,
+							'summary' => 'OR Correction created',
+						));
+					}
 					$this->session->set_flashdata('msg_succ', 'Inserted Successfully...');
 					redirect($this->listPage_redirect);
 				}else{
@@ -83,6 +97,19 @@ class or_correction extends CI_Controller {
 			$result = $this->my_model->update_record($id);
 	
 			if($result){
+				if (function_exists('log_system_activity')) {
+					log_system_activity(array(
+						'category' => 'accounting',
+						'action' => 'update',
+						'module' => 'or_correction',
+						'controller' => 'or_correction',
+						'method' => 'edit',
+						'entity_type' => 'or_correction',
+						'entity_id' => (string) $id,
+						'reference_no' => isset($data['record']['or_number']) ? $data['record']['or_number'] : (string) $this->input->post('or_number'),
+						'summary' => 'OR Correction updated',
+					));
+				}
 				//echo'<pre>';print_r($result);exit;
 				$this->session->set_flashdata('msg_succ', 'Updated Successfully...');
 				redirect($this->listPage_redirect);

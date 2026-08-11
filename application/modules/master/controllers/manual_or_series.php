@@ -9,6 +9,7 @@ class manual_or_series extends CI_Controller {
 	public function __construct() {
 		parent::__construct();
 		$this->load->model('manual_or_series_model', 'my_model');
+		$this->load->model('common_model', 'comm_model');
 		$this->load->library('form_validation');
 		$this->load->model('adminheader_model', 'top_model');
 

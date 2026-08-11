@@ -177,6 +177,20 @@ class database_backup extends CI_Controller {
 			$result = $this->my_model->save_backup_record($backup_data);
 			
 			if($result){
+				if (function_exists('log_system_activity')) {
+					log_system_activity(array(
+						'category' => 'admin',
+						'action' => 'backup_create',
+						'module' => 'database_backup',
+						'controller' => 'database_backup',
+						'method' => 'create',
+						'entity_type' => 'database_backup',
+						'entity_id' => '',
+						'reference_no' => $filename,
+						'summary' => 'Database backup created: '.$filename,
+						'details' => array('filesize' => $filesize),
+					));
+				}
 				$this->session->set_flashdata('msg_succ', 'Database backup created successfully!');
 			} else {
 				$this->session->set_flashdata('msg_err', 'Backup file created but failed to save record.');
@@ -302,6 +316,19 @@ class database_backup extends CI_Controller {
 			$result = $this->my_model->delete_backup($id);
 			
 			if($result){
+				if (function_exists('log_system_activity')) {
+					log_system_activity(array(
+						'category' => 'admin',
+						'action' => 'backup_delete',
+						'module' => 'database_backup',
+						'controller' => 'database_backup',
+						'method' => 'delete',
+						'entity_type' => 'database_backup',
+						'entity_id' => (string) $id,
+						'reference_no' => isset($backup['filename']) ? $backup['filename'] : '',
+						'summary' => 'Database backup deleted',
+					));
+				}
 				$this->session->set_flashdata('msg_succ', 'Backup deleted successfully!');
 			} else {
 				$this->session->set_flashdata('msg_err', 'Failed to delete backup record.');
@@ -409,6 +436,19 @@ class database_backup extends CI_Controller {
 			if($this->db->trans_status() === FALSE){
 				$this->session->set_flashdata('msg_err', 'Failed to restore backup. Database transaction failed.');
 			} else {
+				if (function_exists('log_system_activity')) {
+					log_system_activity(array(
+						'category' => 'admin',
+						'action' => 'backup_restore',
+						'module' => 'database_backup',
+						'controller' => 'database_backup',
+						'method' => 'restore',
+						'entity_type' => 'database_backup',
+						'entity_id' => (string) $id,
+						'reference_no' => isset($backup['filename']) ? $backup['filename'] : '',
+						'summary' => 'Database restored from backup',
+					));
+				}
 				$this->session->set_flashdata('msg_succ', 'Database restored successfully from backup!');
 			}
 		} else {

@@ -11,6 +11,19 @@ class logout extends CI_Controller{
 	}
     public function index() {
 	//	if($this->session->userdata('username')!="") {
+			if ($this->session->userdata('userid')) {
+				$this->load->model('master_model', 'my_model');
+				$this->my_model->admin_logout_info();
+			} elseif (function_exists('log_system_activity') && $this->session->userdata('username')) {
+				log_system_activity(array(
+					'category' => 'auth',
+					'action' => 'logout',
+					'module' => 'logout',
+					'controller' => 'logout',
+					'method' => 'index',
+					'summary' => 'User logged out',
+				));
+			}
 			$user_data = $this->session->all_userdata();
 			foreach ($user_data as $key => $value) {
 				//if ($key != 'session_id' && $key != 'ip_address' && $key != 'user_agent' && $key != 'last_activity') {
