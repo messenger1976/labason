@@ -40,10 +40,12 @@ class addpaymentcustomer extends CI_Controller {
 	public function index(){ 		 //*****  View Loading  *****//
 		$header['roleResponsible'] = $this->top_model->get_responsibilities();
 
-		if(!isset($_SESSION['current_billingperiod'])){
-			$data['current_billingperiod'] = $this->comm_model->get_billingperiod_record();
-			
-			$_SESSION['current_billingperiod'] = $data['current_billingperiod'][0]['bp_period_month'].' '.$data['current_billingperiod'][0]['bp_period_year'];
+		// Persist payment list filters in session until logout
+		if (!isset($_SESSION['current_billingperiod'])) {
+			$_SESSION['current_billingperiod'] = ''; // --All-- default
+		}
+		if (empty($_SESSION['trans_date'])) {
+			$_SESSION['trans_date'] = date('m/d/Y');
 		}
 		// No longer loading all records - using server-side pagination instead
 		$data['record'] = array();
@@ -75,16 +77,18 @@ class addpaymentcustomer extends CI_Controller {
 				$search = trim($search_post['value']);
 			}
 
-			// Billing period filter - prefer POST (dropdown), then session, then current period
+			// Filter rules:
+			// - Billing period selected (not --All--): filter by month/year; ignore transaction date
+			// - Billing period --All--: filter by Paid Date (transaction_date), default today
 			$billing_period = trim($this->input->post('billing_period') ?: '');
-			if($billing_period === '' && isset($_SESSION['current_billingperiod']) && $_SESSION['current_billingperiod'] != '') {
-				$billing_period = $_SESSION['current_billingperiod'];
-			}
-			if($billing_period == '') {
-				$current_bp = $this->comm_model->get_billingperiod_record();
-				if(!empty($current_bp) && isset($current_bp[0])) {
-					$billing_period = $current_bp[0]['bp_period_month'].' '.$current_bp[0]['bp_period_year'];
+			$transaction_date = trim($this->input->post('transaction_date') ?: '');
+			$paid_date_filter = '';
+			if ($billing_period === '') {
+				if ($transaction_date === '') {
+					$transaction_date = date('m/d/Y');
 				}
+				$paid_ts = strtotime(str_replace('-', '/', $transaction_date));
+				$paid_date_filter = $paid_ts ? date('Y-m-d', $paid_ts) : date('Y-m-d');
 			}
 			
 			// Safely get order parameters
@@ -122,9 +126,9 @@ class addpaymentcustomer extends CI_Controller {
 			}
 			
 			// Get filtered and paginated records
-			$records = $this->my_model->get_paginated_records($start, $length, $search, $order_column, $order_dir, $billing_period);
-			$total_records = $this->my_model->get_total_count('', $billing_period);
-			$filtered_records = $this->my_model->get_total_count($search, $billing_period);
+			$records = $this->my_model->get_paginated_records($start, $length, $search, $order_column, $order_dir, $billing_period, $paid_date_filter);
+			$total_records = $this->my_model->get_total_count('', $billing_period, $paid_date_filter);
+			$filtered_records = $this->my_model->get_total_count($search, $billing_period, $paid_date_filter);
 			
 			// Format data for DataTables (SA4-styled cells/actions)
 			$data = array();
