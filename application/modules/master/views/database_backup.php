@@ -29,6 +29,7 @@
 	$can_list = !$is_subadmin || in_array('l', $roleResponsible, true);
 	$can_add = !$is_subadmin || in_array('a', $roleResponsible, true);
 	$can_delete = !$is_subadmin || in_array('d', $roleResponsible, true);
+	$upload_max_label = isset($upload_max_label) ? $upload_max_label : '';
 ?>
 <link rel="stylesheet" media="screen, print" href="<?php echo base_url(); ?>sa4/css/datagrid/datatables/datatables.bundle.css">
 <main id="js-page-content" role="main" class="page-content">
@@ -100,6 +101,9 @@
 						<div class="row mb-3 align-items-end">
 							<div class="col-sm-12 text-right">
 								<?php if ($can_add) { ?>
+								<button type="button" class="btn btn-primary btn-sm waves-effect waves-themed" data-toggle="modal" data-target="#uploadBackupModal">
+									<i class="fal fa-upload mr-1"></i> Upload Backup
+								</button>
 								<a href="<?php echo ADMIN_URL; ?>database_backup/create" class="btn btn-success btn-sm waves-effect waves-themed">
 									<i class="fal fa-plus mr-1"></i> Create Backup
 								</a>
@@ -167,6 +171,39 @@
 		</div>
 	</div>
 </main>
+
+<?php if ($can_add) { ?>
+<div class="modal fade" id="uploadBackupModal" tabindex="-1" role="dialog" aria-labelledby="uploadBackupModalLabel" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+		<form action="<?php echo ADMIN_URL; ?>database_backup/upload_backup" method="post" enctype="multipart/form-data">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="uploadBackupModalLabel">Upload Backup</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true"><i class="fal fa-times"></i></span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<p class="text-muted mb-3">Upload a previously downloaded <code>.sql</code> dump. This only stores the file in the backup list; restore is a separate action.</p>
+					<div class="form-group">
+						<label class="form-label" for="backup_file">SQL backup file</label>
+						<input type="file" class="form-control-file" id="backup_file" name="backup_file" accept=".sql,application/sql,text/plain" required>
+					</div>
+					<?php if ($upload_max_label !== '') { ?>
+					<small class="form-text text-muted">Maximum upload size: <?php echo htmlspecialchars($upload_max_label); ?>.</small>
+					<?php } ?>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+					<button type="submit" class="btn btn-primary">
+						<i class="fal fa-upload mr-1"></i> Upload
+					</button>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
+<?php } ?>
 
 <?php include(__DIR__ . '/partials/sa4_dt_loading.php'); ?>
 <?php include('footer.php'); ?>

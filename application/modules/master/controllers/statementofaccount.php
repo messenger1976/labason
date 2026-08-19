@@ -143,6 +143,78 @@ class statementofaccount extends CI_Controller {
 		}
 	}
 
+	private function _soa_sign_cookie($key, $default) {
+		if (!isset($_COOKIE[$key])) {
+			return $default;
+		}
+		$val = trim(rawurldecode((string) $_COOKIE[$key]));
+		$val = preg_replace('/[\x00-\x1F\x7F]/', '', $val);
+		if (function_exists('mb_substr')) {
+			$val = mb_substr($val, 0, 120, 'UTF-8');
+		} else {
+			$val = substr($val, 0, 120);
+		}
+		return ($val !== '') ? $val : $default;
+	}
+
+	/** Convert SOA to PDF (TCPDF) **/
+	public function pdf($customer_id='') {
+		if ($customer_id == '') {
+			redirect('/master/statementofaccount/search');
+		}
+
+		$customer_info = $this->my_model->get_customer_info($customer_id);
+		if (empty($customer_info)) {
+			$this->session->set_flashdata('msg', '<div class="alert alert-danger text-center">Customer not found!</div>');
+			redirect('/master/statementofaccount/search');
+		}
+
+		@set_time_limit(180);
+		@ini_set('memory_limit', '256M');
+
+		$ledger_entries = $this->my_model->get_customer_ledger($customer_id);
+		$ledger_entries = $this->my_model->calculate_running_balance($ledger_entries);
+		$current_balance = $this->my_model->get_current_balance($customer_id);
+
+		$data = array(
+			'customer_info' => $customer_info,
+			'ledger_entries' => $ledger_entries,
+			'current_balance' => $current_balance,
+			'printed_at' => date('Y-m-d H:i:s'),
+			'prepared_name' => $this->_soa_sign_cookie('soa_sign_prepared_name', 'MISHELLE P. MONDARTE'),
+			'prepared_title' => $this->_soa_sign_cookie('soa_sign_prepared_title', 'Industrial Relations Management Officer C / Billing Officer'),
+			'verified_name' => $this->_soa_sign_cookie('soa_sign_verified_name', 'DARYL JAY T. VILLARIN'),
+			'verified_title' => $this->_soa_sign_cookie('soa_sign_verified_title', 'Administrative/General Services Officer B / HRMO/FO/BO'),
+			'approved_name' => $this->_soa_sign_cookie('soa_sign_approved_name', 'ENGR. ANASTACIA T. ROMANILLOS, CE'),
+			'approved_title' => $this->_soa_sign_cookie('soa_sign_approved_title', 'General Manager')
+		);
+
+		$html = $this->load->view('statementofaccount_pdf', $data, true);
+
+		while (ob_get_level()) {
+			@ob_end_clean();
+		}
+
+		$this->load->library('Pdf');
+		$pdf = new Pdf('P', PDF_UNIT, 'A4', true, 'UTF-8', false);
+		$pdf->SetCreator(PDF_CREATOR);
+		$pdf->SetTitle('Statement of Account - '.$customer_id);
+		$pdf->setPrintHeader(false);
+		$pdf->setPrintFooter(false);
+		$pdf->SetDefaultMonospacedFont('courier');
+		$pdf->SetMargins(10, 10, 10);
+		$pdf->SetAutoPageBreak(true, 12);
+		$pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
+		$pdf->setFontSubsetting(false);
+		$pdf->SetFont('helvetica', '', 8, '', true);
+		$pdf->AddPage();
+		$pdf->writeHTML($html, true, false, true, false, '');
+
+		$safe_id = preg_replace('/[^A-Za-z0-9._-]/', '_', $customer_id);
+		$pdf->Output('SOA-'.$safe_id.'.pdf', 'I');
+		exit;
+	}
+
 }
 ?>
 
