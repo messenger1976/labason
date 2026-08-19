@@ -174,6 +174,13 @@ class responsibilities extends CI_Controller
 				'children' => array('adddailyreport', 'customerbalancemonitor', 'lowtonoconsumption')
 			),
 			array(
+				'id' => 'accounting',
+				'label' => 'Accounting',
+				'icon' => 'fa-book',
+				'parent_key' => null,
+				'children' => array('ar_adjustment', 'ar_adjustment_approve')
+			),
+			array(
 				'id' => 'assets',
 				'label' => 'Assets',
 				'icon' => 'fa-pencil-square-o',
@@ -186,13 +193,6 @@ class responsibilities extends CI_Controller
 				'icon' => 'fa-pencil-square-o',
 				'parent_key' => 'addledger',
 				'children' => array()
-			),
-			array(
-				'id' => 'accounting',
-				'label' => 'Accounting',
-				'icon' => 'fa-book',
-				'parent_key' => null,
-				'children' => array('ar_adjustment', 'ar_adjustment_approve')
 			),
 			array(
 				'id' => 'technical',
