@@ -307,6 +307,13 @@ $(document).ready(function(){
 			return false;
 		}
 
+		if (typeof openReportPdfPreview === 'function') {
+			openReportPdfPreview({
+				printUrl: "<?php echo ADMIN_URL;?>reports/arrearsmonitoringprinttopdf/"+asofdate+'/'+zone+'/'+status+'/'+preparedby+'/'+verifiedby+'/'+approvedby,
+				filename: 'Arrears_Monitoring_Report.pdf'
+			});
+			return;
+		}
 		window.location.href = "<?php echo ADMIN_URL;?>reports/arrearsmonitoringexporttopdf/"+asofdate+'/'+zone+'/'+status+'/'+preparedby+'/'+verifiedby+'/'+approvedby;
 	});
 

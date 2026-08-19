@@ -257,6 +257,13 @@ $(document).ready(function(){
 			return;
 		}
 
+		if (typeof openReportPdfPreview === 'function') {
+			openReportPdfPreview({
+				printUrl: "<?php echo ADMIN_URL;?>adddailyreport/printtopdf/"+fromdate+'/'+zone+'/'+preparedby+'/'+verifiedby+'/'+approvedby+'/'+grouping+'/'+cashier,
+				filename: 'Daily_Collection_Report.pdf'
+			});
+			return;
+		}
 		window.location.href = "<?php echo ADMIN_URL;?>adddailyreport/exporttopdf/"+fromdate+'/'+zone+'/'+preparedby+'/'+verifiedby+'/'+approvedby+'/'+grouping+'/'+cashier;
 	});
 

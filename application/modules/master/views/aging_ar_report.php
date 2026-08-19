@@ -292,6 +292,13 @@ $(document).ready(function(){
 			return false;
 		}
 
+		if (typeof openReportPdfPreview === 'function') {
+			openReportPdfPreview({
+				printUrl: "<?php echo ADMIN_URL;?>reports/agingprinttopdf/"+asofdate+'/'+zone+'/'+status+'/'+preparedby+'/'+verifiedby+'/'+approvedby,
+				filename: 'Aging_AR_Report.pdf'
+			});
+			return;
+		}
 		window.location.href = "<?php echo ADMIN_URL;?>reports/agingexporttopdf/"+asofdate+'/'+zone+'/'+status+'/'+preparedby+'/'+verifiedby+'/'+approvedby;
 	});
 

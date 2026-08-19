@@ -233,6 +233,13 @@ $(document).ready(function(){
 			alert('Please select a billing period.');
 			return;
 		}
+		if (typeof openReportPdfPreview === 'function') {
+			openReportPdfPreview({
+				printUrl: "<?php echo ADMIN_URL; ?>reports/lowtonoconsumptionprinttopdf/"+encodeURIComponent(f.billingperiod)+'/'+encodeURIComponent(f.usage_type)+'/'+encodeURIComponent(f.max_cu)+'/'+f.zone+'/'+f.preparedby+'/'+f.verifiedby+'/'+f.approvedby,
+				filename: 'Low_to_No_Consumption.pdf'
+			});
+			return;
+		}
 		window.location.href = "<?php echo ADMIN_URL; ?>reports/lowtonoconsumptionexporttopdf/"+encodeURIComponent(f.billingperiod)+'/'+encodeURIComponent(f.usage_type)+'/'+encodeURIComponent(f.max_cu)+'/'+f.zone+'/'+f.preparedby+'/'+f.verifiedby+'/'+f.approvedby;
 	});
 
