@@ -380,8 +380,8 @@ $avatar_url = base_url($avatar_relative) . '?v=' . $avatar_mtime;
 
 					<?php if((array_key_exists('customerbalancemonitor',$roleResponsible) && ($roleResponsible['customerbalancemonitor'] == 1)) || ($this->session->userdata('usertype') == 'admin') ){ ?>
 					<li class="<?php if($this->uri->segment(2)=='customerbalancemonitor') echo 'active';?>">
-						<a href="<?php echo ADMIN_URL;?>customerbalancemonitor" title="Customer balance monitor">
-							<span class="nav-link-text">Customer balance monitor</span>
+						<a href="<?php echo ADMIN_URL;?>customerbalancemonitor" title="Customer Balance Monitor">
+							<span class="nav-link-text">Customer Balance Monitor</span>
 						</a>
 					</li>
 					<?php } ?>

@@ -161,6 +161,9 @@
 								<a href="javascript:void(0);" id="printtopdf" class="btn btn-warning">
 									<i class="fal fa-print mr-1"></i> Print
 								</a>
+								<a href="javascript:void(0);" id="exporttopdf" class="btn btn-danger">
+									<i class="fal fa-file-pdf mr-1"></i> Export to PDF
+								</a>
 								<a href="javascript:void(0);" id="exporttoexcel" class="btn btn-success">
 									<i class="fal fa-file-excel mr-1"></i> Export to Excel
 								</a>
@@ -272,6 +275,24 @@ $(document).ready(function(){
 		if (!popup || popup.closed || typeof popup.closed == "undefined") {
 			alert("Popup was blocked! Please allow popups for this site.");
 		}
+	});
+
+	$('#exporttopdf').on('click', function(evt){
+		evt.preventDefault();
+		var zone = $("#zone").val();
+		var status = $("#status").val();
+		status = status == '' ? '99' : status;
+		var preparedby = $("#preparedby").val();
+		var verifiedby = $("#verifiedby").val();
+		var approvedby = $("#approvedby").val();
+		var asofdate = $("#asofdate").val();
+
+		if (asofdate === '') {
+			alert("Please select As of Date");
+			return false;
+		}
+
+		window.location.href = "<?php echo ADMIN_URL;?>reports/agingexporttopdf/"+asofdate+'/'+zone+'/'+status+'/'+preparedby+'/'+verifiedby+'/'+approvedby;
 	});
 
 	$('#exporttoexcel').on('click', function(evt){

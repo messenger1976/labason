@@ -160,6 +160,9 @@
 								<a href="javascript:void(0);" id="printtopdf" class="btn btn-warning">
 									<i class="fal fa-print mr-1"></i> Print
 								</a>
+								<a href="javascript:void(0);" id="exporttopdf" class="btn btn-danger">
+									<i class="fal fa-file-pdf mr-1"></i> Export to PDF
+								</a>
 								<a href="javascript:void(0);" id="exporttoexcel" class="btn btn-success">
 									<i class="fal fa-file-excel mr-1"></i> Export to Excel
 								</a>
@@ -249,6 +252,21 @@ $(document).ready(function(){
 		if (!popup || popup.closed || typeof popup.closed == "undefined") {
 			alert("Popup was blocked! Please allow popups for this site.");
 		}
+	});
+
+	$('#exporttopdf').on('click', function(evt){
+		evt.preventDefault();
+		var zone = $("#zone").val();
+		var preparedby = $("#preparedby").val();
+		var verifiedby = $("#verifiedby").val();
+		var approvedby = $("#approvedby").val();
+		var billingperiod = $("#billingperiod").val();
+		var status = $("#status").val();
+
+		if (billingperiod === '') { billingperiod = 0; }
+		if (status === '') { status = 99; }
+
+		window.location.href = "<?php echo ADMIN_URL;?>reports/exporttopdf/"+encodeURIComponent(billingperiod)+'/'+status+'/'+zone+'/'+preparedby+'/'+verifiedby+'/'+approvedby;
 	});
 
 	$('#exporttoexcel').on('click', function(evt){

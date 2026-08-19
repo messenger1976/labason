@@ -128,12 +128,51 @@
 										</select>
 									</div>
 								</div>
+								<div class="col-md-6">
+									<div class="form-group">
+										<label class="form-label" for="preparedby">Prepared by</label>
+										<select class="form-control" name="preparedby" id="preparedby" required>
+											<?php foreach ($employee as $key => $emp) { ?>
+											<option value="<?php echo $emp['id']; ?>"><?php echo strtoupper($emp['first_name']).' '.strtoupper($emp['middle_name']).' '.strtoupper($emp['last_name']).' - '.$emp['jobtitle']; ?></option>
+											<?php } ?>
+										</select>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group">
+										<label class="form-label" for="verifiedby">Checked / Verified by</label>
+										<select class="form-control" name="verifiedby" id="verifiedby" required>
+											<?php foreach ($employee as $key => $emp) { ?>
+											<option value="<?php echo $emp['id']; ?>"><?php echo strtoupper($emp['first_name']).' '.strtoupper($emp['middle_name']).' '.strtoupper($emp['last_name']).' - '.$emp['jobtitle']; ?></option>
+											<?php } ?>
+										</select>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group">
+										<label class="form-label" for="approvedby">Approved by</label>
+										<select class="form-control" name="approvedby" id="approvedby" required>
+											<?php foreach ($employee as $key => $emp) { ?>
+											<option value="<?php echo $emp['id']; ?>"><?php echo strtoupper($emp['first_name']).' '.strtoupper($emp['middle_name']).' '.strtoupper($emp['last_name']).' - '.$emp['jobtitle']; ?></option>
+											<?php } ?>
+										</select>
+									</div>
+								</div>
 							</div>
 
 							<div class="form-group mb-0">
 								<button type="button" class="btn btn-primary" name="display" id="display">
 									<i class="fal fa-search mr-1"></i> Display
 								</button>
+								<a href="javascript:void(0);" id="printtopdf" class="btn btn-warning">
+									<i class="fal fa-print mr-1"></i> Print
+								</a>
+								<a href="javascript:void(0);" id="exporttopdf" class="btn btn-danger">
+									<i class="fal fa-file-pdf mr-1"></i> Export to PDF
+								</a>
+								<a href="javascript:void(0);" id="exporttoexcel" class="btn btn-success">
+									<i class="fal fa-file-excel mr-1"></i> Export to Excel
+								</a>
 							</div>
 						</form>
 
@@ -226,6 +265,68 @@ $(document).ready(function(){
 			console.error('Arrears DataTable init failed', e);
 		}
 	}
+
+	$('#printtopdf').on('click', function(evt){
+		evt.preventDefault();
+		var asofdate = $("#asofdate").val();
+		var zone = $("#zone").val();
+		var status = $("#status").val();
+		status = status == '' ? '99' : status;
+		var preparedby = $("#preparedby").val();
+		var verifiedby = $("#verifiedby").val();
+		var approvedby = $("#approvedby").val();
+
+		if (asofdate === '') {
+			alert("Please select As of Date");
+			return false;
+		}
+
+		const popup = window.open(
+			"<?php echo ADMIN_URL;?>reports/arrearsmonitoringprinttopdf/"+asofdate+'/'+zone+'/'+status+'/'+preparedby+'/'+verifiedby+'/'+approvedby,
+			"PopupWindowPrint",
+			"width=1200,height=600,resizable=yes,scrollbars=yes"
+		);
+
+		if (!popup || popup.closed || typeof popup.closed == "undefined") {
+			alert("Popup was blocked! Please allow popups for this site.");
+		}
+	});
+
+	$('#exporttopdf').on('click', function(evt){
+		evt.preventDefault();
+		var asofdate = $("#asofdate").val();
+		var zone = $("#zone").val();
+		var status = $("#status").val();
+		status = status == '' ? '99' : status;
+		var preparedby = $("#preparedby").val();
+		var verifiedby = $("#verifiedby").val();
+		var approvedby = $("#approvedby").val();
+
+		if (asofdate === '') {
+			alert("Please select As of Date");
+			return false;
+		}
+
+		window.location.href = "<?php echo ADMIN_URL;?>reports/arrearsmonitoringexporttopdf/"+asofdate+'/'+zone+'/'+status+'/'+preparedby+'/'+verifiedby+'/'+approvedby;
+	});
+
+	$('#exporttoexcel').on('click', function(evt){
+		evt.preventDefault();
+		var asofdate = $("#asofdate").val();
+		var zone = $("#zone").val();
+		var status = $("#status").val();
+		status = status == '' ? '99' : status;
+		var preparedby = $("#preparedby").val();
+		var verifiedby = $("#verifiedby").val();
+		var approvedby = $("#approvedby").val();
+
+		if (asofdate === '') {
+			alert("Please select As of Date");
+			return false;
+		}
+
+		window.location.href = "<?php echo ADMIN_URL;?>reports/arrearsmonitoringexporttoexcel/"+asofdate+'/'+zone+'/'+status+'/'+preparedby+'/'+verifiedby+'/'+approvedby;
+	});
 
 	$('#display').on('click', function(evt){
 		evt.preventDefault();

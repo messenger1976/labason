@@ -27,6 +27,9 @@ class reports extends CI_Controller {
 	public $lowToNoConsumptionPage = 'low_to_no_consumption';
 	public $lowtonoconsumption_ajaxPage = 'low_to_no_consumption_ajax';
 	public $lowtonoconsumptionprinttopdfPage = 'low_to_no_consumption_printtopdf';
+	public $downloadPdf = false;
+	public $pdfFilename = 'report.pdf';
+	public $pdfOptions = array();
 	public function __construct() {
         parent::__construct();
         $this->load->model('addbillingperiod_model','billingperiod_model');   //*****    Model Loading     *****//	
@@ -60,6 +63,7 @@ class reports extends CI_Controller {
 		$this->load->model('addcustomer_model','customer_model');	
 		$this->load->model('addmetercustomerreading_model','meterreading_model'); 
         $this->load->helper('common');
+		$this->load->helper('pdf');
 		$this->load->library('form_validation');
 		$this->load->library('Pdf');
 		$this->form_validation->set_error_delimiters('<div class="error" style="color:red;">', '</div>');
@@ -195,7 +199,19 @@ class reports extends CI_Controller {
 		$data['month_name'] = isset($mn[0]) ? $mn[0]->month_name : date('F', mktime(0,0,0,$month,1));
 		$data['month'] = $month;
 		$data['year'] = $year;
-		$this->load->view($this->monthlyIncomeReportPrintPage, $data);
+		send_print_or_pdf($this->monthlyIncomeReportPrintPage, $data);
+	}
+
+	/** Export to PDF: Monthly Income Report Analytic */
+	public function monthly_income_exporttopdf($month, $year) {
+		$this->downloadPdf = true;
+		$month = (int) $month;
+		$year = (int) $year;
+		$mn = getMonthName($month);
+		$month_name = isset($mn[0]) ? $mn[0]->month_name : $month;
+		$this->pdfFilename = 'Monthly_Income_Report_'.$month_name.'_'.$year.'.pdf';
+		$this->pdfOptions = array('font_size' => 9);
+		$this->monthly_income_report_printtopdf($month, $year);
 	}
 
 	/** Export to Excel: Monthly Income Report Analytic */
@@ -256,8 +272,15 @@ class reports extends CI_Controller {
             
         //$data['record'] = $this->reports_model->get_monthly_billing_report_records($zone,$billingperiod,$status);
 
-		//$this->load->view($this->headerPage,$header);
-		$this->load->view($this->printtopdfPage,$data);
+		send_print_or_pdf($this->printtopdfPage,$data);
+	}
+
+	public function exporttopdf($billingperiod,$status,$zone='',$preparedby='',$verifiedby='',$approvedby=''){
+		$this->downloadPdf = true;
+		$bp = str_replace(' ', '_', urldecode($billingperiod));
+		$bp = preg_replace('/[^A-Za-z0-9_-]/', '', $bp);
+		$this->pdfFilename = 'Monthly_Billing_Report_'.$bp.'.pdf';
+		$this->printtopdf($billingperiod,$status,$zone,$preparedby,$verifiedby,$approvedby);
 	}
 
 	public function customerprinttopdf($status,$zone='',$preparedby='',$verifiedby='',$approvedby='',$special_priviledge=''){
@@ -270,8 +293,13 @@ class reports extends CI_Controller {
 		$data['verifiedby'] = $this->my_model->get_employee($verifiedby);
 		$data['approvedby'] = $this->my_model->get_employee($approvedby);
 
-		//$this->load->view($this->headerPage,$header);
-		$this->load->view($this->customerprinttopdfPage,$data);
+		send_print_or_pdf($this->customerprinttopdfPage,$data);
+	}
+
+	public function customerexporttopdf($status,$zone='',$preparedby='',$verifiedby='',$approvedby='',$special_priviledge=''){
+		$this->downloadPdf = true;
+		$this->pdfFilename = 'Customer_Report_'.date('Y-m-d').'.pdf';
+		$this->customerprinttopdf($status,$zone,$preparedby,$verifiedby,$approvedby,$special_priviledge);
 	}
 
 	public function agingprinttopdf($asofdate,$zone,$status,$preparedby='',$verifiedby='',$approvedby=''){
@@ -294,8 +322,15 @@ class reports extends CI_Controller {
             
         //$data['record'] = $this->reports_model->get_monthly_billing_report_records($zone,$billingperiod,$status);
 
-		//$this->load->view($this->headerPage,$header);
-		$this->load->view($this->agingprinttopdfPage,$data);
+		send_print_or_pdf($this->agingprinttopdfPage,$data);
+	}
+
+	public function agingexporttopdf($asofdate,$zone,$status,$preparedby='',$verifiedby='',$approvedby=''){
+		$this->downloadPdf = true;
+		$safe_date = preg_replace('/[^0-9-]/', '', $asofdate);
+		$this->pdfFilename = 'Aging_AR_Report_'.$safe_date.'.pdf';
+		$this->pdfOptions = array('orientation' => 'L', 'page_format' => 'LEGAL', 'font_size' => 7);
+		$this->agingprinttopdf($asofdate,$zone,$status,$preparedby,$verifiedby,$approvedby);
 	}
 	
 	public function getmonthlyreportsearch()
@@ -1317,7 +1352,14 @@ class reports extends CI_Controller {
 		$data['verifiedby']  = $this->my_model->get_employee($verifiedby);
 		$data['approvedby']  = $this->my_model->get_employee($approvedby);
 
-		$this->load->view($this->arrearsmonitoringprinttopdfPage, $data);
+		send_print_or_pdf($this->arrearsmonitoringprinttopdfPage, $data);
+	}
+
+	public function arrearsmonitoringexporttopdf($asofdate, $zone, $status, $preparedby = '', $verifiedby = '', $approvedby = ''){
+		$this->downloadPdf = true;
+		$safe_date = preg_replace('/[^0-9-]/', '', $asofdate);
+		$this->pdfFilename = 'Arrears_Monitoring_Report_'.$safe_date.'.pdf';
+		$this->arrearsmonitoringprinttopdf($asofdate, $zone, $status, $preparedby, $verifiedby, $approvedby);
 	}
 
 	/**
@@ -1531,7 +1573,15 @@ class reports extends CI_Controller {
 		$data['preparedby'] = $this->my_model->get_employee($preparedby);
 		$data['verifiedby'] = $this->my_model->get_employee($verifiedby);
 		$data['approvedby'] = $this->my_model->get_employee($approvedby);
-		$this->load->view($this->lowtonoconsumptionprinttopdfPage, $data);
+		send_print_or_pdf($this->lowtonoconsumptionprinttopdfPage, $data);
+	}
+
+	public function lowtonoconsumptionexporttopdf($billingperiod, $usage_type = 'both', $max_cu = 10, $zone = '', $preparedby = '', $verifiedby = '', $approvedby = '') {
+		$this->downloadPdf = true;
+		$bp = str_replace(' ', '_', urldecode($billingperiod));
+		$bp = preg_replace('/[^A-Za-z0-9_-]/', '', $bp);
+		$this->pdfFilename = 'Low_to_No_Consumption_'.$bp.'.pdf';
+		$this->lowtonoconsumptionprinttopdf($billingperiod, $usage_type, $max_cu, $zone, $preparedby, $verifiedby, $approvedby);
 	}
 
 	public function lowtonoconsumptionexporttoexcel($billingperiod = '', $usage_type = 'both', $max_cu = 10, $zone = '', $preparedby = '', $verifiedby = '', $approvedby = '') {

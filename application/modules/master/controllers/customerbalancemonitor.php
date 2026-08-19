@@ -35,7 +35,7 @@ class customerbalancemonitor extends CI_Controller {
 	public function index() {
 		$this->_require_customerbalancemonitor_access();
 		$header['roleResponsible'] = $this->top_model->get_responsibilities();
-		$header['title'] = 'Customer balance monitor';
+		$header['title'] = 'Customer Balance Monitor';
 		$data['zone'] = $this->customer_model->get_zone();
 		$this->load->view($this->headerPage, $header);
 		$this->load->view($this->listPage, $data);

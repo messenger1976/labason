@@ -179,6 +179,9 @@
 								<button type="button" class="btn btn-warning" id="btnPrint" title="Print report">
 									<i class="fal fa-print mr-1"></i> Print
 								</button>
+								<button type="button" class="btn btn-danger" id="btnExportPdf" title="Export to PDF">
+									<i class="fal fa-file-pdf mr-1"></i> Export to PDF
+								</button>
 								<button type="button" class="btn btn-success" id="btnExportExcel" title="Export to Excel">
 									<i class="fal fa-file-excel mr-1"></i> Export to Excel
 								</button>
@@ -369,6 +372,16 @@
 			if (!popup || popup.closed || typeof popup.closed === 'undefined') {
 				alert('Popup was blocked. Please allow popups for this site.');
 			}
+		});
+		$('#btnExportPdf').on('click', function(evt) {
+			evt.preventDefault();
+			var month = $('#month').val();
+			var year = $('#year').val();
+			if (!month || !year) {
+				alert('Please select Month and Year first.');
+				return;
+			}
+			window.location.href = '<?php echo ADMIN_URL; ?>reports/monthly_income_exporttopdf/' + month + '/' + year;
 		});
 		$('#btnExportExcel').on('click', function(evt) {
 			evt.preventDefault();
