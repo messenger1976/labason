@@ -584,6 +584,60 @@ class Report_model extends CI_Model {
 		unset($r);
 		return $rows;
 	}
+
+	/**
+	 * Encoded meter readings with zero or low consumption for a billing period.
+	 * Unread stubs (blank reading) are excluded.
+	 */
+	public function get_low_to_no_consumption_records($zone, $billingperiod, $usage_type, $max_cu) {
+		$billingperiod = explode(' ', $billingperiod);
+		if (count($billingperiod) < 2) {
+			return array();
+		}
+		$max_cu = (float) $max_cu;
+		if ($max_cu < 0) {
+			$max_cu = 0;
+		}
+		$usage_type = strtolower(trim((string) $usage_type));
+		$r = $this->table_meter_reading;
+		$c = $this->table_name;
+
+		$this->db->select(
+			$c.'.customer_id, '.$c.'.first_name, '.$c.'.last_name, '.$c.'.middle_name, '.$c.'.meter_number, '.
+			'tbl_zone.zone, '.$this->table_classification.'.class_name, '.
+			$r.'.previous_reading, '.$r.'.reading, '.$r.'.consumed, '.$r.'.amount, '.$r.'.refno, '.$r.'.date'
+		);
+		$this->db->from($r);
+		$this->db->join($c, $r.'.customer_id = '.$c.'.customer_id');
+		$this->db->join('tbl_zone', $c.'.zone = tbl_zone.id', 'left');
+		$this->db->join($this->table_classification, $c.'.classification = '.$this->table_classification.'.class_id', 'left');
+		$this->db->where($r.'.month', $billingperiod[0]);
+		$this->db->where($r.'.year', $billingperiod[1]);
+		$this->db->where($c.'.status', '1');
+		$this->db->where($r.'.customer_status', '1');
+		$this->db->where($c.'.customer_type', 'metercustomer');
+		$this->db->where("TRIM(".$r.".reading) <> ''", NULL, FALSE);
+		if ($zone != 0 && $zone != '') {
+			$this->db->where($c.'.zone', $zone);
+		}
+		if ($usage_type === 'no') {
+			$this->db->where("CAST(".$r.".consumed AS DECIMAL(12,2)) = 0", NULL, FALSE);
+		} elseif ($usage_type === 'low') {
+			$this->db->where("CAST(".$r.".consumed AS DECIMAL(12,2)) > 0", NULL, FALSE);
+			$this->db->where("CAST(".$r.".consumed AS DECIMAL(12,2)) <= ".$this->db->escape($max_cu), NULL, FALSE);
+		} else {
+			$this->db->where("CAST(".$r.".consumed AS DECIMAL(12,2)) >= 0", NULL, FALSE);
+			$this->db->where("CAST(".$r.".consumed AS DECIMAL(12,2)) <= ".$this->db->escape($max_cu), NULL, FALSE);
+		}
+		$this->db->order_by('tbl_zone.zone', 'asc');
+		$this->db->order_by($c.'.last_name', 'asc');
+		$this->db->order_by($c.'.first_name', 'asc');
+		$query = $this->db->get();
+		if (!$query) {
+			return array();
+		}
+		return $query->result_array();
+	}
 	
 }
 ?>

@@ -6,6 +6,7 @@
 					<button type="button" class="btn btn-primary btn-block-mobile" id="printStatementBtn"><i class="fa fa-print"></i> Print</button>
 					<button class="btn btn-warning btn-block-mobile" id="resetPasswordBtn"><i class="fa fa-key"></i> Reset Password</button>
 					<a href="<?php echo base_url();?>master/statementofaccount/search" class="btn btn-default btn-block-mobile"><i class="fa fa-arrow-left"></i> Back to Search</a>
+					<a href="<?php echo base_url();?>master/statementofaccount/pdf/<?php echo rawurlencode(isset($customer_info['customer_id']) ? $customer_info['customer_id'] : ''); ?>" class="btn btn-danger btn-block-mobile" id="pdfStatementBtn" target="_blank"><i class="fa fa-file-pdf-o"></i> Convert to PDF</a>
 				</div>
 			</div>
 		</div>
@@ -31,6 +32,28 @@
 				$approved_name = trim($approvedby[0]['first_name'].' '.$approvedby[0]['middle_name'].' '.$approvedby[0]['last_name']);
 				$approved_title = isset($approvedby[0]['jobtitle']) ? $approvedby[0]['jobtitle'] : $approved_title;
 			}
+
+			if (!function_exists('soa_sign_cookie_value')) {
+				function soa_sign_cookie_value($key, $default) {
+					if (!isset($_COOKIE[$key])) {
+						return $default;
+					}
+					$val = trim(rawurldecode((string) $_COOKIE[$key]));
+					$val = preg_replace('/[\x00-\x1F\x7F]/', '', $val);
+					if (function_exists('mb_substr')) {
+						$val = mb_substr($val, 0, 120, 'UTF-8');
+					} else {
+						$val = substr($val, 0, 120);
+					}
+					return ($val !== '') ? $val : $default;
+				}
+			}
+			$prepared_name = soa_sign_cookie_value('soa_sign_prepared_name', $prepared_name);
+			$prepared_title = soa_sign_cookie_value('soa_sign_prepared_title', $prepared_title);
+			$verified_name = soa_sign_cookie_value('soa_sign_verified_name', $verified_name);
+			$verified_title = soa_sign_cookie_value('soa_sign_verified_title', $verified_title);
+			$approved_name = soa_sign_cookie_value('soa_sign_approved_name', $approved_name);
+			$approved_title = soa_sign_cookie_value('soa_sign_approved_title', $approved_title);
 		?>
 
 		<!-- Report Header (logo same as other reports) -->
@@ -269,18 +292,18 @@
 									<div class="sig-row">
 										<div class="sig-item">
 											<div class="sig-label">Prepared by:</div>
-											<div class="sig-line"><?php echo htmlspecialchars(strtoupper($prepared_name), ENT_QUOTES, 'UTF-8'); ?></div>
-											<div class="sig-title"><?php echo htmlspecialchars($prepared_title, ENT_QUOTES, 'UTF-8'); ?></div>
+											<div class="sig-line" id="soa_sig_prepared"><?php echo htmlspecialchars(strtoupper($prepared_name), ENT_QUOTES, 'UTF-8'); ?></div>
+											<div class="sig-title" id="soa_sig_prepared_title"><?php echo htmlspecialchars($prepared_title, ENT_QUOTES, 'UTF-8'); ?></div>
 										</div>
 										<div class="sig-item">
 											<div class="sig-label">Verified Correct:</div>
-											<div class="sig-line"><?php echo htmlspecialchars(strtoupper($verified_name), ENT_QUOTES, 'UTF-8'); ?></div>
-											<div class="sig-title"><?php echo htmlspecialchars($verified_title, ENT_QUOTES, 'UTF-8'); ?></div>
+											<div class="sig-line" id="soa_sig_verified"><?php echo htmlspecialchars(strtoupper($verified_name), ENT_QUOTES, 'UTF-8'); ?></div>
+											<div class="sig-title" id="soa_sig_verified_title"><?php echo htmlspecialchars($verified_title, ENT_QUOTES, 'UTF-8'); ?></div>
 										</div>
 										<div class="sig-item">
 											<div class="sig-label">Approved:</div>
-											<div class="sig-line"><?php echo htmlspecialchars(strtoupper($approved_name), ENT_QUOTES, 'UTF-8'); ?></div>
-											<div class="sig-title"><?php echo htmlspecialchars($approved_title, ENT_QUOTES, 'UTF-8'); ?></div>
+											<div class="sig-line" id="soa_sig_approved"><?php echo htmlspecialchars(strtoupper($approved_name), ENT_QUOTES, 'UTF-8'); ?></div>
+											<div class="sig-title" id="soa_sig_approved_title"><?php echo htmlspecialchars($approved_title, ENT_QUOTES, 'UTF-8'); ?></div>
 										</div>
 									</div>
 								</div>
@@ -344,6 +367,26 @@
 <script type="text/javascript">
 	// DO NOT REMOVE : GLOBAL FUNCTIONS!
 	$(document).ready(function() {
+		function soaGetCookie(name) {
+			var match = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/([.$?*|{}()[\]\\/+^])/g, '\\$1') + '=([^;]*)'));
+			return match ? decodeURIComponent(match[1]) : '';
+		}
+		function soaApplySignCookies() {
+			var prepared = $.trim(soaGetCookie('soa_sign_prepared_name'));
+			var preparedTitle = $.trim(soaGetCookie('soa_sign_prepared_title'));
+			var verified = $.trim(soaGetCookie('soa_sign_verified_name'));
+			var verifiedTitle = $.trim(soaGetCookie('soa_sign_verified_title'));
+			var approved = $.trim(soaGetCookie('soa_sign_approved_name'));
+			var approvedTitle = $.trim(soaGetCookie('soa_sign_approved_title'));
+			if (prepared) { $('#soa_sig_prepared').text(prepared.toUpperCase()); }
+			if (preparedTitle) { $('#soa_sig_prepared_title').text(preparedTitle); }
+			if (verified) { $('#soa_sig_verified').text(verified.toUpperCase()); }
+			if (verifiedTitle) { $('#soa_sig_verified_title').text(verifiedTitle); }
+			if (approved) { $('#soa_sig_approved').text(approved.toUpperCase()); }
+			if (approvedTitle) { $('#soa_sig_approved_title').text(approvedTitle); }
+		}
+		soaApplySignCookies();
+
 		// pageSetUp() removed - not needed for this page
 		
 		/* BASIC */

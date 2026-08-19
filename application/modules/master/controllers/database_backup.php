@@ -60,6 +60,7 @@ class database_backup extends CI_Controller {
 		$data['backups'] = $this->my_model->get_all_backups();
 		$data['msg'] = '';
 		$data['header'] = $header; // Pass header to view for permission checks
+		$data['upload_max_label'] = $this->php_upload_limit_label();
 		
 		$this->load->view($this->headerPage,$header);
 		$this->load->view($this->listPage,$data);
@@ -280,10 +281,11 @@ class database_backup extends CI_Controller {
 		}
 		
 		$backup = $this->my_model->get_backup_by_id($id);
+		$filepath = $this->resolve_backup_filepath($backup);
 		
-		if($backup && file_exists($backup['filepath'])){
+		if($backup && $filepath !== ''){
 			$this->load->helper('download');
-			force_download($backup['filename'], file_get_contents($backup['filepath']));
+			force_download($backup['filename'], file_get_contents($filepath));
 		} else {
 			$this->session->set_flashdata('msg_err', 'Backup file not found.');
 			redirect($this->listPage_redirect);
@@ -307,9 +309,9 @@ class database_backup extends CI_Controller {
 		$backup = $this->my_model->get_backup_by_id($id);
 		
 		if($backup){
-			// Delete file if exists
-			if(file_exists($backup['filepath'])){
-				unlink($backup['filepath']);
+			$filepath = $this->resolve_backup_filepath($backup);
+			if($filepath !== ''){
+				unlink($filepath);
 			}
 			
 			// Delete record from database
@@ -415,27 +417,50 @@ class database_backup extends CI_Controller {
 		}
 		
 		$backup = $this->my_model->get_backup_by_id($id);
+		$filepath = $this->resolve_backup_filepath($backup);
 		
-		if($backup && file_exists($backup['filepath'])){
-			// Read SQL file
-			$sql = file_get_contents($backup['filepath']);
-			
-			// Split SQL into individual queries (only on ; outside string literals)
-			$queries = $this->split_sql_statements($sql);
-			
-			// Execute each query
-			$this->db->trans_start();
-			foreach($queries as $query){
-				$query = trim($query);
-				if(!empty($query)){
-					$this->db->query($query);
+		if($backup && $filepath !== ''){
+			@set_time_limit(0);
+			@ini_set('memory_limit', '1024M');
+
+			$catalog = array();
+			if ($this->db->table_exists($this->table_name)) {
+				$catalog = $this->my_model->get_all_backups();
+			}
+
+			$previous_db_debug = $this->db->db_debug;
+			$previous_save_queries = $this->db->save_queries;
+			$this->db->db_debug = FALSE;
+			$this->db->save_queries = FALSE;
+
+			$success = false;
+			$error_detail = '';
+
+			$mysql_path = $this->find_mysql_client();
+			if ($mysql_path) {
+				$cli_result = $this->restore_via_mysql_cli($filepath, $mysql_path);
+				$success = !empty($cli_result['success']);
+				if (!$success && !empty($cli_result['error'])) {
+					$error_detail = $cli_result['error'];
 				}
 			}
-			$this->db->trans_complete();
-			
-			if($this->db->trans_status() === FALSE){
-				$this->session->set_flashdata('msg_err', 'Failed to restore backup. Database transaction failed.');
-			} else {
+
+			if (!$success) {
+				$php_result = $this->restore_via_php($filepath);
+				$success = !empty($php_result['success']);
+				if (!$success && !empty($php_result['error'])) {
+					$error_detail = $php_result['error'];
+				}
+			}
+
+			@$this->db->query('UNLOCK TABLES');
+			@$this->db->query('SET FOREIGN_KEY_CHECKS=1');
+			@$this->db->query('SET UNIQUE_CHECKS=1');
+			$this->db->db_debug = $previous_db_debug;
+			$this->db->save_queries = $previous_save_queries;
+
+			if ($success) {
+				$this->restore_backup_catalog($catalog);
 				if (function_exists('log_system_activity')) {
 					log_system_activity(array(
 						'category' => 'admin',
@@ -450,12 +475,392 @@ class database_backup extends CI_Controller {
 					));
 				}
 				$this->session->set_flashdata('msg_succ', 'Database restored successfully from backup!');
+			} else {
+				$message = 'Failed to restore backup.';
+				if ($error_detail !== '') {
+					$message .= ' '.$error_detail;
+				}
+				$this->session->set_flashdata('msg_err', $message);
 			}
 		} else {
-			$this->session->set_flashdata('msg_err', 'Backup file not found.');
+			$this->session->set_flashdata('msg_err', 'Backup file not found. The list record exists, but the .sql file is missing from the backups folder.');
 		}
 		
 		redirect($this->listPage_redirect);
+	}
+
+	/** Upload Backup Function - store a previously downloaded .sql dump (does not restore) **/
+	public function upload_backup(){
+		$header['roleResponsible'] = $this->top_model->get_responsibilities();
+
+		if($this->session->userdata('usertype') == 'subadmin'){
+			if(isset($header['roleResponsible']['database_backup'])){
+				$roleResponsible = $header['roleResponsible']['database_backup'];
+				if((is_array($roleResponsible) && !in_array('a',$roleResponsible)) || (!is_array($roleResponsible))){
+					redirect('master/page/', 'refresh');
+				}
+			}
+		}
+
+		$request_method = isset($_SERVER['REQUEST_METHOD']) ? strtoupper($_SERVER['REQUEST_METHOD']) : '';
+		if ($request_method !== 'POST') {
+			$this->session->set_flashdata('msg_err', 'Please choose a .sql backup file to upload.');
+			redirect($this->listPage_redirect);
+			return;
+		}
+
+		$content_length = isset($_SERVER['CONTENT_LENGTH']) ? (int) $_SERVER['CONTENT_LENGTH'] : 0;
+		if ($content_length > 0 && empty($_FILES) && empty($_POST)) {
+			$this->session->set_flashdata('msg_err', 'The backup file is too large. Maximum upload size is '.$this->php_upload_limit_label().'.');
+			redirect($this->listPage_redirect);
+			return;
+		}
+
+		if (!isset($_FILES['backup_file']) || !is_array($_FILES['backup_file'])) {
+			$this->session->set_flashdata('msg_err', 'Please choose a .sql backup file to upload.');
+			redirect($this->listPage_redirect);
+			return;
+		}
+
+		$file = $_FILES['backup_file'];
+		$error = isset($file['error']) ? (int) $file['error'] : UPLOAD_ERR_NO_FILE;
+
+		if ($error === UPLOAD_ERR_NO_FILE) {
+			$this->session->set_flashdata('msg_err', 'Please choose a .sql backup file to upload.');
+			redirect($this->listPage_redirect);
+			return;
+		}
+
+		if ($error === UPLOAD_ERR_INI_SIZE || $error === UPLOAD_ERR_FORM_SIZE) {
+			$this->session->set_flashdata('msg_err', 'The backup file is too large. Maximum upload size is '.$this->php_upload_limit_label().'.');
+			redirect($this->listPage_redirect);
+			return;
+		}
+
+		if ($error !== UPLOAD_ERR_OK) {
+			$this->session->set_flashdata('msg_err', 'Failed to upload backup file. Please try again.');
+			redirect($this->listPage_redirect);
+			return;
+		}
+
+		$tmp_name = isset($file['tmp_name']) ? $file['tmp_name'] : '';
+		$orig_name = isset($file['name']) ? $file['name'] : '';
+		if ($tmp_name === '' || !is_uploaded_file($tmp_name)) {
+			$this->session->set_flashdata('msg_err', 'Invalid upload. Please try again.');
+			redirect($this->listPage_redirect);
+			return;
+		}
+
+		$ext = strtolower(pathinfo($orig_name, PATHINFO_EXTENSION));
+		if ($ext !== 'sql') {
+			$this->session->set_flashdata('msg_err', 'Only .sql backup files are allowed.');
+			redirect($this->listPage_redirect);
+			return;
+		}
+
+		if (!$this->looks_like_sql_backup($tmp_name)) {
+			$this->session->set_flashdata('msg_err', 'The uploaded file does not look like a SQL backup.');
+			redirect($this->listPage_redirect);
+			return;
+		}
+
+		$backup_dir = $this->backup_dir();
+		if (!is_dir($backup_dir)) {
+			mkdir($backup_dir, 0755, true);
+		}
+		if (!is_writable($backup_dir)) {
+			$this->session->set_flashdata('msg_err', 'Failed to save the uploaded backup. The backups folder is not writable.');
+			redirect($this->listPage_redirect);
+			return;
+		}
+
+		$orig_base = pathinfo($orig_name, PATHINFO_FILENAME);
+		$orig_base = preg_replace('/[^A-Za-z0-9._-]/', '_', $orig_base);
+		$orig_base = trim($orig_base, '._-');
+		if ($orig_base === '') {
+			$orig_base = 'backup';
+		}
+		$filename = 'upload_' . date('Y-m-d_H-i-s') . '_' . $orig_base . '.sql';
+		$filepath = $backup_dir . $filename;
+
+		$moved = false;
+		if (is_uploaded_file($tmp_name)) {
+			$moved = @move_uploaded_file($tmp_name, $filepath);
+			if (!$moved) {
+				$moved = @copy($tmp_name, $filepath);
+				if ($moved) {
+					@unlink($tmp_name);
+				}
+			}
+		}
+
+		if (!$moved) {
+			$this->session->set_flashdata('msg_err', 'Failed to save the uploaded backup. Please check folder permissions.');
+			redirect($this->listPage_redirect);
+			return;
+		}
+
+		$filesize = filesize($filepath);
+		$backup_data = array(
+			'filename' => $filename,
+			'filepath' => $filepath,
+			'filesize' => $filesize,
+			'created_by' => $this->session->userdata('userid'),
+			'created_at' => date('Y-m-d H:i:s'),
+			'status' => 1
+		);
+
+		$result = $this->my_model->save_backup_record($backup_data);
+		if ($result) {
+			if (function_exists('log_system_activity')) {
+				log_system_activity(array(
+					'category' => 'admin',
+					'action' => 'backup_upload',
+					'module' => 'database_backup',
+					'controller' => 'database_backup',
+					'method' => 'upload_backup',
+					'entity_type' => 'database_backup',
+					'entity_id' => '',
+					'reference_no' => $filename,
+					'summary' => 'Database backup uploaded: '.$filename,
+					'details' => array('filesize' => $filesize, 'original_name' => $orig_name),
+				));
+			}
+			$this->session->set_flashdata('msg_succ', 'Backup uploaded successfully. You can restore it from the list when needed.');
+		} else {
+			$this->session->set_flashdata('msg_err', 'Backup file saved but failed to save record.');
+		}
+
+		redirect($this->listPage_redirect);
+	}
+
+	private function php_size_to_bytes($value) {
+		$value = trim((string) $value);
+		if ($value === '') {
+			return 0;
+		}
+		$unit = strtolower(substr($value, -1));
+		$num = (float) $value;
+		switch ($unit) {
+			case 'g':
+				$num *= 1024;
+			case 'm':
+				$num *= 1024;
+			case 'k':
+				$num *= 1024;
+		}
+		return (int) $num;
+	}
+
+	private function php_upload_limit_label() {
+		$upload = $this->php_size_to_bytes(ini_get('upload_max_filesize'));
+		$post = $this->php_size_to_bytes(ini_get('post_max_size'));
+		$limit = $upload;
+		if ($post > 0 && ($limit <= 0 || $post < $limit)) {
+			$limit = $post;
+		}
+		return $this->my_model->format_file_size($limit);
+	}
+
+	private function looks_like_sql_backup($path) {
+		$fh = @fopen($path, 'rb');
+		if (!$fh) {
+			return false;
+		}
+		$chunk = fread($fh, 16384);
+		fclose($fh);
+		if ($chunk === false || trim($chunk) === '') {
+			return false;
+		}
+		if (substr($chunk, 0, 3) === "\xEF\xBB\xBF") {
+			$chunk = substr($chunk, 3);
+		}
+		$start = ltrim($chunk);
+		if (stripos($start, '<?php') === 0 || stripos($start, '<? ') === 0 || stripos($start, '<html') === 0 || stripos($start, '<!doctype') === 0) {
+			return false;
+		}
+		return (bool) preg_match('/(CREATE\s+TABLE|INSERT\s+INTO|DROP\s+TABLE|--\s+(MySQL|MariaDB)\s+dump|--\s+Dump|--\s+phpMyAdmin|mysqldump|SET\s+NAMES|SET\s+@OLD_SQL_MODE|SET\s+SQL_MODE)/i', $chunk);
+	}
+
+	private function backup_dir() {
+		return rtrim(FCPATH, '/\\') . DIRECTORY_SEPARATOR . 'backups' . DIRECTORY_SEPARATOR;
+	}
+
+	private function resolve_backup_filepath($backup) {
+		if (!is_array($backup) || empty($backup['filename'])) {
+			return '';
+		}
+		$filename = basename($backup['filename']);
+		$candidates = array(
+			$this->backup_dir() . $filename,
+			isset($backup['filepath']) ? $backup['filepath'] : '',
+		);
+		foreach ($candidates as $path) {
+			if ($path !== '' && file_exists($path) && is_file($path)) {
+				return $path;
+			}
+		}
+		return '';
+	}
+
+	private function restore_backup_catalog($catalog) {
+		if (!is_array($catalog) || !$this->db->table_exists($this->table_name)) {
+			return;
+		}
+		$this->db->truncate($this->table_name);
+		foreach ($catalog as $row) {
+			$this->db->insert($this->table_name, $row);
+		}
+	}
+
+	private function find_mysql_client() {
+		$possible_paths = array(
+			'C:\\xampp\\mysql\\bin\\mysql.exe',
+			'C:\\xampp3\\mysql\\bin\\mysql.exe',
+			'C:\\wamp\\bin\\mysql\\mysql5.7.11\\bin\\mysql.exe',
+			'/usr/bin/mysql',
+			'/usr/local/bin/mysql',
+			'/usr/local/mysql/bin/mysql',
+			'mysql'
+		);
+
+		foreach ($possible_paths as $path) {
+			if ($path !== 'mysql' && file_exists($path)) {
+				return $path;
+			}
+		}
+
+		if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+			exec('where mysql', $output, $return_var);
+		} else {
+			exec('which mysql', $output, $return_var);
+		}
+
+		if ($return_var === 0 && !empty($output[0]) && file_exists($output[0])) {
+			return $output[0];
+		}
+
+		return false;
+	}
+
+	private function restore_via_mysql_cli($file_path, $mysql_path) {
+		$db_name = $this->db->database;
+		$db_user = $this->db->username;
+		$db_pass = $this->db->password;
+		$db_host = $this->db->hostname;
+		$port_arg = '';
+		if (!empty($this->db->port)) {
+			$port_arg = ' --port='.(int) $this->db->port;
+		}
+
+		if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+			$command = sprintf(
+				'cmd /c ""%s" --user=%s --password=%s --host=%s%s --default-character-set=utf8mb4 --max_allowed_packet=512M %s < "%s""',
+				$mysql_path,
+				$db_user,
+				$db_pass,
+				$db_host,
+				$port_arg,
+				$db_name,
+				$file_path
+			);
+		} else {
+			$command = sprintf(
+				'"%s" --user=%s --password=%s --host=%s%s --default-character-set=utf8mb4 --max_allowed_packet=512M %s < %s 2>&1',
+				$mysql_path,
+				escapeshellarg($db_user),
+				escapeshellarg($db_pass),
+				escapeshellarg($db_host),
+				$port_arg,
+				escapeshellarg($db_name),
+				escapeshellarg($file_path)
+			);
+		}
+
+		$output = array();
+		$return_var = 1;
+		exec($command, $output, $return_var);
+
+		if ($return_var === 0) {
+			return array('success' => true, 'error' => '');
+		}
+
+		$error = trim(implode(' ', $output));
+		if ($error === '') {
+			$error = 'mysql client restore failed (exit code '.$return_var.').';
+		}
+		return array('success' => false, 'error' => $error);
+	}
+
+	private function restore_via_php($file_path) {
+		$handle = @fopen($file_path, 'r');
+		if (!$handle) {
+			return array('success' => false, 'error' => 'Could not open backup file for reading.');
+		}
+
+		@$this->db->query('SET FOREIGN_KEY_CHECKS=0');
+		@$this->db->query('SET UNIQUE_CHECKS=0');
+		@$this->db->query('SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO"');
+		@$this->db->query('UNLOCK TABLES');
+
+		$statement = '';
+		$line_number = 0;
+		$error = '';
+
+		while (($line = fgets($handle)) !== false) {
+			$line_number++;
+			$trim = trim($line);
+
+			if ($trim === '' || strpos($trim, '--') === 0 || strpos($trim, '#') === 0) {
+				continue;
+			}
+
+			if (preg_match('/^(LOCK\s+TABLES|UNLOCK\s+TABLES)/i', $trim)) {
+				continue;
+			}
+
+			$statement .= $line;
+			if (substr(rtrim($line), -1) !== ';') {
+				continue;
+			}
+
+			$sql = trim($statement);
+			$statement = '';
+			if ($sql === '' || $sql === ';') {
+				continue;
+			}
+			if (preg_match('/^(LOCK\s+TABLES|UNLOCK\s+TABLES)/i', $sql)) {
+				continue;
+			}
+
+			$sql = rtrim($sql, " \t\n\r\0\x0B;");
+			if ($sql === '') {
+				continue;
+			}
+
+			$result = $this->db->query($sql);
+			if ($result === FALSE) {
+				$error = 'SQL error near line '.$line_number;
+				if (method_exists($this->db, '_error_message')) {
+					$db_error = $this->db->_error_message();
+					if ($db_error) {
+						$error .= ': '.$db_error;
+					}
+				}
+				break;
+			}
+		}
+
+		fclose($handle);
+		@$this->db->query('UNLOCK TABLES');
+		@$this->db->query('SET FOREIGN_KEY_CHECKS=1');
+		@$this->db->query('SET UNIQUE_CHECKS=1');
+
+		if ($error !== '') {
+			return array('success' => false, 'error' => $error);
+		}
+
+		return array('success' => true, 'error' => '');
 	}
 
 }

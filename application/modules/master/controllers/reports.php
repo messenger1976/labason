@@ -24,6 +24,9 @@ class reports extends CI_Controller {
 	public $arrearsMonitoringPage = 'arrears_monitoring_report';
 	public $arrearsmonitoring_ajaxPage = 'arrears_monitoring_report_ajax';
 	public $arrearsmonitoringprinttopdfPage = 'arrearsmonitoring_printtopdf';
+	public $lowToNoConsumptionPage = 'low_to_no_consumption';
+	public $lowtonoconsumption_ajaxPage = 'low_to_no_consumption_ajax';
+	public $lowtonoconsumptionprinttopdfPage = 'low_to_no_consumption_printtopdf';
 	public function __construct() {
         parent::__construct();
         $this->load->model('addbillingperiod_model','billingperiod_model');   //*****    Model Loading     *****//	
@@ -1464,6 +1467,175 @@ class reports extends CI_Controller {
 		$export_data[] = array('');
 
 		$filename = 'Arrears_Monitoring_Report_' . str_replace([' ', '/'], '_', $asofdate) . '_' . date('d-m-Y') . '.xls';
+		array_to_excel($export_data, $filename);
+	}
+
+	/** Sub-admins need lowtonoconsumption = 1. Admins always pass. */
+	private function _require_lowtonoconsumption_access() {
+		$ut = $this->session->userdata('usertype');
+		if ($ut === 'admin') {
+			return;
+		}
+		if ($ut === 'subadmin') {
+			$rr = $this->top_model->get_responsibilities();
+			if (array_key_exists('lowtonoconsumption', $rr) && (int) $rr['lowtonoconsumption'] === 1) {
+				$this->top_model->get_responsibilities_conditions($rr['lowtonoconsumption']);
+				return;
+			}
+		}
+		redirect('master/page/', 'refresh');
+	}
+
+	public function low_to_no_consumption() {
+		$this->_require_lowtonoconsumption_access();
+		$header['roleResponsible'] = $this->top_model->get_responsibilities();
+		$data['zone'] = $this->customer_model->get_zone();
+		$data['billingperiod'] = $this->billingperiod_model->get_month_billingperiod_records();
+		$data['employee'] = $this->my_model->get_employee();
+		$this->load->view($this->headerPage, $header);
+		$this->load->view($this->lowToNoConsumptionPage, $data);
+	}
+
+	public function getlowtonoconsumptionsearch() {
+		$this->_require_lowtonoconsumption_access();
+		$zone = $this->input->post('zone');
+		$billingperiod = $this->input->post('billingperiod');
+		$usage_type = $this->input->post('usage_type');
+		$max_cu = $this->input->post('max_cu');
+		if ($usage_type === '' || $usage_type === null) {
+			$usage_type = 'both';
+		}
+		if ($max_cu === '' || $max_cu === null) {
+			$max_cu = 10;
+		}
+		$data['record'] = $this->report_model->get_low_to_no_consumption_records($zone, $billingperiod, $usage_type, $max_cu);
+		$data['usage_type'] = $usage_type;
+		$data['max_cu'] = $max_cu;
+		$this->load->view($this->lowtonoconsumption_ajaxPage, $data);
+	}
+
+	public function lowtonoconsumptionprinttopdf($billingperiod, $usage_type = 'both', $max_cu = 10, $zone = '', $preparedby = '', $verifiedby = '', $approvedby = '') {
+		$this->_require_lowtonoconsumption_access();
+		$billingperiod = urldecode($billingperiod);
+		$usage_type = urldecode($usage_type);
+		$data['zone'] = $this->my_model->get_zone($zone);
+		$billing_period = explode(' ', $billingperiod);
+		$data['billingperiod_month'] = isset($billing_period[0]) ? $billing_period[0] : '';
+		$data['billingperiod_year'] = isset($billing_period[1]) ? $billing_period[1] : '';
+		$month_name_row = ($data['billingperiod_month'] !== '') ? getMonthName($data['billingperiod_month']) : array();
+		$data['billingperiod_month_name'] = (isset($month_name_row[0]) && isset($month_name_row[0]->month_name)) ? $month_name_row[0]->month_name : $data['billingperiod_month'];
+		$data['billingperiod'] = $billingperiod;
+		$data['usage_type'] = $usage_type;
+		$data['max_cu'] = $max_cu;
+		$data['record'] = $this->report_model->get_low_to_no_consumption_records($zone, $billingperiod, $usage_type, $max_cu);
+		$data['preparedby'] = $this->my_model->get_employee($preparedby);
+		$data['verifiedby'] = $this->my_model->get_employee($verifiedby);
+		$data['approvedby'] = $this->my_model->get_employee($approvedby);
+		$this->load->view($this->lowtonoconsumptionprinttopdfPage, $data);
+	}
+
+	public function lowtonoconsumptionexporttoexcel($billingperiod = '', $usage_type = 'both', $max_cu = 10, $zone = '', $preparedby = '', $verifiedby = '', $approvedby = '') {
+		$this->_require_lowtonoconsumption_access();
+		@ini_set('display_errors', 0);
+		error_reporting(0);
+		set_time_limit(600);
+		ini_set('memory_limit', '512M');
+		while (ob_get_level()) {
+			@ob_end_clean();
+		}
+		$this->load->helper('excel');
+		$billingperiod = urldecode($billingperiod);
+		$usage_type = urldecode($usage_type);
+		if ($usage_type === '' || $usage_type === '0') {
+			$usage_type = 'both';
+		}
+		if ($max_cu === '' || $max_cu === null) {
+			$max_cu = 10;
+		}
+		$records = $this->report_model->get_low_to_no_consumption_records($zone, $billingperiod, $usage_type, $max_cu);
+		$zones = $this->my_model->get_zone($zone);
+		$zone_name = '';
+		if (count($zones) > 0 && isset($zones[0]['zone'])) {
+			$zone_name = $zones[0]['zone'];
+		}
+		$billing_period_display = $billingperiod;
+		$billing_period_parts = explode(' ', $billingperiod);
+		if (count($billing_period_parts) == 2) {
+			$month_name_result = getMonthName($billing_period_parts[0]);
+			if (isset($month_name_result[0]) && isset($month_name_result[0]->month_name)) {
+				$billing_period_display = $month_name_result[0]->month_name . ' ' . $billing_period_parts[1];
+			}
+		}
+		$usage_label = 'No consumption and low (0 to ' . $max_cu . ' cu.m)';
+		if ($usage_type === 'no') {
+			$usage_label = 'No consumption (0 cu.m)';
+		} elseif ($usage_type === 'low') {
+			$usage_label = 'Low consumption (1 to ' . $max_cu . ' cu.m)';
+		}
+		$export_data = array();
+		$export_data[] = array('LOW TO NO CONSUMPTION REPORT');
+		$export_data[] = array('Billing Period: ' . $billing_period_display);
+		$export_data[] = array('Usage: ' . $usage_label);
+		if ($zone_name != '') {
+			$export_data[] = array('Zone: ' . $zone_name);
+		}
+		$export_data[] = array('');
+		$export_data[] = array('SN#', 'Customer ID', 'Customer Name', 'Zone', 'Classification', 'Meter No.', 'Previous', 'Current', 'Consumed (cu.m)', 'Amount', 'Ref No.', 'Flag');
+		$index = 1;
+		$count_no = 0;
+		$count_low = 0;
+		if (count($records) > 0) {
+			foreach ($records as $row) {
+				$consumed = isset($row['consumed']) ? (float) $row['consumed'] : 0;
+				$flag = ($consumed == 0) ? 'NO CONSUMPTION' : 'LOW';
+				if ($consumed == 0) {
+					$count_no++;
+				} else {
+					$count_low++;
+				}
+				$export_data[] = array(
+					$index,
+					stripslashes($row['customer_id']),
+					stripslashes(trim($row['last_name']) . ', ' . trim($row['first_name']) . ' ' . trim($row['middle_name'])),
+					stripslashes(isset($row['zone']) ? $row['zone'] : ''),
+					stripslashes(isset($row['class_name']) ? $row['class_name'] : ''),
+					stripslashes(isset($row['meter_number']) ? $row['meter_number'] : ''),
+					isset($row['previous_reading']) ? $row['previous_reading'] : '',
+					isset($row['reading']) ? $row['reading'] : '',
+					number_format($consumed, 2),
+					number_format(isset($row['amount']) ? (float) $row['amount'] : 0, 2),
+					isset($row['refno']) ? $row['refno'] : '',
+					$flag
+				);
+				$index++;
+			}
+		}
+		$export_data[] = array('');
+		$export_data[] = array('No consumption', $count_no);
+		$export_data[] = array('Low consumption', $count_low);
+		$export_data[] = array('Total rows', $count_no + $count_low);
+		$preparedby_data = $this->my_model->get_employee($preparedby);
+		$verifiedby_data = $this->my_model->get_employee($verifiedby);
+		$approvedby_data = $this->my_model->get_employee($approvedby);
+		$export_data[] = array('');
+		$export_data[] = array('Prepared by:', '', 'Verified by:');
+		$export_data[] = array('');
+		$export_data[] = array('');
+		if (isset($preparedby_data[0]) && isset($verifiedby_data[0])) {
+			$preparedby_name = strtoupper($preparedby_data[0]['first_name'] . ' ' . $preparedby_data[0]['middle_name'] . ' ' . $preparedby_data[0]['last_name']);
+			$verifiedby_name = strtoupper($verifiedby_data[0]['first_name'] . ' ' . $verifiedby_data[0]['middle_name'] . ' ' . $verifiedby_data[0]['last_name']);
+			$export_data[] = array($preparedby_name, '', $verifiedby_name);
+			$export_data[] = array($preparedby_data[0]['jobtitle'], '', $verifiedby_data[0]['jobtitle']);
+		}
+		$export_data[] = array('');
+		$export_data[] = array('Approved by:');
+		$export_data[] = array('');
+		if (isset($approvedby_data[0])) {
+			$approvedby_name = strtoupper($approvedby_data[0]['first_name'] . ' ' . $approvedby_data[0]['middle_name'] . ' ' . $approvedby_data[0]['last_name']);
+			$export_data[] = array($approvedby_name, '', 'Date/Time printed: ' . date('Y-m-d H:i:s'));
+			$export_data[] = array($approvedby_data[0]['jobtitle']);
+		}
+		$filename = 'Low_to_No_Consumption_' . str_replace(' ', '_', $billing_period_display) . '_' . date('d-m-Y') . '.xls';
 		array_to_excel($export_data, $filename);
 	}
 
