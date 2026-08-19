@@ -139,6 +139,9 @@
 								<a href="javascript:void(0);" id="printtopdf" class="btn btn-warning">
 									<i class="fal fa-print mr-1"></i> Print
 								</a>
+								<a href="javascript:void(0);" id="exporttopdf" class="btn btn-danger">
+									<i class="fal fa-file-pdf mr-1"></i> Export to PDF
+								</a>
 								<a href="javascript:void(0);" id="exporttoexcel" class="btn btn-success">
 									<i class="fal fa-file-excel mr-1"></i> Export to Excel
 								</a>
@@ -221,6 +224,16 @@ $(document).ready(function(){
 		if (!popup || popup.closed || typeof popup.closed == "undefined") {
 			alert("Popup was blocked! Please allow popups for this site.");
 		}
+	});
+
+	$('#exporttopdf').on('click', function(evt){
+		evt.preventDefault();
+		var f = currentFilters();
+		if (f.billingperiod === '') {
+			alert('Please select a billing period.');
+			return;
+		}
+		window.location.href = "<?php echo ADMIN_URL; ?>reports/lowtonoconsumptionexporttopdf/"+encodeURIComponent(f.billingperiod)+'/'+encodeURIComponent(f.usage_type)+'/'+encodeURIComponent(f.max_cu)+'/'+f.zone+'/'+f.preparedby+'/'+f.verifiedby+'/'+f.approvedby;
 	});
 
 	$('#exporttoexcel').on('click', function(evt){

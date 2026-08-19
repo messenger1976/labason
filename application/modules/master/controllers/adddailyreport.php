@@ -8,6 +8,8 @@ class adddailyreport extends CI_Controller {
 	public $listPage = 'adddailyreport_add';		   //*****  View page   *****//
 	public $searchPage ='adddaily_search _ajax';
 	public $printtopdfPage ='adddailyreport_printtopdf';
+	public $downloadPdf = false;
+	public $pdfFilename = 'Daily_Collection_Report.pdf';
 
 	public function __construct() {
         parent::__construct();
@@ -19,6 +21,7 @@ class adddailyreport extends CI_Controller {
 		$this->load->library('form_validation');
 		$this->load->library('Pdf');
 		$this->load->helper('common');
+		$this->load->helper('pdf');
 		$this->form_validation->set_error_delimiters('<div class="error" style="color:red;">', '</div>');
 		error_reporting(E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
 		error_reporting(0);
@@ -54,8 +57,14 @@ class adddailyreport extends CI_Controller {
 		$data['cashier'] = (int)$cashier;
 		$data['cashier_info'] = $this->my_model->get_cashiers((int)$cashier);
 		$data['orphan_record'] = $this->my_model->get_metercustomer_orphan_records($trans_date_mysql, (int)$cashier, (int)$grouping);
-		//$this->load->view($this->headerPage,$header);
-		$this->load->view($this->printtopdfPage,$data);
+		send_print_or_pdf($this->printtopdfPage, $data);
+	}
+
+	public function exporttopdf($trans_date,$zone='',$preparedby='',$verifiedby='',$approvedby='',$grouping=1,$cashier=0){
+		$this->downloadPdf = true;
+		$safe_date = preg_replace('/[^0-9-]/', '', $trans_date);
+		$this->pdfFilename = 'Daily_Collection_Report_'.$safe_date.'.pdf';
+		$this->printtopdf($trans_date,$zone,$preparedby,$verifiedby,$approvedby,$grouping,$cashier);
 	}
 
 	public function exporttoexcel($trans_date,$zone='',$preparedby='',$verifiedby='',$approvedby='',$grouping=1,$cashier=0){

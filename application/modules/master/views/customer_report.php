@@ -156,6 +156,9 @@
 								<a href="javascript:void(0);" id="printtopdf" class="btn btn-warning">
 									<i class="fal fa-print mr-1"></i> Print
 								</a>
+								<a href="javascript:void(0);" id="exporttopdf" class="btn btn-danger">
+									<i class="fal fa-file-pdf mr-1"></i> Export to PDF
+								</a>
 								<a href="javascript:void(0);" id="exporttoexcel" class="btn btn-success">
 									<i class="fal fa-file-excel mr-1"></i> Export to Excel
 								</a>
@@ -245,6 +248,24 @@ $(document).ready(function(){
 		if (!popup || popup.closed || typeof popup.closed == "undefined") {
 			alert("Popup was blocked! Please allow popups for this site.");
 		}
+	});
+
+	$('#exporttopdf').on('click', function(evt){
+		evt.preventDefault();
+		var zone = $("#zone").val();
+		var preparedby = $("#preparedby").val();
+		var verifiedby = $("#verifiedby").val();
+		var approvedby = $("#approvedby").val();
+		var status = $("#status").val();
+		var specialPriviledge = $("#special_priviledge").is(":checked") ? 1 : 0;
+
+		if (status === '') { status = 99; }
+		if (zone === '' || zone === 0) { zone = 0; }
+		if (preparedby === '') { alert("Please select Prepared by"); return false; }
+		if (verifiedby === '') { alert("Please select Verified by"); return false; }
+		if (approvedby === '') { alert("Please select Approved by"); return false; }
+
+		window.location.href = "<?php echo ADMIN_URL;?>reports/customerexporttopdf/"+status+'/'+zone+'/'+preparedby+'/'+verifiedby+'/'+approvedby+'/'+specialPriviledge;
 	});
 
 	$('#exporttoexcel').on('click', function(evt){

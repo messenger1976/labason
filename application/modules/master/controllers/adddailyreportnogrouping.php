@@ -8,6 +8,8 @@ class adddailyreportnogrouping extends CI_Controller {
 	public $listPage = 'adddailyreportnogrouping_add';		   //*****  View page   *****//
 	public $searchPage ='adddailyreportnogrouping_search_ajax';
 	public $printtopdfPage ='adddailyreportnogrouping_printtopdf';
+	public $downloadPdf = false;
+	public $pdfFilename = 'Daily_Collection_Report_NoGrouping.pdf';
 
 	public function __construct() {
         parent::__construct();
@@ -19,6 +21,7 @@ class adddailyreportnogrouping extends CI_Controller {
 		$this->load->library('form_validation');
 		$this->load->library('Pdf');
 		$this->load->helper('common');
+		$this->load->helper('pdf');
 		$this->form_validation->set_error_delimiters('<div class="error" style="color:red;">', '</div>');
 		error_reporting(E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
 		error_reporting(0);
@@ -57,8 +60,14 @@ class adddailyreportnogrouping extends CI_Controller {
 			$this->my_model->get_metercustomer_records($trans_date_mysql, '', $grouping),
 			$this->my_model->get_metercustomer_orphan_records($trans_date_mysql, 0, $grouping)
 		);
-		//$this->load->view($this->headerPage,$header);
-		$this->load->view($this->printtopdfPage,$data);
+		send_print_or_pdf($this->printtopdfPage,$data);
+	}
+
+	public function exporttopdf($trans_date,$preparedby='',$verifiedby='',$approvedby=''){
+		$this->downloadPdf = true;
+		$safe_date = preg_replace('/[^0-9-]/', '', $trans_date);
+		$this->pdfFilename = 'Daily_Collection_Report_NoGrouping_'.$safe_date.'.pdf';
+		$this->printtopdf($trans_date,$preparedby,$verifiedby,$approvedby);
 	}
 
 	public function exporttoexcel($trans_date,$preparedby='',$verifiedby='',$approvedby=''){
