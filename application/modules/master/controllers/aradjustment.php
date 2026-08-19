@@ -18,18 +18,22 @@ class aradjustment extends CI_Controller {
 		$this->form_validation->set_error_delimiters('<div class="error" style="color:red;">', '</div>');
 		ini_set('date.timezone', 'Asia/Manila');
 
-		if ($this->session->userdata('usertype') == 'admin') {
+		$this->_require_ar_adjustment_access();
+	}
+
+	/** Any logged-in employee may use AR Adjustment when their role has ar_adjustment = 1. Admin always allowed. */
+	private function _require_ar_adjustment_access() {
+		$ut = strtolower(trim((string) $this->session->userdata('usertype')));
+		if ($ut === 'admin') {
 			return;
 		}
-		if ($this->session->userdata('usertype') == 'subadmin') {
-			$this->head['roleResponsible'] = $this->top_model->get_responsibilities();
-			if (!array_key_exists('ar_adjustment', $this->head['roleResponsible'])) {
-				redirect('master/page/', 'refresh');
-			}
+		$rr = $this->top_model->get_responsibilities();
+		$this->head['roleResponsible'] = is_array($rr) ? $rr : array();
+		if (array_key_exists('ar_adjustment', $this->head['roleResponsible']) && (int) $this->head['roleResponsible']['ar_adjustment'] === 1) {
 			$this->top_model->get_responsibilities_conditions($this->head['roleResponsible']['ar_adjustment']);
-		} else {
-			redirect('master/page/', 'refresh');
+			return;
 		}
+		redirect('master/page/', 'refresh');
 	}
 
 	private function _roles() {

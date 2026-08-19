@@ -82,8 +82,21 @@ if (!$__avatar_mtime) {
 	$__avatar_mtime = @filemtime($__default_abs) ?: time();
 }
 $__avatar_url = base_url($__avatar_relative) . '?v=' . $__avatar_mtime;
-if (!isset($roleResponsible) || !is_array($roleResponsible)) {
-	$roleResponsible = array();
+if (!isset($roleResponsible) || !is_array($roleResponsible) || count($roleResponsible) === 0) {
+	$ut = strtolower(trim((string) $this->session->userdata('usertype')));
+	if ($ut !== '' && $ut !== 'admin') {
+		if (!isset($this->top_model)) {
+			$this->load->model('adminheader_model', 'top_model');
+		}
+		if (isset($this->top_model) && method_exists($this->top_model, 'get_responsibilities')) {
+			$loaded_roles = $this->top_model->get_responsibilities();
+			$roleResponsible = is_array($loaded_roles) ? $loaded_roles : array();
+		} else {
+			$roleResponsible = array();
+		}
+	} else {
+		$roleResponsible = array();
+	}
 }
 $sa4 = base_url() . 'sa4/';
 ?>
