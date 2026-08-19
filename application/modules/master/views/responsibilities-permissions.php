@@ -31,8 +31,8 @@ if (!function_exists('resp_is_checked')) {
 	background: #f8f9fa;
 	border: 1px solid #e9ecef;
 	border-radius: 0.25rem;
-	overflow: hidden;
-	height: 100%;
+	overflow: visible;
+	height: auto;
 }
 .perm-panel-header {
 	padding: 0.625rem 0.75rem;
@@ -54,8 +54,12 @@ if (!function_exists('resp_is_checked')) {
 }
 .perm-panel-header .perm-toggle { color: #555; width: 18px; text-align: center; }
 .perm-panel.open > .perm-panel-header { background: #e8f0e8; border-bottom-color: #cfe0cf; }
+.perm-children,
 .perm-children { display: none; padding: 0.5rem 0.75rem 0.625rem 2rem; background: #fff; }
-.perm-panel.open > .perm-children { display: block; }
+.perm-panel.open > .perm-children,
+.perm-panel.open > .perm-children,
+.perm-panel.open .perm-children,
+.perm-panel.open .perm-children { display: block; }
 .perm-child { padding: 0.3rem 0; border-bottom: 1px dashed #eee; }
 .perm-child:last-child { border-bottom: 0; }
 .perm-child label { margin: 0; font-weight: normal; font-size: 0.8125rem; cursor: pointer; }
@@ -70,7 +74,7 @@ if (!function_exists('resp_is_checked')) {
 	<?php } ?>
 	<button type="button" class="btn btn-xs btn-primary" id="perm-expand-all"><i class="fal fa-plus-square mr-1"></i> Expand All</button>
 	<button type="button" class="btn btn-xs btn-secondary" id="perm-collapse-all"><i class="fal fa-minus-square mr-1"></i> Collapse All</button>
-	<span class="perm-hint">Check a main menu to expand and assign its submenu permissions.</span>
+	<span class="perm-hint">Click the group name or the arrow to expand (or use Expand All). Then tick AR Adjustment under Accounting.</span>
 </div>
 
 <div class="perm-grid" id="perm-tree">
@@ -106,7 +110,7 @@ if (!function_exists('resp_is_checked')) {
 		$parent_checked = $virtual_checked || $any_child_checked;
 	}
 
-	$is_open = $any_child_checked || ($parent_checked && $has_children && $permissions_mode !== 'add');
+	$is_open = $has_children;
 	$panel_class = 'perm-panel' . ($is_open && $has_children ? ' open' : '');
 	$header_class = 'perm-panel-header' . ($has_children ? ' has-children' : ' no-children');
 ?>
@@ -172,84 +176,115 @@ if (!function_exists('resp_is_checked')) {
 </div>
 
 <script type="text/javascript">
-(function($) {
-	function syncParentState($panel) {
-		var $parent = $panel.find('> .perm-panel-header .perm-parent');
-		var $children = $panel.find('> .perm-children .perm-child-cb');
-		if (!$children.length) {
-			$parent.prop('indeterminate', false);
-			return;
-		}
-		var total = $children.length;
-		var checked = $children.filter(':checked').length;
-		if (checked === 0) {
-			$parent.prop('checked', false).prop('indeterminate', false);
-		} else if (checked === total) {
-			$parent.prop('checked', true).prop('indeterminate', false);
+(function () {
+	function onReady(fn) {
+		if (document.readyState === 'loading') {
+			document.addEventListener('DOMContentLoaded', fn);
 		} else {
-			$parent.prop('checked', true).prop('indeterminate', true);
+			fn();
 		}
 	}
 
-	function setOpen($panel, open) {
-		var $toggle = $panel.find('> .perm-panel-header .perm-toggle i');
-		if (!$panel.find('> .perm-children').length) return;
+	function childBox(panel) {
+		if (!panel) return null;
+		var kids = panel.children;
+		for (var i = 0; i < kids.length; i++) {
+			if (kids[i].classList && (kids[i].classList.contains('perm-children') || kids[i].classList.contains('perm-children'))) {
+				return kids[i];
+			}
+		}
+		return panel.querySelector('.perm-children, .perm-children');
+	}
+
+	function setOpen(panel, open) {
+		if (!panel || !childBox(panel)) return;
+		var icon = panel.querySelector('.perm-panel-header .perm-toggle i');
 		if (open) {
-			$panel.addClass('open');
-			$toggle.removeClass('fa-chevron-right').addClass('fa-chevron-down');
+			panel.classList.add('open');
+			if (icon) {
+				icon.classList.remove('fa-chevron-right');
+				icon.classList.add('fa-chevron-down');
+			}
 		} else {
-			$panel.removeClass('open');
-			$toggle.removeClass('fa-chevron-down').addClass('fa-chevron-right');
+			panel.classList.remove('open');
+			if (icon) {
+				icon.classList.remove('fa-chevron-down');
+				icon.classList.add('fa-chevron-right');
+			}
 		}
 	}
 
-	$(document).ready(function() {
-		$('#perm-tree .perm-panel').each(function() { syncParentState($(this)); });
+	function syncParent(panel) {
+		var parent = panel.querySelector('.perm-panel-header .perm-parent');
+		var box = childBox(panel);
+		if (!parent || !box) return;
+		var cbs = box.querySelectorAll('.perm-child-cb');
+		if (!cbs.length) return;
+		var checked = 0;
+		for (var i = 0; i < cbs.length; i++) {
+			if (cbs[i].checked) checked++;
+		}
+		parent.indeterminate = (checked > 0 && checked < cbs.length);
+		parent.checked = (checked === cbs.length);
+		if (checked === 0) parent.checked = false;
+	}
 
-		$('#perm-tree').on('click', '.perm-toggle', function(e) {
+	onReady(function () {
+		var tree = document.getElementById('perm-tree');
+		if (!tree) return;
+		var panels = tree.querySelectorAll('.perm-panel');
+		for (var p = 0; p < panels.length; p++) syncParent(panels[p]);
+
+		tree.addEventListener('click', function (e) {
+			var header = e.target.closest ? e.target.closest('.perm-panel-header.has-children') : null;
+			if (!header || !tree.contains(header)) return;
+			if (e.target && e.target.closest && e.target.closest('input[type="checkbox"]')) return;
 			e.preventDefault();
-			e.stopPropagation();
-			var $panel = $(this).closest('.perm-panel');
-			setOpen($panel, !$panel.hasClass('open'));
+			var panel = header.closest('.perm-panel');
+			setOpen(panel, !panel.classList.contains('open'));
 		});
 
-		$('#perm-tree').on('change', '.perm-parent', function() {
-			var $panel = $(this).closest('.perm-panel');
-			var checked = $(this).prop('checked');
-			var $children = $panel.find('> .perm-children .perm-child-cb');
-			if ($children.length) {
-				$children.prop('checked', checked);
-				setOpen($panel, checked);
-			}
-			$(this).prop('indeterminate', false);
-		});
-
-		$('#perm-tree').on('change', '.perm-child-cb', function() {
-			var $panel = $(this).closest('.perm-panel');
-			var $parent = $panel.find('> .perm-panel-header .perm-parent');
-			if ($parent.length && !$parent.hasClass('perm-virtual')) {
-				if ($panel.find('> .perm-children .perm-child-cb:checked').length > 0) {
-					$parent.prop('checked', true);
+		tree.addEventListener('change', function (e) {
+			var t = e.target;
+			if (!t || !t.classList) return;
+			if (t.classList.contains('perm-parent')) {
+				var panel = t.closest('.perm-panel');
+				var box = childBox(panel);
+				if (box) {
+					var cbs = box.querySelectorAll('.perm-child-cb');
+					for (var i = 0; i < cbs.length; i++) cbs[i].checked = t.checked;
+					setOpen(panel, t.checked);
 				}
+				t.indeterminate = false;
 			}
-			syncParentState($panel);
-			if ($(this).prop('checked')) { setOpen($panel, true); }
+			if (t.classList.contains('perm-child-cb')) {
+				var panel2 = t.closest('.perm-panel');
+				syncParent(panel2);
+				if (t.checked) setOpen(panel2, true);
+			}
 		});
 
-		$('#perm-select-all').on('click', function() {
-			$('#perm-tree .perm-parent, #perm-tree .perm-child-cb').prop('checked', true).prop('indeterminate', false);
-			$('#perm-tree .perm-panel').each(function() { setOpen($(this), true); });
+		function allPanels(open) {
+			var list = tree.querySelectorAll('.perm-panel');
+			for (var i = 0; i < list.length; i++) setOpen(list[i], open);
+		}
+
+		var expand = document.getElementById('perm-expand-all');
+		var collapse = document.getElementById('perm-collapse-all');
+		var selectAll = document.getElementById('perm-select-all');
+		var clearAll = document.getElementById('perm-clear-all');
+		if (expand) expand.addEventListener('click', function () { allPanels(true); });
+		if (collapse) collapse.addEventListener('click', function () { allPanels(false); });
+		if (selectAll) selectAll.addEventListener('click', function () {
+			var inputs = tree.querySelectorAll('.perm-parent, .perm-child-cb');
+			for (var i = 0; i < inputs.length; i++) { inputs[i].checked = true; inputs[i].indeterminate = false; }
+			allPanels(true);
 		});
-		$('#perm-clear-all').on('click', function() {
-			$('#perm-tree .perm-parent, #perm-tree .perm-child-cb').prop('checked', false).prop('indeterminate', false);
-			$('#perm-tree .perm-panel').each(function() { setOpen($(this), false); });
-		});
-		$('#perm-expand-all').on('click', function() {
-			$('#perm-tree .perm-panel').each(function() { setOpen($(this), true); });
-		});
-		$('#perm-collapse-all').on('click', function() {
-			$('#perm-tree .perm-panel').each(function() { setOpen($(this), false); });
+		if (clearAll) clearAll.addEventListener('click', function () {
+			var inputs = tree.querySelectorAll('.perm-parent, .perm-child-cb');
+			for (var i = 0; i < inputs.length; i++) { inputs[i].checked = false; inputs[i].indeterminate = false; }
+			allPanels(false);
 		});
 	});
-})(jQuery);
+})();
 </script>
