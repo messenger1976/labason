@@ -231,6 +231,13 @@ $(document).ready(function(){
 			return;
 		}
 
+		if (typeof openReportPdfPreview === 'function') {
+			openReportPdfPreview({
+				printUrl: "<?php echo ADMIN_URL;?>adddailyreportnogrouping/printtopdf/"+fromdate+'/'+preparedby+'/'+verifiedby+'/'+approvedby,
+				filename: 'Daily_Collection_Report_NoGrouping.pdf'
+			});
+			return;
+		}
 		window.location.href = "<?php echo ADMIN_URL;?>adddailyreportnogrouping/exporttopdf/"+fromdate+'/'+preparedby+'/'+verifiedby+'/'+approvedby;
 	});
 

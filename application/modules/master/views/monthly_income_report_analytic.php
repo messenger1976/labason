@@ -381,6 +381,13 @@
 				alert('Please select Month and Year first.');
 				return;
 			}
+			if (typeof openReportPdfPreview === 'function') {
+				openReportPdfPreview({
+					printUrl: '<?php echo ADMIN_URL; ?>reports/monthly_income_report_printtopdf/' + month + '/' + year,
+					filename: 'Monthly_Income_Report.pdf'
+				});
+				return;
+			}
 			window.location.href = '<?php echo ADMIN_URL; ?>reports/monthly_income_exporttopdf/' + month + '/' + year;
 		});
 		$('#btnExportExcel').on('click', function(evt) {

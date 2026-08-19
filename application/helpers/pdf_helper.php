@@ -38,6 +38,13 @@ if ( ! function_exists('send_print_or_pdf'))
 			output_report_html_pdf($html, $fn);
 			return;
 		}
+		$preview = $CI->input->get('preview');
+		if (!empty($preview)) {
+			$html = $CI->load->view($view, $data, true);
+			$html = preg_replace('/\s+onLoad\s*=\s*([\'"])window\.print\(\)\1/i', '', $html);
+			echo $html;
+			return;
+		}
 		$CI->load->view($view, $data);
 	}
 }
@@ -214,22 +221,15 @@ if ( ! function_exists('report_pdf_inline_assets'))
 	}
 }
 
-if ( ! function_exists('report_pdf_public_url'))
+if ( ! function_exists('report_pdf_file_url'))
 {
-	function report_pdf_public_url($relPath)
+	function report_pdf_file_url($path)
 	{
-		$https = (!empty($_SERVER['HTTPS']) && strtolower((string) $_SERVER['HTTPS']) !== 'off');
-		$scheme = $https ? 'https' : 'http';
-		$host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost';
-		$script = isset($_SERVER['SCRIPT_NAME']) ? str_replace('\\', '/', $_SERVER['SCRIPT_NAME']) : '';
-		$base = rtrim(dirname($script), '/');
-		if (substr($base, -4) === '.php') {
-			$base = rtrim(dirname($base), '/');
+		$path = str_replace('\\', '/', $path);
+		if (preg_match('#^[A-Za-z]:/#', $path)) {
+			return 'file:///'.$path;
 		}
-		if ($base === '/' || $base === '\\' || $base === '.') {
-			$base = '';
-		}
-		return $scheme.'://'.$host.$base.'/'.ltrim(str_replace('\\', '/', $relPath), '/');
+		return 'file://'.$path;
 	}
 }
 
@@ -262,14 +262,11 @@ if ( ! function_exists('report_pdf_via_chromium'))
 			return false;
 		}
 
-		$htmlUrl = report_pdf_public_url('assets/tmp_pdf/'.$id.'.html');
-		if (strpos(str_replace('\\', '/', $htmlFile), 'assets/tmp_pdf') === false
-			&& strpos(str_replace('\\', '/', $htmlFile), 'assets\\tmp_pdf') === false) {
-			$htmlUrl = 'file:///'.str_replace('\\', '/', $htmlFile);
-		}
+		$htmlUrl = report_pdf_file_url($htmlFile);
 
 		$cmd = escapeshellarg($bin)
 			.' --headless=new --disable-gpu --no-first-run --no-default-browser-check --disable-extensions'
+			.' --allow-file-access-from-files'
 			.' --no-pdf-header-footer'
 			.' --hide-scrollbars'
 			.' --virtual-time-budget=20000'

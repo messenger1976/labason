@@ -265,6 +265,13 @@ $(document).ready(function(){
 		if (verifiedby === '') { alert("Please select Verified by"); return false; }
 		if (approvedby === '') { alert("Please select Approved by"); return false; }
 
+		if (typeof openReportPdfPreview === 'function') {
+			openReportPdfPreview({
+				printUrl: "<?php echo ADMIN_URL;?>reports/customerprinttopdf/"+status+'/'+zone+'/'+preparedby+'/'+verifiedby+'/'+approvedby+'/'+specialPriviledge,
+				filename: 'Customer_Report.pdf'
+			});
+			return;
+		}
 		window.location.href = "<?php echo ADMIN_URL;?>reports/customerexporttopdf/"+status+'/'+zone+'/'+preparedby+'/'+verifiedby+'/'+approvedby+'/'+specialPriviledge;
 	});
 

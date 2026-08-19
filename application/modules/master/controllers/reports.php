@@ -202,6 +202,19 @@ class reports extends CI_Controller {
 		send_print_or_pdf($this->monthlyIncomeReportPrintPage, $data);
 	}
 
+	/**
+	 * Capture the print-preview HTML from the Export to PDF modal and return a PDF.
+	 */
+	public function downloadpreviewpdf() {
+		$html = $this->input->post('html', false);
+		$filename = $this->input->post('filename', true);
+		if ($html === false || $html === null || trim((string) $html) === '') {
+			show_error('Missing report HTML.', 400);
+			return;
+		}
+		output_report_html_pdf($html, $filename ? $filename : 'report.pdf');
+	}
+
 	/** Export to PDF: Monthly Income Report Analytic */
 	public function monthly_income_exporttopdf($month, $year) {
 		$this->downloadPdf = true;

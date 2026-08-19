@@ -266,6 +266,13 @@ $(document).ready(function(){
 		if (billingperiod === '') { billingperiod = 0; }
 		if (status === '') { status = 99; }
 
+		if (typeof openReportPdfPreview === 'function') {
+			openReportPdfPreview({
+				printUrl: "<?php echo ADMIN_URL;?>reports/printtopdf/"+encodeURIComponent(billingperiod)+'/'+status+'/'+zone+'/'+preparedby+'/'+verifiedby+'/'+approvedby,
+				filename: 'Monthly_Billing_Report.pdf'
+			});
+			return;
+		}
 		window.location.href = "<?php echo ADMIN_URL;?>reports/exporttopdf/"+encodeURIComponent(billingperiod)+'/'+status+'/'+zone+'/'+preparedby+'/'+verifiedby+'/'+approvedby;
 	});
 
