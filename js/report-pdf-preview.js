@@ -1,5 +1,7 @@
 /**
  * Export to PDF: open a modal with the Print HTML, then download PDF from that layout.
+ * Preview is ready when the iframe document can be read — do not wait for a hanging
+ * iframe "load" (slow CSS/images/scripts would leave Download disabled).
  */
 (function (window, $) {
 	'use strict';
@@ -9,6 +11,35 @@
 			return url;
 		}
 		return url + (url.indexOf('?') >= 0 ? '&' : '?') + 'preview=1';
+	}
+
+	function iframeDoc(iframe) {
+		if (!iframe) {
+			return null;
+		}
+		try {
+			return iframe.contentDocument || (iframe.contentWindow && iframe.contentWindow.document) || null;
+		} catch (e) {
+			return null;
+		}
+	}
+
+	function previewHasContent(iframe) {
+		var doc = iframeDoc(iframe);
+		if (!doc || !doc.body) {
+			return false;
+		}
+		var href = '';
+		try {
+			href = String(iframe.contentWindow.location.href || '');
+		} catch (e) {
+			href = '';
+		}
+		if (!href || href === 'about:blank') {
+			return false;
+		}
+		var text = (doc.body.innerText || doc.body.textContent || '').replace(/\s+/g, ' ').trim();
+		return text.length > 20 || doc.getElementsByTagName('table').length > 0;
 	}
 
 	function ensureModal() {
@@ -46,7 +77,11 @@
 		$('body').append(html);
 
 		$('#reportPdfPreviewModal').on('hidden.bs.modal', function () {
-			$('#reportPdfPreviewFrame').attr('src', 'about:blank');
+			var frame = document.getElementById('reportPdfPreviewFrame');
+			if (frame) {
+				frame.onload = null;
+				frame.src = 'about:blank';
+			}
 		});
 	}
 
@@ -77,40 +112,60 @@
 		var $modal = $('#reportPdfPreviewModal');
 		var $frame = $('#reportPdfPreviewFrame');
 		var $btn = $('#reportPdfDownloadBtn');
+		var iframe = $frame[0];
 		var timer = null;
+		var poll = null;
+		var ready = false;
 		var pct = 12;
 
-		$btn.prop('disabled', true).data('filename', filename);
-		setProgress(12, 'Loading print layout...');
-		$frame.attr('src', 'about:blank');
-		$modal.modal('show');
-
-		clearInterval(timer);
-		timer = setInterval(function () {
-			if (pct < 88) {
-				pct += 4;
-				setProgress(pct);
-			}
-		}, 180);
-
-		$frame.off('load.reportpdf').on('load.reportpdf', function () {
-			var src = $frame.attr('src') || '';
-			if (!src || src === 'about:blank') {
+		function markReady() {
+			if (ready) {
 				return;
 			}
+			ready = true;
 			clearInterval(timer);
+			clearInterval(poll);
 			setProgress(100, 'Layout ready');
 			setTimeout(function () {
 				$('#reportPdfProgressWrap').hide();
 				$btn.prop('disabled', false);
-			}, 250);
-		});
+			}, 200);
+		}
 
-		$frame.attr('src', withPreview(printUrl));
+		$btn.prop('disabled', true).data('filename', filename);
+		setProgress(12, 'Loading print layout...');
+		iframe.onload = null;
+		$frame.off('load.reportpdf');
+		iframe.src = 'about:blank';
+		$modal.modal('show');
+
+		clearInterval(timer);
+		timer = setInterval(function () {
+			if (pct < 90) {
+				pct += 4;
+				setProgress(pct);
+			}
+			if (previewHasContent(iframe)) {
+				markReady();
+			}
+		}, 180);
+
+		poll = setInterval(function () {
+			if (previewHasContent(iframe)) {
+				markReady();
+			}
+		}, 120);
+
+		iframe.onload = function () {
+			if (previewHasContent(iframe) || (iframeDoc(iframe) && iframeDoc(iframe).body)) {
+				markReady();
+			}
+		};
+
+		iframe.src = withPreview(printUrl);
 
 		$btn.off('click.reportpdf').on('click.reportpdf', function () {
-			var iframe = $frame[0];
-			var doc = iframe && (iframe.contentDocument || (iframe.contentWindow && iframe.contentWindow.document));
+			var doc = iframeDoc(iframe);
 			if (!doc || !doc.documentElement) {
 				alert('Preview is still loading.');
 				return;
