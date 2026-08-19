@@ -127,7 +127,7 @@
 		<script src="<?php echo base_url(); ?>js/logout-user-name.js?v=2"></script>
 		<?php } ?>
 		<?php if (file_exists(FCPATH . 'js/report-pdf-preview.js')) { ?>
-		<script src="<?php echo base_url(); ?>js/report-pdf-preview.js?v=1"></script>
+		<script src="<?php echo base_url(); ?>js/report-pdf-preview.js?v=2"></script>
 		<?php } ?>
 		<script>
 			// Compatibility stub for legacy SmartAdmin 1.8 page scripts
