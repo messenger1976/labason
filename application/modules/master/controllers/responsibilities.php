@@ -94,6 +94,7 @@ class responsibilities extends CI_Controller
 				'ar_adjustment_approve' => 'AR Adjustment Approve',
 				'technicalproblems' => 'Technical Problems',
 				'technicalsearch' => 'Technical Problems View',
+				'message_support' => 'Message Support',
 				'web_settings' => 'Admin Address',
 				'mobile_notifications' => 'Mobile Notifications',
 				'admin' => 'Admin',
@@ -200,6 +201,13 @@ class responsibilities extends CI_Controller
 				'icon' => 'fa-gavel',
 				'parent_key' => 'technicalproblems',
 				'children' => array('technicalsearch')
+			),
+			array(
+				'id' => 'support',
+				'label' => 'Support',
+				'icon' => 'fa-comments',
+				'parent_key' => 'message_support',
+				'children' => array()
 			),
 			array(
 				'id' => 'admin_address',

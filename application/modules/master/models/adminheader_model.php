@@ -57,6 +57,7 @@ class adminheader_model extends CI_Model {
 				'ar_adjustment_approve' => 'AR Adjustment Approve',
 				'technicalproblems' => 'Technical Problems',
 				'technicalsearch' => 'Technical Problems View',
+				'message_support' => 'Message Support',
 				'web_settings' => 'Admin Address',
 				'mobile_notifications' => 'Mobile Notifications',
 				'admin' => 'Admin',

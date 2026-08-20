@@ -157,6 +157,7 @@ class responsibilities_model extends CI_Model {
 				'ar_adjustment_approve' => '0',
 				'technicalproblems' => '0',
 				'technicalsearch' => '0',
+				'message_support' => '0',
 				'web_settings' => '0',
 				'mobile_notifications' => '0',
 				'admin' => '0',
