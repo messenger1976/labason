@@ -744,6 +744,8 @@ class addpaymentcustomer_model extends CI_Model {
 				'leaking_id' => $leaking_id,
 				'leakingledgerdetails_or_number' => $or_num,
 				'leakingledgerdetails_amount' => $pay_amount,
+				'leakingledgerdetails_prev_balance' => 0,
+				'leakingledgerdetails_balance' => $leaking_balance,
 				'leakingledgerdetails_transdate' => $this->manila_date_from_timestamp($trans_date),
 				'leakingledgerdetails_created_datetime' => $this->manila_now(),
 			);
@@ -784,6 +786,8 @@ class addpaymentcustomer_model extends CI_Model {
 					'leaking_id' => $leaking_id,
 					'leakingledgerdetails_or_number' => $or_num,
 					'leakingledgerdetails_amount' => $pay_amount,
+					'leakingledgerdetails_prev_balance' => $leaking_balance_total,
+					'leakingledgerdetails_balance' => $leaking_balance,
 					'leakingledgerdetails_transdate' => $this->manila_date_from_timestamp($trans_date),
 					'leakingledgerdetails_created_datetime' => $this->manila_now(),
 				);

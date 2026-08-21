@@ -331,32 +331,48 @@ class leakingentry_model extends CI_Model {
 	}
 
 	/**
-	 * Resolve A/R Leaking + Balance for Daily Collection Report rows.
-	 * Tries OR ledger details first, then customer leaking header.
+	 * Normalize A/R leaking fields for Daily Report.
+	 * When an OR detail exists, balance must come from leakingledgerdetails_balance
+	 * (snapshot at payment) so a later-day payment cannot change a prior day's report.
 	 */
-	public function get_ar_leaking_for_daily_report($or_number, $customer_id = null){
+	public function format_ar_leaking_for_daily_report($row, $from_or_detail = false){
 		$defaults = array(
 			'leaking_total_amount' => 0,
 			'leaking_balance' => 0,
 			'leakingledgerdetails_amount' => 0,
 		);
+		if (empty($row) || !is_array($row)) {
+			return $defaults;
+		}
 
+		$balance = 0.0;
+		if ($from_or_detail && array_key_exists('leakingledgerdetails_balance', $row)) {
+			$balance = (float) $row['leakingledgerdetails_balance'];
+		} elseif (!$from_or_detail && isset($row['leaking_balance'])) {
+			// Header-only fallback (no OR detail) — live value; avoid when a detail exists.
+			$balance = (float) $row['leaking_balance'];
+		}
+
+		return array(
+			'leaking_total_amount' => (float) (isset($row['leaking_total_amount']) ? $row['leaking_total_amount'] : 0),
+			'leaking_balance' => $balance,
+			'leakingledgerdetails_amount' => ($from_or_detail && isset($row['leakingledgerdetails_amount']))
+				? (float) $row['leakingledgerdetails_amount']
+				: 0,
+		);
+	}
+
+	/**
+	 * Resolve A/R Leaking + Balance for Daily Collection Report rows.
+	 * Tries OR ledger details first (frozen snapshot), then customer leaking header.
+	 */
+	public function get_ar_leaking_for_daily_report($or_number, $customer_id = null){
 		$row = $this->get_soa_statement_OR($or_number);
 		$from_or_detail = !empty($row);
 		if (empty($row) && $customer_id !== null && $customer_id !== '') {
 			$row = $this->get_leaking_ar_by_customer($customer_id);
 		}
-		if (empty($row)) {
-			return $defaults;
-		}
-
-		return array(
-			'leaking_total_amount' => (float) (isset($row['leaking_total_amount']) ? $row['leaking_total_amount'] : 0),
-			'leaking_balance' => (float) (isset($row['leaking_balance']) ? $row['leaking_balance'] : 0),
-			'leakingledgerdetails_amount' => ($from_or_detail && isset($row['leakingledgerdetails_amount']))
-				? (float) $row['leakingledgerdetails_amount']
-				: 0,
-		);
+		return $this->format_ar_leaking_for_daily_report($row, $from_or_detail);
 	}
 
 	/**
