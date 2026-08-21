@@ -195,7 +195,10 @@ class adddailyreport extends CI_Controller {
 					if(isset($gdailytrans['leaking_amount']) && $gdailytrans['leaking_amount'] > 0){
 						$ornumber_search = sprintf('%07d', $gdailytrans['or_number']);
 						if(isset($leaking_ar_lookup[$ornumber_search])){
-							$ar_leaking = $leaking_ar_lookup[$ornumber_search];
+							$ar_leaking = $this->leakingentry_model->format_ar_leaking_for_daily_report(
+								$leaking_ar_lookup[$ornumber_search],
+								true
+							);
 						} else {
 							$ar_leaking = $this->leakingentry_model->get_ar_leaking_for_daily_report(
 								$gdailytrans['or_number'],
@@ -317,7 +320,10 @@ class adddailyreport extends CI_Controller {
 				if(isset($gdailytrans['leaking_amount']) && $gdailytrans['leaking_amount'] > 0){
 					$ornumber_search = sprintf('%07d', $gdailytrans['or_number']);
 					if(isset($leaking_ar_lookup[$ornumber_search])){
-						$ar_leaking = $leaking_ar_lookup[$ornumber_search];
+						$ar_leaking = $this->leakingentry_model->format_ar_leaking_for_daily_report(
+							$leaking_ar_lookup[$ornumber_search],
+							true
+						);
 					} else {
 						$ar_leaking = $this->leakingentry_model->get_ar_leaking_for_daily_report(
 							$gdailytrans['or_number'],
