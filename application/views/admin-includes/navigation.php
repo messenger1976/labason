@@ -423,6 +423,22 @@ $avatar_url = base_url($avatar_relative) . '?v=' . $avatar_mtime;
 				</a>
 			</li>
 			<?php } ?>
+
+			<?php
+			$ms_unread = 0;
+			if (isset($this->db) && $this->db->table_exists('tbl_support_ticket')) {
+				$this->db->where('unread_client', 1);
+				$this->db->where_in('status', array('open', 'waiting_support', 'waiting_client', 'resolved'));
+				$ms_unread = (int) $this->db->count_all_results('tbl_support_ticket');
+			}
+			if ((array_key_exists('message_support', $roleResponsible) && ($roleResponsible['message_support'] == 1)) || ($this->session->userdata('usertype') == 'admin')) { ?>
+			<li class="<?php if($this->uri->segment(2)=='messagesupport'){echo 'active';}?>">
+				<a href="<?php echo ADMIN_URL;?>messagesupport" title="Message Support">
+					<i class="fal fa-comments"></i>
+					<span class="nav-link-text">Message Support<?php if ($ms_unread > 0) { ?> <span class="badge badge-danger badge-pill"><?php echo (int) $ms_unread; ?></span><?php } ?></span>
+				</a>
+			</li>
+			<?php } ?>
 			<?php // Technical Problems View — commented out in original ?>
 
 			<?php if((array_key_exists('web_settings',$roleResponsible) && ($roleResponsible['web_settings'] == 1) ) || ($this->session->userdata('usertype') == 'admin')){ ?>
