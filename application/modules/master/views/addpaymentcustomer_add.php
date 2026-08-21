@@ -708,49 +708,17 @@ $(document).on('click','.pay_button',function(e){
 		}
 	});
 
-	$.ajax({
-		type: 'POST',
-		url: '<?php echo ADMIN_URL;?>addpaymentcustomer/get_leaking_balance/',
-		data: {customer_id: customer_id},
-		success: function(data) {
-			var resultdata = [];
-			try {
-				resultdata = (typeof data === 'string') ? JSON.parse(data) : data;
-			} catch (e) {
-				resultdata = [];
-			}
-			if (!$.isArray(resultdata) || !resultdata.length || !resultdata[0]) {
-				$("#leaking_balance_div").hide();
-				$("#leaking_discount_div").show();
-				$('#leaking_id').val('');
-				$('#leaking_balance').val('0');
-				$('#leaking_balance_total').val('0');
-				return;
-			}
-			var leaking_balance = parseFloat(resultdata[0]['leaking_balance']) || 0;
-			$('#leaking_id').val(resultdata[0]['leaking_id'] || '');
-			if(leaking_balance>0){
-				$("#leaking_balance_div").show();
-				$("#leaking_discount_div").hide();
-				
-				$('#leaking_balance').val(leaking_balance);
-				$('#leaking_balance_total').val(leaking_balance);
-				amount = parseFloat(amount)+parseFloat(leaking_balance);
-				$("#grand_total").val(amount.toFixed(2));
-			}else{
-				$("#leaking_balance_div").hide();
-				$("#leaking_discount_div").show();
-				
-				$('#leaking_balance').val('0');
-				$('#leaking_balance_total').val('0');
-			}
-			
-		}
-	});
-
-
 	if(refno!=''){
 		$('#refno').val(refno);
+	}
+
+	// Sequence: posted A/R balance first, then Approved discount entry.
+	// Running these in parallel let get_leaking_balance clear leaking_id after
+	// chk_leakingentry set it, so Full Paid never posted to the leaking ledger.
+	var applyApprovedLeakingDiscount = function() {
+		if(refno === ''){
+			return;
+		}
 		$.ajax({
 			type: 'POST',
 			url: '<?php echo ADMIN_URL;?>addpaymentcustomer/chk_leakingentry/'+refno,
@@ -768,11 +736,51 @@ $(document).on('click','.pay_button',function(e){
 					$('#leaking_amount').val(resultdata[0]['discount_amount']);
 					$("#grand_total").val(resultdata[0]['total_amount']);
 				}
-				
-				//console.log(resultdata);
 			}
 		});
-	}
+	};
+
+	$.ajax({
+		type: 'POST',
+		url: '<?php echo ADMIN_URL;?>addpaymentcustomer/get_leaking_balance/',
+		data: {customer_id: customer_id},
+		success: function(data) {
+			var resultdata = [];
+			try {
+				resultdata = (typeof data === 'string') ? JSON.parse(data) : data;
+			} catch (e) {
+				resultdata = [];
+			}
+			var leaking_balance = 0;
+			if($.isArray(resultdata) && resultdata.length && resultdata[0]){
+				leaking_balance = parseFloat(resultdata[0]['leaking_balance']) || 0;
+			}
+			if(leaking_balance > 0){
+				$("#leaking_balance_div").show();
+				$("#leaking_discount_div").hide();
+				$('#leaking_id').val(resultdata[0]['leaking_id'] || '');
+				$('#leaking_balance').val(leaking_balance);
+				$('#leaking_balance_total').val(leaking_balance);
+				amount = parseFloat(amount)+parseFloat(leaking_balance);
+				$("#grand_total").val(amount.toFixed(2));
+				return;
+			}
+			$("#leaking_balance_div").hide();
+			$("#leaking_discount_div").show();
+			$('#leaking_id').val('');
+			$('#leaking_balance').val('0');
+			$('#leaking_balance_total').val('0');
+			applyApprovedLeakingDiscount();
+		},
+		error: function() {
+			$("#leaking_balance_div").hide();
+			$("#leaking_discount_div").show();
+			$('#leaking_id').val('');
+			$('#leaking_balance').val('0');
+			$('#leaking_balance_total').val('0');
+			applyApprovedLeakingDiscount();
+		}
+	});
 	
 
 	$('#year').val(year);
