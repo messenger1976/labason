@@ -123,12 +123,7 @@ class statementofaccountlist extends CI_Controller {
 					. '<i class="fal fa-file-alt"></i>'
 					. '</a>';
 
-				$balance = 0;
-				if ($customer_code !== '') {
-					$balance = (float) $this->soa_model->get_current_balance($customer_code);
-				}
-				$bal_class = ($balance > 0.005) ? 'text-danger' : (($balance < -0.005) ? 'text-success' : '');
-				$balance_html = '<span class="'.$bal_class.'">'.number_format($balance, 2).'</span>';
+				$balance_html = '<span class="js-soa-bal text-muted" data-cid="'.htmlspecialchars($customer_code, ENT_QUOTES, 'UTF-8').'" title="Loading balance…">…</span>';
 
 				$data[] = array(
 					$i++,
@@ -180,5 +175,42 @@ class statementofaccountlist extends CI_Controller {
 			ob_end_flush();
 			exit;
 		}
+	}
+
+	/**
+	 * AJAX: SOA balances for visible list rows (chunked from the browser).
+	 * Keeps the main DataTables request fast on live hosts with short proxy timeouts.
+	 */
+	public function get_balances() {
+		$this->_require_access();
+		header('Content-Type: application/json');
+		@set_time_limit(120);
+
+		$ids = $this->input->post('customer_ids');
+		if ( ! is_array($ids)) {
+			$ids = array();
+		}
+		$clean = array();
+		foreach ($ids as $id) {
+			$id = trim((string) $id);
+			if ($id !== '' && ! in_array($id, $clean, TRUE)) {
+				$clean[] = $id;
+			}
+		}
+		$clean = array_slice($clean, 0, 15);
+
+		$balances = array();
+		foreach ($clean as $customer_code) {
+			try {
+				$balances[$customer_code] = round((float) $this->soa_model->get_current_balance($customer_code), 2);
+			} catch (Exception $e) {
+				$balances[$customer_code] = null;
+			} catch (Error $e) {
+				$balances[$customer_code] = null;
+			}
+		}
+
+		echo json_encode(array('ok' => TRUE, 'balances' => $balances));
+		exit;
 	}
 }

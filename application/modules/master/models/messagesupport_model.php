@@ -12,6 +12,14 @@ class messagesupport_model extends CI_Model {
 		$this->load->config('message_support', TRUE);
 	}
 
+	/** False until sql/message_support_install.sql has been applied to this database. */
+	public function tables_ready() {
+		return $this->db->table_exists($this->table_ticket)
+			&& $this->db->table_exists($this->table_message)
+			&& $this->db->table_exists($this->table_queue)
+			&& $this->db->table_exists($this->table_state);
+	}
+
 	public function cfg($key, $default = '') {
 		$val = $this->config->item($key, 'message_support');
 		return ($val === FALSE || $val === NULL) ? $default : $val;
@@ -47,6 +55,9 @@ class messagesupport_model extends CI_Model {
 	}
 
 	public function list_tickets($status = '', $q = '') {
+		if ( ! $this->tables_ready()) {
+			return array();
+		}
 		$this->db->select('*');
 		$this->db->from($this->table_ticket);
 		if ($status !== '' && $status !== 'all') {
@@ -94,6 +105,9 @@ class messagesupport_model extends CI_Model {
 	}
 
 	public function create_ticket($data, $first_body, $attachment = NULL) {
+		if ( ! $this->tables_ready()) {
+			return array('error' => 'Message Support tables are missing. Run sql/message_support_install.sql on this database.');
+		}
 		$now = date('Y-m-d H:i:s');
 		$uuid = $this->new_uuid();
 		$row = array(
@@ -258,6 +272,9 @@ class messagesupport_model extends CI_Model {
 	}
 
 	private function _queue($uuid, $type, $payload) {
+		if ( ! $this->db->table_exists($this->table_queue)) {
+			return;
+		}
 		$now = date('Y-m-d H:i:s');
 		$this->db->insert($this->table_queue, array(
 			'uuid' => $uuid,
@@ -272,6 +289,9 @@ class messagesupport_model extends CI_Model {
 	}
 
 	public function flush_outbox() {
+		if ( ! $this->db->table_exists($this->table_queue)) {
+			return;
+		}
 		$hub = rtrim($this->cfg('ms_hub_url'), '/').'/';
 		$token = $this->cfg('ms_api_token');
 		if ($hub === '/' || $token === '') {
@@ -303,6 +323,9 @@ class messagesupport_model extends CI_Model {
 	}
 
 	public function pull_hub() {
+		if ( ! $this->tables_ready()) {
+			return;
+		}
 		$hub = rtrim($this->cfg('ms_hub_url'), '/').'/';
 		$token = $this->cfg('ms_api_token');
 		if ($hub === '/' || $token === '') {
@@ -336,11 +359,17 @@ class messagesupport_model extends CI_Model {
 	}
 
 	public function last_sync_error() {
+		if ( ! $this->db->table_exists($this->table_state)) {
+			return 'Message Support tables are missing. Run sql/message_support_install.sql on this database.';
+		}
 		$row = $this->db->get_where($this->table_state, array('id' => 1))->row_array();
 		return ($row && ! empty($row['last_error'])) ? $row['last_error'] : '';
 	}
 
 	public function sync_now() {
+		if ( ! $this->tables_ready()) {
+			return;
+		}
 		$this->flush_outbox();
 		$this->pull_hub();
 	}
@@ -413,6 +442,9 @@ class messagesupport_model extends CI_Model {
 	}
 
 	private function _set_state_error($err) {
+		if ( ! $this->db->table_exists($this->table_state)) {
+			return;
+		}
 		$this->db->where('id', 1);
 		$this->db->update($this->table_state, array(
 			'last_error' => substr((string) $err, 0, 500),

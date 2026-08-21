@@ -320,15 +320,20 @@ $(document).ready(function() {
 		serverSide: true,
 		responsive: true,
 		stateSave: false,
-		pageLength: 100,
+		pageLength: 25,
 		lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
 		order: [[5, 'asc'], [1, 'asc']],
 		searchDelay: 999999,
 		ajax: {
 			url: "<?php echo ADMIN_URL; ?>statementofaccountlist/get_datatable_data",
 			type: "POST",
+			timeout: 120000,
 			data: function(d) {
 				d.zone = ($('#filter_zone').length ? $('#filter_zone').val() : '') || 'all';
+			},
+			error: function(xhr, error, thrown) {
+				hideLoader();
+				console.error('SOA list DataTables error', error, thrown);
 			}
 		},
 		columns: [
@@ -405,8 +410,60 @@ $(document).ready(function() {
 				isInitialLoad = false;
 				hideLoader();
 			}
+			loadSoaBalances();
 		}
 	});
+
+	function formatSoaBalance(bal) {
+		var n = parseFloat(bal);
+		if (isNaN(n)) {
+			return '<span class="text-muted">—</span>';
+		}
+		var cls = (n > 0.005) ? 'text-danger' : ((n < -0.005) ? 'text-success' : '');
+		return '<span class="' + cls + '">' + n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</span>';
+	}
+
+	function loadSoaBalances() {
+		var ids = [];
+		$('#dt_basic .js-soa-bal').each(function() {
+			var cid = $.trim($(this).attr('data-cid') || '');
+			if (cid && $.inArray(cid, ids) === -1) {
+				ids.push(cid);
+			}
+		});
+		if (!ids.length) {
+			return;
+		}
+		var chunkSize = 10;
+		var i = 0;
+		function nextChunk() {
+			if (i >= ids.length) {
+				return;
+			}
+			var chunk = ids.slice(i, i + chunkSize);
+			i += chunkSize;
+			$.ajax({
+				url: "<?php echo ADMIN_URL; ?>statementofaccountlist/get_balances",
+				type: 'POST',
+				dataType: 'json',
+				timeout: 120000,
+				data: { customer_ids: chunk }
+			}).done(function(res) {
+				if (res && res.balances) {
+					$('#dt_basic .js-soa-bal').each(function() {
+						var $el = $(this);
+						var cid = $.trim($el.attr('data-cid') || '');
+						if (cid && Object.prototype.hasOwnProperty.call(res.balances, cid)) {
+							$el.replaceWith(formatSoaBalance(res.balances[cid]));
+						}
+					});
+				}
+			}).always(function() {
+				nextChunk();
+			});
+		}
+		nextChunk();
+	}
 
 	var searchInput = $('.dataTables_filter input');
 	searchInput.off('keyup.DT search.DT input.DT paste.DT cut.DT');
