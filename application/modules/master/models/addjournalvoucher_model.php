@@ -63,15 +63,65 @@ class addjournalvoucher_model extends CI_Model {
 		$result = $query->result_array();
 		return $result;
     }	
-     // to get all employee
+     // Next JV series number (JV-####), independent of payment transaction ids
 	public function fetchTransaction(){
-		// fetch data(last entry) on transaction table
-		$sql = "SELECT * FROM tbl_transactions WHERE id =(SELECT MAX(id) FROM tbl_transactions)";
+		$sql = "SELECT MAX(CAST(SUBSTRING(voucherNo, 4) AS UNSIGNED)) AS n
+			FROM tbl_transactions
+			WHERE voucherNo LIKE 'JV-%'";
 		$query = $this->db->query($sql);
-		$result = $query->result_array();  //print_r($result[0]['id']);exit;
-		$lastId = $result[0]['id'];
-		return $lastId;
-    }	
+		$row = ($query && $query->num_rows() > 0) ? $query->row_array() : array();
+		$n = isset($row['n']) ? (int) $row['n'] : 0;
+		return $n;
+	}
+
+	public function next_voucher_no() {
+		return 'JV-' . sprintf('%04d', $this->fetchTransaction() + 1);
+	}
+
+	public function has_particulars_column() {
+		return $this->db->field_exists('particulars', $this->table_transactions);
+	}
+
+	public function has_voucher_for_column() {
+		return $this->db->field_exists('voucher_for', $this->table_transactions);
+	}
+
+	/**
+	 * Resolve display name for a ledger_id + ledger_id_for pair (no mysql_*).
+	 */
+	public function party_label($ledger_id, $ledger_id_for) {
+		$ledger_id = trim((string) $ledger_id);
+		$ledger_id_for = trim((string) $ledger_id_for);
+		if ($ledger_id === '') {
+			return '';
+		}
+		if ($ledger_id_for === 'employee_id') {
+			$q = $this->db->query(
+				"SELECT CONCAT(first_name,' ',last_name) AS nm FROM tbl_addemployee WHERE id = ? LIMIT 1",
+				array((int) $ledger_id)
+			);
+		} elseif ($ledger_id_for === 'expenses_type') {
+			$q = $this->db->query(
+				"SELECT expensestype_name AS nm FROM tbl_expensetype WHERE id = ? LIMIT 1",
+				array((int) $ledger_id)
+			);
+		} elseif ($ledger_id_for === 'customer_id') {
+			$q = $this->db->query(
+				"SELECT CONCAT(first_name,' ',last_name) AS nm FROM tbl_addcustomer WHERE id = ? LIMIT 1",
+				array((int) $ledger_id)
+			);
+		} else {
+			$q = $this->db->query(
+				"SELECT ledgerName AS nm FROM tbl_ledgers WHERE id = ? LIMIT 1",
+				array((int) $ledger_id)
+			);
+		}
+		if (!$q || $q->num_rows() === 0) {
+			return $ledger_id;
+		}
+		$row = $q->row_array();
+		return isset($row['nm']) ? $row['nm'] : $ledger_id;
+	}	
 	/** In Function Get all records from select table **/
     public function get_extype() {
         $this->db->select("*");
@@ -81,13 +131,14 @@ class addjournalvoucher_model extends CI_Model {
 		$result = $query->result_array();
 		return $result;
     }
-	/** In Function Get all records from select table **/
+	/** Journal voucher lines only (not meter/expense auto postings) **/
     public function get_all_records() {
         $this->db->select("*");
 		$this->db->from($this->table_transactions);
+		$this->db->where('tableName', 'transactions');
+		$this->db->like('voucherNo', 'JV-', 'after');
 		$this->db->order_by('id','desc');
 		$query = $this->db->get();
-		//echo $this->db->last_query();
 		$result = $query->result_array();
 		return $result;
 
@@ -160,41 +211,75 @@ class addjournalvoucher_model extends CI_Model {
     }
   	/** In Function Add records for select table **/
 	public function add_record(){
-		
-		//$brcE     	= substr(rand(1,1000000),0,4); 
-		//$expenses_id  = 'WT'.$brcE;
-		//$total = $this->input->post('quantity')*$this->input->post('amount'); 
-		$tId = $this->input->post('transaction_id');
-		$piece = explode(" / ", $tId);
+		$tId = trim((string) $this->input->post('transaction_id'));
+		$lId = trim((string) $this->input->post('ledger_id'));
+		$amount = (float) $this->input->post('credit');
+		$particulars = trim((string) $this->input->post('particulars'));
+		$voucher = trim((string) $this->input->post('voucherNo'));
+		$date_raw = trim((string) $this->input->post('date'));
+
+		if ($voucher === '' || $tId === '' || $lId === '' || $amount <= 0) {
+			return false;
+		}
+		if ($tId === $lId) {
+			return false;
+		}
+
+		$piece = explode(' / ', $tId);
+		$piece2 = explode(' / ', $lId);
+		if (count($piece) < 2 || count($piece2) < 2) {
+			return false;
+		}
+
+		$dt = DateTime::createFromFormat('d-m-Y', str_replace('/', '-', $date_raw));
+		$date_ymd = ($dt instanceof DateTime) ? $dt->format('Y-m-d') : date('Y-m-d');
+		$now = date('Y-m-d H:i:s');
+		$has_particulars = $this->has_particulars_column();
+		$has_voucher_for = $this->has_voucher_for_column();
+
 		$set_data = array(
-						'tableName' => 'transactions',
-						'voucherNo' => $this->input->post('voucherNo'),
-						//'transaction_id' => $this->input->post('transaction_id'),
-						'ledger_id' =>$piece[0], //$this->input->post('transaction_id'),
-						'ledger_id_for' => $piece[1],//'transaction_id',
-						'voucher_for' => 'debit',
-						'debit' => $this->input->post('credit'),
-						'date' => date('Y-m-d',strtotime($this->input->post('date'))),
-					    'create_date_time' => date('Y-m-d H:i:s'),
-					    'update_date_time' => date('Y-m-d H:i:s'),
-					);
-		$result = $this->db->insert($this->table_transactions, $set_data);
-		$lId = $this->input->post('ledger_id');
-		$piece2 = explode(" / ", $lId);
+			'tableName' => 'transactions',
+			'voucherNo' => $voucher,
+			'transaction_id' => '',
+			'ledger_id' => $piece[0],
+			'ledger_id_for' => $piece[1],
+			'debit' => number_format($amount, 2, '.', ''),
+			'credit' => '',
+			'date' => $date_ymd,
+			'create_date_time' => $now,
+			'update_date_time' => $now,
+		);
+		if ($has_voucher_for) {
+			$set_data['voucher_for'] = 'debit';
+		}
+		if ($has_particulars) {
+			$set_data['particulars'] = $particulars;
+		}
+
 		$set_data2 = array(
-						'tableName' => 'transactions',
-						'voucherNo' => $this->input->post('voucherNo'),
-						//'transaction_id' => $this->input->post('transaction_id'),
-						'ledger_id' => $piece2[0],//$this->input->post('ledger_id'),
-						'ledger_id_for' => $piece2[1], //'ledger_id',
-						'voucher_for' => 'credit',
-						'credit' => $this->input->post('credit'),
-						'date' => date('Y-m-d',strtotime($this->input->post('date'))),
-					    'create_date_time' => date('Y-m-d H:i:s'),
-					    'update_date_time' => date('Y-m-d H:i:s'),
-					);
-		$result2 = $this->db->insert($this->table_transactions, $set_data2);
-		return $result2;
+			'tableName' => 'transactions',
+			'voucherNo' => $voucher,
+			'transaction_id' => '',
+			'ledger_id' => $piece2[0],
+			'ledger_id_for' => $piece2[1],
+			'debit' => '',
+			'credit' => number_format($amount, 2, '.', ''),
+			'date' => $date_ymd,
+			'create_date_time' => $now,
+			'update_date_time' => $now,
+		);
+		if ($has_voucher_for) {
+			$set_data2['voucher_for'] = 'credit';
+		}
+		if ($has_particulars) {
+			$set_data2['particulars'] = $particulars;
+		}
+
+		$this->db->trans_start();
+		$this->db->insert($this->table_transactions, $set_data);
+		$this->db->insert($this->table_transactions, $set_data2);
+		$this->db->trans_complete();
+		return $this->db->trans_status() !== false;
 	}
   	/** In Function Update records for select table **/
 	public function update_record($id){

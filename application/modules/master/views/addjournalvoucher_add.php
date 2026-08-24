@@ -1,24 +1,75 @@
+<?php
+	$has_particulars = !empty($has_particulars);
+	$post_date = $this->input->post('date');
+	$date_val = $post_date !== null && $post_date !== ''
+		? htmlspecialchars($post_date, ENT_QUOTES, 'UTF-8')
+		: date('d-m-Y');
+	$amount_val = $this->input->post('credit') !== null
+		? htmlspecialchars($this->input->post('credit'), ENT_QUOTES, 'UTF-8')
+		: '';
+	$particulars_val = $this->input->post('particulars') !== null
+		? htmlspecialchars($this->input->post('particulars'), ENT_QUOTES, 'UTF-8')
+		: '';
+	$sel_debit = $this->input->post('transaction_id');
+	$sel_credit = $this->input->post('ledger_id');
+
+	$render_ledger_options = function ($selected) use ($ledger1, $customer, $employee, $expenseType) {
+		$html = '<option value="">--Select--</option>';
+		$groups = array(
+			'Chart of Accounts' => $ledger1,
+			'Customers' => $customer,
+			'Employees' => $employee,
+			'Expense Types' => $expenseType,
+		);
+		foreach ($groups as $label => $rows) {
+			if (empty($rows)) {
+				continue;
+			}
+			$html .= '<optgroup label="'.htmlspecialchars($label, ENT_QUOTES, 'UTF-8').'">';
+			foreach ($rows as $row) {
+				$suffix = ($label === 'Customers') ? 'customer_id'
+					: (($label === 'Employees') ? 'employee_id'
+					: (($label === 'Expense Types') ? 'expenses_type' : 'ledger_id'));
+				$val = $row['id'].' / '.$suffix;
+				$sel = ((string) $selected === (string) $val) ? ' selected' : '';
+				$html .= '<option value="'.htmlspecialchars($val, ENT_QUOTES, 'UTF-8').'"'.$sel.'>'
+					.htmlspecialchars($row['ledgerName'], ENT_QUOTES, 'UTF-8').'</option>';
+			}
+			$html .= '</optgroup>';
+		}
+		return $html;
+	};
+?>
+<link rel="stylesheet" media="screen, print" href="<?php echo base_url(); ?>sa4/css/formplugins/bootstrap-datepicker/bootstrap-datepicker.css">
 <main id="js-page-content" role="main" class="page-content">
 	<ol class="breadcrumb page-breadcrumb">
-		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL?>">Home</a></li>
-		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL?>addexpenses/">Expenses</a></li>
-		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL?>addexpenses/search/">Search Expenses</a></li>
-		<li class="breadcrumb-item active">add</li>
-		<li class="position-absolute pos-top pos-right d-sm-block"><span class="js-get-date"></span></li>
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>">Home</a></li>
+		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>addjournalvoucher">Journal Voucher</a></li>
+		<li class="breadcrumb-item active">Add</li>
+		<li class="position-absolute pos-top pos-right d-none d-sm-block"><span class="js-get-date"></span></li>
 	</ol>
+
 	<div class="subheader">
 		<h1 class="subheader-title">
-			<i class="subheader-icon fal fa-wallet"></i>
-			Manage <span class="fw-300">Addjournalvoucher Add</span>
+			<i class="subheader-icon fal fa-book"></i>
+			Journal Voucher <span class="fw-300">Add</span>
 		</h1>
 	</div>
 
+	<?php if (!empty($msg)) { ?>
+	<div class="alert alert-danger alert-dismissible fade show" role="alert">
+		<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+			<span aria-hidden="true"><i class="fal fa-times"></i></span>
+		</button>
+		<strong>Error!</strong> <?php echo htmlspecialchars($msg, ENT_QUOTES, 'UTF-8'); ?>
+	</div>
+	<?php } ?>
 
 	<div class="row">
 		<div class="col-xl-12">
 			<div class="panel">
 				<div class="panel-hdr">
-					<h2>Addjournalvoucher Add <span class="fw-300"><i>Details</i></span></h2>
+					<h2>Journal Voucher <span class="fw-300"><i>Details</i></span></h2>
 					<div class="panel-toolbar">
 						<button class="btn btn-panel" data-action="panel-collapse" data-toggle="tooltip" data-offset="0,10" data-original-title="Collapse"></button>
 						<button class="btn btn-panel" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
@@ -26,144 +77,81 @@
 				</div>
 				<div class="panel-container show">
 					<div class="panel-content">
-<section id="widget-grid" class="">
-
-					<!-- row -->
-
-					<div class="row">
-
-						<!-- a blank row to get started -->
-						<div class="col-sm-6 col-lg-12">
-						
-
-								<!-- your contents here -->
-								<form class="form-horizontal" role="form" name="myform" id="myform" method="post" action="" enctype="multipart/form-data">
-										  	
-											<?php if($msg != ''){?>
-											<div class="alert alert-success alert-dismissible fade show">
-												<button type="button" class="close" data-dismiss="alert">
-												<i class="fal fa-times"></i>
-												</button>
-												<p>
-													<i class="fal fa-check"></i>
-													<?php echo $msg?$msg:'';?>
-												</p>
-											</div>
-											<?php } ?>	
-											
-											<fieldset>
-														<h5 class="mb-3">Journal Voucher-Add </h5>
-														<div class="form-group col-lg-6">
-															<div class="col-lg-12 controls">
-																<div class="form-group">
-																	<label class="form-label">Voucher No. : </label>
-																	<input class="form-control" type="text" id="" name="voucherNo"  readonly value="<?php echo $voucher; ?>"/>
-																	<?php echo form_error('voucher'); ?>
-																</div>
-															</div>
-														</div>
-														<div class="form-group col-lg-6">
-															<div class="col-lg-12 controls">
-																<div class="form-group">
-																	<label class="form-label">Date :</label>
-																	<input class="form-control" type="text" id="date" placeholder="dd-mm-yyyy" name="date" value="<?php echo ($this->input->post('date') != '')?date('d-m-Y',strtotime($this->input->post('date'))):date('d-m-Y');?>"  />
-																	<!--<input type="text" name="date" id="date"  class="col-10 col-sm-10" placeholder="DD-MM-YYYY" value="<?php echo ($this->input->post('date') != '')?date('d-m-Y',strtotime($this->input->post('date'))):date('d-m-Y');?>" readonly="readonly"  required/>-->
-																	<?php echo form_error('date'); ?>
-																</div>
-															</div>
-														</div>
-														<div class="form-group col-lg-6">
-															<div class="col-lg-12 controls">
-																<div class="form-group">
-																	<label class="form-label">Ledger 1 (Credit): </label>
-																	<select name="transaction_id" id="transaction_id" class="form-control" required>
-																	 <option value="">--Select--</option>
-                                                                     <?php 
-                                                                     //foreach($ledger as $value){
- 																		for($j=0;$j<=$countledger1-1;$j++){
-                                                                     	?>
-																	  <option value="<?php echo $ledger1[$j]['id']." / ledger_id";?>"><?php echo $ledger1[$j]['ledgerName'];?></option>
-                                                                      <?php }
-                                                                      for($j=0;$j<=$countcustomer-1;$j++){
-                                                                     	?>
-																	  <option value="<?php echo $customer[$j]['id']." / customer_id";?>"><?php echo $customer[$j]['ledgerName'];?></option>
-                                                                      <?php }
-                                                                      for($j=0;$j<=$countemployee-1;$j++){
-                                                                     	?>
-																	  <option value="<?php echo $employee[$j]['id']." / employee_id";?>"><?php echo $employee[$j]['ledgerName'];?></option>
-                                                                      <?php }
-                                                                      for($j=0;$j<=$countexpenseType-1;$j++){
-                                                                     	?>
-																	  <option value="<?php echo $expenseType[$j]['id']." / expenses_type";?>"><?php echo $expenseType[$j]	['ledgerName'];?></option>
-                                                                      <?php }
-                                                                      // } ?>
-																	</select>
-																	<?php echo form_error('transaction_id'); ?>
-																</div>
-															</div>
-														</div>
-														<div class="form-group col-lg-6">
-															<div class="col-lg-12 controls">
-																<div class="form-group">
-																	<label class="form-label">Ledger 2 (Debit): </label>
-																	<select name="ledger_id" id="ledger_id" class="form-control" required>
-																	 <?php 
-                                                                     //foreach($ledger as $value){
- 																		for($j=0;$j<=$countledger1-1;$j++){
-                                                                     	?>
-																	  <option value="<?php echo $ledger1[$j]['id']." / ledger_id";?>"><?php echo $ledger1[$j]['ledgerName'];?></option>
-                                                                      <?php }
-                                                                      for($j=0;$j<=$countcustomer-1;$j++){
-                                                                     	?>
-																	  <option value="<?php echo $customer[$j]['id']." / customer_id";?>"><?php echo $customer[$j]['ledgerName'];?></option>
-                                                                      <?php }
-                                                                      for($j=0;$j<=$countemployee-1;$j++){
-                                                                     	?>
-																	  <option value="<?php echo $employee[$j]['id']." / employee_id";?>"><?php echo $employee[$j]['ledgerName'];?></option>
-                                                                      <?php }
-                                                                      for($j=0;$j<=$countexpenseType-1;$j++){
-                                                                     	?>
-																	  <option value="<?php echo $expenseType[$j]['id']." / expenses_type";?>"><?php echo $expenseType[$j]	['ledgerName'];?></option>
-                                                                      <?php }
-                                                                      // } ?>
-																	</select>
-																	<?php echo form_error('ledger_id'); ?>
-																</div>
-															</div>
-														</div>
-														<div class="form-group col-lg-6">
-															<div class="col-lg-12 controls">
-																<div class="form-group">
-																	<label class="form-label"> Amount:</label>
-																	<input class="form-control" type="text" id="credit" name="credit" value="<?php echo $this->input->post('credit'); ?>" required/>
-																	<?php echo form_error('credit'); ?>
-																</div>
-															</div>
-														</div>
-													</fieldset>
-
-													<div class="form-group mt-3">
-														<div class="row">
-															<div class="col-md-12">
-																<a href="<?php echo ADMIN_URL;?>addexpenses" class="btn btn-secondary">Cancel</a>
-																<input type="submit" class="btn btn-primary" name="add" id="add4" value="Add">
-															</div>
-														</div>
+						<p class="text-muted mb-3">
+							Posts a balanced GL pair (Debit + Credit). Put the reason in <strong>Particulars</strong>
+							(e.g. OR number and customer ID for a cash refund).
+							This does <strong>not</strong> change Daily Collection Report.
+						</p>
+						<form class="form-horizontal" role="form" name="myform" id="myform" method="post" action="" autocomplete="off">
+							<div class="row">
+								<div class="col-md-6">
+									<div class="form-group">
+										<label class="form-label" for="voucherNo">Voucher No.</label>
+										<input class="form-control" type="text" id="voucherNo" name="voucherNo" readonly
+											value="<?php echo htmlspecialchars($voucher, ENT_QUOTES, 'UTF-8'); ?>"/>
 									</div>
 								</div>
-							</form>
-								    
-								
-									
-						
-					</div>
-                    
-
-						
-					<!-- end row -->
-
-				</section>
-			<!-- end widget grid -->
+								<div class="col-md-6">
+									<div class="form-group">
+										<label class="form-label" for="date">Date <span class="text-danger">*</span></label>
+										<input class="form-control" type="text" id="date" name="date" placeholder="dd-mm-yyyy" required
+											value="<?php echo $date_val; ?>"/>
+										<small class="form-text text-muted">Posting date (dd-mm-yyyy).</small>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-6">
+									<div class="form-group">
+										<label class="form-label" for="transaction_id">Debit ledger <span class="text-danger">*</span></label>
+										<select name="transaction_id" id="transaction_id" class="form-control" required>
+											<?php echo $render_ledger_options($sel_debit); ?>
+										</select>
+										<small class="form-text text-muted">Account that increases Debit.</small>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group">
+										<label class="form-label" for="ledger_id">Credit ledger <span class="text-danger">*</span></label>
+										<select name="ledger_id" id="ledger_id" class="form-control" required>
+											<?php echo $render_ledger_options($sel_credit); ?>
+										</select>
+										<small class="form-text text-muted">Account that increases Credit (e.g. Cash for cash-out).</small>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-6">
+									<div class="form-group">
+										<label class="form-label" for="credit">Amount <span class="text-danger">*</span></label>
+										<input class="form-control" type="text" id="credit" name="credit" required
+											value="<?php echo $amount_val; ?>" placeholder="0.00"/>
+									</div>
+								</div>
+								<?php if ($has_particulars) { ?>
+								<div class="col-md-6">
+									<div class="form-group">
+										<label class="form-label" for="particulars">Particulars / narration</label>
+										<textarea class="form-control" id="particulars" name="particulars" rows="3"
+											placeholder="e.g. Refund overcollection OR 12345 — customer account"><?php echo $particulars_val; ?></textarea>
+										<small class="form-text text-muted">Cite OR # and customer ID when posting a refund.</small>
+									</div>
+								</div>
+								<?php } else { ?>
+								<div class="col-md-6">
+									<div class="alert alert-warning mb-0">
+										Particulars column is missing. Run <code>sql/add_jv_particulars.sql</code> then reload this page.
+									</div>
+								</div>
+								<?php } ?>
+							</div>
+							<div class="mt-3">
+								<a href="<?php echo ADMIN_URL; ?>addjournalvoucher" class="btn btn-secondary">Cancel</a>
+								<button type="submit" class="btn btn-primary" name="add" id="add" value="Add">
+									<i class="fal fa-check mr-1"></i> Save Journal Voucher
+								</button>
+							</div>
+						</form>
 					</div>
 				</div>
 			</div>
@@ -171,57 +159,31 @@
 	</div>
 </main>
 <?php include('footer.php'); ?>
+<script src="<?php echo base_url(); ?>sa4/js/formplugins/bootstrap-datepicker/bootstrap-datepicker.js"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+	if ($.fn.datepicker) {
+		$('#date').datepicker({
+			todayHighlight: true,
+			autoclose: true,
+			format: 'dd-mm-yyyy',
+			orientation: 'bottom left'
+		});
+	}
+	$('#myform').on('submit', function() {
+		var d = $.trim($('#transaction_id').val());
+		var c = $.trim($('#ledger_id').val());
+		if (d && c && d === c) {
+			alert('Debit and Credit ledgers must be different.');
+			return false;
+		}
+		var amt = parseFloat($('#credit').val());
+		if (!(amt > 0)) {
+			alert('Enter an amount greater than zero.');
+			return false;
+		}
+	});
+});
+</script>
 </body>
 </html>
-<script type="text/javascript">
-		
-		function customer_type_values(){
-			$("#showcustomers").hide();			
-			if($("#customer_type").val()=='monthlycustomer'){
-				$("#showcustomers").show();
-			}
-			else if($("#customer_type").val()=='metercustomer'){
-				$("#showcustomers").hide();
-			}
-		}
-	
-		</script>
-<script type="text/javascript">
-var curDate = '<?php echo date('d-m-Y') ?>';	
-function fun_calendor(field){
-	$("#"+field).focus();
-} 
-$(document).ready(function(){
-	$("#date").datepicker({
-		showAnim: null,
-		dateFormat: 'dd-mm-yy',
-		// showOn: 'both',
-		buttonImage: '<?php echo site_url();?>images/calender.jpg',
-		buttonImageOnly: true,
-		firstDay: 1,
-		nextText: '',
-		prevText: '',
-		numberOfMonths: [1, 1],
-		//defaultDate: new Date(curDate),
-		//minDate: curDate,
-		//maxDate: ''
-	});
-	
-});
-
-</script>
-<script>
-$('#add').click(function(){
-    var expenseid = $('#expenses_id').val();
-	var expensestype = $('#expenses_type').val();
-	var quantity = $('#quantity').val();
-	var date = $('#date').val();
-	var amount = $('#amount').val();
-	var invoi_id = $('#time_format').val();
-	if(expenseid != '' && expensestype != '' && quantity != '' && date !='' && amount != ''){
-				var url = '<?php echo ADMIN_URL;?>addexpenses/invoicereceipt_expense/'+expenseid+'/'+expensestype+'/'+quantity+'/'+date+'/'+invoi_id+'/'+amount;
-				window.open( url , "popupWindow", "width=1024,height=600,scrollbars=yes");	
-	}
-});
-</script>
-
