@@ -363,6 +363,48 @@ class leakingentry_model extends CI_Model {
 	}
 
 	/**
+	 * Build OR-number lookup from leaking ledger rows for a transaction date.
+	 */
+	public function build_leaking_ar_lookup_from_rows($rows){
+		$lookup = array();
+		if (!is_array($rows)) {
+			return $lookup;
+		}
+		foreach ($rows as $row) {
+			if (isset($row['leakingledgerdetails_or_number'])) {
+				$lookup[sprintf('%07d', $row['leakingledgerdetails_or_number'])] = $row;
+			}
+		}
+		return $lookup;
+	}
+
+	/**
+	 * Load leaking A/R rows and OR lookup for Daily Report (single query).
+	 */
+	public function get_leaking_ar_data_for_daily_report($transdate){
+		$rows = $this->get_soa_statement_transdate($transdate);
+		if (!is_array($rows)) {
+			$rows = array();
+		}
+		return array(
+			'records' => $rows,
+			'lookup' => $this->build_leaking_ar_lookup_from_rows($rows),
+		);
+	}
+
+	/**
+	 * Resolve A/R leaking from preloaded lookup, with DB fallback when OR is missing.
+	 * Same results as get_ar_leaking_for_daily_report when lookup miss.
+	 */
+	public function resolve_ar_leaking_for_daily_report($or_number, $customer_id = null, $leaking_ar_lookup = array()){
+		$or_key = sprintf('%07d', $or_number);
+		if (is_array($leaking_ar_lookup) && isset($leaking_ar_lookup[$or_key])) {
+			return $this->format_ar_leaking_for_daily_report($leaking_ar_lookup[$or_key], true);
+		}
+		return $this->get_ar_leaking_for_daily_report($or_number, $customer_id);
+	}
+
+	/**
 	 * Resolve A/R Leaking + Balance for Daily Collection Report rows.
 	 * Tries OR ledger details first (frozen snapshot), then customer leaking header.
 	 */
@@ -379,8 +421,9 @@ class leakingentry_model extends CI_Model {
 	 * Total Amount Collected for a meter payment that has a leaking discount.
 	 * Uses the amount paid on that OR only — never current leaking_balance
 	 * (later payments from Leaking Ledger Details belong in LEAKING A/R PAYMENT REPORT).
+	 * Optional $leaking_detail_row avoids a second OR lookup when already preloaded.
 	 */
-	public function get_collected_amount_for_leaking_payment($grand_total, $pay_amount = 0, $or_number = null){
+	public function get_collected_amount_for_leaking_payment($grand_total, $pay_amount = 0, $or_number = null, $leaking_detail_row = null){
 		$due = (float) $grand_total;
 		$paid = (float) $pay_amount;
 
@@ -390,6 +433,9 @@ class leakingentry_model extends CI_Model {
 		}
 
 		if ($or_number !== null && $or_number !== '' && (int) $or_number > 0) {
+			if (is_array($leaking_detail_row) && !empty($leaking_detail_row['leakingledgerdetails_amount'])) {
+				return (float) $leaking_detail_row['leakingledgerdetails_amount'];
+			}
 			$detail = $this->get_soa_statement_OR($or_number);
 			if (!empty($detail['leakingledgerdetails_amount'])) {
 				return (float) $detail['leakingledgerdetails_amount'];

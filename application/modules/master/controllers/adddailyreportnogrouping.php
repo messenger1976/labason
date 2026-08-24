@@ -52,9 +52,15 @@ class adddailyreportnogrouping extends CI_Controller {
 		$grouping = 0;
 		$data['grouping'] = $grouping;
 		$data['trans_date'] = date('M d, Y', strtotime($trans_date_mysql));
+		$data['trans_date_mysql'] = $trans_date_mysql;
 		$data['preparedby'] = $this->my_model->get_employee($preparedby);
 		$data['verifiedby'] = $this->my_model->get_employee($verifiedby);
 		$data['approvedby'] = $this->my_model->get_employee($approvedby);
+
+		$leaking_data = $this->leakingentry_model->get_leaking_ar_data_for_daily_report($trans_date_mysql);
+		$data['leaking_record'] = $leaking_data['records'];
+		$data['leaking_ar_lookup'] = $leaking_data['lookup'];
+
 		// Get all records without zone filter, sorted by or_number
 		$data['record'] = array_merge(
 			$this->my_model->get_metercustomer_records($trans_date_mysql, '', $grouping),
@@ -146,22 +152,9 @@ class adddailyreportnogrouping extends CI_Controller {
 		$grand_total_franchise_fee = 0;
 		
 		// Pre-load all leaking A/R data for the transaction date to avoid N+1 queries
-		$leaking_ar_lookup = array();
-		$get_all_leaking = array();
-		try {
-			$get_all_leaking = $this->leakingentry_model->get_soa_statement_transdate($mysql_transdate);
-			if (!is_array($get_all_leaking)) {
-				$get_all_leaking = array();
-			}
-			foreach($get_all_leaking as $leaking_record){
-				if(isset($leaking_record['leakingledgerdetails_or_number'])){
-					$or_key = sprintf('%07d', $leaking_record['leakingledgerdetails_or_number']);
-					$leaking_ar_lookup[$or_key] = $leaking_record;
-				}
-			}
-		} catch (Exception $e) {
-			$get_all_leaking = array();
-		}
+		$leaking_data = $this->leakingentry_model->get_leaking_ar_data_for_daily_report($mysql_transdate);
+		$leaking_ar_lookup = $leaking_data['lookup'];
+		$get_all_leaking = $leaking_data['records'];
 		
 		// Get all records without grouping, sorted by or_number
 		$get_dailytrans = array_merge(
@@ -175,21 +168,17 @@ class adddailyreportnogrouping extends CI_Controller {
 			$ar_leaking = array('leaking_total_amount' => 0, 'leaking_balance' => 0);
 			if(isset($gdailytrans['leaking_amount']) && $gdailytrans['leaking_amount'] > 0){
 				$ornumber_search = sprintf('%07d', $gdailytrans['or_number']);
-				if(isset($leaking_ar_lookup[$ornumber_search])){
-					$ar_leaking = $this->leakingentry_model->format_ar_leaking_for_daily_report(
-						$leaking_ar_lookup[$ornumber_search],
-						true
-					);
-				} else {
-					$ar_leaking = $this->leakingentry_model->get_ar_leaking_for_daily_report(
-						$gdailytrans['or_number'],
-						isset($gdailytrans['customer_id']) ? $gdailytrans['customer_id'] : null
-					);
-				}
+				$leaking_detail = isset($leaking_ar_lookup[$ornumber_search]) ? $leaking_ar_lookup[$ornumber_search] : null;
+				$ar_leaking = $this->leakingentry_model->resolve_ar_leaking_for_daily_report(
+					$gdailytrans['or_number'],
+					isset($gdailytrans['customer_id']) ? $gdailytrans['customer_id'] : null,
+					$leaking_ar_lookup
+				);
 				$gdailytrans['grand_total'] = $this->leakingentry_model->get_collected_amount_for_leaking_payment(
 					$gdailytrans['grand_total'],
 					isset($gdailytrans['pay_amount']) ? $gdailytrans['pay_amount'] : 0,
-					isset($gdailytrans['or_number']) ? $gdailytrans['or_number'] : null
+					isset($gdailytrans['or_number']) ? $gdailytrans['or_number'] : null,
+					$leaking_detail
 				);
 			}
 
