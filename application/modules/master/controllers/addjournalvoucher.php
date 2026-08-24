@@ -46,26 +46,19 @@ class addjournalvoucher extends CI_Controller {
 	 
 		$header['roleResponsible'] = $this->top_model->get_responsibilities();
 		if($this->input->post('add') != ''){
-             //echo'<pre>';print_r($_POST); exit;
 				$result = $this->my_model->add_record();
 				if($result){
-					$this->session->set_flashdata('msg_succ', 'Inserted Successfully...');
+					$this->session->set_flashdata('msg_succ', 'Journal voucher inserted successfully.');
 					redirect($this->listPage_redirect);
 				}else{
-					$data['msg'] = "Not Inserted...";
+					$data['msg'] = "Not inserted. Check amount, date, and that Debit and Credit ledgers are different.";
 				}
 			}
-		//$header['host'] = $this->comm_model->get_single_record();				
 		$data['expenses'] = $this->my_model->get_extype(); 
 		$header['record_info'] = $this->top_model->get_last_login_details(1);
-		//$data['account'] = $this->my_model->accountgroup();           // fetch Account sub Group
-		$data['lastId'] = $this->my_model->fetchTransaction();            // fetch transaction last id
-		$code = sprintf("%04d", $data['lastId']+1); // show no in 4 digit
-		//print_r($code);exit;
-		//$rand     	=  substr(rand(1,1000000),0,4); 
-		$voucher  = 'JV-'.$code;              
-		$data['voucher'] = $voucher ;                                     //print_r($data['exp']);exit;
-		$data['ledger1'] = $this->my_model->fetchLedger(); // print_r(count($data['ledger1']));exit;             // fetch ledgers
+		$data['voucher'] = $this->my_model->next_voucher_no();
+		$data['has_particulars'] = $this->my_model->has_particulars_column();
+		$data['ledger1'] = $this->my_model->fetchLedger();
 		$data['countledger1'] = count($data['ledger1']);
 		$data['customer'] = $this->my_model->fetchCustomer();            // fetch Customer
 		$data['countcustomer'] = count($data['customer']);
@@ -79,35 +72,13 @@ class addjournalvoucher extends CI_Controller {
 		$this->load->view($this->headerPage,$header);
 		$this->load->view($this->addPage,$data);
 	}
-	/** Edit Function **/
+	/** Edit Function — pair edit disabled; delete both lines and re-add **/
 	public function edit($id){
 		$header['roleResponsible'] = $this->top_model->get_responsibilities();
-		$data['record'] = $this->my_model->get_single_record($id);
-		$data['msg'] ='';
-		//echo'<pre>';print_r($data['record']);exit;
-		if($this->input->post('edit') != ''){
-			$result = $this->my_model->update_record($id);
-	
-			if($result){
-				//echo'<pre>';print_r($result);exit;
-				$this->session->set_flashdata('msg_succ', 'Updated Successfully...');
-				redirect($this->listPage_redirect);
-			}else{
-				$data['msg'] = "Not Updated...";
-			}
-		}
-		//$header['host'] = $this->comm_model->get_single_record();				
-		$data['expenses'] = $this->my_model->get_extype();
 		$header['record_info'] = $this->top_model->get_last_login_details(1);
-		//$data['account'] = $this->my_model->accountgroup();
-		$data['ledger1'] = $this->my_model->fetchLedger();               // fetch ledgers
-		$data['customer'] = $this->my_model->fetchCustomer();            // fetch Customer
-		$data['employee'] = $this->my_model->fetchEmployee();            // fetch Employee
-		$data['expenseType'] = $this->my_model->fetchExpenseType();            // fetch Employee
-		$data['ledger'] = array_merge($data['ledger1'],$data['customer'],$data['employee'],$data['expenseType']); //mearge 4 array
+		$data = array();
 		$this->load->view($this->headerPage,$header);
 		$this->load->view($this->editPage,$data);
-
 	}
 	/** View Function **/
 	public function view($id){ 
