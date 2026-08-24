@@ -59,23 +59,27 @@
 						$penalty = 0;
 					}
 
-					$record_reading = $this->my_model->get_metercustomer_add_all_records($id, $mon_id, $year);
-					$result = count($record_reading);
+					$result = !empty($row['payment_id']) ? 1 : 0;
 					$has_last_reading = isset($row['reading']) && trim((string)$row['reading']) !== '';
 
 					if ($result != 0) {
-						$trans_date_raw = $record_reading[0]['trans_date'];
-						$date_paid_raw = !empty($record_reading[0]['create_date_time']) ? $record_reading[0]['create_date_time'] : $trans_date_raw;
-						$dt_paid = new DateTime($date_paid_raw, new DateTimeZone('Asia/Manila'));
-						$trans_date = $dt_paid->format('M j, Y h:i:s A');
-						$or_number_paid = $record_reading[0]['or_number'];
+						$trans_date_raw = $row['trans_date'];
+						$date_paid_raw = !empty($row['paid_create_date_time']) ? $row['paid_create_date_time'] : $trans_date_raw;
+						try {
+							$dt_paid = new DateTime($date_paid_raw, new DateTimeZone('Asia/Manila'));
+							$trans_date = $dt_paid->format('M j, Y h:i:s A');
+						} catch (Exception $e) {
+							$trans_date = $trans_date_raw;
+						}
+						$or_number_paid = $row['paid_or_number'];
 						$due_date_ts = strtotime($due_date);
 						$trans_date_ts = strtotime($trans_date_raw);
-						$compute_penalty = isset($record_reading[0]['compute_penalty']) ? (int)$record_reading[0]['compute_penalty'] : 1;
+						// Same as before: payment row had no compute_penalty → default 1
+						$compute_penalty = 1;
 
 						if ($consumed >= 0 && $special_priviledge == 0 && $compute_penalty == 1) {
 							if ($trans_date_ts > $due_date_ts) {
-								$balance = $record_reading[0]['amount'];
+								$balance = $row['paid_amount'];
 								$maintenance_fee = isset($row['maintenance_fee']) ? (float)$row['maintenance_fee'] : 0;
 								$franchise_fee_amount = isset($row['franchise_fee_amount']) ? (float)$row['franchise_fee_amount'] : 0;
 								$penalty = $balance - $unit_price - $maintenance_fee - $franchise_fee_amount;
@@ -90,11 +94,11 @@
 									}
 								}
 							} else {
-								$balance = $record_reading[0]['amount'];
+								$balance = $row['paid_amount'];
 								$penalty = 0;
 							}
 						} else {
-							$balance = $record_reading[0]['amount'];
+							$balance = $row['paid_amount'];
 							$penalty = 0;
 						}
 					}
@@ -144,11 +148,8 @@
 					<td class="text-right">
 						<?php echo $balance; ?>
 						<input type="hidden" name="prsentamount_<?php echo $i; ?>" id="prsentamount_<?php echo $i; ?>" value="<?php echo $balance; ?>">
-						<?php
-						$count = $this->my_model->get_addcustomer_show_all_records($id, $mon_id, $year);
-						foreach ($count as $cou) {
-						?>
-						<input type="hidden" name="oldbalance_<?php echo $i; ?>" id="oldbalance_<?php echo $i; ?>" value="<?php echo number_format($cou['balance'], 2); ?>">
+						<?php if ($result != 0 && isset($row['paid_balance'])) { ?>
+						<input type="hidden" name="oldbalance_<?php echo $i; ?>" id="oldbalance_<?php echo $i; ?>" value="<?php echo number_format((float) $row['paid_balance'], 2); ?>">
 						<?php } ?>
 					</td>
 					<td>

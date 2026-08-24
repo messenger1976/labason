@@ -28,7 +28,15 @@ class addpaymentcustomer extends CI_Controller {
 		$this->load->model('addbillingperiod_model','billingperiod_model');   //*****    Model Loading     *****//		
 		$this->load->helper('common_helper');
 		$this->load->library('form_validation');
-		$this->load->library('Pdf');
+		// Skip TCPDF on AJAX/list helpers — load only for receipt/print methods
+		$lightweight_methods = array(
+			'get_custmer_all_data', 'get_custmer_name', 'get_or_number', 'check_or_number',
+			'get_leaking_balance', 'chk_leakingentry', 'get_datatable_data', 'getoldmeter',
+			'tchtemailcheck', 'get_calculation', 'get_name',
+		);
+		if (!in_array($this->router->fetch_method(), $lightweight_methods, true)) {
+			$this->load->library('Pdf');
+		}
 		$this->form_validation->set_error_delimiters('<div class="error" style="color:red;">', '</div>');
 		error_reporting(E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
 		error_reporting(0);
