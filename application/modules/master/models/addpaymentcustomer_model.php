@@ -387,27 +387,38 @@ class addpaymentcustomer_model extends CI_Model {
 	}
 	
 	public function get_meter_reading_all_records($id){
-		$sql = "SELECT ac.id AS meter_id, ac.customer_id, ac.reading, ac.month, ac.year, ac.date,ac.amount,am.customer_id, 
-		        am.mobile1, am.mobile2, am.email_id, tm.month_name, am.status, ac.previous_reading,ac.consumed,am.special_priviledge,
+		$id = $this->db->escape_str(trim((string) $id));
+		$paid_create_date_select = $this->db->field_exists('create_date_time', 'tbl_addmetercustomer')
+			? 'pay.create_date_time AS paid_create_date_time'
+			: 'NULL AS paid_create_date_time';
+
+		$sql = "SELECT ac.id AS meter_id, ac.customer_id, ac.reading, ac.month, ac.year, ac.date, ac.amount, am.customer_id,
+		        am.mobile1, am.mobile2, am.email_id, tm.month_name, am.status, ac.previous_reading, ac.consumed, am.special_priviledge,
 				ac.sc_discount,
 				ac.unit_price,
-				ac.bp_id as bp_id,
+				ac.bp_id AS bp_id,
 				ac.penalty,
 				ac.maintenance_fee,
 				ac.franchise_fee_amount,
 				ac.refno,
-				bp.*
+				bp.*,
+				pay.id AS payment_id,
+				pay.amount AS paid_amount,
+				pay.or_number AS paid_or_number,
+				pay.date AS trans_date,
+				{$paid_create_date_select},
+				pay.balance AS paid_balance
 				FROM  `tbl_addcustomer_reading` ac
 				LEFT JOIN  `tbl_addcustomer` am ON ac.customer_id = am.customer_id
 				LEFT JOIN  `tbl_months` tm ON ac.month = tm.month_id
 				LEFT JOIN  `tbl_billing_period` bp ON ac.bp_id = bp.bp_id
+				LEFT JOIN  `tbl_addmetercustomer` pay ON pay.customer_id = am.customer_id AND pay.month = ac.month AND pay.year = ac.year
 				WHERE ac.month = tm.month_id
-                AND  am.customer_id = '$id'
+                AND am.customer_id = '{$id}'
 				ORDER BY meter_id DESC
 				";
 		$query = $this->db->query($sql);
-		$result = $query->result_array();
-		return $result;
+		return $query->result_array();
 	}
 	public function get_second_meter($id){
 		$sql = "SELECT ac.id AS meter_id, ac.customer_id, ac.reading, ac.month, ac.year, ac.date, am.customer_id, 
