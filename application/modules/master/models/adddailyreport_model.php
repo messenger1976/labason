@@ -152,6 +152,24 @@
 		return $query->result_array();
 	}
 	
+	/**
+	 * Group meter payment rows by zone name for Daily Report rendering.
+	 */
+	public function group_metercustomer_records_by_zone($records){
+		$grouped = array();
+		if (!is_array($records)) {
+			return $grouped;
+		}
+		foreach ($records as $row) {
+			$zone_name = isset($row['zone']) ? $row['zone'] : '';
+			if (!isset($grouped[$zone_name])) {
+				$grouped[$zone_name] = array();
+			}
+			$grouped[$zone_name][] = $row;
+		}
+		return $grouped;
+	}
+
 	public function get_zone($zone_id=0) {
         $this->db->select("*");
 		$this->db->from($this->table_zone);
