@@ -230,7 +230,7 @@
 			confirmButtonText: 'Yes, Process it!',
 			cancelButtonText: 'Cancel'
 		}).then(function(result) {
-			if (result.isConfirmed) {
+			if (typeof window.sa4SwalConfirmed === 'function' ? window.sa4SwalConfirmed(result) : (result && (result.isConfirmed || result.value))) {
 				startBatchProcessing(billingperiodforward, currentbillingperiod, zone_id);
 			}
 		});
