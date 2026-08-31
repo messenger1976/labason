@@ -303,7 +303,7 @@ class messagesupport_model extends CI_Model {
 		$this->db->limit(20);
 		$rows = $this->db->get($this->table_queue)->result_array();
 		foreach ($rows as $row) {
-			$resp = $this->_http('POST', $hub.'api/push', json_decode($row['payload'], TRUE), $token);
+			$resp = $this->_http('POST', $hub.'api.php?action=push', json_decode($row['payload'], TRUE), $token);
 			$ok = is_array($resp) && ! empty($resp['ok']);
 			$upd = array(
 				'attempts' => (int) $row['attempts'] + 1,
@@ -333,7 +333,7 @@ class messagesupport_model extends CI_Model {
 		}
 		$state = $this->db->get_where($this->table_state, array('id' => 1))->row_array();
 		$since = ($state && ! empty($state['last_pull_at'])) ? $state['last_pull_at'] : '1970-01-01 00:00:00';
-		$resp = $this->_http('GET', $hub.'api/poll?since='.rawurlencode($since), NULL, $token);
+		$resp = $this->_http('GET', $hub.'api.php?action=poll&since='.rawurlencode($since), NULL, $token);
 		if ( ! is_array($resp) || empty($resp['ok'])) {
 			$err = is_array($resp) && isset($resp['error']) ? $resp['error'] : 'Hub poll failed';
 			$this->_set_state_error($err);
@@ -478,7 +478,10 @@ class messagesupport_model extends CI_Model {
 			}
 			$decoded = json_decode($raw, TRUE);
 			if ( ! is_array($decoded)) {
-				return array('ok' => FALSE, 'error' => 'Hub HTTP '.$code);
+				if (stripos($raw, '<!DOCTYPE') !== FALSE || stripos($raw, '<html') !== FALSE) {
+					return array('ok' => FALSE, 'error' => 'Hub returned HTML instead of JSON (check hub URL and api.php). HTTP '.$code);
+				}
+				return array('ok' => FALSE, 'error' => 'Hub HTTP '.$code.' — invalid JSON response');
 			}
 			return $decoded;
 		}
