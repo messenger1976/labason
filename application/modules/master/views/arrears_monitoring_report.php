@@ -382,7 +382,7 @@ $(document).ready(function(){
 			confirmButtonText: "Yes, update it",
 			cancelButtonText: "Cancel"
 		}).then(function(result){
-			if (!result.isConfirmed) { return; }
+			if (typeof sa4SwalConfirmed === 'function' ? !sa4SwalConfirmed(result) : !(result && (result.isConfirmed || result.value))) { return; }
 			doUpdateArrears($btn, $row, customerId, agingAmount);
 		});
 	});
