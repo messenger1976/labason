@@ -4,6 +4,7 @@
 	$selected = isset($member_id) ? $member_id : '';
 	$month = isset($month) ? $month : '';
 	$year = isset($year) ? $year : date('Y');
+	$can_list_meter_reading = isset($can_list_meter_reading) ? (bool) $can_list_meter_reading : true;
 
 	$sa4_page_icon = 'fal fa-tachometer';
 	$sa4_page_title = 'Manage';
@@ -25,7 +26,9 @@
 <main id="js-page-content" role="main" class="page-content">
 	<ol class="breadcrumb page-breadcrumb">
 		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>">Home</a></li>
+		<?php if ($can_list_meter_reading) { ?>
 		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>addmetercustomerreading">Meter Reading</a></li>
+		<?php } ?>
 		<li class="breadcrumb-item active">Add</li>
 		<li class="position-absolute pos-top pos-right d-none d-sm-block"><span class="js-get-date"></span></li>
 	</ol>
@@ -48,9 +51,11 @@
 				<div class="panel-hdr">
 					<h2>Meter Customer Reading <span class="fw-300"><i>Add</i></span></h2>
 					<div class="panel-toolbar">
+						<?php if ($can_list_meter_reading) { ?>
 						<a href="<?php echo ADMIN_URL; ?>addmetercustomerreading" class="btn btn-secondary btn-sm waves-effect waves-themed mr-2">
 							<i class="fal fa-arrow-left mr-1"></i> Back to List
 						</a>
+						<?php } ?>
 						<button class="btn btn-panel" data-action="panel-collapse" data-toggle="tooltip" data-offset="0,10" data-original-title="Collapse"></button>
 						<button class="btn btn-panel" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
 					</div>
@@ -80,9 +85,15 @@
 									<button type="button" class="btn btn-primary btn-sm waves-effect waves-themed mb-1" id="btn_search_box" name="btn_search_box">
 										<i class="fal fa-search mr-1"></i> Search
 									</button>
+									<?php if ($can_list_meter_reading) { ?>
 									<a href="<?php echo ADMIN_URL; ?>addmetercustomerreading" id="btn_search_cancel" class="btn btn-secondary btn-sm waves-effect waves-themed mb-1" name="btn_search_cancel">
 										<i class="fal fa-times mr-1"></i> Cancel
 									</a>
+									<?php } else { ?>
+									<a href="<?php echo ADMIN_URL; ?>addmetercustomerreading/add" id="btn_search_cancel" class="btn btn-secondary btn-sm waves-effect waves-themed mb-1" name="btn_search_cancel">
+										<i class="fal fa-redo mr-1"></i> Clear
+									</a>
+									<?php } ?>
 								</div>
 							</div>
 
@@ -194,9 +205,11 @@
 							</div>
 
 							<div id="total_setting_2" class="mt-3" style="display:none;">
+								<?php if ($can_list_meter_reading) { ?>
 								<a href="<?php echo ADMIN_URL; ?>addmetercustomerreading" class="btn btn-secondary waves-effect waves-themed">
 									<i class="fal fa-times mr-1"></i> Cancel
 								</a>
+								<?php } ?>
 								<button type="submit" class="btn btn-primary waves-effect waves-themed" name="add" id="add_button" value="Add">
 									<i class="fal fa-save mr-1"></i> Add
 								</button>
