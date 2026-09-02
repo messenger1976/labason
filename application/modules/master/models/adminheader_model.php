@@ -33,6 +33,7 @@ class adminheader_model extends CI_Model {
 				'statementofaccountlist' => 'Statement of Account',
 				'delete_customer' => 'Delete Customer',
 				'addmetercustomerreading' => 'Add Meter Customers Reading',
+				'meter_reading_add' => 'Add Meter Reading (Add Only)',
 				'addpaymentcustomer' => 'Meter Customers Bills',
 				'leakingentry' => 'Leaking Entry',
 				'feesplaning' => 'Monthly Fees Plans',

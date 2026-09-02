@@ -36,6 +36,9 @@ class addmetercustomerreading extends CI_Controller {
     }
 	
 	public function index(){ 		 //*****  View Loading  *****//
+		if (!$this->_can_list_meter_reading()) {
+			$this->_deny_meter_reading_access();
+		}
 		$header['title'] = 'List Meter Reading';
 		$header['roleResponsible'] = $this->top_model->get_responsibilities();
 		if(!isset($_SESSION['current_billingperiod'])){
@@ -54,6 +57,11 @@ class addmetercustomerreading extends CI_Controller {
 	
 	/** AJAX endpoint for DataTables server-side processing **/
 	public function get_datatable_data() {
+		if (!$this->_can_list_meter_reading()) {
+			header('Content-Type: application/json');
+			echo json_encode(array('draw' => 0, 'recordsTotal' => 0, 'recordsFiltered' => 0, 'data' => array(), 'error' => 'Forbidden'));
+			return;
+		}
 		// Set JSON header first
 		header('Content-Type: application/json');
 		
@@ -216,6 +224,9 @@ class addmetercustomerreading extends CI_Controller {
 	
 	/** Add Function **/
 	public function add(){ 
+		if (!$this->_can_add_meter_reading()) {
+			$this->_deny_meter_reading_access();
+		}
 		$data['msg'] ='';
 		$header['title'] = 'Add Meter Reading';
 		$header['roleResponsible'] = $this->top_model->get_responsibilities();
@@ -223,6 +234,7 @@ class addmetercustomerreading extends CI_Controller {
 
 		$data['addmonth'] = $this->my_model->get_months();
 		$data['year'] = date('Y');
+		$data['can_list_meter_reading'] = $this->_can_list_meter_reading();
 		
 		if($this->input->post('add') != ''){
                 $result = $this->my_model->add_record();
@@ -231,7 +243,7 @@ class addmetercustomerreading extends CI_Controller {
 					if($result){
 					$this->session->set_flashdata('msg_succ', 'Inserted Successfully...');
 					$this->session->set_flashdata('msg', '<div class="alert alert-success text-center">Inserted Successfully...!</div>');
-					redirect($this->listPage_redirect);
+					redirect($this->_can_list_meter_reading() ? $this->listPage_redirect : $this->addPage_redirect);
 					}
 					
 				}elseif($result == 0){
@@ -250,6 +262,10 @@ class addmetercustomerreading extends CI_Controller {
 		$this->load->view($this->addPage,$data);
 	}
 	public function get_custmer_all_data($id){
+		if (!$this->_can_add_meter_reading()) {
+			show_error('Forbidden', 403);
+			return;
+		}
 		$this->load->model('addmetercustomerreading_model','my_model'); 
 		$id = $this->input->post('id');
 		$data['record'] = $this->my_model->get_customer_info($id);
@@ -262,6 +278,10 @@ class addmetercustomerreading extends CI_Controller {
 	}
 
 	public function get_cubic_meter_price(){
+		if (!$this->_can_use_meter_reading_pricing()) {
+			show_error('Forbidden', 403);
+			return;
+		}
 		if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 			$cubic_meter_reading = $_POST['cubic_meter_reading'];
 			$customer_id = $_POST['customer_id'];
@@ -272,6 +292,10 @@ class addmetercustomerreading extends CI_Controller {
 		}
 	}
 	public function save_edit($id=''){
+		if (!$this->_can_correct_meter_reading()) {
+			show_error('Forbidden', 403);
+			return;
+		}
 		
 
 		//$data['addmonth'] = $this->my_model->get_months();
@@ -289,6 +313,10 @@ class addmetercustomerreading extends CI_Controller {
 	 * Expects POST data from the Add Billing Period modal.
 	 */
 	public function save_add(){
+		if (!$this->_can_correct_meter_reading()) {
+			echo 'forbidden';
+			return;
+		}
 		// Only accept POST
 		if($_SERVER['REQUEST_METHOD'] !== 'POST'){
 			echo 'invalid_request';
@@ -416,6 +444,9 @@ class addmetercustomerreading extends CI_Controller {
 		return;
 	}
 	public function edit($id=''){
+		if (!$this->_can_correct_meter_reading()) {
+			$this->_deny_meter_reading_access();
+		}
 		$data['msg'] ='';
 		$header['roleResponsible'] = $this->top_model->get_responsibilities();
 		
@@ -457,6 +488,9 @@ class addmetercustomerreading extends CI_Controller {
 
 	}
 	public function search_edit($id=''){
+		if (!$this->_can_correct_meter_reading()) {
+			$this->_deny_meter_reading_access();
+		}
 		$header['roleResponsible'] = $this->top_model->get_responsibilities();
 		
 		
@@ -490,6 +524,9 @@ class addmetercustomerreading extends CI_Controller {
 	
 	/** Delete Function **/
 	public function delete($id){ 
+		if (!$this->_can_list_meter_reading()) {
+			$this->_deny_meter_reading_access();
+		}
 		$data['msg'] ='';
 		if($id){
 			$result = $this->my_model->delete_record($id);
@@ -504,6 +541,9 @@ class addmetercustomerreading extends CI_Controller {
 	}
 	/** Multiple Delete Function **/
 	public function multi_delete(){
+		if (!$this->_can_list_meter_reading()) {
+			$this->_deny_meter_reading_access();
+		}
 		$data['msg'] ='';
 		if($this->input->post('delete_ids') != ''){
 			$delete_ids = $this->input->post('delete_ids');
@@ -525,6 +565,10 @@ class addmetercustomerreading extends CI_Controller {
 
 	public function getaddcustomersmetersearch()
 	{		//*****  Add Search records  *****//
+		if (!$this->_can_correct_meter_reading()) {
+			show_error('Forbidden', 403);
+			return;
+		}
 		$data['msg'] ='';
 		//echo '<pre>'; print_r($this->input->post('zone'));exit;
 		/*if($this->input->post('customer_id') =='' && $this->input->post('zone') =='' && $this->input->post('fromdate') =='' && $this->input->post('todate') =='')
@@ -542,5 +586,42 @@ class addmetercustomerreading extends CI_Controller {
 		//}		
 	}
 	
+	private function _is_admin_user() {
+		return $this->session->userdata('usertype') === 'admin';
+	}
+
+	private function _meter_reading_roles() {
+		$roles = $this->top_model->get_responsibilities();
+		return array(
+			'roles' => $roles,
+			'full' => $this->_is_admin_user() || (!empty($roles['addmetercustomerreading']) && (string) $roles['addmetercustomerreading'] === '1'),
+			'add_only' => !empty($roles['meter_reading_add']) && (string) $roles['meter_reading_add'] === '1',
+			'correction' => $this->_is_admin_user() || (!empty($roles['meter_reading_correction']) && (string) $roles['meter_reading_correction'] === '1'),
+		);
+	}
+
+	private function _can_list_meter_reading() {
+		return $this->_meter_reading_roles()['full'];
+	}
+
+	private function _can_add_meter_reading() {
+		$flags = $this->_meter_reading_roles();
+		return $flags['full'] || $flags['add_only'];
+	}
+
+	private function _can_correct_meter_reading() {
+		return $this->_meter_reading_roles()['correction'];
+	}
+
+	private function _can_use_meter_reading_pricing() {
+		$flags = $this->_meter_reading_roles();
+		return $flags['full'] || $flags['add_only'] || $flags['correction'];
+	}
+
+	private function _deny_meter_reading_access() {
+		redirect('master/page/', 'refresh');
+		exit;
+	}
+
 }
 ?>

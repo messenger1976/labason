@@ -105,6 +105,7 @@ $avatar_url = base_url($avatar_relative) . '?v=' . $avatar_mtime;
 						<?php if($this->uri->segment(2)=='feesplaning'){echo 'active open';}?>
 						<?php if($this->uri->segment(2)=='paymentmonthlycustomer'){echo 'active open';}?>
 						<?php if($this->uri->segment(2)=='addpaymentcustomer'){echo 'active open';}?>
+						<?php if($this->uri->segment(2)=='addmetercustomerreading'){echo 'active open';}?>
 						<?php if($this->uri->segment(2)=='leakingentry'){echo 'active open';}?>">
 				<a href="#" title="Finance">
 					<i class="fal fa-money-bill"></i>
@@ -112,9 +113,21 @@ $avatar_url = base_url($avatar_relative) . '?v=' . $avatar_mtime;
 				</a>
 				<ul>
 					<?php if((array_key_exists('addmetercustomerreading',$roleResponsible) && ($roleResponsible['addmetercustomerreading'] == 1) ) || ($this->session->userdata('usertype') == 'admin')){ ?>
-					<li class="<?php if($this->uri->segment(2)=='addmetercustomerreading' && $this->uri->segment(3)!='edit'){echo 'active';}?>">
+					<li class="<?php if($this->uri->segment(2)=='addmetercustomerreading' && $this->uri->segment(3)!='edit' && $this->uri->segment(3)!='add'){echo 'active';}?>">
 						<a href="<?php echo ADMIN_URL;?>addmetercustomerreading" title="Add Meter Customers Reading">
 							<span class="nav-link-text">Add Meter Customers Reading</span>
+						</a>
+					</li>
+					<?php } ?>
+					<?php
+					$can_mcr_list = ($this->session->userdata('usertype') == 'admin')
+						|| (array_key_exists('addmetercustomerreading', $roleResponsible) && $roleResponsible['addmetercustomerreading'] == 1);
+					$can_mcr_add_only = array_key_exists('meter_reading_add', $roleResponsible) && $roleResponsible['meter_reading_add'] == 1;
+					?>
+					<?php if ($can_mcr_add_only && !$can_mcr_list) { ?>
+					<li class="<?php if($this->uri->segment(2)=='addmetercustomerreading' && $this->uri->segment(3)=='add'){echo 'active';}?>">
+						<a href="<?php echo ADMIN_URL;?>addmetercustomerreading/add" title="Add Meter Reading">
+							<span class="nav-link-text">Add Meter Reading</span>
 						</a>
 					</li>
 					<?php } ?>

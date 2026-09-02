@@ -133,6 +133,7 @@ class responsibilities_model extends CI_Model {
 				'statementofaccountlist' => '0',
 				'delete_customer' => '0',
 				'addmetercustomerreading' => '0',
+				'meter_reading_add' => '0',
 				'addpaymentcustomer' => '0',
 				'leakingentry' => '0',
 				'feesplaning' => '0',
