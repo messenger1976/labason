@@ -179,6 +179,16 @@ class addpaymentcustomer extends CI_Controller {
 				$leaking = isset($row['leaking_amount']) ? (float)$row['leaking_amount'] : 0;
 				$vat = isset($row['vat_amount']) ? (float)$row['vat_amount'] : 0;
 				$grand = isset($row['grand_total']) ? (float)$row['grand_total'] : 0;
+				$net_amount = $grand;
+				// Keep Net Amount aligned with Daily Report/Receipt:
+				// for leaking-discount entries, show actual collected on this OR.
+				if ($leaking > 0) {
+					$net_amount = $this->leakingentry_model->get_collected_amount_for_leaking_payment(
+						$grand,
+						isset($row['pay_amount']) ? $row['pay_amount'] : 0,
+						isset($row['or_number']) ? $row['or_number'] : null
+					);
+				}
 				$paid_date = (!empty($row['date']) && $row['date'] != '0000-00-00') ? date('m/d/Y', strtotime($row['date'])) : '';
 
 				$action_html = '<input type="hidden" name="customerid_'.$i.'" id="customerid_'.$i.'" value="'.htmlspecialchars($customer_id, ENT_QUOTES, 'UTF-8').'">'
@@ -199,7 +209,7 @@ class addpaymentcustomer extends CI_Controller {
 					'<span class="text-right d-block">'.number_format($total, 2).'</span>',
 					'<span class="text-right d-block text-danger">'.number_format($leaking, 2).'</span>',
 					'<span class="text-right d-block text-warning">'.number_format($vat, 2).'</span>',
-					'<span class="text-right d-block fw-700 text-success">'.number_format($grand, 2).'</span>',
+					'<span class="text-right d-block fw-700 text-success">'.number_format($net_amount, 2).'</span>',
 					$paid_date !== '' ? '<span class="badge badge-info badge-pill">'.$paid_date.'</span>' : '',
 					$action_html
 				);

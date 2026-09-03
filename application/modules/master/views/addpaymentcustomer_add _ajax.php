@@ -60,6 +60,7 @@
 					}
 
 					$result = !empty($row['payment_id']) ? 1 : 0;
+					$display_discount = (float)(isset($row['sc_discount']) ? $row['sc_discount'] : 0);
 					$has_last_reading = isset($row['reading']) && trim((string)$row['reading']) !== '';
 
 					if ($result != 0) {
@@ -79,7 +80,13 @@
 
 						if ($consumed >= 0 && $special_priviledge == 0 && $compute_penalty == 1) {
 							if ($trans_date_ts > $due_date_ts) {
-								$balance = $row['paid_amount'];
+								$paid_grand_total = isset($row['paid_grand_total']) ? (float)$row['paid_grand_total'] : 0;
+								$paid_tendered = isset($row['paid_pay_amount']) ? (float)$row['paid_pay_amount'] : 0;
+								$balance = $this->leakingentry_model->get_collected_amount_for_leaking_payment(
+									$paid_grand_total,
+									$paid_tendered,
+									isset($row['paid_or_number']) ? $row['paid_or_number'] : null
+								);
 								$maintenance_fee = isset($row['maintenance_fee']) ? (float)$row['maintenance_fee'] : 0;
 								$franchise_fee_amount = isset($row['franchise_fee_amount']) ? (float)$row['franchise_fee_amount'] : 0;
 								$penalty = $balance - $unit_price - $maintenance_fee - $franchise_fee_amount;
@@ -94,12 +101,28 @@
 									}
 								}
 							} else {
-								$balance = $row['paid_amount'];
+								$paid_grand_total = isset($row['paid_grand_total']) ? (float)$row['paid_grand_total'] : 0;
+								$paid_tendered = isset($row['paid_pay_amount']) ? (float)$row['paid_pay_amount'] : 0;
+								$balance = $this->leakingentry_model->get_collected_amount_for_leaking_payment(
+									$paid_grand_total,
+									$paid_tendered,
+									isset($row['paid_or_number']) ? $row['paid_or_number'] : null
+								);
 								$penalty = 0;
 							}
 						} else {
-							$balance = $row['paid_amount'];
+							$paid_grand_total = isset($row['paid_grand_total']) ? (float)$row['paid_grand_total'] : 0;
+							$paid_tendered = isset($row['paid_pay_amount']) ? (float)$row['paid_pay_amount'] : 0;
+							$balance = $this->leakingentry_model->get_collected_amount_for_leaking_payment(
+								$paid_grand_total,
+								$paid_tendered,
+								isset($row['paid_or_number']) ? $row['paid_or_number'] : null
+							);
 							$penalty = 0;
+						}
+
+						if (isset($row['paid_leaking_amount'])) {
+							$display_discount += (float)$row['paid_leaking_amount'];
 						}
 					}
 			?>
@@ -139,14 +162,14 @@
 						<?php echo number_format($display_bill_amount, 2); ?>
 						<input type="hidden" name="unit_price_<?php echo $i; ?>" id="unit_price_<?php echo $i; ?>" value="<?php echo $unit_price; ?>">
 					</td>
-					<td class="text-right"><?php echo htmlspecialchars(stripslashes($row['sc_discount']), ENT_QUOTES, 'UTF-8'); ?></td>
+					<td class="text-right"><?php echo number_format($display_discount, 2); ?></td>
 					<td class="text-right"><?php echo number_format($penalty, 2); ?></td>
 					<td class="text-right"><?php echo number_format($row['maintenance_fee'], 2); ?></td>
 					<td class="text-right"><?php echo isset($row['franchise_fee_amount']) ? number_format($row['franchise_fee_amount'], 2) : '0.00'; ?></td>
 					<td class="text-center"><?php echo htmlspecialchars(stripslashes($or_number_paid), ENT_QUOTES, 'UTF-8'); ?></td>
 					<td class="text-center"><?php echo htmlspecialchars(stripslashes($trans_date), ENT_QUOTES, 'UTF-8'); ?></td>
 					<td class="text-right">
-						<?php echo $balance; ?>
+						<?php echo number_format((float)$balance, 2); ?>
 						<input type="hidden" name="prsentamount_<?php echo $i; ?>" id="prsentamount_<?php echo $i; ?>" value="<?php echo $balance; ?>">
 						<?php if ($result != 0 && isset($row['paid_balance'])) { ?>
 						<input type="hidden" name="oldbalance_<?php echo $i; ?>" id="oldbalance_<?php echo $i; ?>" value="<?php echo number_format((float) $row['paid_balance'], 2); ?>">
