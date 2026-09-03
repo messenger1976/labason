@@ -607,6 +607,24 @@ class addpaymentcustomer_model extends CI_Model {
 		}		
 		
 		$leaking_balance_pay = $this->input->post('paid_total_amount')=='' ? 0 : $this->input->post('paid_total_amount');
+		$current_refno = trim((string)$this->input->post('refno'));
+		$posted_leaking_percent = (float)$this->input->post('leaking_percent');
+		$posted_leaking_amount = (float)$this->input->post('leaking_amount');
+		$posted_leaking_balance = (float)$this->input->post('leaking_balance');
+		$has_leaking_discount_context = ($posted_leaking_percent > 0 || $posted_leaking_amount > 0);
+		$has_leaking_balance_context = ($posted_leaking_balance > 0 || (float)$leaking_balance_prev_bal > 0);
+		$leaking_refno_matches = false;
+		$valid_leaking_link = false;
+		if ($leaking_id) {
+			$this->db->select('leaking_refno, leaking_customer_id');
+			$this->db->from($this->table_leaking_ledger);
+			$this->db->where('leaking_id', (int)$leaking_id);
+			$linked_leaking = $this->db->get()->row_array();
+			if (!empty($linked_leaking) && isset($linked_leaking['leaking_customer_id']) && $linked_leaking['leaking_customer_id'] == trim($id)) {
+				$leaking_refno_matches = ((string)$linked_leaking['leaking_refno'] === $current_refno);
+				$valid_leaking_link = $has_leaking_balance_context || ($has_leaking_discount_context && $leaking_refno_matches);
+			}
+		}
 		$consumedunits=$this->input->post('current_reading')-$this->input->post('oldmeter');
 		//$meterdollar = $this->get_dollar_value();
 		//$amount=$meterdollar['per_unit']*$consumedunits;
@@ -735,7 +753,7 @@ class addpaymentcustomer_model extends CI_Model {
 		);
 		$result2 = $this->db->insert($this->table_transactions, $set_data2); //print_r($result2); //exit;
 		
-		if($leaking_id && ($leaking_balance_prev_bal==='' || $leaking_balance_prev_bal==0)){
+		if($valid_leaking_link && $has_leaking_discount_context && ((float)$leaking_balance_prev_bal <= 0)){
 			if($this->input->post('pay_amount')>=$this->input->post('grand_total')){
 				$leaking_balance = 0;
 				$leaking_status = 5;
@@ -766,7 +784,7 @@ class addpaymentcustomer_model extends CI_Model {
 			$result2 = $this->db->insert($this->table_leaking_ledger_details, $set_data6); //print_r($result2); //exit;
 		}
 
-		if($leaking_balance_pay>0 && ($this->input->post('leaking_percent')==='' || $this->input->post('leaking_percent')==0)){
+		if($valid_leaking_link && $has_leaking_balance_context && ($this->input->post('leaking_percent')==='' || $this->input->post('leaking_percent')==0)){
 			if($leaking_balance_prev_bal>0){
 			
 				if($leaking_current_balance_total>0){
@@ -788,7 +806,6 @@ class addpaymentcustomer_model extends CI_Model {
 					$pay_amount = $this->input->post('pay_amount');
 				}
 				$set_data5 = array(
-					'leaking_total_amount' => $this->input->post('grand_total'),
 					'leaking_balance' => $leaking_balance,
 					'leaking_status' => $leaking_status,
 					'leaking_updated_datetime' => $this->manila_now(),

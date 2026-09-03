@@ -18,10 +18,16 @@
 	$total_customer = $this->customer_model->total_customer();
 	extract($total_customer);
 
-	$bill_amount = isset($record_ledger['leaking_total_amount']) ? (float)$record_ledger['leaking_total_amount'] : 0;
+	$gross_bill_amount = isset($record_ledger['leaking_bill_amount']) ? (float)$record_ledger['leaking_bill_amount'] : 0;
+	$discount_amount = isset($record_ledger['leaking_discount_amount']) ? (float)$record_ledger['leaking_discount_amount'] : 0;
+	$header_leaking_amount = isset($record_ledger['leaking_total_amount']) ? (float)$record_ledger['leaking_total_amount'] : 0;
+	$computed_leaking_amount = $gross_bill_amount - $discount_amount;
+	$bill_amount = $computed_leaking_amount > 0 ? $computed_leaking_amount : $header_leaking_amount;
 	$total_paid = isset($total_payment) ? (float)$total_payment : 0;
-	$balance_amount = $bill_amount - $total_paid;
-	$prev_balance_val = isset($record_ledger['leaking_balance']) ? $record_ledger['leaking_balance'] : $balance_amount;
+	$raw_balance_amount = $bill_amount - $total_paid;
+	$balance_amount = $raw_balance_amount > 0 ? $raw_balance_amount : 0;
+	$overpayment_amount = $raw_balance_amount < 0 ? abs($raw_balance_amount) : 0;
+	$prev_balance_val = $balance_amount;
 ?>
 <style>
 	#myModal .modal-body { max-height: 70vh; overflow-y: auto; }
@@ -101,6 +107,9 @@
 								<div><strong>Bill Amount:</strong> <u><?php echo number_format($bill_amount, 2); ?></u></div>
 								<div><strong>Total Bill Payment:</strong> <u><?php echo number_format($total_paid, 2); ?></u></div>
 								<div><strong>Balance:</strong> <u><?php echo number_format($balance_amount, 2); ?></u></div>
+								<?php if ($overpayment_amount > 0) { ?>
+								<div><strong>Overpayment:</strong> <u><?php echo number_format($overpayment_amount, 2); ?></u></div>
+								<?php } ?>
 							</div>
 
 							<table id="dt_basic" class="table table-striped table-bordered table-hover" width="100%">

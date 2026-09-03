@@ -135,8 +135,16 @@
 														if(count($record) > 0){
                                                         $i=1;
                                                         foreach($record as $key => $row){ 
-															$total_payment = $this->my_model->get_total_payment($row['leaking_id'])['totalpayment'];
-															$leaking_balance = $row['leaking_total_amount'] - $total_payment;
+															$total_payment = (float)$this->my_model->get_total_payment($row['leaking_id'])['totalpayment'];
+															$gross_bill_amount = isset($row['leaking_bill_amount']) ? (float)$row['leaking_bill_amount'] : 0;
+															$discount_amount = isset($row['leaking_discount_amount']) ? (float)$row['leaking_discount_amount'] : 0;
+															$header_total_amount = isset($row['leaking_total_amount']) ? (float)$row['leaking_total_amount'] : 0;
+															$computed_total_amount = $gross_bill_amount - $discount_amount;
+															$display_total_amount = $computed_total_amount > 0 ? $computed_total_amount : $header_total_amount;
+															$leaking_balance = $display_total_amount - $total_payment;
+															if ($leaking_balance < 0) {
+																$leaking_balance = 0;
+															}
 													?>   
 													<tr>
 														<td><input type="checkbox" class="ace" name="delete_ids[]" id="delete_ids[]" value="<?php echo $row['leaking_id'];?>" /></td>
@@ -148,7 +156,7 @@
 														<td align="right"><?php echo stripslashes(number_format($row['leaking_bill_amount'],2)); ?></td>
 														<td align="right"><?php echo stripslashes($row['leaking_discount_percent']); ?></td>
 														<td align="right"><?php echo stripslashes(number_format($row['leaking_discount_amount'],2)); ?></td>
-														<td align="right"><?php echo stripslashes(number_format($row['leaking_total_amount'],2)); ?></td>
+														<td align="right"><?php echo stripslashes(number_format($display_total_amount,2)); ?></td>
 														<td align="right"><?php echo stripslashes(number_format($leaking_balance,2)); ?></td>
 														<td>
 															<?php
@@ -194,7 +202,7 @@
 																	data-bill_duedate="<?php echo date('d-m-Y', strtotime($row['leaking_bill_duedate'])); ?>"
 																	data-leaking_discount_percent="<?php echo $row['leaking_discount_percent']; ?>"
 																	data-leaking_discount_amount="<?php echo $row['leaking_discount_amount']; ?>"
-																	data-leaking_bill_amount="<?php echo $row['leaking_total_amount']; ?>"
+																	data-leaking_bill_amount="<?php echo $display_total_amount; ?>"
 																	data-leaking_date="<?php echo date('d-m-Y', strtotime($row['leaking_date'])); ?>">
 																	<i class="fal fa-edit"></i>
 																</a>
