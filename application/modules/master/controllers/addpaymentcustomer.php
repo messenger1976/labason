@@ -26,6 +26,7 @@ class addpaymentcustomer extends CI_Controller {
   		$this->load->model('addpaymentcustomer_model','my_model');   //*****    Model Loading     *****//	
 		$this->load->model('common_model','comm_model');
 		$this->load->model('addbillingperiod_model','billingperiod_model');   //*****    Model Loading     *****//		
+		$this->load->model('leakingentry_model');
 		$this->load->helper('common_helper');
 		$this->load->library('form_validation');
 		// Skip TCPDF on AJAX/list helpers — load only for receipt/print methods
@@ -45,6 +46,34 @@ class addpaymentcustomer extends CI_Controller {
 		$this->load->model('adminheader_model','top_model');
 		$this->load->model('addcustomer_model','customer_model');
     }
+
+	private function load_receipt_payment_data($customer, $month, $year, $invoice_id = null) {
+		$customer = trim((string) $customer);
+		$month = trim((string) $month);
+		$year = trim((string) $year);
+		$invoice_id = ($invoice_id !== null && $invoice_id !== '') ? trim((string) $invoice_id) : null;
+
+		if ($invoice_id !== null) {
+			$receiptdata = $this->my_model->getReceipt_Data($customer, $month, $year, $invoice_id);
+		} else {
+			$receiptdata = $this->my_model->getReceiptData($customer, $month, $year);
+		}
+
+		if (!is_array($receiptdata)) {
+			$receiptdata = array();
+		}
+
+		$grand_total = isset($receiptdata['grand_total']) ? (float) $receiptdata['grand_total'] : 0;
+		$pay_amount = isset($receiptdata['pay_amount']) ? (float) $receiptdata['pay_amount'] : 0;
+		$or_number = isset($receiptdata['or_number']) ? $receiptdata['or_number'] : null;
+		$receiptdata['receipt_collected_amount'] = $this->leakingentry_model->get_collected_amount_for_leaking_payment(
+			$grand_total,
+			$pay_amount,
+			$or_number
+		);
+
+		return $receiptdata;
+	}
 	public function index(){ 		 //*****  View Loading  *****//
 		$header['roleResponsible'] = $this->top_model->get_responsibilities();
 
@@ -945,7 +974,7 @@ EOD;
 public function monthly_receipt($customer,$month,$year,$invoice_id) {
 		
 	//print_r($customer);	print_r($month);	print_r($year);	
-    $receiptdata = $this->my_model->getReceipt_Data(trim($customer), $month, $year);
+    $receiptdata = $this->load_receipt_payment_data($customer, $month, $year, $invoice_id);
 	
 
 	$getaddress = $this->my_model->get_address();
@@ -973,7 +1002,8 @@ public function monthly_receipt($customer,$month,$year,$invoice_id) {
 		$panalty_msg = '<span style="font-size:9px;line-height:8px;"><br/>Penalty = 10% = '. number_format($reading_amount,2).' + '.number_format($penalty,2).'</span>';
 	}
 
-	$amountinwords = convertNumberToWordsPH($grand_total);	
+	$receipt_collected_amount = isset($receipt_collected_amount) ? (float) $receipt_collected_amount : 0;
+	$amountinwords = convertNumberToWordsPH($receipt_collected_amount);	
 	//============================================================+
     // create new PDF document
     $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, 'Legal', true, 'UTF-8', false);
@@ -1033,7 +1063,8 @@ public function monthly_receipt($customer,$month,$year,$invoice_id) {
     /// create some HTML content
 	$base_url = site_url();
 	$amount = number_format($amount,2);
-	$grand_total = number_format($grand_total,2);
+	$grand_total = number_format($receipt_collected_amount,2);
+	$total = number_format($receipt_collected_amount,2);
 
 	$detailspayment = detailsbillingpayment($invoice_id);
 	$html = <<<EOD
@@ -1206,7 +1237,7 @@ EOD;
 public function monthly_receipt_ver1($customer,$month,$year,$invoice_id) {
 		
 	//print_r($customer);	print_r($month);	print_r($year);	
-    $receiptdata = $this->my_model->getReceipt_Data(trim($customer), $month, $year);
+    $receiptdata = $this->load_receipt_payment_data($customer, $month, $year, $invoice_id);
 	
 
 	$getaddress = $this->my_model->get_address();
@@ -1239,13 +1270,15 @@ public function monthly_receipt_ver1($customer,$month,$year,$invoice_id) {
 	}
 	$panalty_msg .='</span>';
 
-	$amountinwords = convertNumberToWordsPH($grand_total);	
+	$receipt_collected_amount = isset($receipt_collected_amount) ? (float) $receipt_collected_amount : 0;
+	$amountinwords = convertNumberToWordsPH($receipt_collected_amount);	
 	
 
     /// create some HTML content
 	$base_url = site_url();
 	$amount = number_format($amount,2);
-	$grand_total = number_format($grand_total,2);
+	$grand_total = number_format($receipt_collected_amount,2);
+	$total = number_format($receipt_collected_amount,2);
 
 	$detailspayment = detailsbillingpayment_ver1($invoice_id);
 	$html = <<<EOD
@@ -1826,7 +1859,7 @@ EOD;
 public function monthly_receipt_ver3($customer,$month,$year,$invoice_id) {
 		
 	//print_r($customer);	print_r($month);	print_r($year);	
-    $receiptdata = $this->my_model->getReceipt_Data(trim($customer), $month, $year);
+    $receiptdata = $this->load_receipt_payment_data($customer, $month, $year, $invoice_id);
 	
 
 	$getaddress = $this->my_model->get_address();
@@ -1859,13 +1892,15 @@ public function monthly_receipt_ver3($customer,$month,$year,$invoice_id) {
 	}
 	$panalty_msg .='</span>';
 
-	$amountinwords = convertNumberToWordsPH($grand_total);	
+	$receipt_collected_amount = isset($receipt_collected_amount) ? (float) $receipt_collected_amount : 0;
+	$amountinwords = convertNumberToWordsPH($receipt_collected_amount);	
 	
 
     /// create some HTML content
 	$base_url = site_url();
 	$amount = number_format($amount,2);
-	$grand_total = number_format($grand_total,2);
+	$grand_total = number_format($receipt_collected_amount,2);
+	$total = number_format($receipt_collected_amount,2);
 
 	$detailspayment = detailsbillingpayment_ver1($invoice_id);
 	$html = <<<EOD
@@ -2465,7 +2500,7 @@ EOD;
 public function monthly_receipt_ver2($customer,$month,$year,$invoice_id) {
 		
 	//print_r($customer);	print_r($month);	print_r($year);	
-    $receiptdata = $this->my_model->getReceipt_Data(trim($customer), $month, $year);
+    $receiptdata = $this->load_receipt_payment_data($customer, $month, $year, $invoice_id);
 	
 
 	$getaddress = $this->my_model->get_address();
@@ -2498,13 +2533,15 @@ public function monthly_receipt_ver2($customer,$month,$year,$invoice_id) {
 	}
 	$panalty_msg .='</span>';
 
-	$amountinwords = convertNumberToWordsPH($grand_total);	
+	$receipt_collected_amount = isset($receipt_collected_amount) ? (float) $receipt_collected_amount : 0;
+	$amountinwords = convertNumberToWordsPH($receipt_collected_amount);	
 	
 
     /// create some HTML content
 	$base_url = site_url();
 	$amount = number_format($amount,2);
-	$grand_total = number_format($grand_total,2);
+	$grand_total = number_format($receipt_collected_amount,2);
+	$total = number_format($receipt_collected_amount,2);
 
 	$detailspayment = detailsbillingpayment_ver2($invoice_id);
 	$html = <<<EOD

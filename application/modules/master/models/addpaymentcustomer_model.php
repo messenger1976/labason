@@ -1055,7 +1055,7 @@ class addpaymentcustomer_model extends CI_Model {
 		return $result;
     }
     
-	function getReceiptData($customer, $month, $year){
+	function getReceiptData($customer, $month, $year, $invoice_id = null){
 		
 		$this->db->select('tbl_months.month_id as monthid, 
 		(SELECT unit_price FROM tbl_addcustomer_reading WHERE tbl_addcustomer_reading.customer_id="'.$customer.'" and tbl_addcustomer_reading.month="'.$month.'" and tbl_addcustomer_reading.year="'.$year.'") as reading_amount,
@@ -1066,10 +1066,14 @@ class addpaymentcustomer_model extends CI_Model {
 		$this->db->where('customer_id',$customer);
 		$this->db->where('month',$month);
 		$this->db->where('year',$year);
+		if ($invoice_id !== null && $invoice_id !== '') {
+			$this->db->where('invoice_id', $invoice_id);
+		}
+		$this->db->order_by('id', 'desc');
 		$query = $this->db->get();
 		return $query->row_array();
 	}
-	function getReceipt_Data($customer, $month, $year){
+	function getReceipt_Data($customer, $month, $year, $invoice_id = null){
 		
 		$this->db->select('tbl_months.month_id as monthid, 
 		(SELECT unit_price FROM tbl_addcustomer_reading WHERE tbl_addcustomer_reading.customer_id="'.$customer.'" and tbl_addcustomer_reading.month="'.$month.'" and tbl_addcustomer_reading.year="'.$year.'") as reading_amount,
@@ -1080,6 +1084,10 @@ class addpaymentcustomer_model extends CI_Model {
 		$this->db->where('customer_id',$customer);
 		$this->db->where('month',$month);
 		$this->db->where('year',$year);
+		if ($invoice_id !== null && $invoice_id !== '') {
+			$this->db->where('invoice_id', $invoice_id);
+		}
+		$this->db->order_by('id', 'desc');
 		$query = $this->db->get();
 		return $query->row_array();
 	}
