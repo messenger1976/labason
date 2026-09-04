@@ -1230,6 +1230,93 @@ class addpaymentcustomer_model extends CI_Model {
 		$result = $query->row_array();
 		return isset($result['total']) ? intval($result['total']) : 0;
 	}
+
+	/**
+	 * Read-only OR audit snapshot across payment, reading, and transaction tables.
+	 * Includes padded/unpadded OR variants for legacy compatibility.
+	 */
+	public function get_or_audit_snapshot($or_number) {
+		$variants_info = $this->build_or_variants($or_number);
+		$variants = $variants_info['all'];
+		$numeric = $variants_info['numeric'];
+
+		$this->db->select('id, invoice_id, or_number, date, customer_id, month, year, amount, grand_total, status, userid, create_date_time, update_date_time');
+		$this->db->from($this->table_name);
+		if ($numeric !== null) {
+			$this->db->group_start();
+			$this->db->where_in('or_number', $variants);
+			$this->db->or_where('CAST(or_number AS UNSIGNED) =', $numeric, false);
+			$this->db->group_end();
+		} else {
+			$this->db->where_in('or_number', $variants);
+		}
+		$this->db->order_by('id', 'asc');
+		$meter_rows = $this->db->get()->result_array();
+
+		$this->db->select('id, or_number, date, customer_id, month, year, amount, status, customer_billing_id, create_date_time, update_date_time');
+		$this->db->from($this->table_meter_reading);
+		if ($numeric !== null) {
+			$this->db->group_start();
+			$this->db->where_in('or_number', $variants);
+			$this->db->or_where('CAST(or_number AS UNSIGNED) =', $numeric, false);
+			$this->db->group_end();
+		} else {
+			$this->db->where_in('or_number', $variants);
+		}
+		$this->db->order_by('id', 'asc');
+		$reading_rows = $this->db->get()->result_array();
+
+		$meter_ids = array();
+		foreach ($meter_rows as $row) {
+			if (isset($row['id'])) {
+				$meter_ids[] = (int) $row['id'];
+			}
+		}
+		$meter_ids = array_values(array_unique($meter_ids));
+
+		$transaction_rows = array();
+		if (!empty($meter_ids)) {
+			$this->db->select('id, tableName, transaction_id, ledger_id, ledger_id_for, debit, credit, date, create_date_time, update_date_time');
+			$this->db->from($this->table_transactions);
+			$this->db->where('tableName', 'addmetercustomer');
+			$this->db->where_in('transaction_id', $meter_ids);
+			$this->db->order_by('id', 'asc');
+			$transaction_rows = $this->db->get()->result_array();
+		}
+
+		return array(
+			'variants' => $variants,
+			'numeric' => $numeric,
+			'meter_count' => count($meter_rows),
+			'reading_count' => count($reading_rows),
+			'transaction_count' => count($transaction_rows),
+			'meter_rows' => $meter_rows,
+			'reading_rows' => $reading_rows,
+			'transaction_rows' => $transaction_rows,
+		);
+	}
+
+	private function build_or_variants($or_number) {
+		$raw = trim((string) $or_number);
+		$digits_only = preg_replace('/[^0-9]/', '', $raw);
+		$variants = array();
+
+		if ($raw !== '') {
+			$variants[] = $raw;
+		}
+		if ($digits_only !== '') {
+			$unpadded = (string) ((int) $digits_only);
+			$padded = sprintf('%07d', (int) $digits_only);
+			$variants[] = $unpadded;
+			$variants[] = $padded;
+		}
+
+		$variants = array_values(array_unique($variants));
+		return array(
+			'all' => $variants,
+			'numeric' => ($digits_only !== '') ? (int) $digits_only : null,
+		);
+	}
 	
 }
 ?>
