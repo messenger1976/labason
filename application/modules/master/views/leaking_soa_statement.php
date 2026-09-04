@@ -98,7 +98,9 @@
 
 	$bill_amount = isset($record['leaking_bill_amount']) ? (float)$record['leaking_bill_amount'] : 0;
 	$leaking_discount = isset($record['leaking_discount_amount']) ? (float)$record['leaking_discount_amount'] : 0;
-	$leaking_amount = isset($record['leaking_total_amount']) ? (float)$record['leaking_total_amount'] : 0;
+	$header_leaking_amount = isset($record['leaking_total_amount']) ? (float)$record['leaking_total_amount'] : 0;
+	$computed_leaking_amount = $bill_amount - $leaking_discount;
+	$leaking_amount = $computed_leaking_amount > 0 ? $computed_leaking_amount : $header_leaking_amount;
 	$leaking_balance = isset($record['leaking_balance']) ? (float)$record['leaking_balance'] : 0;
 	$refno = isset($record['leaking_refno']) ? $record['leaking_refno'] : '';
 	$details = (!empty($record_details) && is_array($record_details)) ? $record_details : array();

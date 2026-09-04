@@ -94,10 +94,25 @@ class or_correction extends CI_Controller {
 		$data['msg'] ='';
 		//echo'<pre>';print_r($data['record']);exit;
 		if($this->input->post('edit') != ''){
+			$old_or = isset($data['record']['or_number']) ? (string)$data['record']['or_number'] : (string)$id;
+			$new_or_input = (string)$this->input->post('or_number');
+			$new_or_digits = preg_replace('/[^0-9]/', '', $new_or_input);
+			$new_or_formatted = ($new_or_digits !== '') ? sprintf('%07d', (int)$new_or_digits) : trim($new_or_input);
+			$old_date = isset($data['record']['date']) ? (string)$data['record']['date'] : '';
+			$new_date_input = (string)$this->input->post('newdate');
+			$new_date_mysql = ($new_date_input !== '' && strtotime($new_date_input) !== false)
+				? date('Y-m-d', strtotime($new_date_input))
+				: '';
+			$old_amount = isset($data['record']['grand_total']) ? (float)$data['record']['grand_total'] : null;
+			$new_amount = $this->input->post('grand_total');
+			$before_snapshot = $this->my_model->get_or_audit_snapshot($old_or);
+
 			$result = $this->my_model->update_record($id);
 	
 			if($result){
 				if (function_exists('log_system_activity')) {
+					$after_old_snapshot = $this->my_model->get_or_audit_snapshot($old_or);
+					$after_new_snapshot = $this->my_model->get_or_audit_snapshot($new_or_formatted);
 					log_system_activity(array(
 						'category' => 'accounting',
 						'action' => 'update',
@@ -105,9 +120,25 @@ class or_correction extends CI_Controller {
 						'controller' => 'or_correction',
 						'method' => 'edit',
 						'entity_type' => 'or_correction',
-						'entity_id' => (string) $id,
-						'reference_no' => isset($data['record']['or_number']) ? $data['record']['or_number'] : (string) $this->input->post('or_number'),
-						'summary' => 'OR Correction updated',
+						'entity_id' => $new_or_formatted !== '' ? $new_or_formatted : (string)$id,
+						'reference_no' => $new_or_formatted !== '' ? $new_or_formatted : $old_or,
+						'amount' => is_numeric($new_amount) ? (float)$new_amount : null,
+						'status_before' => 'OR:'.$old_or,
+						'status_after' => 'OR:'.($new_or_formatted !== '' ? $new_or_formatted : $old_or),
+						'summary' => 'OR Correction updated: '.$old_or.' -> '.$new_or_formatted,
+						'details' => array(
+							'old_or' => $old_or,
+							'new_or_input' => $new_or_input,
+							'new_or_formatted' => $new_or_formatted,
+							'old_date' => $old_date,
+							'new_date_input' => $new_date_input,
+							'new_date_mysql' => $new_date_mysql,
+							'old_amount' => $old_amount,
+							'new_amount' => is_numeric($new_amount) ? (float)$new_amount : $new_amount,
+							'before_snapshot' => $before_snapshot,
+							'after_snapshot_old_or' => $after_old_snapshot,
+							'after_snapshot_new_or' => $after_new_snapshot,
+						),
 					));
 				}
 				//echo'<pre>';print_r($result);exit;

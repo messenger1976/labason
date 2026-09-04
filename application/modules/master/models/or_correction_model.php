@@ -186,6 +186,70 @@ class or_correction_model extends CI_Model {
 		$result = $query->row_array();
 		return $result;
 	}
+
+	/**
+	 * Build an audit snapshot for a given OR number from both meter and reading tables.
+	 * Includes both padded and unpadded representations to capture legacy rows.
+	 */
+	public function get_or_audit_snapshot($or_number){
+		$variants = $this->build_or_variants($or_number);
+
+		$this->db->select('id, or_number, date, customer_id, name, grand_total, status, userid, create_date_time, update_date_time');
+		$this->db->from($this->table_meter);
+		if (isset($variants['numeric']) && $variants['numeric'] !== null) {
+			$this->db->group_start();
+			$this->db->where_in('or_number', $variants['all']);
+			$this->db->or_where('CAST(or_number AS UNSIGNED) =', $variants['numeric'], false);
+			$this->db->group_end();
+		} else {
+			$this->db->where_in('or_number', $variants['all']);
+		}
+		$this->db->order_by('id', 'asc');
+		$meter_rows = $this->db->get()->result_array();
+
+		$this->db->select('id, or_number, date, customer_id, amount, status, userid, create_date_time, update_date_time');
+		$this->db->from($this->table_meter_reading);
+		if (isset($variants['numeric']) && $variants['numeric'] !== null) {
+			$this->db->group_start();
+			$this->db->where_in('or_number', $variants['all']);
+			$this->db->or_where('CAST(or_number AS UNSIGNED) =', $variants['numeric'], false);
+			$this->db->group_end();
+		} else {
+			$this->db->where_in('or_number', $variants['all']);
+		}
+		$this->db->order_by('id', 'asc');
+		$reading_rows = $this->db->get()->result_array();
+
+		return array(
+			'variants' => $variants['all'],
+			'meter_count' => count($meter_rows),
+			'reading_count' => count($reading_rows),
+			'meter_rows' => $meter_rows,
+			'reading_rows' => $reading_rows,
+		);
+	}
+
+	private function build_or_variants($or_number){
+		$raw = trim((string)$or_number);
+		$digits_only = preg_replace('/[^0-9]/', '', $raw);
+		$variants = array();
+
+		if ($raw !== '') {
+			$variants[] = $raw;
+		}
+		if ($digits_only !== '') {
+			$unpadded = (string)((int)$digits_only);
+			$padded = sprintf('%07d', (int)$digits_only);
+			$variants[] = $unpadded;
+			$variants[] = $padded;
+		}
+
+		$variants = array_values(array_unique($variants));
+		return array(
+			'all' => $variants,
+			'numeric' => ($digits_only !== '') ? (int)$digits_only : null,
+		);
+	}
 	
 }
 
