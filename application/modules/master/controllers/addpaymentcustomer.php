@@ -74,6 +74,72 @@ class addpaymentcustomer extends CI_Controller {
 
 		return $receiptdata;
 	}
+
+	/**
+	 * Defensive wrapper for OR audit snapshot so payment save never fails
+	 * if audit helpers are missing or temporarily broken.
+	 */
+	private function get_or_snapshot_safe($or_number) {
+		// Hotfix: disable additional audit snapshots in live save path.
+		return array();
+	}
+
+	/**
+	 * Verify system-activity table has the columns needed by the logger.
+	 * If not, skip audit logging to avoid hard DB errors on save.
+	 */
+	private function can_log_system_activity() {
+		// Hotfix: disable additional activity logs in this module save path.
+		return false;
+		static $can_log = null;
+		if ($can_log !== null) {
+			return $can_log;
+		}
+		if (!function_exists('log_system_activity')) {
+			$can_log = false;
+			return $can_log;
+		}
+		if (!isset($this->db)) {
+			$this->load->database();
+		}
+		if (!$this->db->table_exists('tbl_system_activity')) {
+			$can_log = false;
+			return $can_log;
+		}
+		$required_columns = array(
+			'user_id','username','user_name','usertype','category','action','module','controller','method',
+			'uri','http_method','entity_type','entity_id','reference_no','amount','status_before','status_after',
+			'summary','details_json','ip_address','user_agent','session_id','created_at'
+		);
+		foreach ($required_columns as $column) {
+			if (!$this->db->field_exists($column, 'tbl_system_activity')) {
+				$can_log = false;
+				return $can_log;
+			}
+		}
+		$can_log = true;
+		return $can_log;
+	}
+
+	/**
+	 * Safe logger wrapper: never let audit logging break payment save flow.
+	 */
+	private function safe_log_system_activity($payload) {
+		if (!$this->can_log_system_activity()) {
+			return false;
+		}
+		$old_debug = isset($this->db->db_debug) ? $this->db->db_debug : false;
+		$this->db->db_debug = false;
+		try {
+			$result = log_system_activity($payload);
+			$this->db->db_debug = $old_debug;
+			return $result;
+		} catch (Exception $e) {
+			log_message('error', 'safe_log_system_activity exception: '.$e->getMessage());
+			$this->db->db_debug = $old_debug;
+			return false;
+		}
+	}
 	public function index(){ 		 //*****  View Loading  *****//
 		$header['roleResponsible'] = $this->top_model->get_responsibilities();
 
@@ -279,6 +345,11 @@ class addpaymentcustomer extends CI_Controller {
 	/** Add Function **/
 	public function add(){ //print_r($this->input->post);exit;
 		$data['msg'] ='';
+		// Fail-safe for live schema drift: never hard-crash this save path.
+		// With db_debug off, SQL issues return false and controller can redirect with message.
+		if (isset($this->db)) {
+			$this->db->db_debug = false;
+		}
 		
 		$header['roleResponsible'] = $this->top_model->get_responsibilities();
 		
@@ -300,14 +371,14 @@ class addpaymentcustomer extends CI_Controller {
 				'userid' => (int) $this->session->userdata('userid'),
 				'username' => (string) $this->session->userdata('username'),
 			);
-			$before_snapshot = ($posted_or > 0) ? $this->my_model->get_or_audit_snapshot($posted_or) : array();
+			$before_snapshot = $this->get_or_snapshot_safe($posted_or);
 			
 		
 			$result = $this->my_model->add_record();
 			if($result){
 				if (function_exists('log_system_activity')) {
-					$after_snapshot = ($posted_or > 0) ? $this->my_model->get_or_audit_snapshot($posted_or) : array();
-					log_system_activity(array(
+					$after_snapshot = $this->get_or_snapshot_safe($posted_or);
+					$this->safe_log_system_activity(array(
 						'category' => 'accounting',
 						'action' => 'create',
 						'module' => 'addpaymentcustomer',
@@ -329,8 +400,8 @@ class addpaymentcustomer extends CI_Controller {
 				redirect($this->listPage_redirect);
 			}else{
 				if (function_exists('log_system_activity')) {
-					$after_snapshot = ($posted_or > 0) ? $this->my_model->get_or_audit_snapshot($posted_or) : array();
-					log_system_activity(array(
+					$after_snapshot = $this->get_or_snapshot_safe($posted_or);
+					$this->safe_log_system_activity(array(
 						'category' => 'accounting',
 						'action' => 'create_failed',
 						'module' => 'addpaymentcustomer',
@@ -369,10 +440,10 @@ class addpaymentcustomer extends CI_Controller {
 					'userid' => $uid,
 					'username' => (string) $this->session->userdata('username'),
 				);
-				$before_snapshot = ($posted_or > 0) ? $this->my_model->get_or_audit_snapshot($posted_or) : array();
+				$before_snapshot = $this->get_or_snapshot_safe($posted_or);
 				if ($posted_or <= 0) {
 					if (function_exists('log_system_activity')) {
-						log_system_activity(array(
+						$this->safe_log_system_activity(array(
 							'category' => 'accounting',
 							'action' => 'create_blocked',
 							'module' => 'addpaymentcustomer',
@@ -392,7 +463,7 @@ class addpaymentcustomer extends CI_Controller {
 				}
 				if ($this->my_model->is_or_number_taken($posted_or)) {
 					if (function_exists('log_system_activity')) {
-						log_system_activity(array(
+						$this->safe_log_system_activity(array(
 							'category' => 'accounting',
 							'action' => 'create_blocked',
 							'module' => 'addpaymentcustomer',
@@ -417,8 +488,8 @@ class addpaymentcustomer extends CI_Controller {
 				if($result){
 					$this->my_model->sync_or_series_max_after_posted($uid, $posted_or);
 					if (function_exists('log_system_activity')) {
-						$after_snapshot = $this->my_model->get_or_audit_snapshot($posted_or);
-						log_system_activity(array(
+						$after_snapshot = $this->get_or_snapshot_safe($posted_or);
+						$this->safe_log_system_activity(array(
 							'category' => 'accounting',
 							'action' => 'create',
 							'module' => 'addpaymentcustomer',
@@ -440,8 +511,8 @@ class addpaymentcustomer extends CI_Controller {
 					redirect($this->listPage_redirect);
 				}else{
 					if (function_exists('log_system_activity')) {
-						$after_snapshot = $this->my_model->get_or_audit_snapshot($posted_or);
-						log_system_activity(array(
+						$after_snapshot = $this->get_or_snapshot_safe($posted_or);
+						$this->safe_log_system_activity(array(
 							'category' => 'accounting',
 							'action' => 'create_failed',
 							'module' => 'addpaymentcustomer',

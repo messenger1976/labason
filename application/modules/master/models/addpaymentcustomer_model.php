@@ -672,12 +672,12 @@ class addpaymentcustomer_model extends CI_Model {
 				'SELECT doc_id, doc_series_num FROM ' . $this->table_doc_series_number . ' WHERE doc_name = ? AND teller_user_id = ? FOR UPDATE',
 				array('OR', $user_id)
 			);
-			$series_row = $q->row();
+			$series_row = is_object($q) ? $q->row() : null;
 		} else {
 			$q = $this->db->query(
 				'SELECT doc_id, doc_series_num FROM ' . $this->table_doc_series_number . ' WHERE doc_id = 1 FOR UPDATE'
 			);
-			$series_row = $q->row();
+			$series_row = is_object($q) ? $q->row() : null;
 		}
 		if (!$series_row) {
 			$this->db->trans_rollback();
@@ -734,8 +734,10 @@ class addpaymentcustomer_model extends CI_Model {
 			'customer_billing_id' => $lastId,
 			'status' => 1,
 			'or_number' => $or_num,
-			'update_date_time' => $this->manila_now(),
 		);
+		if ($this->db->field_exists('update_date_time', $this->table_meter_reading)) {
+			$set_data4['update_date_time'] = $this->manila_now();
+		}
 		$this->db->where('customer_id',trim($id));
 		$this->db->where('month',$this->input->post('month'));
 		$this->db->where('year',$this->input->post('year'));
@@ -906,8 +908,10 @@ class addpaymentcustomer_model extends CI_Model {
 			'customer_billing_id' => $lastId,
 			'status' => 1,
 			'or_number' => $or_num,
-			'update_date_time' => $this->manila_now(),
 		);
+		if ($this->db->field_exists('update_date_time', $this->table_meter_reading)) {
+			$set_data4['update_date_time'] = $this->manila_now();
+		}
 		$this->db->where('customer_id',trim($customer_id));
 		$this->db->where('month',$month);
 		$this->db->where('year',$year);
@@ -1239,8 +1243,20 @@ class addpaymentcustomer_model extends CI_Model {
 		$variants_info = $this->build_or_variants($or_number);
 		$variants = $variants_info['all'];
 		$numeric = $variants_info['numeric'];
+		if (empty($variants) && $numeric === null) {
+			return array(
+				'variants' => array(),
+				'numeric' => null,
+				'meter_count' => 0,
+				'reading_count' => 0,
+				'transaction_count' => 0,
+				'meter_rows' => array(),
+				'reading_rows' => array(),
+				'transaction_rows' => array(),
+			);
+		}
 
-		$this->db->select('id, invoice_id, or_number, date, customer_id, month, year, amount, grand_total, status, userid, create_date_time, update_date_time');
+		$this->db->select('*');
 		$this->db->from($this->table_name);
 		if ($numeric !== null) {
 			$this->db->group_start();
@@ -1251,9 +1267,10 @@ class addpaymentcustomer_model extends CI_Model {
 			$this->db->where_in('or_number', $variants);
 		}
 		$this->db->order_by('id', 'asc');
-		$meter_rows = $this->db->get()->result_array();
+		$meter_query = $this->db->get();
+		$meter_rows = is_object($meter_query) ? $meter_query->result_array() : array();
 
-		$this->db->select('id, or_number, date, customer_id, month, year, amount, status, customer_billing_id, create_date_time, update_date_time');
+		$this->db->select('*');
 		$this->db->from($this->table_meter_reading);
 		if ($numeric !== null) {
 			$this->db->group_start();
@@ -1264,7 +1281,8 @@ class addpaymentcustomer_model extends CI_Model {
 			$this->db->where_in('or_number', $variants);
 		}
 		$this->db->order_by('id', 'asc');
-		$reading_rows = $this->db->get()->result_array();
+		$reading_query = $this->db->get();
+		$reading_rows = is_object($reading_query) ? $reading_query->result_array() : array();
 
 		$meter_ids = array();
 		foreach ($meter_rows as $row) {
@@ -1276,12 +1294,13 @@ class addpaymentcustomer_model extends CI_Model {
 
 		$transaction_rows = array();
 		if (!empty($meter_ids)) {
-			$this->db->select('id, tableName, transaction_id, ledger_id, ledger_id_for, debit, credit, date, create_date_time, update_date_time');
+			$this->db->select('*');
 			$this->db->from($this->table_transactions);
 			$this->db->where('tableName', 'addmetercustomer');
 			$this->db->where_in('transaction_id', $meter_ids);
 			$this->db->order_by('id', 'asc');
-			$transaction_rows = $this->db->get()->result_array();
+			$transaction_query = $this->db->get();
+			$transaction_rows = is_object($transaction_query) ? $transaction_query->result_array() : array();
 		}
 
 		return array(
