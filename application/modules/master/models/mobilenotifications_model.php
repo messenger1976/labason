@@ -53,7 +53,7 @@ class mobilenotifications_model extends CI_Model {
 		return $result;
 	}
 	
-	/** Get ITEXMO API Settings **/
+	/** Get Movider API Settings **/
 	public function get_sms_settings() {
 		$this->db->select("*");
 		$this->db->from($this->table_settings);
@@ -65,22 +65,27 @@ class mobilenotifications_model extends CI_Model {
 		return $result;
 	}
 	
-	/** Update ITEXMO API Settings **/
+	/** Update Movider API Settings **/
 	public function update_sms_settings($data) {
 		$dt_date = new DateTime("now", new DateTimeZone("Asia/Manila"));
 		$update_date = $dt_date->format("Y-m-d H:i:s");
 		
 		$update_data = array(
-			'email' => isset($data['email']) ? $data['email'] : '',
-			'api_code' => $data['api_code'],
-			'api_password' => $data['api_password'],
-			'sender_id' => isset($data['sender_id']) ? $data['sender_id'] : '',
+			'api_key' => isset($data['api_key']) ? $data['api_key'] : '',
+			'api_secret' => isset($data['api_secret']) ? $data['api_secret'] : '',
+			'sender_name' => isset($data['sender_name']) ? $data['sender_name'] : '',
+			'callback_url' => isset($data['callback_url']) ? $data['callback_url'] : '',
+			'callback_method' => isset($data['callback_method']) ? $data['callback_method'] : 'POST',
+			'endpoint_override' => isset($data['endpoint_override']) ? $data['endpoint_override'] : '',
 			'updated_by' => $this->session->userdata('userid'),
 			'updated_at' => $update_date
 		);
 		
 		// Check if settings exist
 		$existing = $this->get_sms_settings();
+		if($existing && empty($update_data['api_secret'])) {
+			$update_data['api_secret'] = $existing['api_secret'];
+		}
 		if($existing) {
 			$this->db->where('id', $existing['id']);
 			$this->db->update($this->table_settings, $update_data);
@@ -134,8 +139,9 @@ class mobilenotifications_model extends CI_Model {
 			'message_type' => $data['message_type'],
 			'message' => $data['message'],
 			'status' => isset($data['status']) ? $data['status'] : 'pending',
-			'itexmo_response' => isset($data['itexmo_response']) ? $data['itexmo_response'] : NULL,
-			'itexmo_code' => isset($data['itexmo_code']) ? $data['itexmo_code'] : NULL,
+			'provider_response' => isset($data['provider_response']) ? $data['provider_response'] : NULL,
+			'provider_code' => isset($data['provider_code']) ? $data['provider_code'] : NULL,
+			'provider_http_code' => isset($data['provider_http_code']) ? $data['provider_http_code'] : NULL,
 			'sent_at' => isset($data['sent_at']) ? $data['sent_at'] : NULL,
 			'created_by' => $this->session->userdata('userid'),
 			'created_at' => $created_date
@@ -160,11 +166,11 @@ class mobilenotifications_model extends CI_Model {
 		}
 		
 		if($response !== NULL) {
-			$update_data['itexmo_response'] = $response;
+			$update_data['provider_response'] = $response;
 		}
 		
 		if($code !== NULL) {
-			$update_data['itexmo_code'] = $code;
+			$update_data['provider_code'] = $code;
 		}
 		
 		$this->db->where('id', $id);

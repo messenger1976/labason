@@ -518,11 +518,14 @@
 				html += '<tr><th>Message</th><td>' + $('<div>').text(data.message || '').html() + '</td></tr>';
 				html += '<tr><th>Sent At</th><td>' + $('<div>').text(data.sent_at || 'N/A').html() + '</td></tr>';
 				html += '<tr><th>Created At</th><td>' + $('<div>').text(data.created_at || '').html() + '</td></tr>';
-				if (data.itexmo_response) {
-					html += '<tr><th>ITEXMO Response</th><td>' + $('<div>').text(data.itexmo_response).html() + '</td></tr>';
+				if (data.provider_response || data.itexmo_response) {
+					html += '<tr><th>Provider Response</th><td>' + $('<div>').text(data.provider_response || data.itexmo_response).html() + '</td></tr>';
 				}
-				if (data.itexmo_code) {
-					html += '<tr><th>ITEXMO Code</th><td>' + $('<div>').text(data.itexmo_code).html() + '</td></tr>';
+				if (data.provider_code || data.itexmo_code) {
+					html += '<tr><th>Provider Code</th><td>' + $('<div>').text(data.provider_code || data.itexmo_code).html() + '</td></tr>';
+				}
+				if (data.provider_http_code) {
+					html += '<tr><th>HTTP Status</th><td>' + $('<div>').text(data.provider_http_code).html() + '</td></tr>';
 				}
 				html += '</table>';
 				$('#notificationDetails').html(html);
