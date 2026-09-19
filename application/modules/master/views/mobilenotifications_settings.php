@@ -27,7 +27,7 @@
 	<div class="subheader">
 		<h1 class="subheader-title">
 			<i class="subheader-icon fal fa-cog"></i>
-			ITEXMO API <span class="fw-300">Settings</span>
+			Movider SMS <span class="fw-300">Settings</span>
 		</h1>
 		<div class="subheader-block d-lg-flex align-items-center">
 			<div class="d-inline-flex flex-column justify-content-center mr-3">
@@ -65,7 +65,7 @@
 		<div class="col-xl-12">
 			<div class="panel">
 				<div class="panel-hdr">
-					<h2>ITEXMO API <span class="fw-300"><i>Configuration</i></span></h2>
+					<h2>Movider SMS <span class="fw-300"><i>Configuration</i></span></h2>
 					<div class="panel-toolbar">
 						<button class="btn btn-panel" data-action="panel-collapse" data-toggle="tooltip" data-offset="0,10" data-original-title="Collapse"></button>
 						<button class="btn btn-panel" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
@@ -78,30 +78,47 @@
 							<div class="row">
 								<div class="col-md-6">
 									<div class="form-group">
-										<label class="form-label" for="email">Email <span class="text-danger">*</span></label>
-										<input type="email" class="form-control" id="email" name="email" value="<?php echo htmlspecialchars(isset($settings['email']) ? $settings['email'] : ''); ?>" required>
-										<span class="help-block">Your ITEXMO account email address</span>
+										<label class="form-label" for="api_key">API Key <span class="text-danger">*</span></label>
+										<input type="text" class="form-control" id="api_key" name="api_key" value="<?php echo htmlspecialchars(isset($settings['api_key']) ? $settings['api_key'] : ''); ?>" required autocomplete="off">
+										<span class="help-block">Required Movider API key.</span>
 									</div>
 								</div>
 								<div class="col-md-6">
 									<div class="form-group">
-										<label class="form-label" for="sender_id">Sender ID</label>
-										<input type="text" class="form-control" id="sender_id" name="sender_id" value="<?php echo htmlspecialchars(isset($settings['sender_id']) ? $settings['sender_id'] : ''); ?>" maxlength="11">
-										<span class="help-block">Optional. Registered sender ID (max 11 characters)</span>
+										<label class="form-label" for="sender_name">Sender Name</label>
+										<input type="text" class="form-control" id="sender_name" name="sender_name" value="<?php echo htmlspecialchars(isset($settings['sender_name']) ? $settings['sender_name'] : ''); ?>" maxlength="11">
+										<span class="help-block">Optional. Use the exact registered Movider sender name and capitalization.</span>
 									</div>
 								</div>
 								<div class="col-md-6">
 									<div class="form-group">
-										<label class="form-label" for="api_code">API Code <span class="text-danger">*</span></label>
-										<input type="text" class="form-control" id="api_code" name="api_code" value="<?php echo htmlspecialchars(isset($settings['api_code']) ? $settings['api_code'] : ''); ?>" required>
-										<span class="help-block">Get it from <a href="https://www.itexmo.com" target="_blank" rel="noopener">itexmo.com</a></span>
+										<label class="form-label" for="api_secret">API Secret <span class="text-danger">*</span></label>
+										<input type="password" class="form-control" id="api_secret" name="api_secret" value=""<?php echo empty($settings['api_secret']) ? ' required' : ''; ?> autocomplete="new-password">
+										<span class="help-block">Required for first setup. Leave blank to keep the saved secret.</span>
 									</div>
 								</div>
 								<div class="col-md-6">
 									<div class="form-group">
-										<label class="form-label" for="api_password">API Password <span class="text-danger">*</span></label>
-										<input type="password" class="form-control" id="api_password" name="api_password" value="<?php echo htmlspecialchars(isset($settings['api_password']) ? $settings['api_password'] : ''); ?>" required>
-										<span class="help-block">Your ITEXMO API Password</span>
+										<label class="form-label" for="callback_method">Delivery Callback Method</label>
+										<select class="form-control" id="callback_method" name="callback_method">
+											<option value="POST"<?php echo (!isset($settings['callback_method']) || $settings['callback_method'] !== 'GET') ? ' selected' : ''; ?>>POST</option>
+											<option value="GET"<?php echo (isset($settings['callback_method']) && $settings['callback_method'] === 'GET') ? ' selected' : ''; ?>>GET</option>
+										</select>
+										<span class="help-block">Used only when a callback URL is configured.</span>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group">
+										<label class="form-label" for="callback_url">Delivery Callback URL</label>
+										<input type="url" class="form-control" id="callback_url" name="callback_url" value="<?php echo htmlspecialchars(isset($settings['callback_url']) ? $settings['callback_url'] : ''); ?>">
+										<span class="help-block">Optional HTTPS webhook for delivery reports.</span>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group">
+										<label class="form-label" for="endpoint_override">Endpoint Override</label>
+										<input type="url" class="form-control" id="endpoint_override" name="endpoint_override" value="<?php echo htmlspecialchars(isset($settings['endpoint_override']) ? $settings['endpoint_override'] : ''); ?>" placeholder="https://api.movider.co/v1/sms">
+										<span class="help-block">Optional HTTPS endpoint for controlled testing. Defaults to Movider.</span>
 									</div>
 								</div>
 							</div>
@@ -110,7 +127,7 @@
 									<i class="fal fa-save mr-1"></i> Save Settings
 								</button>
 								<button type="button" class="btn btn-info" id="testApiBtn">
-									<i class="fal fa-plug mr-1"></i> Test API Connection
+									<i class="fal fa-check-circle mr-1"></i> Validate Settings
 								</button>
 								<a href="<?php echo ADMIN_URL; ?>mobilenotifications" class="btn btn-secondary">
 									<i class="fal fa-arrow-left mr-1"></i> Back
@@ -121,15 +138,14 @@
 						<hr class="my-4">
 
 						<div class="alert alert-info mb-0">
-							<h5 class="alert-heading"><i class="fal fa-info-circle mr-1"></i> How to Get ITEXMO API Credentials</h5>
+							<h5 class="alert-heading"><i class="fal fa-info-circle mr-1"></i> Movider API Setup</h5>
 							<ol class="mb-2 pl-3">
-								<li>Visit <a href="https://www.itexmo.com" target="_blank" rel="noopener">https://www.itexmo.com</a></li>
-								<li>Register or log in to your account</li>
-								<li>Open API Settings from your dashboard</li>
-								<li>Copy your API Code and API Password</li>
+								<li>Visit <a href="https://console.movider.co" target="_blank" rel="noopener">console.movider.co</a> and sign in.</li>
+								<li>Copy your API key and API secret from the API settings.</li>
+								<li>Register a sender name before using a custom sender.</li>
 								<li>Enter them above and save</li>
 							</ol>
-							<p class="mb-0"><strong>Note:</strong> Make sure you have sufficient credits in your ITEXMO account.</p>
+							<p class="mb-0"><strong>Note:</strong> Recipients are sent to Movider in E.164 format, such as <code>+639171234567</code>.</p>
 						</div>
 					</div>
 				</div>
@@ -161,7 +177,7 @@
 
 	$('#testApiBtn').on('click', function() {
 		var $btn = $(this);
-		$btn.prop('disabled', true).html('<i class="fal fa-spinner fa-spin"></i> Testing...');
+		$btn.prop('disabled', true).html('<i class="fal fa-spinner fa-spin"></i> Validating...');
 		$.ajax({
 			url: baseUrl + 'test_api',
 			type: 'GET',
@@ -187,7 +203,7 @@
 				alert(errorMsg);
 			},
 			complete: function() {
-				$btn.prop('disabled', false).html('<i class="fal fa-plug mr-1"></i> Test API Connection');
+				$btn.prop('disabled', false).html('<i class="fal fa-check-circle mr-1"></i> Validate Settings');
 			}
 		});
 	});

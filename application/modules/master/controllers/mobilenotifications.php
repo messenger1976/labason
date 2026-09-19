@@ -58,11 +58,22 @@ class mobilenotifications extends CI_Controller {
 		$data['msg'] = '';
 		
 		if($this->input->post('save_settings')){
+			$callback_url = trim($this->input->post('callback_url'));
+			$endpoint_override = trim($this->input->post('endpoint_override'));
+			if(($callback_url !== '' && (filter_var($callback_url, FILTER_VALIDATE_URL) === false || stripos($callback_url, 'https://') !== 0)) || ($endpoint_override !== '' && (filter_var($endpoint_override, FILTER_VALIDATE_URL) === false || stripos($endpoint_override, 'https://') !== 0))){
+				$data['msg'] = 'Callback URL and endpoint override must be valid HTTPS URLs.';
+				$header['record_info'] = $this->top_model->get_last_login_details(1);
+				$this->load->view($this->headerPage,$header);
+				$this->load->view($this->settingsPage,$data);
+				return;
+			}
 			$settings_data = array(
-				'email' => $this->input->post('email'),
-				'api_code' => $this->input->post('api_code'),
-				'api_password' => $this->input->post('api_password'),
-				'sender_id' => $this->input->post('sender_id')
+				'api_key' => trim($this->input->post('api_key')),
+				'api_secret' => trim($this->input->post('api_secret')),
+				'sender_name' => trim($this->input->post('sender_name')),
+				'callback_url' => $callback_url,
+				'callback_method' => $this->input->post('callback_method') === 'GET' ? 'GET' : 'POST',
+				'endpoint_override' => $endpoint_override
 			);
 			
 			$this->my_model->update_sms_settings($settings_data);
@@ -131,8 +142,9 @@ class mobilenotifications extends CI_Controller {
 				'message_type' => 'billing_statement',
 				'message' => $message,
 				'status' => $result['status'],
-				'itexmo_response' => $result['response'],
-				'itexmo_code' => $result['code']
+				'provider_response' => $result['response'],
+				'provider_code' => $result['code'],
+				'provider_http_code' => isset($result['http_code']) ? $result['http_code'] : NULL
 			);
 			
 			if($result['status'] == 'sent'){
@@ -180,8 +192,9 @@ class mobilenotifications extends CI_Controller {
 				'message_type' => 'due_account',
 				'message' => $message,
 				'status' => $result['status'],
-				'itexmo_response' => $result['response'],
-				'itexmo_code' => $result['code']
+				'provider_response' => $result['response'],
+				'provider_code' => $result['code'],
+				'provider_http_code' => isset($result['http_code']) ? $result['http_code'] : NULL
 			);
 			
 			if($result['status'] == 'sent'){
@@ -229,8 +242,9 @@ class mobilenotifications extends CI_Controller {
 				'message_type' => 'disconnection',
 				'message' => $message,
 				'status' => $result['status'],
-				'itexmo_response' => $result['response'],
-				'itexmo_code' => $result['code']
+				'provider_response' => $result['response'],
+				'provider_code' => $result['code'],
+				'provider_http_code' => isset($result['http_code']) ? $result['http_code'] : NULL
 			);
 			
 			if($result['status'] == 'sent'){
@@ -272,8 +286,9 @@ class mobilenotifications extends CI_Controller {
 			'message_type' => 'custom',
 			'message' => $message,
 			'status' => $result['status'],
-			'itexmo_response' => $result['response'],
-			'itexmo_code' => $result['code']
+			'provider_response' => $result['response'],
+			'provider_code' => $result['code'],
+			'provider_http_code' => isset($result['http_code']) ? $result['http_code'] : NULL
 		);
 		
 		if($result['status'] == 'sent'){
@@ -287,14 +302,105 @@ class mobilenotifications extends CI_Controller {
 			'notification_id' => $notification_id,
 			'status' => $result['status'],
 			'message' => $result['status'] == 'sent' ? 'Message sent successfully' : 'Failed to send message: ' . $result['response'],
-			'itexmo_code' => isset($result['code']) ? $result['code'] : '',
+			'provider_code' => isset($result['code']) ? $result['code'] : '',
 			'http_code' => isset($result['http_code']) ? $result['http_code'] : '',
-			'debug_info' => isset($result['raw_response']) ? $result['raw_response'] : ''
+			'provider_response' => isset($result['raw_response']) ? $result['raw_response'] : ''
 		));
 	}
 	
-	/** ITEXMO SMS Sending Function **/
+	/** Send an SMS through Movider. **/
 	private function send_sms($mobile, $message){
+		$settings = $this->my_model->get_sms_settings();
+		if(!$settings || empty(trim($settings['api_key'])) || empty(trim($settings['api_secret']))){
+			return array('status' => 'failed', 'response' => 'Movider API key and API secret are required.', 'code' => 'NO_CONFIG');
+		}
+
+		$mobile = $this->normalize_sms_number($mobile);
+		if($mobile === false){
+			return array('status' => 'failed', 'response' => 'The mobile number must be a valid Philippine number or E.164 number.', 'code' => 'INVALID_RECIPIENT');
+		}
+		if(trim($message) === ''){
+			return array('status' => 'failed', 'response' => 'Message text is required.', 'code' => 'INVALID_MESSAGE');
+		}
+
+		$url = 'https://api.movider.co/v1/sms';
+		if(!empty($settings['endpoint_override'])){
+			$override = trim($settings['endpoint_override']);
+			if(filter_var($override, FILTER_VALIDATE_URL) && stripos($override, 'https://') === 0){
+				$url = $override;
+			}
+		}
+
+		$payload = array(
+			'api_key' => trim($settings['api_key']),
+			'api_secret' => trim($settings['api_secret']),
+			'to' => $mobile,
+			'text' => $message
+		);
+		if(!empty($settings['sender_name'])) $payload['from'] = trim($settings['sender_name']);
+		if(!empty($settings['callback_url'])){
+			$payload['callback_url'] = trim($settings['callback_url']);
+			$payload['callback_method'] = $settings['callback_method'] === 'GET' ? 'GET' : 'POST';
+		}
+
+		$ch = curl_init($url);
+		curl_setopt_array($ch, array(
+			CURLOPT_POST => true,
+			CURLOPT_POSTFIELDS => http_build_query($payload, '', '&'),
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_FOLLOWLOCATION => false,
+			CURLOPT_SSL_VERIFYPEER => true,
+			CURLOPT_SSL_VERIFYHOST => 2,
+			CURLOPT_TIMEOUT => 30,
+			CURLOPT_CONNECTTIMEOUT => 10,
+			CURLOPT_HTTPHEADER => array('Accept: application/json', 'Content-Type: application/x-www-form-urlencoded')
+		));
+		$response = curl_exec($ch);
+		$curl_error = curl_error($ch);
+		$http_code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		curl_close($ch);
+
+		if($response === false || $curl_error){
+			return array('status' => 'failed', 'response' => 'Movider connection failed: ' . ($curl_error ? $curl_error : 'Request failed'), 'code' => 'CURL_ERROR', 'http_code' => $http_code);
+		}
+		return $this->parse_movider_response($response, $http_code);
+	}
+
+	private function normalize_sms_number($mobile){
+		$mobile = trim((string) $mobile);
+		if($mobile === '') return false;
+		$mobile = preg_replace('/[\s().-]+/', '', $mobile);
+		if(substr($mobile, 0, 1) === '+') $mobile = substr($mobile, 1);
+		if(substr($mobile, 0, 2) === '00') $mobile = substr($mobile, 2);
+		if(preg_match('/^09[0-9]{9}$/', $mobile)) $mobile = '63' . substr($mobile, 1);
+		if(preg_match('/^9[0-9]{9}$/', $mobile)) $mobile = '63' . $mobile;
+		return preg_match('/^[1-9][0-9]{7,14}$/', $mobile) ? '+' . $mobile : false;
+	}
+
+	private function parse_movider_response($response, $http_code){
+		$data = json_decode($response, true);
+		if($http_code < 200 || $http_code >= 300){
+			$message = is_array($data) ? $this->movider_error_message($data) : trim(strip_tags($response));
+			if($message === '') $message = 'Movider returned HTTP ' . $http_code . '.';
+			return array('status' => 'failed', 'response' => substr($message, 0, 500), 'code' => 'HTTP_' . $http_code, 'http_code' => $http_code, 'raw_response' => substr($response, 0, 2000));
+		}
+		if(!is_array($data)) return array('status' => 'failed', 'response' => 'Movider returned an invalid response.', 'code' => 'INVALID_RESPONSE', 'http_code' => $http_code);
+		$status = strtolower((string) (isset($data['status']) ? $data['status'] : ''));
+		if(isset($data['success']) && !$data['success'] || in_array($status, array('failed', 'failure', 'error'), true)){
+			return array('status' => 'failed', 'response' => $this->movider_error_message($data), 'code' => isset($data['code']) ? $data['code'] : 'API_ERROR', 'http_code' => $http_code, 'raw_response' => substr($response, 0, 2000));
+		}
+		return array('status' => 'sent', 'response' => isset($data['message']) ? $data['message'] : 'Message accepted by Movider.', 'code' => isset($data['message_id']) ? $data['message_id'] : 'ACCEPTED', 'http_code' => $http_code, 'raw_response' => substr($response, 0, 2000));
+	}
+
+	private function movider_error_message($data){
+		if(isset($data['message']) && is_string($data['message'])) return $data['message'];
+		if(isset($data['error']) && is_string($data['error'])) return $data['error'];
+		if(isset($data['errors'])) return is_string($data['errors']) ? $data['errors'] : json_encode($data['errors']);
+		return 'Movider rejected the SMS request.';
+	}
+
+	/** Legacy implementation retained temporarily for historical reference; never called. **/
+	private function legacy_send_sms($mobile, $message){
 		$settings = $this->my_model->get_sms_settings();
 		
 		if(!$settings || empty($settings['api_code']) || empty($settings['api_password'])){
@@ -490,8 +596,23 @@ class mobilenotifications extends CI_Controller {
 		}
 	}
 	
-	/** Test ITEXMO API Connection **/
+	/** Validate Movider settings without sending a message. **/
 	public function test_api(){
+		header('Content-Type: application/json');
+		$settings = $this->my_model->get_sms_settings();
+		if(!$settings || empty(trim($settings['api_key'])) || empty(trim($settings['api_secret']))){
+			echo json_encode(array('success' => false, 'message' => 'Movider API key and API secret are required.', 'settings_configured' => false));
+			return;
+		}
+		if(!empty($settings['endpoint_override']) && (filter_var($settings['endpoint_override'], FILTER_VALIDATE_URL) === false || stripos($settings['endpoint_override'], 'https://') !== 0)){
+			echo json_encode(array('success' => false, 'message' => 'Endpoint override must be a valid HTTPS URL.', 'settings_configured' => false));
+			return;
+		}
+		echo json_encode(array('success' => true, 'message' => 'Movider settings are valid. Movider provides a send endpoint rather than a non-sending credential test, so no SMS was sent.', 'settings_configured' => true));
+	}
+
+	/** Legacy implementation retained temporarily for historical reference; never called. **/
+	private function legacy_test_api(){
 		header('Content-Type: application/json');
 		
 		$settings = $this->my_model->get_sms_settings();
