@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8">
-	<title>Mobile App Login - Billing System</title>
+	<title>Labason Admin - Login</title>
 	<meta name="description" content="Secure login">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, user-scalable=no, minimal-ui">
 	<meta name="apple-mobile-web-app-capable" content="yes" />
 	<meta name="msapplication-tap-highlight" content="no">
-	<meta name="apple-mobile-web-app-title" content="Mobile Billing">
+	<meta name="apple-mobile-web-app-title" content="Labason Admin">
 	<meta name="apple-mobile-web-app-status-bar-style" content="black">
 	<meta name="mobile-web-app-capable" content="yes">
 	<meta name="theme-color" content="#3276b1">
