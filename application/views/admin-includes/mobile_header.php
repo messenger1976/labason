@@ -57,7 +57,7 @@ if(($this->session->userdata('logged_in')!='ECOM')||($this->session->userdata('u
 		<meta name="apple-mobile-web-app-capable" content="yes">
 		<meta name="mobile-web-app-capable" content="yes">
 		<meta name="apple-mobile-web-app-status-bar-style" content="black">
-		<meta name="apple-mobile-web-app-title" content="Mobile Billing">
+		<meta name="apple-mobile-web-app-title" content="Labason Admin">
 		<meta name="theme-color" content="#3276b1">
 		
 		<!-- PWA Manifest for Mobile Dashboard (install as app) -->
