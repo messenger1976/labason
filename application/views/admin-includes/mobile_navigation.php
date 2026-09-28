@@ -55,6 +55,12 @@
 					</li>
 				<?php } ?>	
 
+				<?php if((array_key_exists('statementofaccountlist',$roleResponsible) && ($roleResponsible['statementofaccountlist'] == 1) ) || ($this->session->userdata('usertype') == 'admin')){ ?>
+					<li class="<?php if($this->uri->segment(2)=='mobile_statementofaccount') echo 'active';?>">
+						<a href="<?php echo ADMIN_URL;?>mobile_statementofaccount" title="Statement of Account"><i class="fa fa-lg fa-fw fa-file-text-o"></i> <span class="menu-item-parent">Statement of Account</span></a>
+					</li>
+				<?php } ?>
+
 					
 
 

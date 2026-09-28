@@ -55,6 +55,13 @@
       "description": "Tickets listing",
       "url": "/master/mobile_tickets",
       "icons": [{ "src": "img/logo.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Statement of Account",
+      "short_name": "SOA",
+      "description": "Customer statement of account",
+      "url": "/master/mobile_statementofaccount",
+      "icons": [{ "src": "img/logo.png", "sizes": "96x96" }]
     }
   ]
 }
