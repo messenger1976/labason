@@ -90,13 +90,15 @@ class database_backup extends CI_Controller {
 			mkdir($backup_dir, 0755, true);
 		}
 		
-		// Generate backup filename
-		$filename = 'backup_' . date('Y-m-d_H-i-s') . '.sql';
-		$filepath = $backup_dir . $filename;
-		
 		// Get database config
 		$this->load->database();
 		$db_config = $this->db->database;
+
+		// Generate backup filename: [database_name]_backup_[date timestamp].sql
+		$db_identifier = preg_replace('/[^A-Za-z0-9_\-]/', '_', (string) $db_config);
+		$filename = $db_identifier . '_backup_' . date('Y-m-d_H-i-s') . '.sql';
+		$filepath = $backup_dir . $filename;
+
 		$db_host = $this->db->hostname;
 		$db_user = $this->db->username;
 		$db_pass = $this->db->password;
