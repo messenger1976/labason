@@ -8,6 +8,7 @@ class Master extends CI_Controller {
 	public $footerPage = '';
 	//set List page
 	public $listPage = 'login';
+	public $appLoginPage = 'app_login';   // dedicated mobile login view for /master/app_login
 	public $forgot_pwd_Page = 'forgot-password';
 	//set Add page
 	//set View page
@@ -126,7 +127,7 @@ class Master extends CI_Controller {
 					}			
 				}
 			}
-			$this->load->view($this->listPage);
+			$this->load->view($this->appLoginPage);
 		}	
 	public function forgot_password(){	
 		$data['msg'] = '';

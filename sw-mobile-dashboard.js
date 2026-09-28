@@ -1,6 +1,6 @@
 // Service Worker for Mobile Dashboard PWA
 // Scope: /master/ (registered with explicit scope)
-const CACHE_NAME = 'mobile-dashboard-v1';
+const CACHE_NAME = 'mobile-dashboard-v2';
 const STATIC_ASSETS = [
   '/css/bootstrap.min.css',
   '/css/font-awesome.min.css',
@@ -68,6 +68,42 @@ self.addEventListener('fetch', function (event) {
             caches.open(CACHE_NAME).then(function (c) { c.put(event.request, clone); });
           }
           return res;
+        });
+      })
+    );
+    return;
+  }
+
+  // Statement of Account: network first, keep a copy so the statement can be
+  // re-opened offline (the page also keeps its own localStorage snapshot).
+  if (url.indexOf('mobile_statementofaccount/get_soa') !== -1) {
+    event.respondWith(
+      fetch(event.request).then(function (res) {
+        if (res && res.status === 200) {
+          var clone = res.clone();
+          caches.open(CACHE_NAME).then(function (c) { c.put(event.request, clone); });
+        }
+        return res;
+      }).catch(function () {
+        return caches.match(event.request);
+      })
+    );
+    return;
+  }
+
+  // App login: network first, keep a copy so the installed app can still show
+  // the mobile login screen when the device is offline.
+  if (url.indexOf('/master/app_login') !== -1) {
+    event.respondWith(
+      fetch(event.request).then(function (res) {
+        if (event.request.method === 'GET' && res && res.status === 200) {
+          var clone = res.clone();
+          caches.open(CACHE_NAME).then(function (c) { c.put(event.request, clone); });
+        }
+        return res;
+      }).catch(function () {
+        return caches.match(event.request).then(function (cached) {
+          return cached || caches.match('/master/app_login');
         });
       })
     );
