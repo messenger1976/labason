@@ -26,6 +26,7 @@ class Onlinepayment_model extends CI_Model {
 	public $table_name = 'tbl_online_payments';
 	public $table_customer = 'tbl_addcustomer';
 	public $table_users = 'tbl_admin_login_users';
+	public $table_zone = 'tbl_zone';
 
 	/** Statuses that mean "still waiting for money". */
 	private $open_statuses = array('pending');
@@ -1015,7 +1016,9 @@ class Onlinepayment_model extends CI_Model {
 		if (!empty($filters['zone']) && $customer_alias !== '') {
 			$zone = (int) $filters['zone'];
 			if ($zone > 0) {
-				$this->db->where($customer_alias . 'zones', $zone);
+				// Filter on the stored id, numerically — the same comparison the app's own
+				// `tbl_zone.id = tbl_addcustomer.zone` joins rely on.
+				$this->db->where($customer_alias . 'zone', $zone);
 			}
 		}
 		if (!empty($filters['date_from'])) {
@@ -1048,9 +1051,15 @@ class Onlinepayment_model extends CI_Model {
 		if (!$this->table_ready()) {
 			return array();
 		}
+		// `tbl_addcustomer` has no `zones` column — it stores `zone` (the zone id), and the
+		// rest of the app surfaces the zone NAME through a `zones` alias. Selecting `c.zones`
+		// raised MySQL 1054 and a HTTP 500 on this report. Keep the alias so the report still
+		// prints the name.
 		$this->db->select(
-			'op.*, c.first_name, c.middle_name, c.last_name, c.address, c.meter_number, c.zones,'
-			. ' c.customer_type'
+			'op.*, c.first_name, c.middle_name, c.last_name, c.address, c.meter_number,'
+			. ' (SELECT z.zone FROM ' . $this->table_zone . ' z WHERE z.id = c.zone) AS zones,'
+			. ' c.customer_type',
+			false
 		);
 		$this->db->from($this->table_name . ' op');
 		$this->db->join($this->table_customer . ' c', 'c.customer_id = op.customer_id', 'left');

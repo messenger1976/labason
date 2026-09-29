@@ -166,7 +166,10 @@ class reports extends CI_Controller {
 			$this->load->model('onlinepayment_model', 'op_model');
 			$this->load->model('employee_logins_model', 'logins_model');
 			$data['zone'] = $this->customer_model->get_zone();
-			$data['users'] = $this->logins_model->get_all_active_records();
+			// get_all_active_records() returns a COUNT, not rows, so it filled the
+			// "Collected by" select with one bogus entry. Use the row-returning helper;
+			// keeping retired collectors listed is correct for old attempts.
+			$data['users'] = $this->logins_model->get_all_records();
 			$data['totals'] = $this->op_model->get_report_totals(array());
 			$data['table_ready'] = $this->op_model->table_ready();
 			$this->load->view($this->headerPage, $header);
