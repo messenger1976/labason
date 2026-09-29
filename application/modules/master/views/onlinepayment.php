@@ -11,6 +11,7 @@
 $ready = !empty($ready);
 $gateway_configured = !empty($gateway_configured);
 $recent = isset($recent) && is_array($recent) ? $recent : array();
+$customers = isset($customers) && is_array($customers) ? $customers : array();
 $qr_attempt = isset($qr_attempt) && is_array($qr_attempt) ? $qr_attempt : array();
 $qr_customer = isset($qr_customer) && is_array($qr_customer) ? $qr_customer : array();
 $qr_rows = isset($qr_rows) && is_array($qr_rows) ? $qr_rows : array();
@@ -74,17 +75,24 @@ $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
 					<div class="panel-content">
 						<div class="row align-items-end">
 							<div class="col-md-8">
-								<label class="form-label" for="op_search">Customer ID, name or meter number</label>
-								<div class="input-group">
-									<input type="text" class="form-control" id="op_search" autocomplete="off"
-										placeholder="Type at least 2 characters…">
-									<div class="input-group-append">
-										<button class="btn btn-primary" type="button" id="op_search_btn">
-											<i class="fal fa-search mr-1"></i> Search
-										</button>
-									</div>
-								</div>
-								<small class="form-text text-muted">Press Enter to search.</small>
+								<label class="form-label" for="op_customer_pick">Search Customer</label>
+								<select class="form-control" id="op_customer_pick" name="op_customer_pick"
+									data-placeholder="Type to search customer ID or name...">
+									<option value=""></option>
+									<?php
+									// Same suggested-search list the Cash Payment screen builds
+									// (customer_model::get_all_records()), so the two match.
+									foreach ((array) $customers as $value) {
+										$cid = isset($value['customer_id']) ? $value['customer_id'] : '';
+										$label = $cid . ' ==> '
+											. (isset($value['last_name']) ? $value['last_name'] : '') . ', '
+											. (isset($value['first_name']) ? $value['first_name'] : '') . ' '
+											. (isset($value['middle_name']) ? $value['middle_name'] : '');
+									?>
+									<option value="<?php echo $h($cid); ?>"><?php echo $h($label); ?></option>
+									<?php } ?>
+								</select>
+								<small class="form-text text-muted">Type a customer ID or name to filter the list.</small>
 							</div>
 							<div class="col-md-4">
 								<label class="form-label d-none d-md-block">&nbsp;</label>
@@ -93,7 +101,7 @@ $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
 								</button>
 							</div>
 						</div>
-						<div id="op_results" class="list-group mt-2"></div>
+						<div id="op_results" class="mt-2"></div>
 					</div>
 				</div>
 			</div>
@@ -268,9 +276,29 @@ $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
 
 <script src="<?php echo base_url(); ?>sa4/js/statistics/sparkline/sparkline.bundle.js"></script>
 <script type="text/javascript">
-(function ($) {
+// jQuery (and the Select2 plugin) arrive with the shell's footer bundle, which is
+// printed after this view — so wait for jQuery instead of assuming it, the same way
+// statementofaccount_search.php does. Select2 is fetched only once jQuery exists.
+(function () {
 	'use strict';
 
+	function boot() {
+		if (typeof window.jQuery === 'undefined') {
+			window.setTimeout(boot, 100);
+			return;
+		}
+		var $ = window.jQuery;
+		// $(document).ready so this also works if jQuery arrives before the DOM.
+		var start = function () { $(function () { main($); }); };
+		if ($.fn && $.fn.select2) { start(); return; }
+		var s = document.createElement('script');
+		s.src = '<?php echo base_url(); ?>sa4/js/formplugins/select2/select2.bundle.js';
+		s.onload = start;
+		s.onerror = start;   // a plain select still works without it
+		document.body.appendChild(s);
+	}
+
+	function main($) {
 	var customerId = '';
 	var bills = [];
 
@@ -326,13 +354,27 @@ $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
 		});
 	}
 
-	$('#op_search_btn').on('click', runSearch);
-	$('#op_search').on('keydown', function (e) {
-		if (e.key === 'Enter') { e.preventDefault(); runSearch(); }
+	// ---- suggested customer search ---------------------------------------
+	// The free-text box + Search button is replaced by the same Select2 control the
+	// Cash Payment screen uses, so typing filters the customer list as you go.
+	$('#op_customer_pick').on('change', function () {
+		// One path for picking, clearing and the Clear button: reset, then load.
+		resetSelection();
+		var id = $(this).val();
+		if (id) { loadBills(id); }
 	});
 
-	$('#op_reset').on('click', function () {
-		$('#op_search').val('');
+	function initCustomerPicker() {
+		if (!$.fn || !$.fn.select2) { return; }   // plain select stays usable
+		$('#op_customer_pick').select2({
+			width: '100%',
+			placeholder: $('#op_customer_pick').data('placeholder') || 'Type to search customer ID or name...',
+			allowClear: true
+		});
+	}
+	initCustomerPicker();
+
+	function resetSelection() {
 		$('#op_results').empty();
 		$('#op_bills_wrap').hide();
 		$('#op_bills_body').empty();
@@ -340,11 +382,16 @@ $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
 		customerId = '';
 		bills = [];
 		clearMessage();
+	}
+
+	$('#op_reset').on('click', function () {
+		// Clearing Select2 fires 'change', which resets the panels for us.
+		$('#op_customer_pick').val(null).trigger('change');
+		resetSelection();
 	});
 
 	// ---- load bills -------------------------------------------------------
-	$(document).on('click', '.op_pick', function () {
-		var id = $(this).data('id');
+	function loadBills(id) {
 		$('#op_bills_wrap').hide();
 		$('#op_results').html('<div class="text-muted small"><i class="fal fa-spinner fa-spin mr-1"></i> Loading billing periods…</div>');
 		$.ajax({
@@ -503,7 +550,10 @@ $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
 			$(this).html('<i class="fal fa-check"></i>');
 		} catch (e) { window.prompt('Copy this link', field.value); }
 	});
-})(jQuery);
+	} // main()
+
+	boot();
+})();
 </script>
 
 <?php include('footer.php'); ?>

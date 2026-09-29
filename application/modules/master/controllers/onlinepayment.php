@@ -84,6 +84,8 @@ class onlinepayment extends CI_Controller {
 		$data['ready'] = $this->my_model->table_ready();
 		$data['gateway_configured'] = $this->_gateway_configured();
 		$data['recent'] = $this->my_model->get_attempts(array(), 10, 0);
+		// Suggested-search list — the same one the Cash Payment screen uses.
+		$data['customers'] = $this->customer_model->get_all_records();
 
 		// After a QR is created the page reloads with ?attempt=<id> so the shared
 		// QR partial is rendered by PHP, exactly as the mobile page renders it.
