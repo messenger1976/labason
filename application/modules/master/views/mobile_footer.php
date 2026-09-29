@@ -4,8 +4,11 @@
 		
 		<!--================================================== -->
 
-		<!-- PACE LOADER - turn this on if you want ajax loading to show (caution: uses lots of memory on iDevices)-->
-		<script data-pace-options='{ "restartOnRequestAfter": true }' src="js/plugin/pace/pace.min.js"></script>
+		<!-- PACE LOADER - turn this on if you want ajax loading to show (caution: uses lots of memory on iDevices).
+		     The path MUST go through base_url(): a relative src resolves against the current URL, so on a deep
+		     page like /master/mobile_payment/success/7 it asked for a file that does not exist, the server
+		     answered with an HTML 404 page and the browser reported "Unexpected token '<'". -->
+		<script data-pace-options='{ "restartOnRequestAfter": true }' src="<?php echo base_url();?>js/plugin/pace/pace.min.js"></script>
 
 		<!-- Link to Google CDN's jQuery + jQueryUI; fall back to local.
 		     MUST be https: the app is served over https, and a http script is
