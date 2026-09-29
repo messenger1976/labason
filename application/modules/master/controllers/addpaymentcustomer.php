@@ -185,6 +185,7 @@ class addpaymentcustomer extends CI_Controller {
 			// - Billing period --All--: filter by Paid Date (transaction_date), default today
 			$billing_period = trim($this->input->post('billing_period') ?: '');
 			$transaction_date = trim($this->input->post('transaction_date') ?: '');
+			$channel = trim($this->input->post('channel') ?: '');
 			$paid_date_filter = '';
 			if ($billing_period === '') {
 				if ($transaction_date === '') {
@@ -219,7 +220,8 @@ class addpaymentcustomer extends CI_Controller {
 				7 => 'tbl_addmetercustomer.vat_amount',  // VAT Discount
 				8 => 'tbl_addmetercustomer.grand_total',  // Net Amount
 				9 => 'tbl_addmetercustomer.date',  // Paid Date
-				10 => 'tbl_addmetercustomer.id'  // Action
+				10 => 'tbl_addmetercustomer.payment_channel',  // Channel
+				11 => 'tbl_addmetercustomer.id'  // Action
 			);
 			$order_column = isset($columns[$order_column_index]) ? $columns[$order_column_index] : 'tbl_addmetercustomer.id';
 			
@@ -229,9 +231,9 @@ class addpaymentcustomer extends CI_Controller {
 			}
 			
 			// Get filtered and paginated records
-			$records = $this->my_model->get_paginated_records($start, $length, $search, $order_column, $order_dir, $billing_period, $paid_date_filter);
-			$total_records = $this->my_model->get_total_count('', $billing_period, $paid_date_filter);
-			$filtered_records = $this->my_model->get_total_count($search, $billing_period, $paid_date_filter);
+			$records = $this->my_model->get_paginated_records($start, $length, $search, $order_column, $order_dir, $billing_period, $paid_date_filter, $channel);
+			$total_records = $this->my_model->get_total_count('', $billing_period, $paid_date_filter, $channel);
+			$filtered_records = $this->my_model->get_total_count($search, $billing_period, $paid_date_filter, $channel);
 			
 			// Format data for DataTables (SA4-styled cells/actions)
 			$data = array();
@@ -257,6 +259,19 @@ class addpaymentcustomer extends CI_Controller {
 				}
 				$paid_date = (!empty($row['date']) && $row['date'] != '0000-00-00') ? date('m/d/Y', strtotime($row['date'])) : '';
 
+				// Payment channel: rows written before the migration default to cash.
+				$row_channel = isset($row['payment_channel']) && trim((string) $row['payment_channel']) !== ''
+					? strtolower(trim((string) $row['payment_channel']))
+					: 'cash';
+				if ($row_channel === 'qrph' || $row_channel === 'online') {
+					$channel_cell = '<span class="badge badge-primary badge-pill" title="Online / QR Ph payment - no OR"><i class="fal fa-qrcode mr-1"></i>QR Ph</span>';
+					$online_ref = isset($row['online_reference']) ? trim((string) $row['online_reference']) : '';
+					// QR Ph rows carry no OR, so show the PayMongo reference in its place.
+					$or_number = $online_ref !== '' ? $online_ref : '-';
+				} else {
+					$channel_cell = '<span class="badge badge-secondary badge-pill">Cash</span>';
+				}
+
 				$action_html = '<input type="hidden" name="customerid_'.$i.'" id="customerid_'.$i.'" value="'.htmlspecialchars($customer_id, ENT_QUOTES, 'UTF-8').'">'
 					.'<input type="hidden" name="month_'.$i.'" id="month_'.$i.'" value="'.htmlspecialchars(isset($row['month']) ? $row['month'] : '', ENT_QUOTES, 'UTF-8').'">'
 					.'<input type="hidden" name="year_'.$i.'" id="year_'.$i.'" value="'.htmlspecialchars(isset($row['year']) ? $row['year'] : '', ENT_QUOTES, 'UTF-8').'">'
@@ -277,6 +292,7 @@ class addpaymentcustomer extends CI_Controller {
 					'<span class="text-right d-block text-warning">'.number_format($vat, 2).'</span>',
 					'<span class="text-right d-block fw-700 text-success">'.number_format($net_amount, 2).'</span>',
 					$paid_date !== '' ? '<span class="badge badge-info badge-pill">'.$paid_date.'</span>' : '',
+					$channel_cell,
 					$action_html
 				);
 			}

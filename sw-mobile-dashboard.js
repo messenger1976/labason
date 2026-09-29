@@ -1,6 +1,6 @@
 // Service Worker for Mobile Dashboard PWA
 // Scope: /master/ (registered with explicit scope)
-const CACHE_NAME = 'mobile-dashboard-v2';
+const CACHE_NAME = 'mobile-dashboard-v3';
 const STATIC_ASSETS = [
   '/css/bootstrap.min.css',
   '/css/font-awesome.min.css',
@@ -105,6 +105,23 @@ self.addEventListener('fetch', function (event) {
         return caches.match(event.request).then(function (cached) {
           return cached || caches.match('/master/app_login');
         });
+      })
+    );
+    return;
+  }
+
+  // Payment: never cache. A stale QR, amount or status could show a code that no
+  // longer works or settle the wrong thing, so these always go to the network.
+  if (url.indexOf('/master/mobile_payment') !== -1 ||
+      url.indexOf('/master/onlinepayment') !== -1 ||
+      url.indexOf('/master/paymentportal') !== -1 ||
+      url.indexOf('/master/paymongo') !== -1) {
+    event.respondWith(
+      fetch(event.request).catch(function () {
+        return new Response(
+          JSON.stringify({ ok: false, offline: true, message: 'You are offline. Online payment needs a connection.' }),
+          { status: 503, headers: { 'Content-Type': 'application/json' } }
+        );
       })
     );
     return;

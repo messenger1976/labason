@@ -164,6 +164,14 @@ $avatar_url = base_url($avatar_relative) . '?v=' . $avatar_mtime;
 					</li>
 					<?php } ?>
 
+					<?php if((array_key_exists('onlinepayment',$roleResponsible) && ($roleResponsible['onlinepayment'] == 1) ) || ($this->session->userdata('usertype') == 'admin')){ ?>
+					<li class="<?php if($this->uri->segment(2)=='onlinepayment'){echo 'active';}?>">
+						<a href="<?php echo ADMIN_URL;?>onlinepayment" title="Online Payment (QR Ph)">
+							<span class="nav-link-text">Online Payment (QR Ph)</span>
+						</a>
+					</li>
+					<?php } ?>
+
 					<?php if((array_key_exists('metersearch',$roleResponsible) && ($roleResponsible['metersearch'] == 1) ) || ($this->session->userdata('usertype') == 'admin')){ ?>
 					<li class="<?php if($this->uri->segment(3)=='metersearch' && $this->uri->segment(2)=='addcustomer'){echo 'active';}?>">
 						<a href="<?php echo ADMIN_URL;?>addcustomer/metersearch" title="Meter Customer Search">
@@ -387,6 +395,14 @@ $avatar_url = base_url($avatar_relative) . '?v=' . $avatar_mtime;
 					<li class="<?php if($this->uri->segment(2)=='reports' && $this->uri->segment(3)=='customer_payment_monitoring_report') echo 'active';?>">
 						<a href="<?php echo ADMIN_URL;?>reports/customer_payment_monitoring_report" title="Customer Payment Monitoring">
 							<span class="nav-link-text">Customer Payment Monitoring</span>
+						</a>
+					</li>
+					<?php } ?>
+
+					<?php if((array_key_exists('online_payment_report',$roleResponsible) && ($roleResponsible['online_payment_report'] == 1)) || ($this->session->userdata('usertype') == 'admin') ){ ?>
+					<li class="<?php if($this->uri->segment(2)=='reports' && $this->uri->segment(3)=='online_payment_report') echo 'active';?>">
+						<a href="<?php echo ADMIN_URL;?>reports/online_payment_report" title="Online / QR Ph Payment">
+							<span class="nav-link-text">Online / QR Ph Payment</span>
 						</a>
 					</li>
 					<?php } ?>
@@ -615,7 +631,8 @@ $avatar_url = base_url($avatar_relative) . '?v=' . $avatar_mtime;
 
 			<li class="<?php if($this->uri->segment(2)=='change_username'){echo 'active open';}?>
 						   <?php if($this->uri->segment(2)=='change_password'){echo 'active open';}?>
-						   <?php if($this->uri->segment(2)=='global_settings'){echo 'active open';}?>">
+						   <?php if($this->uri->segment(2)=='global_settings'){echo 'active open';}?>
+						   <?php if($this->uri->segment(2)=='paymongo_setup'){echo 'active open';}?>">
 				<a href="#" title="Setting">
 					<i class="fal fa-key"></i>
 					<span class="nav-link-text">Setting</span>
@@ -637,6 +654,13 @@ $avatar_url = base_url($avatar_relative) . '?v=' . $avatar_mtime;
 					<?php
 					}
 					?>
+					<?php if((array_key_exists('paymongo_setup',$roleResponsible) && ($roleResponsible['paymongo_setup'] == 1) ) || ($this->session->userdata('usertype') == 'admin')){ ?>
+					<li class="<?php if($this->uri->segment(2)=='paymongo_setup') echo 'active';?>">
+						<a href="<?php echo ADMIN_URL;?>paymongo_setup" title="PayMongo Setup">
+							<span class="nav-link-text">PayMongo Setup</span>
+						</a>
+					</li>
+					<?php } ?>
 					<li class="<?php if($this->uri->segment(2)=='change_username' && $this->uri->segment(2)=='change_username'){echo 'active';}?>">
 						<a href="<?php echo ADMIN_URL;?>change_username/" title="Change Username">
 							<span class="nav-link-text">Change Username</span>

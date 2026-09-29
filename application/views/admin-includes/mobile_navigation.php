@@ -61,6 +61,12 @@
 					</li>
 				<?php } ?>
 
+				<?php if((array_key_exists('mobile_payment',$roleResponsible) && ($roleResponsible['mobile_payment'] == 1) ) || ($this->session->userdata('usertype') == 'admin')){ ?>
+					<li class="<?php if($this->uri->segment(2)=='mobile_payment') echo 'active';?>">
+						<a href="<?php echo ADMIN_URL;?>mobile_payment" title="Payment"><i class="fa fa-lg fa-fw fa-qrcode"></i> <span class="menu-item-parent">Payment</span></a>
+					</li>
+				<?php } ?>
+
 					
 
 

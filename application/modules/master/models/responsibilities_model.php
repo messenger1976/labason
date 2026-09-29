@@ -174,7 +174,11 @@ class responsibilities_model extends CI_Model {
 				'database_backup' => '0',
 				'classification_category' => '0',
 				'classification' => '0',
-				'amountrate' => '0'
+				'amountrate' => '0',
+				'paymongo_setup' => '0',
+				'onlinepayment' => '0',
+				'mobile_payment' => '0',
+				'online_payment_report' => '0'
 				);
 	}
 

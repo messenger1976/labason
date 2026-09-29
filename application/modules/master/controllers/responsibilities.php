@@ -111,7 +111,11 @@ class responsibilities extends CI_Controller
 				'database_backup' => 'Database Backup',
 				'classification_category' => 'Classification Category',
 				'classification' => 'Classification',
-				'amountrate' => 'Per Unit Value'
+				'amountrate' => 'Per Unit Value',
+				'paymongo_setup' => 'PayMongo Setup',
+				'onlinepayment' => 'Online Payment (QR Ph)',
+				'mobile_payment' => 'Mobile Payment (QR Ph)',
+				'online_payment_report' => 'Online / QR Ph Payment Report'
 				);
 	}
 
@@ -147,6 +151,8 @@ class responsibilities extends CI_Controller
 					'leakingentry',
 					'feesplaning',
 					'paymentmonthlycustomer',
+					'onlinepayment',
+					'mobile_payment',
 					'metersearch',
 					'monthlysearch',
 					'generatemetercustomer_search',
@@ -174,7 +180,7 @@ class responsibilities extends CI_Controller
 				'label' => 'Reports',
 				'icon' => 'fa-pencil-square-o',
 				'parent_key' => null,
-				'children' => array('adddailyreport', 'customerbalancemonitor', 'lowtonoconsumption')
+				'children' => array('adddailyreport', 'customerbalancemonitor', 'lowtonoconsumption', 'online_payment_report')
 			),
 			array(
 				'id' => 'accounting',
@@ -223,6 +229,13 @@ class responsibilities extends CI_Controller
 				'label' => 'Mobile Notifications',
 				'icon' => 'fa-mobile',
 				'parent_key' => 'mobile_notifications',
+				'children' => array()
+			),
+			array(
+				'id' => 'settings',
+				'label' => 'Settings',
+				'icon' => 'fa-cog',
+				'parent_key' => 'paymongo_setup',
 				'children' => array()
 			),
 			array(
