@@ -277,10 +277,12 @@ $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
 <script>
 	// When the QR panel reports success inside the overlay, send the collector to
 	// the confirmation page so they can print the 80mm receipt.
+	// NB: keep the attempt id *inside* the quotes. `'…/success/' . 5` is PHP
+	// concatenation and is a JavaScript syntax error ("Unexpected number").
 	(function () {
 		'use strict';
-		var successUrl = '<?php echo ADMIN_URL; ?>mobile_payment/success/' . <?php echo (int) $qr_attempt['id']; ?>;
-		var statusUrl = '<?php echo ADMIN_URL; ?>mobile_payment/status/' . <?php echo (int) $qr_attempt['id']; ?>;
+		var successUrl = '<?php echo ADMIN_URL; ?>mobile_payment/success/<?php echo (int) $qr_attempt['id']; ?>';
+		var statusUrl = '<?php echo ADMIN_URL; ?>mobile_payment/status/<?php echo (int) $qr_attempt['id']; ?>';
 		var timer = setInterval(function () {
 			fetch(statusUrl, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' })
 				.then(function (r) { return r.json(); })
