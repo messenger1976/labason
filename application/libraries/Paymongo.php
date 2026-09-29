@@ -603,10 +603,22 @@ class Paymongo {
 			}
 			if ($out['expires_at'] === '') {
 				foreach (array('expires_at', 'expiry', 'expires_on') as $k) {
-					if (!empty($c[$k])) {
-						$out['expires_at'] = is_numeric($c[$k])
-							? date('Y-m-d H:i:s', (int) $c[$k])
-							: (string) $c[$k];
+					if (empty($c[$k])) {
+						continue;
+					}
+					if (is_numeric($c[$k])) {
+						// Already unix seconds.
+						$out['expires_at'] = date('Y-m-d H:i:s', (int) $c[$k]);
+					} else {
+						// PayMongo answers in ISO-8601 **UTC** (…Z / +00:00) while this
+						// app stores local time. Copying the string verbatim made every
+						// expiry 8 hours stale, so an attempt looked expired the second
+						// it was created: no countdown, polling switched off, and it
+						// could never be settled. Parse, then render in the local zone.
+						$ts = strtotime((string) $c[$k]);
+						$out['expires_at'] = ($ts !== false && $ts > 0) ? date('Y-m-d H:i:s', $ts) : '';
+					}
+					if ($out['expires_at'] !== '') {
 						break;
 					}
 				}
