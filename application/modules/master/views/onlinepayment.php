@@ -23,6 +23,71 @@ $fee_cfg = $this->paymongo->fee_settings();
 $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); };
 ?>
 <link rel="stylesheet" media="screen, print" href="<?php echo base_url(); ?>sa4/css/formplugins/select2/select2.bundle.css">
+<style>
+	.op-subheader { flex-wrap: wrap; }
+	.op-subheader .subheader-title { flex: 1 1 260px; min-width: 0; }
+
+	.op-cust-card { height: 100%; }
+	.op-cust-card .op-cust-name { word-break: break-word; }
+
+	.op-bills-table thead th { white-space: nowrap; vertical-align: middle; }
+	.op-bills-table td { vertical-align: middle; }
+	.op-bills-table td.text-right { white-space: nowrap; }
+	.op-bills-table tfoot th { white-space: nowrap; }
+
+	.op-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+	.op-actions .btn { margin: 0 !important; }
+
+	.op-recent-table td, .op-recent-table th { white-space: nowrap; vertical-align: middle; }
+
+	/* The QR modal is rendered open without Bootstrap's body.modal-open, so allow it to scroll itself. */
+	#op_qr_modal { overflow-x: hidden; overflow-y: auto; }
+
+	/* Billing periods: 15 columns do not fit below lg, so each period becomes a card. */
+	@media (max-width: 991.98px) {
+		.op-bills-wrap { overflow-x: visible; }
+		.table.op-bills-table { border: 0; background: transparent; }
+		.op-bills-table, .op-bills-table tbody, .op-bills-table tfoot { display: block; width: 100%; }
+		.op-bills-table thead { display: block; background: none !important; }
+		.op-bills-table thead tr { display: flex; }
+		.op-bills-table thead th { display: none; }
+		.op-bills-table thead th.op-col-check { display: flex; align-items: center; width: 100% !important; border: 0; padding: 0 0 .5rem; color: #505050; }
+		.op-bills-table thead th.op-col-check::after { content: 'Select all payable periods'; margin-left: .5rem; font-weight: 500; }
+
+		.op-bills-table tbody tr { display: grid; grid-template-columns: 1fr 1fr; column-gap: 1.25rem; margin-bottom: .75rem; padding: .35rem .75rem; background: #fff; border: 1px solid rgba(0,0,0,.12); border-radius: 4px; }
+		.table.op-bills-table tbody td { display: flex; justify-content: space-between; align-items: center; gap: .75rem; padding: .3rem 0; border: 0; border-bottom: 1px dashed rgba(0,0,0,.08); text-align: right; white-space: normal; }
+		.op-bills-table tbody td::before { content: attr(data-label); font-weight: 600; color: #6c757d; text-align: left; white-space: nowrap; }
+		.op-bills-table tbody td:not([data-label])::before { display: none; }
+		.op-bills-table tbody td:not([data-label]) { grid-column: 1 / -1; justify-content: center; border-bottom: 0; }
+		.op-bills-table tbody td.op-cell-check,
+		.op-bills-table tbody td.op-cell-period,
+		.op-bills-table tbody td.op-cell-status,
+		.op-bills-table tbody td.op-cell-due { grid-column: 1 / -1; }
+		.op-bills-table tbody td.op-cell-check { order: -3; justify-content: flex-start; border-bottom: 0; }
+		.op-bills-table tbody td.op-cell-check::before { order: 2; }
+		.op-bills-table tbody td.op-cell-period { order: -2; font-size: 1rem; font-weight: 700; }
+		.op-bills-table tbody td.op-cell-status { order: -1; }
+		.op-bills-table tbody td.op-cell-due { order: 99; border-bottom: 0; font-size: 1rem; }
+
+		.op-bills-table tfoot tr { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: .5rem .75rem; border: 1px solid rgba(0,0,0,.12); border-top: 0; }
+		.op-bills-table tfoot tr:first-child { border-top: 1px solid rgba(0,0,0,.12); border-radius: 4px 4px 0 0; }
+		.op-bills-table tfoot tr:last-child { border-radius: 0 0 4px 4px; }
+		.table.op-bills-table tfoot th { display: block; border: 0; padding: 0; text-align: left !important; white-space: normal; }
+		.op-bills-table tfoot th:empty { display: none; }
+		.op-bills-table tfoot th[id] { text-align: right !important; white-space: nowrap; }
+	}
+
+	@media (max-width: 575.98px) {
+		.op-bills-table tbody tr { grid-template-columns: 1fr; }
+		.op-actions .btn { flex: 1 1 100%; }
+
+		.op-recent-table thead { display: none; }
+		.op-recent-table, .op-recent-table tbody, .op-recent-table tr, .op-recent-table td { display: block; width: 100%; }
+		.op-recent-table tr { padding: .5rem 1rem; border-bottom: 1px solid rgba(0,0,0,.08); }
+		.table.op-recent-table td { display: flex; justify-content: space-between; gap: .75rem; padding: .15rem 0; border: 0; text-align: right !important; white-space: normal; }
+		.op-recent-table td::before { content: attr(data-label); font-weight: 600; color: #6c757d; text-align: left; }
+	}
+</style>
 <main id="js-page-content" role="main" class="page-content">
 	<ol class="breadcrumb page-breadcrumb">
 		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>">Home</a></li>
@@ -30,12 +95,12 @@ $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
 		<li class="position-absolute pos-top pos-right d-none d-sm-block"><span class="js-get-date"></span></li>
 	</ol>
 
-	<div class="subheader">
+	<div class="subheader op-subheader">
 		<h1 class="subheader-title">
 			<i class="subheader-icon fal fa-qrcode"></i>
 			Online Payment <span class="fw-300">QR Ph</span>
 		</h1>
-		<div class="subheader-block d-lg-flex align-items-center">
+		<div class="subheader-block d-flex align-items-center">
 			<a href="<?php echo ADMIN_URL; ?>onlinepayment/manage" class="btn btn-outline-primary waves-effect waves-themed">
 				<i class="fal fa-list mr-1"></i> Payment History
 			</a>
@@ -76,8 +141,8 @@ $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
 				</div>
 				<div class="panel-container show">
 					<div class="panel-content">
-						<div class="row align-items-end">
-							<div class="col-md-8">
+						<div class="row">
+							<div class="col-12 col-md-8 col-xl-9">
 								<label class="form-label" for="op_customer_pick">Search Customer</label>
 								<select class="form-control" id="op_customer_pick" name="op_customer_pick"
 									data-placeholder="Type to search customer ID or name...">
@@ -97,7 +162,7 @@ $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
 								</select>
 								<small class="form-text text-muted">Type a customer ID or name to filter the list.</small>
 							</div>
-							<div class="col-md-4">
+							<div class="col-12 col-md-4 col-xl-3 mt-2 mt-md-0">
 								<label class="form-label d-none d-md-block">&nbsp;</label>
 								<button type="button" class="btn btn-secondary btn-block" id="op_reset">
 									<i class="fal fa-undo mr-1"></i> Clear
@@ -123,11 +188,11 @@ $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
 				<div class="panel-container show">
 					<div class="panel-content">
 						<div id="op_customer" class="mb-3"></div>
-						<div class="table-responsive">
-							<table class="table table-sm table-bordered table-hover mb-0" id="op_bills_table">
+						<div class="table-responsive op-bills-wrap">
+							<table class="table table-sm table-bordered table-hover mb-0 op-bills-table" id="op_bills_table">
 								<thead class="bg-primary-600 bg-primary-gradient">
 									<tr>
-										<th style="width:34px;">
+										<th class="op-col-check" style="width:34px;">
 											<input type="checkbox" id="op_check_all" title="Select all payable">
 										</th>
 										<th>Billing period</th>
@@ -177,7 +242,7 @@ $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
 								<label class="form-label" for="op_email">Customer email (for the payment link)</label>
 								<input type="email" class="form-control" id="op_email" placeholder="name@example.com">
 							</div>
-							<div class="col-lg-8 col-md-6 mb-2">
+							<div class="col-lg-8 col-md-6 mb-2 op-actions">
 								<button type="button" class="btn btn-primary waves-effect waves-themed mr-2 mb-1" id="op_generate_qr">
 									<i class="fal fa-qrcode mr-1"></i> Show QR code
 								</button>
@@ -207,7 +272,7 @@ $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
 						<div class="p-3 text-muted">Nothing yet.</div>
 						<?php } else { ?>
 						<div class="table-responsive">
-							<table class="table table-sm table-striped mb-0">
+							<table class="table table-sm table-striped mb-0 op-recent-table">
 								<thead>
 									<tr>
 										<th>Reference</th>
@@ -220,11 +285,11 @@ $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
 								<tbody>
 									<?php foreach ($recent as $row) { ?>
 									<tr>
-										<td><code><?php echo $h($row['reference_no']); ?></code></td>
-										<td><?php echo $h($row['customer_id']); ?></td>
-										<td class="text-right"><?php echo number_format((float) $row['amount'], 2); ?></td>
-										<td><span class="badge badge-<?php echo $h($this->my_model->status_class($row['status'])); ?>"><?php echo $h($this->my_model->status_label($row['status'])); ?></span></td>
-										<td><?php echo $h($row['create_date_time']); ?></td>
+										<td data-label="Reference"><code><?php echo $h($row['reference_no']); ?></code></td>
+										<td data-label="Customer"><?php echo $h($row['customer_id']); ?></td>
+										<td data-label="Amount" class="text-right"><?php echo number_format((float) $row['amount'], 2); ?></td>
+										<td data-label="Status"><span class="badge badge-<?php echo $h($this->my_model->status_class($row['status'])); ?>"><?php echo $h($this->my_model->status_label($row['status'])); ?></span></td>
+										<td data-label="Created"><?php echo $h($row['create_date_time']); ?></td>
 									</tr>
 									<?php } ?>
 								</tbody>
@@ -440,16 +505,16 @@ $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
 	function renderCustomer(c) {
 		$('#op_customer').html(''
 			+ '<div class="row">'
-			+ '<div class="col-md-5"><div class="p-2 rounded border bg-faded">'
-			+ '<div class="fw-500">' + (c.name || '') + '</div>'
+			+ '<div class="col-12 col-md-5 mb-2 mb-md-0"><div class="p-2 rounded border bg-faded op-cust-card">'
+			+ '<div class="fw-500 op-cust-name">' + (c.name || '') + '</div>'
 			+ '<div class="text-muted small">Customer ID: ' + (c.customer_id || '') + '</div>'
 			+ '<div class="text-muted small">Meter: ' + (c.meter_number || '—') + '</div>'
 			+ '</div></div>'
-			+ '<div class="col-md-4"><div class="p-2 rounded border bg-faded">'
+			+ '<div class="col-12 col-sm-7 col-md-4 mb-2 mb-md-0"><div class="p-2 rounded border bg-faded op-cust-card">'
 			+ '<div class="text-muted small">Address</div><div>' + (c.address || '—') + '</div>'
 			+ '<div class="text-muted small">Zone: ' + (c.zone || '—') + '</div>'
 			+ '</div></div>'
-			+ '<div class="col-md-3"><div class="p-2 rounded border bg-faded text-right">'
+			+ '<div class="col-12 col-sm-5 col-md-3"><div class="p-2 rounded border bg-faded text-right op-cust-card">'
 			+ '<div class="text-muted small">Total payable</div>'
 			+ '<div class="h4 mb-0 text-danger">&#8369; ' + money(c.balance) + '</div>'
 			+ '</div></div>'
@@ -465,23 +530,23 @@ $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
 				? '<span class="badge badge-success">Paid</span>'
 				: (r.has_reading ? '<span class="badge badge-danger">Unpaid</span>' : '<span class="badge badge-secondary">No reading</span>');
 			html += '<tr>'
-				+ '<td>' + (payable
+				+ '<td class="op-cell-check" data-label="' + (payable ? 'Pay this period' : 'Not payable') + '">' + (payable
 					? '<input type="checkbox" class="op_check" data-idx="' + idx + '">'
 					: '<input type="checkbox" disabled>') + '</td>'
-				+ '<td>' + period + '</td>'
-				+ '<td>' + esc(r.due_date ? r.due_date : '—') + '</td>'
-				+ '<td class="text-right">' + esc(r.previous_reading) + '</td>'
-				+ '<td class="text-right">' + esc(r.reading) + '</td>'
-				+ '<td class="text-right">' + esc(r.consumed) + '</td>'
-				+ '<td class="text-right">' + money(r.display_bill_amount) + '</td>'
-				+ '<td class="text-right text-danger">' + money(r.discount) + '</td>'
-				+ '<td class="text-right text-warning">' + money(r.penalty) + '</td>'
-				+ '<td class="text-right">' + money(r.maintenance_fee) + '</td>'
-				+ '<td class="text-right">' + money(r.franchise_fee_amount) + '</td>'
-				+ '<td>' + esc(r.or_number || '—') + '</td>'
-				+ '<td>' + esc(r.trans_date || '—') + '</td>'
-				+ '<td class="text-right fw-700 ' + (r.is_paid ? 'text-success' : '') + '">' + money(r.amount_due) + '</td>'
-				+ '<td>' + statusBadge + '</td>'
+				+ '<td class="op-cell-period" data-label="Billing period">' + period + '</td>'
+				+ '<td data-label="Due date">' + esc(r.due_date ? r.due_date : '—') + '</td>'
+				+ '<td class="text-right" data-label="Prev">' + esc(r.previous_reading) + '</td>'
+				+ '<td class="text-right" data-label="Last">' + esc(r.reading) + '</td>'
+				+ '<td class="text-right" data-label="Consumed">' + esc(r.consumed) + '</td>'
+				+ '<td class="text-right" data-label="Bill amount">' + money(r.display_bill_amount) + '</td>'
+				+ '<td class="text-right text-danger" data-label="Discount">' + money(r.discount) + '</td>'
+				+ '<td class="text-right text-warning" data-label="Penalty">' + money(r.penalty) + '</td>'
+				+ '<td class="text-right" data-label="WMMF">' + money(r.maintenance_fee) + '</td>'
+				+ '<td class="text-right" data-label="Franchise">' + money(r.franchise_fee_amount) + '</td>'
+				+ '<td data-label="OR / Online ref">' + esc(r.or_number || '—') + '</td>'
+				+ '<td data-label="Date paid">' + esc(r.trans_date || '—') + '</td>'
+				+ '<td class="text-right fw-700 op-cell-due ' + (r.is_paid ? 'text-success' : '') + '" data-label="Amount due">' + money(r.amount_due) + '</td>'
+				+ '<td class="op-cell-status" data-label="Status">' + statusBadge + '</td>'
 				+ '</tr>';
 		});
 		if (!html) {
