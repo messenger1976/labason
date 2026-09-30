@@ -74,7 +74,11 @@ class adminheader_model extends CI_Model {
 				'database_backup' => 'Database Backup',
 				'classification_category' => 'Classification Category',
 				'classification' => 'Classification',
-				'amountrate' => 'Per Unit Value'
+				'amountrate' => 'Per Unit Value',
+				'paymongo_setup' => 'PayMongo Setup',
+				'onlinepayment' => 'Online Payment (QR Ph)',
+				'mobile_payment' => 'Mobile Payment (QR Ph)',
+				'online_payment_report' => 'Online / QR Ph Payment Report'
 				);
 	}
 

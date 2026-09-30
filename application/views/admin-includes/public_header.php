@@ -6,11 +6,18 @@ header("Pragma: no-cache");
 header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
 // Public header - no authentication required, no navigation
 ?>
+<?php
+// Public pages share this header. Statement of Account is the default; the online
+// payment portal passes its own $page_title so the browser tab is not misleading.
+$pub_has_title = (isset($page_title) && trim((string) $page_title) !== '');
+$pub_title = $pub_has_title ? trim((string) $page_title) : 'Statement of Account - Water Billing System';
+$pub_short_title = $pub_has_title ? trim((string) $page_title) : 'Statement of Account';
+?>
 <!DOCTYPE html>
 <html lang="en-us">
 	<head>
 		<meta charset="utf-8">
-		<title>Statement of Account - Water Billing System</title>
+		<title><?php echo htmlspecialchars($pub_title, ENT_QUOTES, 'UTF-8'); ?></title>
 		<meta name="description" content="Customer Statement of Account">
 		<meta name="author" content="">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -42,7 +49,7 @@ header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
 		<meta name="apple-mobile-web-app-capable" content="yes">
 		<meta name="mobile-web-app-capable" content="yes">
 		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-		<meta name="apple-mobile-web-app-title" content="Statement of Account">
+		<meta name="apple-mobile-web-app-title" content="<?php echo htmlspecialchars($pub_short_title, ENT_QUOTES, 'UTF-8'); ?>">
 		<meta name="mobile-web-app-capable" content="yes">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
 

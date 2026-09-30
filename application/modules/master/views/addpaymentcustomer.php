@@ -77,6 +77,16 @@
 		</div>
 		<div class="subheader-block d-lg-flex align-items-center border-faded border-right-0 border-top-0 border-bottom-0 ml-3 pl-3">
 			<div class="d-inline-flex flex-column justify-content-center mr-3">
+				<span class="fw-300 fs-xs d-block opacity-50"><small>CHANNEL</small></span>
+				<select class="form-control form-control-sm" name="header_channel" id="header_channel" style="min-width:140px;">
+					<option value="">--All--</option>
+					<option value="cash">Cash</option>
+					<option value="qrph">QR Ph (online)</option>
+				</select>
+			</div>
+		</div>
+		<div class="subheader-block d-lg-flex align-items-center border-faded border-right-0 border-top-0 border-bottom-0 ml-3 pl-3">
+			<div class="d-inline-flex flex-column justify-content-center mr-3">
 				<span class="fw-300 fs-xs d-block opacity-50"><small>INCOME</small></span>
 				<span class="fw-500 fs-xl d-block color-primary-500">₱ <?php echo number_format($intotal, 2); ?></span>
 			</div>
@@ -142,6 +152,7 @@
 											<th class="text-right">VAT Discount</th>
 											<th class="text-right">Net Amount</th>
 											<th class="text-center">Paid Date</th>
+											<th class="text-center">Channel</th>
 											<th style="width:140px;" class="text-center">Action</th>
 										</tr>
 									</thead>
@@ -289,6 +300,7 @@ $(document).ready(function() {
 			data: function(d) {
 				d.billing_period = $('#header_billingperiod').val() || '';
 				d.transaction_date = $('#header_transdate').val() || '';
+				d.channel = $('#header_channel').val() || '';
 			}
 		},
 		columns: [
@@ -302,7 +314,8 @@ $(document).ready(function() {
 			{ data: 7, orderable: true, className: 'text-right' },
 			{ data: 8, orderable: true, className: 'text-right' },
 			{ data: 9, orderable: true, className: 'text-center' },
-			{ data: 10, orderable: false, searchable: false, className: 'text-center' }
+			{ data: 10, orderable: true, className: 'text-center' },
+			{ data: 11, orderable: false, searchable: false, className: 'text-center' }
 		],
 		dom: "<'row mb-3'<'col-sm-12 col-md-6 d-flex align-items-center justify-content-start'f><'col-sm-12 col-md-6 d-flex align-items-center justify-content-end'B>>" +
 			"<'row'<'col-sm-12'tr>>" +
@@ -323,11 +336,11 @@ $(document).ready(function() {
 			}
 		},
 		buttons: [
-			{ extend: 'copyHtml5', text: '<i class="fal fa-copy mr-1"></i> Copy', className: 'btn-primary btn-sm mr-1', exportOptions: { columns: [1,2,3,4,5,6,7,8,9] } },
-			{ extend: 'excelHtml5', text: '<i class="fal fa-file-excel mr-1"></i> Excel', className: 'btn-primary btn-sm mr-1', exportOptions: { columns: [1,2,3,4,5,6,7,8,9] } },
-			{ extend: 'csvHtml5', text: '<i class="fal fa-file-csv mr-1"></i> CSV', className: 'btn-primary btn-sm mr-1', exportOptions: { columns: [1,2,3,4,5,6,7,8,9] } },
-			{ extend: 'pdfHtml5', text: '<i class="fal fa-file-pdf mr-1"></i> PDF', className: 'btn-primary btn-sm mr-1', exportOptions: { columns: [1,2,3,4,5,6,7,8,9] } },
-			{ extend: 'print', text: '<i class="fal fa-print mr-1"></i> Print', className: 'btn-primary btn-sm mr-1', exportOptions: { columns: [1,2,3,4,5,6,7,8,9] } },
+			{ extend: 'copyHtml5', text: '<i class="fal fa-copy mr-1"></i> Copy', className: 'btn-primary btn-sm mr-1', exportOptions: { columns: [1,2,3,4,5,6,7,8,9,10] } },
+			{ extend: 'excelHtml5', text: '<i class="fal fa-file-excel mr-1"></i> Excel', className: 'btn-primary btn-sm mr-1', exportOptions: { columns: [1,2,3,4,5,6,7,8,9,10] } },
+			{ extend: 'csvHtml5', text: '<i class="fal fa-file-csv mr-1"></i> CSV', className: 'btn-primary btn-sm mr-1', exportOptions: { columns: [1,2,3,4,5,6,7,8,9,10] } },
+			{ extend: 'pdfHtml5', text: '<i class="fal fa-file-pdf mr-1"></i> PDF', className: 'btn-primary btn-sm mr-1', exportOptions: { columns: [1,2,3,4,5,6,7,8,9,10] } },
+			{ extend: 'print', text: '<i class="fal fa-print mr-1"></i> Print', className: 'btn-primary btn-sm mr-1', exportOptions: { columns: [1,2,3,4,5,6,7,8,9,10] } },
 			{ text: '<i class="fal fa-sync mr-1"></i> Refresh', className: 'btn-primary btn-sm', action: function(e, dt) { dt.ajax.reload(null, false); } }
 		],
 		drawCallback: function() {
@@ -374,6 +387,12 @@ $(document).ready(function() {
 			},
 			error: function() { hideLoader(); }
 		});
+	});
+
+	// Cash vs QR Ph. Client-side only - not persisted in the session.
+	$('#header_channel').on('change', function() {
+		showLoader();
+		table.ajax.reload(null, false);
 	});
 
 	// Persist transaction date in session (cleared only on logout)

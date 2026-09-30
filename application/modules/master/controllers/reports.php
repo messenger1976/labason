@@ -27,6 +27,8 @@ class reports extends CI_Controller {
 	public $lowToNoConsumptionPage = 'low_to_no_consumption';
 	public $lowtonoconsumption_ajaxPage = 'low_to_no_consumption_ajax';
 	public $lowtonoconsumptionprinttopdfPage = 'low_to_no_consumption_printtopdf';
+	public $onlinePaymentReportPage = 'online_payment_report';
+	public $onlinepaymentreport_ajaxPage = 'online_payment_report_ajax';
 	public $downloadPdf = false;
 	public $pdfFilename = 'report.pdf';
 	public $pdfOptions = array();
@@ -149,6 +151,210 @@ class reports extends CI_Controller {
 		$data['zone'] = $this->customer_model->get_zone();
 		$this->load->view($this->headerPage, $header);
 		$this->load->view($this->customerPaymentMonitoringPage, $data);
+	}
+
+	/**
+	 * Online / QR Ph Payment report.
+	 *
+	 * Covers every attempt, not just the successful ones: pending and expired rows are how the
+	 * cashier notices an emailed link that was never paid. Amounts here are the QR Ph channel only
+	 * — QRPH rows deliberately carry no OR and are excluded from the Daily Collection Report.
+	 */
+	public function online_payment_report() {
+		try {
+			$header['roleResponsible'] = $this->top_model->get_responsibilities();
+			$this->load->model('onlinepayment_model', 'op_model');
+			$this->load->model('employee_logins_model', 'logins_model');
+			$data['zone'] = $this->customer_model->get_zone();
+			// get_all_active_records() returns a COUNT, not rows, so it filled the
+			// "Collected by" select with one bogus entry. Use the row-returning helper;
+			// keeping retired collectors listed is correct for old attempts.
+			$data['users'] = $this->logins_model->get_all_records();
+			$data['totals'] = $this->op_model->get_report_totals(array());
+			$data['table_ready'] = $this->op_model->table_ready();
+			$this->load->view($this->headerPage, $header);
+			$this->load->view($this->onlinePaymentReportPage, $data);
+		} catch (Throwable $e) {
+			log_message('error', 'online_payment_report: ' . $e->getMessage() . ' @ ' . $e->getFile() . ':' . $e->getLine());
+			show_error('The Online / QR Ph Payment report could not be loaded. Details are in the application log.');
+		}
+	}
+
+	/** Shared filter reader for the Online / QR Ph report (screen + export). */
+	private function _online_payment_filters() {
+		$status = $this->input->get_post('status');
+		if ($status === '' || $status === null || $status === 'all') {
+			$status = '';
+		}
+		$context = $this->input->get_post('context');
+		if ($context === '' || $context === null || $context === 'all') {
+			$context = '';
+		}
+		return array(
+			'date_from'  => trim((string) $this->input->get_post('date_from')),
+			'date_to'    => trim((string) $this->input->get_post('date_to')),
+			'status'     => $status,
+			'context'    => $context,
+			'zone'       => (int) $this->input->get_post('zone'),
+			'created_by' => (int) $this->input->get_post('created_by'),
+			'q'          => trim((string) $this->input->get_post('q')),
+		);
+	}
+
+	/** AJAX: Online / QR Ph report rows (server-rendered, paged). */
+	public function getonlinepaymentreportsearch() {
+		try {
+			$this->load->model('onlinepayment_model', 'op_model');
+			if (!$this->op_model->table_ready()) {
+				echo '<div class="alert alert-warning"><strong>Not installed yet.</strong> Run <code>sql/add_online_payments.sql</code> on this database, then reload this page.</div>';
+				return;
+			}
+			$filters = $this->_online_payment_filters();
+			$offset = (int) $this->input->get_post('offset');
+			if ($offset < 0) {
+				$offset = 0;
+			}
+			$limit = 100;
+			$data['record'] = $this->op_model->get_report_rows($filters, $limit, $offset);
+			$data['totals'] = $this->op_model->get_report_totals($filters);
+			$data['total_count'] = $this->op_model->count_attempts($filters);
+			$data['offset'] = $offset;
+			$data['limit'] = $limit;
+			$data['has_more'] = ($offset + count($data['record'])) < $data['total_count'];
+			$this->load->view($this->onlinepaymentreport_ajaxPage, $data);
+		} catch (Throwable $e) {
+			log_message('error', 'getonlinepaymentreportsearch: ' . $e->getMessage() . ' @ ' . $e->getFile() . ':' . $e->getLine());
+			$this->output->set_status_header(500);
+			echo '<div class="alert alert-danger"><strong>Report could not load.</strong><br>'
+				. htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8')
+				. '<br><small>Details are in the application log.</small></div>';
+		}
+	}
+
+	/**
+	 * Export the Online / QR Ph report to Excel under the same filters as on screen.
+	 * URL: reports/exportonlinepaymentexcel
+	 */
+	public function exportonlinepaymentexcel() {
+		@ini_set('display_errors', 0);
+		error_reporting(0);
+		set_time_limit(600);
+		ini_set('memory_limit', '512M');
+		while (ob_get_level()) {
+			@ob_end_clean();
+		}
+		if (headers_sent($file, $line)) {
+			die("Headers already sent in $file on line $line. Cannot send Excel file.");
+		}
+		$this->load->helper('excel');
+		$this->load->model('onlinepayment_model', 'op_model');
+		if (!$this->op_model->table_ready()) {
+			die('tbl_online_payments does not exist. Run sql/add_online_payments.sql first.');
+		}
+		$filters = $this->_online_payment_filters();
+		$totals = $this->op_model->get_report_totals($filters);
+
+		$status_display = empty($filters['status']) ? 'All statuses' : $this->op_model->status_label($filters['status']);
+		$context_display = empty($filters['context']) ? 'All sources' : ucfirst((string) $filters['context']);
+
+		$export_data = array();
+		$export_data[] = array('ONLINE / QR PH PAYMENT REPORT');
+		$export_data[] = array('Channel: QR Ph (PayMongo) - these payments carry no OR and are excluded from the Daily Collection Report.');
+		$export_data[] = array('Status: ' . $status_display . '   |   Source: ' . $context_display);
+		$export_data[] = array('Period: ' . ($filters['date_from'] !== '' ? $filters['date_from'] : 'beginning') . ' to ' . ($filters['date_to'] !== '' ? $filters['date_to'] : 'today'));
+		$export_data[] = array('Collected: ' . number_format($totals['paid_amount'], 2, '.', '') . '   |   Outstanding (pending/expired/failed): ' . number_format($totals['open_amount'], 2, '.', ''));
+		$export_data[] = array('Processing fees on paid: ' . number_format($totals['paid_fee'], 2, '.', '')
+			. ' (QR Ph fee ' . number_format($totals['paid_fee_qrph'], 2, '.', '') . ' + Fixed fee ' . number_format($totals['paid_fee_fixed'], 2, '.', '') . ')'
+			. '   |   Total charged via PayMongo: ' . number_format($totals['paid_charged'], 2, '.', ''));
+		$export_data[] = array('Exported: ' . date('Y-m-d H:i:s'));
+		$export_data[] = array('');
+		$export_data[] = array(
+			'SN #',
+			'Reference',
+			'Customer ID',
+			'Customer Name',
+			'Zone',
+			'Bill Amount',
+			'QR Ph Fee',
+			'Fixed Fee',
+			'Total Fee',
+			'Total Charged',
+			'Status',
+			'Source',
+			'Created',
+			'Paid',
+			'PayMongo Ref',
+			'Collected by',
+			'Emailed to'
+		);
+
+		$index = 0;
+		$offset = 0;
+		$page_size = 200;
+		$collector_cache = array();
+		while (true) {
+			$batch = $this->op_model->get_report_rows($filters, $page_size, $offset);
+			if (!is_array($batch) || count($batch) === 0) {
+				break;
+			}
+			foreach ($batch as $row) {
+				$index++;
+				$name = trim(
+					(isset($row['last_name']) ? stripslashes($row['last_name']) : '') . ', ' .
+					(isset($row['first_name']) ? stripslashes($row['first_name']) : '') . ' ' .
+					(isset($row['middle_name']) ? stripslashes($row['middle_name']) : '')
+				);
+				$collector = '';
+				$uid = isset($row['created_by']) ? (int) $row['created_by'] : 0;
+				if ($uid > 0) {
+					if (!array_key_exists($uid, $collector_cache)) {
+						$collector_cache[$uid] = $this->op_model->collector_name($uid);
+					}
+					$collector = $collector_cache[$uid];
+				}
+				$export_data[] = array(
+					$index,
+					isset($row['reference_no']) ? $row['reference_no'] : '',
+					isset($row['customer_id']) ? stripslashes($row['customer_id']) : '',
+					$name,
+					isset($row['zones']) ? $row['zones'] : '',
+					number_format(isset($row['amount']) ? (float) $row['amount'] : 0, 2, '.', ''),
+					number_format(Onlinepayment_model::fee_qrph_of($row), 2, '.', ''),
+					number_format(Onlinepayment_model::fee_fixed_of($row), 2, '.', ''),
+					number_format(Onlinepayment_model::fee_of($row), 2, '.', ''),
+					number_format(Onlinepayment_model::charged_of($row), 2, '.', ''),
+					self::_op_status_label($row),
+					isset($row['context']) ? $row['context'] : '',
+					isset($row['create_date_time']) ? $row['create_date_time'] : '',
+					isset($row['paid_at']) ? $row['paid_at'] : '',
+					isset($row['payment_id']) ? $row['payment_id'] : '',
+					$collector,
+					isset($row['emailed_to']) ? $row['emailed_to'] : ''
+				);
+			}
+			$offset += $page_size;
+			if (count($batch) < $page_size) {
+				break;
+			}
+		}
+
+		if ($index === 0) {
+			$export_data[] = array('No records found for the selected filters.');
+		}
+		array_to_excel($export_data, 'Online_QRPH_Payment_Report_' . date('Y-m-d') . '.xls');
+	}
+
+	/** Status text for one report row (rows arrive as plain arrays). */
+	private static function _op_status_label($row) {
+		$status = isset($row['status']) ? (string) $row['status'] : '';
+		switch ($status) {
+			case 'paid':      return 'Paid';
+			case 'pending':   return 'Pending';
+			case 'expired':   return 'Expired';
+			case 'failed':    return 'Failed';
+			case 'cancelled': return 'Cancelled';
+			default:          return $status === '' ? '' : ucfirst($status);
+		}
 	}
 
 	public function leaking_ar_report(){ 		 //*****  View Loading  *****//

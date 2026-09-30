@@ -16,6 +16,24 @@
         parent::__construct();
     }
 	
+	/**
+	 * The Daily Collection Report is the cashier's OR-based report.
+	 *
+	 * QR Ph (online) payments deliberately carry no OR and are reported in
+	 * reports/online_payment_report instead, so they must never inflate these totals.
+	 * Guarded with field_exists() so the code ships safely before
+	 * sql/add_online_payments.sql has been run on the database.
+	 */
+	private function _exclude_online_payments() {
+		if ($this->db->field_exists('payment_channel', $this->table_meter)) {
+			$this->db->where(
+				"({$this->table_meter}.payment_channel IS NULL OR {$this->table_meter}.payment_channel <> 'qrph')",
+				null,
+				false
+			);
+		}
+	}
+
 	/** In Function Get all records from select table **/
     
 	 public function get_metercustomer_records($from,$zone='',$grouping=1,$cashier=0){
@@ -59,6 +77,7 @@
 		$this->db->join('tbl_billing_period', 'tbl_billing_period.bp_id = tbl_addcustomer_reading.bp_id', 'left');
 		$this->db->where('tbl_addmetercustomer.date',$from);
 		//$this->db->where('tbl_addmetercustomer.date <=',$to);
+		$this->_exclude_online_payments();
 		if($zone!=0 && $zone!=''){
 			$this->db->where('tbl_addcustomer.zone',$zone);
 		}
@@ -125,6 +144,7 @@
 		$this->db->join('tbl_billing_period', 'tbl_billing_period.bp_id = tbl_addcustomer_reading.bp_id', 'left');
 		$this->db->where('tbl_addmetercustomer.date',$from);
 		$this->db->where('tbl_addcustomer.customer_id IS NULL', NULL, FALSE);
+		$this->_exclude_online_payments();
 		if($cashier != 0 && $cashier != ''){
 			$this->db->where('tbl_addmetercustomer.userid', (int)$cashier);
 		}
