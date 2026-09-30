@@ -313,6 +313,8 @@ class mobile_payment extends CI_Controller {
 			'ok' => true,
 			'message' => $result['message'],
 			'amount' => isset($attempt['amount']) ? (float) $attempt['amount'] : 0,
+			'fee_amount' => Onlinepayment_model::fee_of($attempt),
+			'charged_amount' => Onlinepayment_model::charged_of($attempt),
 			'reference_no' => isset($attempt['reference_no']) ? $attempt['reference_no'] : '',
 			'show_url' => ADMIN_URL . 'mobile_payment?attempt=' . (int) $attempt['id'],
 		));
@@ -334,6 +336,8 @@ class mobile_payment extends CI_Controller {
 			'status_label' => $this->my_model->status_label($status),
 			'message' => isset($result['message']) ? $result['message'] : '',
 			'amount' => isset($attempt['amount']) ? (float) $attempt['amount'] : 0,
+			'fee_amount' => Onlinepayment_model::fee_of($attempt),
+			'charged_amount' => Onlinepayment_model::charged_of($attempt),
 			'success_url' => $paid ? (ADMIN_URL . 'mobile_payment/success/' . (int) $id) : '',
 		));
 	}

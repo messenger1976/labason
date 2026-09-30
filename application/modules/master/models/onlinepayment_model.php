@@ -397,7 +397,7 @@ class Onlinepayment_model extends CI_Model {
 	 * A still-live pending attempt that charges exactly this selection, or array().
 	 * Reusing it means refreshing the page does not churn through QR codes.
 	 */
-	public function find_reusable_attempt($customer_id, $amount, $selection_key) {
+	public function find_reusable_attempt($customer_id, $amount, $selection_key, $fee_amount = 0) {
 		if (!$this->table_ready()) {
 			return array();
 		}
@@ -406,6 +406,10 @@ class Onlinepayment_model extends CI_Model {
 		$this->db->where('status', 'pending');
 		$this->db->where('selection_key', $selection_key);
 		$this->db->where('amount', number_format((float) $amount, 2, '.', ''));
+		// A QR made under different fee settings charges a different total.
+		if ($this->db->field_exists('fee_amount', $this->table_name)) {
+			$this->db->where('fee_amount', number_format((float) $fee_amount, 2, '.', ''));
+		}
 		$this->db->where('qr_image_url IS NOT NULL', null, false);
 		$this->db->where('(expires_at IS NULL OR expires_at > ' . $this->db->escape($now) . ')', null, false);
 		$this->db->order_by('id', 'desc');
@@ -784,14 +788,19 @@ class Onlinepayment_model extends CI_Model {
 			);
 		}
 
-		$centavos = $this->paymongo->to_centavos($amount);
+		// The processing fee rides on top of the bill; only the bill is credited
+		// to the water account when the payment settles.
+		$fee = $this->paymongo->compute_fee($amount);
+		$charged = $fee['charged'];
+
+		$centavos = $this->paymongo->to_centavos($charged);
 		if ($centavos === false) {
 			return array('ok' => false, 'message' => 'That amount is too small for PayMongo.', 'attempt' => array());
 		}
 
 		// Reuse a live code rather than churning through new ones on refresh.
 		if ($reuse) {
-			$existing = $this->find_reusable_attempt($customer_id, $amount, $selection_key);
+			$existing = $this->find_reusable_attempt($customer_id, $amount, $selection_key, $fee['fee']);
 			if (!empty($existing)) {
 				return array('ok' => true, 'message' => 'Reusing the live QR for this selection.', 'attempt' => $existing, 'reused' => true);
 			}
@@ -803,8 +812,12 @@ class Onlinepayment_model extends CI_Model {
 		$customer = $this->get_customer_info($customer_id);
 		$reference_no = $this->generate_reference();
 		$description = $this->paymongo->description_prefix() . ' — ' . $customer_id;
+		if ($fee['fee'] > 0) {
+			$description .= ' (incl. PHP ' . number_format($fee['fee'], 2) . ' fee)';
+		}
+		$fee_fields = $this->fee_fields($fee);
 
-		$qr = $this->paymongo->create_qrph($amount, $description, array(
+		$qr = $this->paymongo->create_qrph($charged, $description, array(
 			'reference_no' => $reference_no,
 			'customer_id' => $customer_id,
 			'context' => (string) $context,
@@ -832,7 +845,7 @@ class Onlinepayment_model extends CI_Model {
 				'status' => 'failed',
 				'last_error' => $message,
 				'created_by' => (int) $created_by,
-			));
+			) + $fee_fields);
 			return array('ok' => false, 'message' => $message, 'attempt' => $attempt_id ? $this->get_attempt($attempt_id) : array());
 		}
 
@@ -855,7 +868,7 @@ class Onlinepayment_model extends CI_Model {
 			'status' => 'pending',
 			'expires_at' => $expires_at,
 			'created_by' => (int) $created_by,
-		));
+		) + $fee_fields);
 
 		if (!$attempt_id) {
 			return array('ok' => false, 'message' => 'The QR was created but could not be saved. Nothing was charged.', 'attempt' => array());
@@ -866,6 +879,38 @@ class Onlinepayment_model extends CI_Model {
 		$this->gateway_settings->clear_last_error();
 
 		return array('ok' => true, 'message' => 'QR code ready.', 'attempt' => $this->get_attempt($attempt_id));
+	}
+
+	/**
+	 * Fee columns for a new attempt, or array() before
+	 * sql/add_paymongo_customer_fee.sql has run (the fee is then always 0).
+	 */
+	private function fee_fields($fee) {
+		if (!$this->db->field_exists('fee_amount', $this->table_name)) {
+			return array();
+		}
+		return array(
+			'fee_amount'     => number_format((float) $fee['fee'], 2, '.', ''),
+			'fee_percent'    => $fee['fee'] > 0 ? number_format((float) $fee['percent'], 3, '.', '') : null,
+			'fee_fixed'      => $fee['fee'] > 0 ? number_format((float) $fee['fixed'], 2, '.', '') : null,
+			'charged_amount' => number_format((float) $fee['charged'], 2, '.', ''),
+		);
+	}
+
+	/**
+	 * What the customer pays (bill + fee) for an attempt row. Rows created
+	 * before the fee existed charged exactly the bill.
+	 */
+	public static function charged_of($attempt) {
+		if (isset($attempt['charged_amount']) && $attempt['charged_amount'] !== null && $attempt['charged_amount'] !== '') {
+			return (float) $attempt['charged_amount'];
+		}
+		return isset($attempt['amount']) ? (float) $attempt['amount'] : 0.0;
+	}
+
+	/** The processing fee on an attempt row (0 for rows before the fee existed). */
+	public static function fee_of($attempt) {
+		return isset($attempt['fee_amount']) ? (float) $attempt['fee_amount'] : 0.0;
 	}
 
 	/**
@@ -1077,10 +1122,14 @@ class Onlinepayment_model extends CI_Model {
 	 */
 	public function get_report_totals($filters = array()) {
 		if (!$this->table_ready()) {
-			return array('count' => 0, 'paid_count' => 0, 'paid_amount' => 0.0, 'open_count' => 0, 'open_amount' => 0.0, 'attempted_amount' => 0.0);
+			return array('count' => 0, 'paid_count' => 0, 'paid_amount' => 0.0, 'paid_fee' => 0.0, 'paid_charged' => 0.0, 'open_count' => 0, 'open_amount' => 0.0, 'attempted_amount' => 0.0);
 		}
+		$fee_sql = $this->db->field_exists('fee_amount', $this->table_name)
+			? " SUM(CASE WHEN op.status = 'paid' THEN op.fee_amount ELSE 0 END) AS paid_fee,"
+			: ' 0 AS paid_fee,';
 		$this->db->select(
 			'COUNT(*) AS count,'
+			. $fee_sql
 			. " SUM(CASE WHEN op.status = 'paid' THEN 1 ELSE 0 END) AS paid_count,"
 			. " SUM(CASE WHEN op.status = 'paid' THEN op.amount ELSE 0 END) AS paid_amount,"
 			. " SUM(CASE WHEN op.status IN ('pending','expired','failed') THEN 1 ELSE 0 END) AS open_count,"
@@ -1099,6 +1148,8 @@ class Onlinepayment_model extends CI_Model {
 			'count'            => isset($row['count']) ? (int) $row['count'] : 0,
 			'paid_count'       => isset($row['paid_count']) ? (int) $row['paid_count'] : 0,
 			'paid_amount'      => isset($row['paid_amount']) ? (float) $row['paid_amount'] : 0.0,
+			'paid_fee'         => isset($row['paid_fee']) ? (float) $row['paid_fee'] : 0.0,
+			'paid_charged'     => (isset($row['paid_amount']) ? (float) $row['paid_amount'] : 0.0) + (isset($row['paid_fee']) ? (float) $row['paid_fee'] : 0.0),
 			'open_count'       => isset($row['open_count']) ? (int) $row['open_count'] : 0,
 			'open_amount'      => isset($row['open_amount']) ? (float) $row['open_amount'] : 0.0,
 			'attempted_amount' => isset($row['attempted_amount']) ? (float) $row['attempted_amount'] : 0.0,

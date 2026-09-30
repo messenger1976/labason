@@ -20,7 +20,11 @@ $reference = isset($attempt['reference_no']) ? (string) $attempt['reference_no']
 $online_ref = isset($attempt['payment_id']) && trim((string) $attempt['payment_id']) !== ''
 	? (string) $attempt['payment_id']
 	: $reference;
-$amount = isset($attempt['amount']) ? (float) $attempt['amount'] : 0;
+$bill_amount = isset($attempt['amount']) ? (float) $attempt['amount'] : 0;
+$fee_amount = isset($attempt['fee_amount']) ? (float) $attempt['fee_amount'] : 0;
+$amount = (isset($attempt['charged_amount']) && $attempt['charged_amount'] !== null && $attempt['charged_amount'] !== '')
+	? (float) $attempt['charged_amount']
+	: $bill_amount;
 $paid_at = !empty($attempt['paid_at']) ? $attempt['paid_at'] : (isset($attempt['settled_at']) ? $attempt['settled_at'] : '');
 
 $receipt_url = rtrim(base_url(), '/') . '/master/paymentportal/receipt/' . rawurlencode($token);
@@ -43,6 +47,11 @@ $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
 		<div style="font-size:32px;font-weight:700;color:#3276b1;margin-top:16px;">
 			&#8369; <?php echo number_format($amount, 2); ?>
 		</div>
+		<?php if ($fee_amount > 0) { ?>
+		<div class="text-muted" style="font-size:12px;">
+			Bill &#8369; <?php echo number_format($bill_amount, 2); ?> + processing fee &#8369; <?php echo number_format($fee_amount, 2); ?>
+		</div>
+		<?php } ?>
 		<?php if ($paid_at !== '') { ?>
 		<div class="text-muted" style="font-size:12px;">Paid on <?php echo $h(date('M j, Y g:i A', strtotime($paid_at))); ?></div>
 		<?php } ?>

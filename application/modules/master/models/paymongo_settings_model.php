@@ -28,6 +28,9 @@ class Paymongo_settings_model extends CI_Model {
 		'link_expiry_minutes' => 60,
 		'description_prefix' => 'LWD Bill Payment',
 		'receipt_note' => '',
+		'fee_enabled' => '0',
+		'fee_percent' => '0.000',
+		'fee_fixed' => '10.00',
 		'updated_by' => null,
 		'update_date_time' => null,
 	);
@@ -60,6 +63,14 @@ class Paymongo_settings_model extends CI_Model {
 			}
 		}
 		return $settings;
+	}
+
+	/** True when sql/add_paymongo_customer_fee.sql has been run. */
+	public function fee_ready() {
+		return $this->table_ready()
+			&& $this->db->field_exists('fee_enabled', $this->table_name)
+			&& $this->db->table_exists('tbl_online_payments')
+			&& $this->db->field_exists('fee_amount', 'tbl_online_payments');
 	}
 
 	/** True when the gateway is switched on and has a secret key. */
@@ -98,6 +109,14 @@ class Paymongo_settings_model extends CI_Model {
 			'updated_by' => (int) $user_id,
 			'update_date_time' => date('Y-m-d H:i:s'),
 		);
+
+		if ($this->db->field_exists('fee_enabled', $this->table_name)) {
+			$data['fee_enabled'] = (isset($post['fee_enabled']) && (string) $post['fee_enabled'] === '1') ? '1' : '0';
+			$percent = isset($post['fee_percent']) && $post['fee_percent'] !== '' ? (float) $post['fee_percent'] : (float) $current['fee_percent'];
+			$data['fee_percent'] = number_format(min(20, max(0, $percent)), 3, '.', '');
+			$fixed = isset($post['fee_fixed']) && $post['fee_fixed'] !== '' ? (float) $post['fee_fixed'] : (float) $current['fee_fixed'];
+			$data['fee_fixed'] = number_format(max(0, $fixed), 2, '.', '');
+		}
 
 		if ($data['description_prefix'] === '') {
 			$data['description_prefix'] = 'LWD Bill Payment';

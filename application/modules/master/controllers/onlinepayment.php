@@ -311,6 +311,8 @@ class onlinepayment extends CI_Controller {
 				'id' => isset($attempt['id']) ? (int) $attempt['id'] : 0,
 				'reference_no' => isset($attempt['reference_no']) ? $attempt['reference_no'] : '',
 				'amount' => isset($attempt['amount']) ? (float) $attempt['amount'] : 0,
+				'fee_amount' => Onlinepayment_model::fee_of($attempt),
+				'charged_amount' => Onlinepayment_model::charged_of($attempt),
 				'status' => isset($attempt['status']) ? $attempt['status'] : 'pending',
 				'qr_image_url' => isset($attempt['qr_image_url']) ? $attempt['qr_image_url'] : '',
 				'qr_test_url' => isset($attempt['qr_test_url']) ? $attempt['qr_test_url'] : '',
@@ -352,6 +354,8 @@ class onlinepayment extends CI_Controller {
 			'status_label' => $this->my_model->status_label(isset($attempt['status']) ? $attempt['status'] : 'pending'),
 			'message' => isset($result['message']) ? $result['message'] : '',
 			'amount' => isset($attempt['amount']) ? (float) $attempt['amount'] : 0,
+			'fee_amount' => Onlinepayment_model::fee_of($attempt),
+			'charged_amount' => Onlinepayment_model::charged_of($attempt),
 			'receipt_url' => ADMIN_URL . 'onlinepayment/receipt/' . $attempt_id,
 		));
 	}
@@ -491,7 +495,8 @@ class onlinepayment extends CI_Controller {
 		}
 		$customer = $this->my_model->get_customer_info($attempt['customer_id']);
 		$name = $this->my_model->full_name($customer);
-		$amount = number_format((float) $attempt['amount'], 2);
+		$amount = number_format(Onlinepayment_model::charged_of($attempt), 2);
+		$fee = Onlinepayment_model::fee_of($attempt);
 		$reference = htmlspecialchars((string) $attempt['reference_no'], ENT_QUOTES, 'UTF-8');
 		$link_h = htmlspecialchars($link, ENT_QUOTES, 'UTF-8');
 		$expires = !empty($attempt['expires_at']) ? $attempt['expires_at'] : '';
@@ -501,7 +506,11 @@ class onlinepayment extends CI_Controller {
 			. '<p>You can now pay your water bill online by scanning a QR Ph code with any bank or e-wallet app.</p>'
 			. '<table cellpadding="6" cellspacing="0" style="border-collapse:collapse;">'
 			. '<tr><td><strong>Reference</strong></td><td>' . $reference . '</td></tr>'
-			. '<tr><td><strong>Amount due</strong></td><td>&#8369; ' . $amount . '</td></tr>'
+			. ($fee > 0
+				? '<tr><td><strong>Bill</strong></td><td>&#8369; ' . number_format((float) $attempt['amount'], 2) . '</td></tr>'
+					. '<tr><td><strong>Processing fee</strong></td><td>&#8369; ' . number_format($fee, 2) . '</td></tr>'
+				: '')
+			. '<tr><td><strong>Amount to pay</strong></td><td>&#8369; ' . $amount . '</td></tr>'
 			. ($expires !== '' ? '<tr><td><strong>Valid until</strong></td><td>' . htmlspecialchars($expires, ENT_QUOTES, 'UTF-8') . '</td></tr>' : '')
 			. '</table>'
 			. '<p><a href="' . $link_h . '" style="display:inline-block;padding:10px 18px;background:#3276b1;color:#fff;text-decoration:none;border-radius:4px;">Open my QR code and pay</a></p>'

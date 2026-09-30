@@ -104,6 +104,8 @@ class paymentportal extends CI_Controller {
 			'status' => $status,
 			'status_label' => $this->my_model->status_label($status),
 			'amount' => isset($attempt['amount']) ? (float) $attempt['amount'] : 0,
+			'fee_amount' => Onlinepayment_model::fee_of($attempt),
+			'charged_amount' => Onlinepayment_model::charged_of($attempt),
 			'message' => $paid ? 'Payment received. Thank you!' : $message,
 			'redirect' => $paid ? rtrim(base_url(), '/') . '/master/paymentportal/done/' . rawurlencode($token) : '',
 		));

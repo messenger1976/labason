@@ -16,7 +16,11 @@ $reference = isset($attempt['reference_no']) ? (string) $attempt['reference_no']
 $online_ref = isset($attempt['payment_id']) && trim((string) $attempt['payment_id']) !== ''
 	? (string) $attempt['payment_id']
 	: $reference;
-$amount = isset($attempt['amount']) ? (float) $attempt['amount'] : 0;
+$bill_amount = isset($attempt['amount']) ? (float) $attempt['amount'] : 0;
+$fee_amount = isset($attempt['fee_amount']) ? (float) $attempt['fee_amount'] : 0;
+$amount = (isset($attempt['charged_amount']) && $attempt['charged_amount'] !== null && $attempt['charged_amount'] !== '')
+	? (float) $attempt['charged_amount']
+	: $bill_amount;
 $paid_at = !empty($attempt['paid_at']) ? $attempt['paid_at'] : (isset($attempt['settled_at']) ? $attempt['settled_at'] : '');
 $name = '';
 if (!empty($customer)) {
@@ -100,6 +104,12 @@ $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
 			<div class="succ-m-row">
 				<span class="k"><?php echo $h(trim((isset($row['month_name']) ? $row['month_name'] : '') . ' ' . (isset($row['year']) ? $row['year'] : ''))); ?></span>
 				<span class="v">&#8369; <?php echo number_format(isset($row['amount_due']) ? (float) $row['amount_due'] : 0, 2); ?></span>
+			</div>
+			<?php } ?>
+			<?php if ($fee_amount > 0) { ?>
+			<div class="succ-m-row">
+				<span class="k">Processing fee</span>
+				<span class="v">&#8369; <?php echo number_format($fee_amount, 2); ?></span>
 			</div>
 			<?php } ?>
 			<div class="succ-m-row" style="border-top:1px solid #eef1f5;">

@@ -19,6 +19,9 @@ $qr_attempt = isset($qr_attempt) && is_array($qr_attempt) ? $qr_attempt : array(
 $qr_customer = isset($qr_customer) && is_array($qr_customer) ? $qr_customer : array();
 $qr_rows = isset($qr_rows) && is_array($qr_rows) ? $qr_rows : array();
 
+$this->load->library('Paymongo');
+$fee_cfg = $this->paymongo->fee_settings();
+
 $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); };
 ?>
 <style>
@@ -111,6 +114,7 @@ $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
 	.pay-m-bar .total { flex: 1; min-width: 0; }
 	.pay-m-bar .total .lbl { font-size: 11px; color: #6c757d; letter-spacing: .5px; }
 	.pay-m-bar .total .val { font-size: 20px; font-weight: 700; color: #1f8b4c; }
+	.pay-m-bar .total .fee { font-size: 11px; color: #6c757d; }
 	.pay-m-bar button.pay {
 		height: 46px; padding: 0 18px; border: 0; border-radius: 12px;
 		background: #1f8b4c; color: #fff; font-weight: 700; font-size: 15px; white-space: nowrap;
@@ -216,6 +220,7 @@ $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
 	<div class="total">
 		<div class="lbl">SELECTED TOTAL</div>
 		<div class="val" id="paym_total">&#8369; 0.00</div>
+		<div class="fee" id="paym_fee" style="display:none;"></div>
 	</div>
 	<button type="button" class="pay" id="paym_pay" disabled>
 		<i class="fa fa-qrcode"></i> Pay with QR Ph
@@ -321,8 +326,15 @@ $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
 		msg: document.getElementById('paym_msg'),
 		bar: document.getElementById('paym_bar'),
 		total: document.getElementById('paym_total'),
+		fee: document.getElementById('paym_fee'),
 		pay: document.getElementById('paym_pay')
 	};
+	// Preview only: the server recomputes the fee when it creates the QR.
+	var feeCfg = <?php echo json_encode(array(
+		'enabled' => !empty($fee_cfg['enabled']),
+		'percent' => (float) $fee_cfg['percent'],
+		'fixed' => (float) $fee_cfg['fixed'],
+	)); ?>;
 
 	var customerId = '';
 	var bills = [];
@@ -495,7 +507,15 @@ $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
 	function recalc() {
 		var total = 0;
 		checked().forEach(function (r) { total += parseFloat(r.amount_due || 0); });
-		el.total.textContent = peso(total);
+		var fee = 0;
+		if (feeCfg.enabled && total > 0) {
+			fee = Math.round((total * feeCfg.percent / 100 + feeCfg.fixed) * 100) / 100;
+		}
+		el.total.textContent = peso(total + fee);
+		if (el.fee) {
+			el.fee.style.display = fee > 0 ? 'block' : 'none';
+			el.fee.textContent = fee > 0 ? ('Bill ' + peso(total) + ' + fee ' + peso(fee)) : '';
+		}
 		el.pay.disabled = !(total > 0);
 	}
 

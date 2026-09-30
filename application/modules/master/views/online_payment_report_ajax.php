@@ -12,6 +12,7 @@ $limit = isset($limit) ? (int) $limit : 100;
 $has_more = !empty($has_more);
 
 $paid_amount = isset($totals['paid_amount']) ? (float) $totals['paid_amount'] : 0;
+$paid_fee = isset($totals['paid_fee']) ? (float) $totals['paid_fee'] : 0;
 $open_amount = isset($totals['open_amount']) ? (float) $totals['open_amount'] : 0;
 $paid_count = isset($totals['paid_count']) ? (int) $totals['paid_count'] : 0;
 $open_count = isset($totals['open_count']) ? (int) $totals['open_count'] : 0;
@@ -33,6 +34,10 @@ $context_labels = array(
 			of <strong><?php echo number_format($total_count); ?></strong> QR Ph attempts for the selected filters.
 			<span class="text-success fw-700">Collected ₱<?php echo number_format($paid_amount, 2); ?></span>
 			(<?php echo $paid_count; ?> paid)
+			<?php if ($paid_fee > 0) { ?>
+			+ fees ₱<?php echo number_format($paid_fee, 2); ?>
+			= <span class="fw-700">₱<?php echo number_format($paid_amount + $paid_fee, 2); ?> via PayMongo</span>
+			<?php } ?>
 			&middot;
 			<span class="text-danger fw-700">Outstanding ₱<?php echo number_format($open_amount, 2); ?></span>
 			(<?php echo $open_count; ?> pending/expired/failed)
@@ -60,7 +65,9 @@ $context_labels = array(
 					<th>Customer ID</th>
 					<th>Customer Name</th>
 					<th>Zone</th>
-					<th class="text-right">Amount</th>
+					<th class="text-right">Bill amount</th>
+					<th class="text-right">Fee</th>
+					<th class="text-right">Total charged</th>
 					<th>Status</th>
 					<th>Source</th>
 					<th>Created</th>
@@ -105,6 +112,8 @@ $context_labels = array(
 					<td><?php echo htmlspecialchars($name, ENT_QUOTES, 'UTF-8'); ?></td>
 					<td><?php echo htmlspecialchars(isset($row['zones']) ? $row['zones'] : '', ENT_QUOTES, 'UTF-8'); ?></td>
 					<td class="text-right fw-700"><?php echo number_format(isset($row['amount']) ? (float) $row['amount'] : 0, 2); ?></td>
+					<td class="text-right"><?php echo number_format(Onlinepayment_model::fee_of($row), 2); ?></td>
+					<td class="text-right"><?php echo number_format(Onlinepayment_model::charged_of($row), 2); ?></td>
 					<td><span class="badge <?php echo htmlspecialchars($status_class, ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($status_label, ENT_QUOTES, 'UTF-8'); ?></span></td>
 					<td><?php echo htmlspecialchars($context_label, ENT_QUOTES, 'UTF-8'); ?></td>
 					<td><span class="fs-sm"><?php echo htmlspecialchars($created, ENT_QUOTES, 'UTF-8'); ?></span></td>
@@ -130,8 +139,11 @@ $context_labels = array(
 				<tr class="bg-faded">
 					<th colspan="5" class="text-right">Totals (all filtered rows)</th>
 					<th class="text-right"><?php echo number_format($paid_amount + $open_amount, 2); ?></th>
+					<th class="text-right"><?php echo number_format($paid_fee, 2); ?></th>
+					<th></th>
 					<th colspan="8" class="fs-sm text-muted">
 						Collected <?php echo number_format($paid_amount, 2); ?> &middot; Outstanding <?php echo number_format($open_amount, 2); ?>
+						<?php if ($paid_fee > 0) { ?>&middot; Fees on paid <?php echo number_format($paid_fee, 2); ?><?php } ?>
 					</th>
 				</tr>
 			</tfoot>

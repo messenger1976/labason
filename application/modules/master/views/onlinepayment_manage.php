@@ -62,6 +62,9 @@ $context_options = array('all' => 'All sources', 'mobile' => 'Mobile app', 'desk
 					<span class="fw-300 fs-xs d-block opacity-50"><small>COLLECTED</small></span>
 					<span class="fw-500 fs-xl d-block text-success">&#8369; <?php echo number_format(isset($totals['paid_amount']) ? $totals['paid_amount'] : 0, 2); ?></span>
 					<small class="text-muted"><?php echo (int) (isset($totals['paid_count']) ? $totals['paid_count'] : 0); ?> paid</small>
+					<?php if (!empty($totals['paid_fee'])) { ?>
+					<small class="text-muted d-block">+ &#8369; <?php echo number_format((float) $totals['paid_fee'], 2); ?> fees (&#8369; <?php echo number_format((float) $totals['paid_charged'], 2); ?> via PayMongo)</small>
+					<?php } ?>
 				</div>
 			</div>
 		</div>
@@ -155,7 +158,9 @@ $context_options = array('all' => 'All sources', 'mobile' => 'Mobile app', 'desk
 							<tr>
 								<th>Reference</th>
 								<th>Customer</th>
-								<th class="text-right">Amount</th>
+								<th class="text-right">Bill amount</th>
+								<th class="text-right">Fee</th>
+								<th class="text-right">Total charged</th>
 								<th>Status</th>
 								<th>Source</th>
 								<th>Created</th>
@@ -181,6 +186,8 @@ $context_options = array('all' => 'All sources', 'mobile' => 'Mobile app', 'desk
 									<?php echo $h($row['customer_id']); ?>
 								</td>
 								<td class="text-right fw-700">&#8369; <?php echo number_format((float) $row['amount'], 2); ?></td>
+								<td class="text-right"><?php echo number_format(Onlinepayment_model::fee_of($row), 2); ?></td>
+								<td class="text-right">&#8369; <?php echo number_format(Onlinepayment_model::charged_of($row), 2); ?></td>
 								<td><span class="badge badge-<?php echo $h($status_class); ?>"><?php echo $h($this->my_model->status_label($status)); ?></span></td>
 								<td><small class="text-muted"><?php echo $h($this->my_model->status_label(isset($row['context']) ? $row['context'] : '')); ?></small></td>
 								<td><small><?php echo $h(isset($row['create_date_time']) ? $row['create_date_time'] : ''); ?></small></td>

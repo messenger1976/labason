@@ -26,7 +26,11 @@ $reference = isset($attempt['reference_no']) ? (string) $attempt['reference_no']
 $online_ref = isset($attempt['payment_id']) && trim((string) $attempt['payment_id']) !== ''
 	? (string) $attempt['payment_id']
 	: $reference;
-$amount = isset($attempt['amount']) ? (float) $attempt['amount'] : 0;
+$bill_amount = isset($attempt['amount']) ? (float) $attempt['amount'] : 0;
+$fee_amount = isset($attempt['fee_amount']) ? (float) $attempt['fee_amount'] : 0;
+$amount = (isset($attempt['charged_amount']) && $attempt['charged_amount'] !== null && $attempt['charged_amount'] !== '')
+	? (float) $attempt['charged_amount']
+	: $bill_amount;
 $paid_at = !empty($attempt['paid_at']) ? $attempt['paid_at'] : (isset($attempt['settled_at']) ? $attempt['settled_at'] : '');
 
 $name = '';
@@ -203,6 +207,16 @@ $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
 	<?php } ?>
 
 	<div class="totals">
+		<?php if ($fee_amount > 0) { ?>
+		<div class="line">
+			<span>Bill paid</span>
+			<span>&#8369; <?php echo number_format($bill_amount, 2); ?></span>
+		</div>
+		<div class="line">
+			<span>Processing fee</span>
+			<span>&#8369; <?php echo number_format($fee_amount, 2); ?></span>
+		</div>
+		<?php } ?>
 		<div class="line grand">
 			<span>TOTAL PAID</span>
 			<span>&#8369; <?php echo number_format($amount, 2); ?></span>

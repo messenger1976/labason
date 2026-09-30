@@ -62,6 +62,7 @@ class paymongo_setup extends CI_Controller {
 		$settings = $this->settings_model->get_settings();
 		$data['settings'] = $settings;
 		$data['table_ready'] = $this->settings_model->table_ready();
+		$data['fee_ready'] = $this->settings_model->fee_ready();
 		$data['is_configured'] = $this->settings_model->is_configured();
 		$data['is_test_mode'] = $this->settings_model->is_test_mode();
 		$data['webhook_url'] = $this->paymongo->webhook_url();
@@ -84,6 +85,7 @@ class paymongo_setup extends CI_Controller {
 		$settings = $this->settings_model->get_settings();
 		$data['settings'] = $settings;
 		$data['table_ready'] = $this->settings_model->table_ready();
+		$data['fee_ready'] = $this->settings_model->fee_ready();
 		$data['masked'] = array(
 			'public_key' => Paymongo::mask(isset($settings['public_key']) ? $settings['public_key'] : ''),
 			'secret_key' => Paymongo::mask(isset($settings['secret_key']) ? $settings['secret_key'] : ''),

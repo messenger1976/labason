@@ -122,6 +122,50 @@ class Paymongo {
 	}
 
 	// ---------------------------------------------------------------------
+	// Processing fee paid by the customer
+	// ---------------------------------------------------------------------
+
+	/**
+	 * The fee in force: array('enabled' => bool, 'percent' => float, 'fixed' => float).
+	 *
+	 * Reported as off unless tbl_online_payments can record the fee as well, so a
+	 * fee is never taken from a customer and then silently dropped because the
+	 * migration (sql/add_paymongo_customer_fee.sql) has not run yet.
+	 */
+	public function fee_settings() {
+		$off = array('enabled' => false, 'percent' => 0.0, 'fixed' => 0.0);
+		$s = $this->settings();
+		if (!isset($s['fee_enabled']) || (string) $s['fee_enabled'] !== '1') {
+			return $off;
+		}
+		if (!$this->CI->db->table_exists('tbl_online_payments')
+			|| !$this->CI->db->field_exists('fee_amount', 'tbl_online_payments')
+			|| !$this->CI->db->field_exists('charged_amount', 'tbl_online_payments')) {
+			return $off;
+		}
+		$percent = isset($s['fee_percent']) ? max(0.0, (float) $s['fee_percent']) : 0.0;
+		$fixed = isset($s['fee_fixed']) ? max(0.0, (float) $s['fee_fixed']) : 0.0;
+		if ($percent <= 0 && $fixed <= 0) {
+			return $off;
+		}
+		return array('enabled' => true, 'percent' => $percent, 'fixed' => $fixed);
+	}
+
+	/**
+	 * Fee for a bill, in pesos: round(bill x percent / 100 + fixed, 2).
+	 * Returns array('fee', 'percent', 'fixed', 'charged'); fee is 0 when off.
+	 */
+	public function compute_fee($bill_pesos) {
+		$bill = round((float) $bill_pesos, 2);
+		$fs = $this->fee_settings();
+		if (!$fs['enabled']) {
+			return array('fee' => 0.0, 'percent' => 0.0, 'fixed' => 0.0, 'charged' => $bill);
+		}
+		$fee = round($bill * $fs['percent'] / 100 + $fs['fixed'], 2);
+		return array('fee' => $fee, 'percent' => $fs['percent'], 'fixed' => $fs['fixed'], 'charged' => round($bill + $fee, 2));
+	}
+
+	// ---------------------------------------------------------------------
 	// Amount helpers
 	// ---------------------------------------------------------------------
 

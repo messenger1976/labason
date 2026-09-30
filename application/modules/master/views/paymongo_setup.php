@@ -7,7 +7,7 @@
  * read-only "Test connection" button.
  *
  * Expects: $settings, $table_ready, $is_configured, $is_test_mode, $webhook_url,
- *          $masked, $last_error, $last_error_at
+ *          $masked, $last_error, $last_error_at, $fee_ready
  */
 $settings = isset($settings) && is_array($settings) ? $settings : array();
 $table_ready = !empty($table_ready);
@@ -20,6 +20,10 @@ $last_error_at = isset($last_error_at) ? (string) $last_error_at : '';
 $enabled = isset($settings['enabled']) && (string) $settings['enabled'] === '1';
 $min_amount = isset($settings['min_amount']) ? (float) $settings['min_amount'] : 20.00;
 $expiry = isset($settings['link_expiry_minutes']) ? (int) $settings['link_expiry_minutes'] : 60;
+$fee_ready = !empty($fee_ready);
+$fee_enabled = $fee_ready && isset($settings['fee_enabled']) && (string) $settings['fee_enabled'] === '1';
+$fee_percent = isset($settings['fee_percent']) ? (float) $settings['fee_percent'] : 0.0;
+$fee_fixed = isset($settings['fee_fixed']) ? (float) $settings['fee_fixed'] : 10.00;
 $flash = $this->session->flashdata('msg_succ');
 ?>
 <main id="js-page-content" role="main" class="page-content">
@@ -135,6 +139,19 @@ $flash = $this->session->flashdata('msg_succ');
 								<tr>
 									<th>Emailed link lifetime</th>
 									<td><?php echo (int) $expiry; ?> minutes</td>
+								</tr>
+								<tr>
+									<th>Processing fee (paid by customer)</th>
+									<td>
+										<?php if (!$fee_ready) { ?>
+											<span class="text-warning">Not available &mdash; run <code>sql/add_paymongo_customer_fee.sql</code></span>
+										<?php } elseif ($fee_enabled) { ?>
+											<?php echo rtrim(rtrim(number_format($fee_percent, 3, '.', ''), '0'), '.'); ?>% + &#8369; <?php echo number_format($fee_fixed, 2); ?>
+											<small class="text-muted">added on top of the bill</small>
+										<?php } else { ?>
+											<span class="text-muted">Off &mdash; customers pay the bill only</span>
+										<?php } ?>
+									</td>
 								</tr>
 							</tbody>
 						</table>

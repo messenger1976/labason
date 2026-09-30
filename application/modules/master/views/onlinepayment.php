@@ -17,6 +17,9 @@ $qr_customer = isset($qr_customer) && is_array($qr_customer) ? $qr_customer : ar
 $qr_rows = isset($qr_rows) && is_array($qr_rows) ? $qr_rows : array();
 $flash = $this->session->flashdata('msg_succ');
 
+$this->load->library('Paymongo');
+$fee_cfg = $this->paymongo->fee_settings();
+
 $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); };
 ?>
 <link rel="stylesheet" media="screen, print" href="<?php echo base_url(); ?>sa4/css/formplugins/select2/select2.bundle.css">
@@ -150,6 +153,20 @@ $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
 										<th class="text-right" id="op_selected_total">0.00</th>
 										<th></th>
 									</tr>
+									<?php if (!empty($fee_cfg['enabled'])) { ?>
+									<tr class="bg-faded">
+										<th colspan="13" class="text-right fw-400">
+											Processing fee (<?php echo $h(rtrim(rtrim(number_format((float) $fee_cfg['percent'], 3, '.', ''), '0'), '.')); ?>% + &#8369; <?php echo number_format((float) $fee_cfg['fixed'], 2); ?>)
+										</th>
+										<th class="text-right fw-400" id="op_selected_fee">0.00</th>
+										<th></th>
+									</tr>
+									<tr class="bg-faded">
+										<th colspan="13" class="text-right">Customer pays (QR Ph)</th>
+										<th class="text-right text-primary" id="op_selected_charged">0.00</th>
+										<th></th>
+									</tr>
+									<?php } ?>
 								</tfoot>
 							</table>
 						</div>
@@ -306,6 +323,12 @@ $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
 		var n = parseFloat(v || 0);
 		return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 	}
+
+	var feeCfg = <?php echo json_encode(array(
+		'enabled' => !empty($fee_cfg['enabled']),
+		'percent' => (float) $fee_cfg['percent'],
+		'fixed' => (float) $fee_cfg['fixed'],
+	)); ?>;
 
 	function esc(v) {
 		return $('<div>').text(v === null || v === undefined ? '' : String(v)).html();
@@ -482,6 +505,13 @@ $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
 		var total = 0;
 		selectedRows().forEach(function (r) { total += parseFloat(r.amount_due || 0); });
 		$('#op_selected_total').text(money(total));
+		// Preview only: the server recomputes the fee when it creates the QR.
+		var fee = 0;
+		if (feeCfg.enabled && total > 0) {
+			fee = Math.round((total * feeCfg.percent / 100 + feeCfg.fixed) * 100) / 100;
+		}
+		$('#op_selected_fee').text(money(fee));
+		$('#op_selected_charged').text(money(total + fee));
 	}
 
 	$(document).on('change', '.op_check', recalc);

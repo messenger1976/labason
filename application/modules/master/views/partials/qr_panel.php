@@ -4,7 +4,7 @@
  * and the mobile Payment page, so the two cannot drift apart.
  *
  * Expects:
- *   $qr_attempt    the attempt row (id, reference_no, amount, status, qr_image_url,
+ *   $qr_attempt    the attempt row (id, reference_no, amount, fee_amount, charged_amount, status, qr_image_url,
  *                  qr_test_url, expires_at, link, preview_only?)
  *   $qr_status_url URL that returns {ok, paid, status_label, receipt_url}
  *   $qr_receipt_url 80mm receipt URL
@@ -23,7 +23,11 @@ $qr_uid = isset($qr_uid) && $qr_uid !== '' ? preg_replace('/[^a-z0-9_-]/i', '', 
 
 $qr_image = isset($qr_attempt['qr_image_url']) ? (string) $qr_attempt['qr_image_url'] : '';
 $qr_test = isset($qr_attempt['qr_test_url']) ? (string) $qr_attempt['qr_test_url'] : '';
-$qr_amount = isset($qr_attempt['amount']) ? (float) $qr_attempt['amount'] : 0;
+$qr_bill = isset($qr_attempt['amount']) ? (float) $qr_attempt['amount'] : 0;
+$qr_fee = isset($qr_attempt['fee_amount']) ? (float) $qr_attempt['fee_amount'] : 0;
+$qr_amount = (isset($qr_attempt['charged_amount']) && $qr_attempt['charged_amount'] !== null && $qr_attempt['charged_amount'] !== '')
+	? (float) $qr_attempt['charged_amount']
+	: $qr_bill;
 $qr_reference = isset($qr_attempt['reference_no']) ? (string) $qr_attempt['reference_no'] : '';
 $qr_status = isset($qr_attempt['status']) ? (string) $qr_attempt['status'] : 'pending';
 $qr_expires = isset($qr_attempt['expires_at']) ? (string) $qr_attempt['expires_at'] : '';
@@ -41,6 +45,12 @@ $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
 	<div class="qrph-head text-center">
 		<div class="qrph-label">AMOUNT TO PAY</div>
 		<div class="qrph-amount">&#8369; <?php echo number_format($qr_amount, 2); ?></div>
+		<?php if ($qr_fee > 0) { ?>
+		<div class="qrph-breakdown">
+			Bill &#8369; <?php echo number_format($qr_bill, 2); ?>
+			+ processing fee &#8369; <?php echo number_format($qr_fee, 2); ?>
+		</div>
+		<?php } ?>
 		<div class="qrph-ref">Ref: <span class="js-ref"><?php echo $h($qr_reference); ?></span></div>
 		<div class="qrph-status">
 			<span class="badge badge-warning js-status-badge">Waiting for payment</span>
@@ -95,6 +105,7 @@ $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
 	.qrph-head { padding: 12px; background: #f7f7f9; border-bottom: 1px solid #e9ecef; }
 	.qrph-label { font-size: 11px; letter-spacing: 1px; color: #868e96; }
 	.qrph-amount { font-size: 30px; font-weight: 700; color: #3276b1; line-height: 1.1; }
+	.qrph-breakdown { font-size: 12px; color: #495057; margin-bottom: 2px; }
 	.qrph-ref { font-size: 12px; color: #6c757d; }
 	.qrph-body { padding: 14px; }
 	.qrph-image-wrap { display: flex; align-items: center; justify-content: center; min-height: 200px; }
