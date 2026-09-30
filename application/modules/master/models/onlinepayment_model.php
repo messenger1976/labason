@@ -811,10 +811,7 @@ class Onlinepayment_model extends CI_Model {
 
 		$customer = $this->get_customer_info($customer_id);
 		$reference_no = $this->generate_reference();
-		$description = $this->paymongo->description_prefix() . ' — ' . $customer_id;
-		if ($fee['fee'] > 0) {
-			$description .= ' (incl. PHP ' . number_format($fee['fee'], 2) . ' fee)';
-		}
+		$description = $this->paymongo_description($customer_id, $customer, $rows, $fee['fee']);
 		$fee_fields = $this->fee_fields($fee);
 
 		$qr = $this->paymongo->create_qrph($charged, $description, array(
@@ -879,6 +876,60 @@ class Onlinepayment_model extends CI_Model {
 		$this->gateway_settings->clear_last_error();
 
 		return array('ok' => true, 'message' => 'QR code ready.', 'attempt' => $this->get_attempt($attempt_id));
+	}
+
+	/**
+	 * Billing periods being paid, oldest first: "August 2026" or
+	 * "July 2026, August 2026, September 2026". More than three periods collapse
+	 * to "January 2026 to June 2026 (6 periods)" so the description stays short.
+	 */
+	public static function period_label($rows) {
+		$periods = array();
+		foreach ((array) $rows as $row) {
+			$year = isset($row['year']) ? (int) $row['year'] : 0;
+			$month = isset($row['month']) ? (int) $row['month'] : 0;
+			$name = isset($row['month_name']) ? trim((string) $row['month_name']) : '';
+			if ($name === '' && $month >= 1 && $month <= 12) {
+				$name = date('F', mktime(0, 0, 0, $month, 1, 2000));
+			}
+			$periods[] = array('key' => $year * 100 + $month, 'label' => trim($name . ' ' . ($year > 0 ? $year : '')));
+		}
+		usort($periods, function ($a, $b) { return $a['key'] - $b['key']; });
+		$labels = array();
+		foreach ($periods as $p) {
+			if ($p['label'] !== '') {
+				$labels[] = $p['label'];
+			}
+		}
+		if (count($labels) > 3) {
+			return $labels[0] . ' to ' . $labels[count($labels) - 1] . ' (' . count($labels) . ' periods)';
+		}
+		return implode(', ', $labels);
+	}
+
+	/**
+	 * Description shown on the PayMongo record, e.g.
+	 * "LWD Bill Payment — 1234 — DELA CRUZ, JUAN P — August 2026 (incl. PHP 17.50 fee)".
+	 */
+	private function paymongo_description($customer_id, $customer, $rows, $fee_amount) {
+		$parts = array($this->paymongo->description_prefix(), $customer_id);
+		$name = trim(self::full_name($customer), ' ,');
+		if ($name !== '') {
+			$parts[] = $name;
+		}
+		$periods = self::period_label($rows);
+		if ($periods !== '') {
+			$parts[] = $periods;
+		}
+		$description = implode(' — ', $parts);
+		if ($fee_amount > 0) {
+			$description .= ' (incl. PHP ' . number_format($fee_amount, 2) . ' fee)';
+		}
+		// Kept well inside PayMongo's description length limit.
+		if (function_exists('mb_substr')) {
+			return mb_substr($description, 0, 255, 'UTF-8');
+		}
+		return substr($description, 0, 255);
 	}
 
 	/**
