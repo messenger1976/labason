@@ -291,7 +291,6 @@ $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
 </div>
 <?php } ?>
 
-<script src="<?php echo base_url(); ?>sa4/js/statistics/sparkline/sparkline.bundle.js"></script>
 <script type="text/javascript">
 // jQuery (and the Select2 plugin) arrive with the shell's footer bundle, which is
 // printed after this view — so wait for jQuery instead of assuming it, the same way
@@ -436,7 +435,7 @@ $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
 		}).fail(function () {
 			$('#op_results').html('<div class="text-danger small">Unable to load this customer.</div>');
 		});
-	});
+	}
 
 	function renderCustomer(c) {
 		$('#op_customer').html(''
