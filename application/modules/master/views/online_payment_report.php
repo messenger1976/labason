@@ -41,6 +41,58 @@ $contexts = array(
 );
 ?>
 <link rel="stylesheet" media="screen, print" href="<?php echo base_url(); ?>sa4/css/datagrid/datatables/datatables.bundle.css">
+<style>
+	.op-subheader { flex-wrap: wrap; }
+	.op-subheader .subheader-title { flex: 1 1 280px; min-width: 0; }
+	.op-kpis { display: flex; flex-wrap: wrap; align-items: stretch; gap: .5rem 0; }
+	.op-kpi { display: flex; flex-direction: column; justify-content: center; padding: 0 1rem; border-left: 1px solid rgba(0,0,0,.09); }
+	.op-kpi:first-child { border-left: 0; padding-left: 0; }
+	.op-kpi-label { font-size: .6875rem; font-weight: 300; text-transform: uppercase; letter-spacing: .04em; opacity: .6; }
+	.op-kpi-value { font-size: 1.125rem; font-weight: 500; white-space: nowrap; }
+
+	.op-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+
+	.op-summary-card { background: #fff; border: 1px solid rgba(0,0,0,.09); border-radius: 4px; padding: .5rem .75rem; }
+	.op-summary-label { font-size: .6875rem; text-transform: uppercase; letter-spacing: .04em; color: #6c757d; }
+	.op-summary-value { font-size: 1.05rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+	.op-summary-note { font-size: .6875rem; color: #909090; }
+
+	.op-table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+	.op-table { margin-bottom: 0 !important; }
+	.op-table th, .op-table td { vertical-align: middle; }
+	.op-table thead th { white-space: nowrap; }
+	.op-table .op-col-sn { width: 44px; white-space: nowrap; }
+	.op-table .op-col-action { width: 64px; white-space: nowrap; }
+	.op-table .op-col-name { min-width: 160px; }
+	.op-table .op-col-break { word-break: break-all; min-width: 120px; }
+	.op-table tfoot th { vertical-align: top; }
+	/* Responsive child row: label/value pairs stay readable on phones. */
+	.op-table li[data-dtr-index] { display: flex; justify-content: space-between; gap: .75rem; padding: .25rem 0; border-bottom: 1px dashed rgba(0,0,0,.08); }
+	.op-table li[data-dtr-index]:last-child { border-bottom: 0; }
+	.op-table .dtr-title { font-weight: 600; min-width: 110px; }
+	.op-table .dtr-data { text-align: right; word-break: break-word; }
+	#onlinepaymentDiv .dataTables_filter { text-align: left; }
+	#onlinepaymentDiv .dataTables_filter label, #onlinepaymentDiv .dataTables_filter input { width: 100%; max-width: 360px; margin-left: 0; }
+
+	@media (max-width: 575.98px) {
+		.op-kpi { padding: 0 .75rem; }
+		.op-kpi-value { font-size: 1rem; }
+		.op-actions .btn { flex: 1 1 auto; }
+	}
+
+	@media print {
+		.page-sidebar, .page-header, .page-footer, .page-breadcrumb, .panel-hdr, #op_form, .op-toolbar .btn-group,
+		#onlinepaymentDiv .dataTables_filter, .op-intro { display: none !important; }
+		.page-content, .panel, .panel-container, .panel-content { padding: 0 !important; margin: 0 !important; border: 0 !important; box-shadow: none !important; }
+		/* Print every column, including the ones Responsive collapsed on screen. */
+		.op-table th, .op-table td { display: table-cell !important; font-size: 9px; padding: 2px 3px !important; }
+		.op-table tr.child { display: none !important; }
+		.op-table td.dtr-control::before, .op-table th.dtr-control::before { display: none !important; }
+		.op-table-wrap { overflow: visible; }
+		.op-summary .col-xl-2 { flex: 0 0 16.666%; max-width: 16.666%; }
+		@page { size: landscape; margin: 8mm; }
+	}
+</style>
 <main id="js-page-content" role="main" class="page-content">
 	<ol class="breadcrumb page-breadcrumb">
 		<li class="breadcrumb-item"><a href="<?php echo ADMIN_URL; ?>">Home</a></li>
@@ -49,31 +101,24 @@ $contexts = array(
 		<li class="position-absolute pos-top pos-right d-none d-sm-block"><span class="js-get-date"></span></li>
 	</ol>
 
-	<div class="subheader">
+	<div class="subheader op-subheader">
 		<h1 class="subheader-title">
 			<i class="subheader-icon fal fa-qrcode"></i>
 			Manage <span class="fw-300">Online / QR Ph Payment Report</span>
 		</h1>
-		<div class="subheader-block d-lg-flex align-items-center">
-			<div class="d-inline-flex flex-column justify-content-center mr-3">
-				<span class="fw-300 fs-xs d-block opacity-50"><small>COLLECTED</small></span>
-				<span class="fw-500 fs-xl d-block color-success-500">₱ <?php echo number_format($paid_amount, 2); ?></span>
+		<div class="op-kpis">
+			<div class="op-kpi">
+				<span class="op-kpi-label">Collected</span>
+				<span class="op-kpi-value color-success-500">₱ <?php echo number_format($paid_amount, 2); ?></span>
 			</div>
-			<span class="sparklines hidden-lg-down" sparkType="bar" sparkBarColor="#1dc9b7" sparkHeight="32px" sparkBarWidth="5px" values="2,5,3,7,4,6,3,8,5,4,6"></span>
-		</div>
-		<div class="subheader-block d-lg-flex align-items-center border-faded border-right-0 border-top-0 border-bottom-0 ml-3 pl-3">
-			<div class="d-inline-flex flex-column justify-content-center mr-3">
-				<span class="fw-300 fs-xs d-block opacity-50"><small>OUTSTANDING</small></span>
-				<span class="fw-500 fs-xl d-block color-danger-500">₱ <?php echo number_format($open_amount, 2); ?></span>
+			<div class="op-kpi">
+				<span class="op-kpi-label">Outstanding</span>
+				<span class="op-kpi-value color-danger-500">₱ <?php echo number_format($open_amount, 2); ?></span>
 			</div>
-			<span class="sparklines hidden-lg-down" sparkType="bar" sparkBarColor="#fe6bb0" sparkHeight="32px" sparkBarWidth="5px" values="1,4,3,6,5,3,9,6,5,9,7"></span>
-		</div>
-		<div class="subheader-block d-lg-flex align-items-center border-faded border-right-0 border-top-0 border-bottom-0 ml-3 pl-3">
-			<div class="d-inline-flex flex-column justify-content-center mr-3">
-				<span class="fw-300 fs-xs d-block opacity-50"><small>PAID / OPEN</small></span>
-				<span class="fw-500 fs-xl d-block color-primary-500"><?php echo $paid_count; ?> / <?php echo $open_count; ?></span>
+			<div class="op-kpi">
+				<span class="op-kpi-label">Paid / Open</span>
+				<span class="op-kpi-value color-primary-500"><?php echo $paid_count; ?> / <?php echo $open_count; ?></span>
 			</div>
-			<span class="sparklines hidden-lg-down" sparkType="bar" sparkBarColor="#886ab5" sparkHeight="32px" sparkBarWidth="5px" values="3,4,3,6,7,3,3,6,2,6,4"></span>
 		</div>
 	</div>
 
@@ -96,28 +141,29 @@ $contexts = array(
 				</div>
 				<div class="panel-container show">
 					<div class="panel-content">
-						<p class="text-muted mb-3">
+						<p class="text-muted mb-3 op-intro">
 							Every QR Ph attempt, including the ones that were never paid. Amounts here are the
 							<strong>QR Ph channel only</strong> — these payments carry no OR, so they are excluded from the
 							Daily Collection Report. Loaded newest first, 100 rows per page; totals below are for the whole
-							filtered set.
+							filtered set. The processing fee is split into the <strong>QR Ph fee</strong> (percentage of the
+							bill) and the <strong>Fixed fee</strong> (flat amount); together they make the Total fee.
 						</p>
 
 						<form name="op_form" id="op_form" method="post" action="javascript:void(0);">
 							<div class="row">
-								<div class="col-md-3">
+								<div class="col-12 col-sm-6 col-lg-3">
 									<div class="form-group">
 										<label class="form-label" for="date_from">Date from</label>
 										<input type="date" class="form-control" name="date_from" id="date_from" value="<?php echo date('Y-m-d', strtotime('-30 days')); ?>">
 									</div>
 								</div>
-								<div class="col-md-3">
+								<div class="col-12 col-sm-6 col-lg-3">
 									<div class="form-group">
 										<label class="form-label" for="date_to">Date to</label>
 										<input type="date" class="form-control" name="date_to" id="date_to" value="<?php echo date('Y-m-d'); ?>">
 									</div>
 								</div>
-								<div class="col-md-3">
+								<div class="col-12 col-sm-6 col-lg-3">
 									<div class="form-group">
 										<label class="form-label" for="status">Status</label>
 										<select class="form-control" name="status" id="status">
@@ -127,7 +173,7 @@ $contexts = array(
 										</select>
 									</div>
 								</div>
-								<div class="col-md-3">
+								<div class="col-12 col-sm-6 col-lg-3">
 									<div class="form-group">
 										<label class="form-label" for="context">Source</label>
 										<select class="form-control" name="context" id="context">
@@ -137,7 +183,7 @@ $contexts = array(
 										</select>
 									</div>
 								</div>
-								<div class="col-md-3">
+								<div class="col-12 col-sm-6 col-lg-3">
 									<div class="form-group">
 										<label class="form-label" for="zone">Zone</label>
 										<select class="form-control" name="zone" id="zone">
@@ -148,7 +194,7 @@ $contexts = array(
 										</select>
 									</div>
 								</div>
-								<div class="col-md-3">
+								<div class="col-12 col-sm-6 col-lg-3">
 									<div class="form-group">
 										<label class="form-label" for="created_by">Collected by</label>
 										<select class="form-control" name="created_by" id="created_by">
@@ -161,7 +207,7 @@ $contexts = array(
 										</select>
 									</div>
 								</div>
-								<div class="col-md-3">
+								<div class="col-12 col-sm-6 col-lg-3">
 									<div class="form-group">
 										<label class="form-label" for="q">Search</label>
 										<input type="text" class="form-control" name="q" id="q" placeholder="Reference, customer ID, pay_…" autocomplete="off">
@@ -171,7 +217,7 @@ $contexts = array(
 
 							<input type="hidden" id="list_offset" value="0">
 
-							<div class="form-group mb-0">
+							<div class="op-actions">
 								<button type="button" class="btn btn-primary" id="search">
 									<i class="fal fa-search mr-1"></i> Search
 								</button>
@@ -192,7 +238,6 @@ $contexts = array(
 	</div>
 </main>
 <?php include('footer.php'); ?>
-<script src="<?php echo base_url(); ?>sa4/js/statistics/sparkline/sparkline.bundle.js"></script>
 <script src="<?php echo base_url(); ?>sa4/js/datagrid/datatables/datatables.bundle.js"></script>
 </body>
 </html>
@@ -231,17 +276,34 @@ $contexts = array(
 		if (!$tbl.length || typeof $.fn.DataTable !== 'function') { return; }
 		try {
 			$tbl.DataTable({
+				responsive: true,
+				columnDefs: [
+					{ orderable: false, targets: -1 }
+				],
 				paging: false,
 				searching: true,
 				info: false,
 				order: [],
-				autoWidth: true,
-				dom: "<'row mb-2'<'col-sm-12'f>>" + "<'row'<'col-sm-12'tr>>",
+				autoWidth: false,
+				dom: "<'row mb-2'<'col-12'f>>" + "<'row'<'col-12'tr>>",
 				language: { search: '', searchPlaceholder: 'Search these results…' }
 			});
 		} catch (dtErr) {
 			if (window.console && console.warn) { console.warn('DataTables init skipped:', dtErr); }
 		}
+		if ($.fn.tooltip) {
+			$('#onlinepaymentDiv [data-toggle="tooltip"]').tooltip();
+		}
+	}
+
+	function recalcOpTable() {
+		var $tbl = $('#tbl_online_payment');
+		if (!$tbl.length || !$.fn.DataTable || !$.fn.DataTable.isDataTable($tbl[0])) { return; }
+		try {
+			var dt = $tbl.DataTable();
+			dt.columns.adjust();
+			if (dt.responsive) { dt.responsive.recalc(); }
+		} catch (ignore) {}
 	}
 
 	function loadPage(goOffset) {
@@ -283,17 +345,11 @@ $contexts = array(
 
 	$(document).ready(function() {
 		if (typeof pageSetUp === 'function') { pageSetUp(); }
-		if ($.fn.sparkline) {
-			$('.sparklines').each(function() {
-				var $el = $(this);
-				$el.sparkline('html', {
-					type: $el.attr('sparkType') || 'bar',
-					barColor: $el.attr('sparkBarColor') || '#886ab5',
-					height: $el.attr('sparkHeight') || '32px',
-					barWidth: $el.attr('sparkBarWidth') || '5px'
-				});
-			});
-		}
+
+		// Panel fullscreen/collapse and the sidebar toggle change the table width without a window resize.
+		$(document).on('click', '#panel-online-payment [data-action], [data-action="toggle"]', function() {
+			setTimeout(recalcOpTable, 350);
+		});
 
 		$('#search').on('click', function(e) { e.preventDefault(); loadPage(0); });
 

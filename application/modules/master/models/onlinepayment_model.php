@@ -965,6 +965,26 @@ class Onlinepayment_model extends CI_Model {
 	}
 
 	/**
+	 * Fixed part of the processing fee (the flat peso amount in force when the QR was made).
+	 * Capped at the stored fee so the breakdown always adds back up to fee_amount.
+	 */
+	public static function fee_fixed_of($attempt) {
+		$fee = self::fee_of($attempt);
+		if ($fee <= 0 || !isset($attempt['fee_fixed']) || $attempt['fee_fixed'] === null || $attempt['fee_fixed'] === '') {
+			return 0.0;
+		}
+		return round(min($fee, max(0.0, (float) $attempt['fee_fixed'])), 2);
+	}
+
+	/**
+	 * Percentage (QR Ph) part of the processing fee: fee_amount minus the fixed part, so the
+	 * two columns never disagree with the stored fee by a rounding centavo.
+	 */
+	public static function fee_qrph_of($attempt) {
+		return round(self::fee_of($attempt) - self::fee_fixed_of($attempt), 2);
+	}
+
+	/**
 	 * Ask PayMongo whether an attempt has been paid yet, and settle it if so.
 	 * This is the single re-check used by polling, the manual button and the
 	 * webhook. Returns array('ok','paid','attempt','message').
@@ -1173,14 +1193,20 @@ class Onlinepayment_model extends CI_Model {
 	 */
 	public function get_report_totals($filters = array()) {
 		if (!$this->table_ready()) {
-			return array('count' => 0, 'paid_count' => 0, 'paid_amount' => 0.0, 'paid_fee' => 0.0, 'paid_charged' => 0.0, 'open_count' => 0, 'open_amount' => 0.0, 'attempted_amount' => 0.0);
+			return array('count' => 0, 'paid_count' => 0, 'paid_amount' => 0.0, 'paid_fee' => 0.0, 'paid_fee_qrph' => 0.0, 'paid_fee_fixed' => 0.0, 'paid_charged' => 0.0, 'open_count' => 0, 'open_amount' => 0.0, 'attempted_amount' => 0.0);
 		}
-		$fee_sql = $this->db->field_exists('fee_amount', $this->table_name)
+		$has_fee = $this->db->field_exists('fee_amount', $this->table_name);
+		$fee_sql = $has_fee
 			? " SUM(CASE WHEN op.status = 'paid' THEN op.fee_amount ELSE 0 END) AS paid_fee,"
 			: ' 0 AS paid_fee,';
+		// Same capping rule as fee_fixed_of(), so the per-row columns add up to these totals.
+		$fee_fixed_sql = ($has_fee && $this->db->field_exists('fee_fixed', $this->table_name))
+			? " SUM(CASE WHEN op.status = 'paid' AND op.fee_amount > 0 THEN LEAST(op.fee_amount, GREATEST(0, COALESCE(op.fee_fixed, 0))) ELSE 0 END) AS paid_fee_fixed,"
+			: ' 0 AS paid_fee_fixed,';
 		$this->db->select(
 			'COUNT(*) AS count,'
 			. $fee_sql
+			. $fee_fixed_sql
 			. " SUM(CASE WHEN op.status = 'paid' THEN 1 ELSE 0 END) AS paid_count,"
 			. " SUM(CASE WHEN op.status = 'paid' THEN op.amount ELSE 0 END) AS paid_amount,"
 			. " SUM(CASE WHEN op.status IN ('pending','expired','failed') THEN 1 ELSE 0 END) AS open_count,"
@@ -1195,11 +1221,15 @@ class Onlinepayment_model extends CI_Model {
 		if (!is_array($row)) {
 			$row = array();
 		}
+		$paid_fee = isset($row['paid_fee']) ? (float) $row['paid_fee'] : 0.0;
+		$paid_fee_fixed = isset($row['paid_fee_fixed']) ? (float) $row['paid_fee_fixed'] : 0.0;
 		return array(
 			'count'            => isset($row['count']) ? (int) $row['count'] : 0,
 			'paid_count'       => isset($row['paid_count']) ? (int) $row['paid_count'] : 0,
 			'paid_amount'      => isset($row['paid_amount']) ? (float) $row['paid_amount'] : 0.0,
-			'paid_fee'         => isset($row['paid_fee']) ? (float) $row['paid_fee'] : 0.0,
+			'paid_fee'         => $paid_fee,
+			'paid_fee_qrph'    => round($paid_fee - $paid_fee_fixed, 2),
+			'paid_fee_fixed'   => round($paid_fee_fixed, 2),
 			'paid_charged'     => (isset($row['paid_amount']) ? (float) $row['paid_amount'] : 0.0) + (isset($row['paid_fee']) ? (float) $row['paid_fee'] : 0.0),
 			'open_count'       => isset($row['open_count']) ? (int) $row['open_count'] : 0,
 			'open_amount'      => isset($row['open_amount']) ? (float) $row['open_amount'] : 0.0,
