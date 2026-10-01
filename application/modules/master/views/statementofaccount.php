@@ -7,6 +7,7 @@
 					<button class="btn btn-warning btn-block-mobile" id="resetPasswordBtn"><i class="fa fa-key"></i> Reset Password</button>
 					<a href="<?php echo base_url();?>master/statementofaccount/search" class="btn btn-default btn-block-mobile"><i class="fa fa-arrow-left"></i> Back to Search</a>
 					<a href="<?php echo base_url();?>master/statementofaccount/pdf/<?php echo rawurlencode(isset($customer_info['customer_id']) ? $customer_info['customer_id'] : ''); ?>" class="btn btn-danger btn-block-mobile" id="pdfStatementBtn" target="_blank"><i class="fa fa-file-pdf-o"></i> Convert to PDF</a>
+					<a href="<?php echo base_url();?>master/statementofaccount/pay/<?php echo rawurlencode(isset($customer_info['customer_id']) ? $customer_info['customer_id'] : ''); ?>" class="btn btn-success btn-block-mobile" id="onlinePayBtn"><i class="fa fa-qrcode"></i> Online Pay</a>
 				</div>
 			</div>
 		</div>

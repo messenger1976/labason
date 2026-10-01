@@ -33,6 +33,7 @@ $context_labels = array(
 	'mobile'        => 'Mobile app',
 	'desktop'       => 'Desktop (emailed link)',
 	'customer_link' => 'Customer link',
+	'customer_soa'  => 'Customer SOA (self-pay)',
 );
 
 $summary = array(
