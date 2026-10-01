@@ -19,7 +19,7 @@ $flash = $this->session->flashdata('msg_succ');
 
 $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); };
 $status_options = array('all' => 'All statuses', 'pending' => 'Pending', 'paid' => 'Paid', 'expired' => 'Expired', 'failed' => 'Failed', 'cancelled' => 'Cancelled');
-$context_options = array('all' => 'All sources', 'mobile' => 'Mobile app', 'desktop' => 'Backend', 'customer_link' => 'Customer link');
+$context_options = array('all' => 'All sources', 'mobile' => 'Mobile app', 'desktop' => 'Backend', 'customer_link' => 'Customer link', 'customer_soa' => 'Customer SOA (self-pay)');
 ?>
 <main id="js-page-content" role="main" class="page-content">
 	<ol class="breadcrumb page-breadcrumb">

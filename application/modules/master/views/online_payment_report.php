@@ -38,6 +38,7 @@ $contexts = array(
 	'mobile'        => 'Mobile app',
 	'desktop'       => 'Desktop (emailed link)',
 	'customer_link' => 'Customer link',
+	'customer_soa'  => 'Customer SOA (self-pay)',
 );
 ?>
 <link rel="stylesheet" media="screen, print" href="<?php echo base_url(); ?>sa4/css/datagrid/datatables/datatables.bundle.css">
