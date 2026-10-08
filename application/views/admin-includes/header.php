@@ -259,4 +259,5 @@ $sa4 = base_url() . 'sa4/';
 							</div>
 						</div>
 					</header>
+					<?php include __DIR__ . '/messageboard_ticker.php'; ?>
 					<!-- Page views render below; footer closes wrappers -->

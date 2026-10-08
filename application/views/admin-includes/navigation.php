@@ -468,6 +468,14 @@ $avatar_url = base_url($avatar_relative) . '?v=' . $avatar_mtime;
 				</a>
 			</li>
 			<?php } ?>
+			<?php if ($this->db->table_exists('tbl_board_message')) { ?>
+			<li class="<?php if($this->uri->segment(2)=='messageboard'){echo 'active';}?>">
+				<a href="<?php echo ADMIN_URL;?>messageboard" title="Announcements">
+					<i class="fal fa-bullhorn"></i>
+					<span class="nav-link-text">Announcements <span class="badge badge-primary badge-pill js-mb-nav-badge d-none"></span></span>
+				</a>
+			</li>
+			<?php } ?>
 			<?php // Technical Problems View — commented out in original ?>
 
 			<?php if((array_key_exists('web_settings',$roleResponsible) && ($roleResponsible['web_settings'] == 1) ) || ($this->session->userdata('usertype') == 'admin')){ ?>
