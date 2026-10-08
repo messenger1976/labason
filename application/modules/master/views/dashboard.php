@@ -139,6 +139,7 @@ $leaking_total = isset($leaking['total']) ? $leaking['total'] : 0;
 </main>
 
 <?php include('footer.php'); ?>
+<?php include('messageboard_popup.php'); ?>
 
 <script src="<?php echo base_url(); ?>sa4/js/statistics/chartjs/chartjs.bundle.js"></script>
 <script type="text/javascript">

@@ -90,6 +90,8 @@ class Master extends CI_Controller {
 					}else{
 						$val=$this->my_model->admin_login();
 						$this->my_model->get_admininfo_details();
+						// Message Board: show the "what's new" popup on the first dashboard view after sign-in.
+						$this->session->set_userdata('mb_popup_pending', 1);
 						if($this->session->userdata('usertype') == 'admin'){
 						    redirect($this->listPage_redirect);
 						}else{
