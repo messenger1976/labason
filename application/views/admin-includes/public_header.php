@@ -20,7 +20,6 @@ $pub_short_title = $pub_has_title ? trim((string) $page_title) : 'Statement of A
 		<title><?php echo htmlspecialchars($pub_title, ENT_QUOTES, 'UTF-8'); ?></title>
 		<meta name="description" content="Customer Statement of Account">
 		<meta name="author" content="">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
 		<!-- Basic Styles -->
 		<link rel="stylesheet" type="text/css" media="screen" href="<?php echo base_url();?>css/bootstrap.min.css">
@@ -45,28 +44,28 @@ $pub_short_title = $pub_has_title ? trim((string) $page_title) : 'Statement of A
 		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400italic,700italic,300,400,700">
 
 		<!-- PWA Meta Tags -->
-		<meta name="theme-color" content="#5bc0de">
+		<meta name="theme-color" content="#063f66">
 		<meta name="apple-mobile-web-app-capable" content="yes">
 		<meta name="mobile-web-app-capable" content="yes">
 		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-		<meta name="apple-mobile-web-app-title" content="<?php echo htmlspecialchars($pub_short_title, ENT_QUOTES, 'UTF-8'); ?>">
-		<meta name="mobile-web-app-capable" content="yes">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+		<meta name="apple-mobile-web-app-title" content="<?php echo htmlspecialchars($pub_has_title ? $pub_short_title : 'LWD Statement', ENT_QUOTES, 'UTF-8'); ?>">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+		<link rel="apple-touch-icon" sizes="180x180" href="<?php echo base_url();?>img/soa/apple-touch-icon.png">
+		<link rel="icon" type="image/png" sizes="192x192" href="<?php echo base_url();?>img/soa/icon-192.png">
 
 		<!-- PWA Manifest -->
 		<link rel="manifest" href="<?php echo base_url();?>manifest.json">
-		
-		<!-- Register Service Worker for PWA -->
+
+		<?php
+		$pub_sw_path = parse_url(base_url(), PHP_URL_PATH);
+		$pub_sw_scope = (is_string($pub_sw_path) ? rtrim($pub_sw_path, '/') : '') . '/master/statementofaccount/';
+		?>
+		<!-- The customer app's service worker only controls the Statement of Account pages, never the staff admin. -->
 		<script>
 			if ('serviceWorker' in navigator) {
 				window.addEventListener('load', function() {
-					navigator.serviceWorker.register('<?php echo base_url();?>sw.js')
-						.then(function(registration) {
-							console.log('ServiceWorker registration successful');
-						})
-						.catch(function(err) {
-							console.log('ServiceWorker registration failed');
-						});
+					navigator.serviceWorker.register('<?php echo base_url();?>sw.js', { scope: '<?php echo $pub_sw_scope; ?>' })
+						.catch(function() {});
 				});
 			}
 		</script>
