@@ -32,6 +32,20 @@
   "categories": ["utilities", "finance"],
   "shortcuts": [
     {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Your balance, bills, payments and water use",
+      "url": "master/statementofaccount/index",
+      "icons": [{ "src": "img/soa/icon-96.png", "sizes": "96x96", "type": "image/png" }]
+    },
+    {
+      "name": "Statement of Account",
+      "short_name": "SOA",
+      "description": "Billing and payment ledger",
+      "url": "master/statementofaccount/soa",
+      "icons": [{ "src": "img/soa/icon-96.png", "sizes": "96x96", "type": "image/png" }]
+    },
+    {
       "name": "Customer Login",
       "short_name": "Login",
       "description": "Log in to view your Statement of Account",

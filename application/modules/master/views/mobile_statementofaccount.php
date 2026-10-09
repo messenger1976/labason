@@ -329,7 +329,7 @@
 
 	var SOA_CFG = {
 		ajax:  '<?php echo ADMIN_URL; ?>mobile_statementofaccount/',
-		print: '<?php echo ADMIN_URL; ?>statementofaccount/index/',
+		print: '<?php echo ADMIN_URL; ?>statementofaccount/soa/',
 		pdf:   '<?php echo ADMIN_URL; ?>statementofaccount/pdf/'
 	};
 
@@ -821,7 +821,7 @@
 		// Quick actions
 		$('#soa_act_print').on('click', function () {
 			if (!CURRENT || !CURRENT.customer) { return; }
-			window.open(SOA_CFG.print + encodeURIComponent(CURRENT.customer.customer_id), '_blank');
+			window.open(SOA_CFG.print + encodeURIComponent(CURRENT.customer.customer_id) + '?print=1', '_blank');
 		});
 		$('#soa_act_pdf').on('click', function () {
 			if (!CURRENT || !CURRENT.customer) { return; }

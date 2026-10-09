@@ -54,7 +54,7 @@
 									<?php if (!empty($r['customer_name'])) { ?>
 										— <?php echo htmlspecialchars($r['customer_name'], ENT_QUOTES, 'UTF-8'); ?>
 									<?php } ?>
-									<a class="btn btn-xs btn-outline-primary ml-2" target="_blank" href="<?php echo site_url('master/statementofaccount/index/'.$r['customer_id']); ?>">Open SOA</a>
+									<a class="btn btn-xs btn-outline-primary ml-2" target="_blank" href="<?php echo site_url('master/statementofaccount/soa/'.$r['customer_id']); ?>">Open SOA</a>
 								</td>
 							</tr>
 							<tr><th>Type</th><td><?php echo htmlspecialchars($type_label, ENT_QUOTES, 'UTF-8'); ?> (<?php echo strtoupper(htmlspecialchars($r['adj_direction'], ENT_QUOTES, 'UTF-8')); ?>)</td></tr>

@@ -137,7 +137,7 @@ class customerbalancemonitor extends CI_Controller {
 				'address' => isset($row['address']) ? (string) $row['address'] : '',
 				'zone_name' => isset($row['zone_name']) ? (string) $row['zone_name'] : '',
 				'total_balance' => $bal,
-				'statement_url' => base_url() . 'master/statementofaccount/index/' . rawurlencode(isset($row['customer_id']) ? $row['customer_id'] : '')
+				'statement_url' => base_url() . 'master/statementofaccount/soa/' . rawurlencode(isset($row['customer_id']) ? $row['customer_id'] : '')
 			);
 		}
 

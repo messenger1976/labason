@@ -32,7 +32,7 @@
 						(isset($row['middle_name']) ? $row['middle_name'] : '') . ' ' .
 						(isset($row['last_name']) ? $row['last_name'] : '')
 					);
-					$stmt_url = base_url() . 'master/statementofaccount/index/' . rawurlencode(isset($row['customer_id']) ? $row['customer_id'] : '');
+					$stmt_url = base_url() . 'master/statementofaccount/soa/' . rawurlencode(isset($row['customer_id']) ? $row['customer_id'] : '');
 				?>
 				<tr>
 					<td><?php echo $index; ?></td>

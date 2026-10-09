@@ -4,7 +4,7 @@ class statementofaccount extends CI_Controller {
 	
 	public $headerPage = '../../views/admin-includes/header'; 
 	public $publicHeaderPage = '../../views/admin-includes/public_header'; 
-	public $viewPage = 'statementofaccount';     //*****  View page   *****//
+	public $viewPage = 'statementofaccount_soa';     //*****  View page   *****//
 	public $listPage_redirect = '/master/statementofaccount';		  //*****  Redirect View  *****//
 	
 	public function __construct() {
@@ -21,34 +21,271 @@ class statementofaccount extends CI_Controller {
 		$this->load->model('addcustomer_model','customer_model');
     }
 	
-	public function index($customer_id=''){ 		 //*****  View Loading  *****//
-		// Use public header - no authentication required
-		
-		// Require customer ID - redirect to search if not provided
-		if($customer_id == ''){
+	public $appHeaderPage = '../../views/admin-includes/customer_app_header';
+	public $appFooterPage = '../../views/admin-includes/customer_app_footer';
+
+	/** Staff signed in to the admin / mobile app (same test as mobile_payment). */
+	private function _is_staff() {
+		return ($this->session->userdata('logged_in') == 'ECOM')
+			&& (trim((string) $this->session->userdata('username')) !== '');
+	}
+
+	/** Gate for the customer app: the signed-in customer, or any logged-in staff user. */
+	private function _portal_customer_or_deny($customer_id) {
+		$customer_id = trim(rawurldecode((string) $customer_id));
+		$signed_in = $this->_pay_session_customer();
+		if ($customer_id !== '') {
+			if ($signed_in !== '' && strcasecmp($customer_id, $signed_in) === 0) {
+				return $signed_in;
+			}
+			if ($this->_is_staff()) {
+				return $customer_id;
+			}
+		}
+		if ($this->input->is_ajax_request()) {
+			$this->_pay_json(array('ok' => false, 'success' => false, 'message' => 'Your session has ended. Please sign in again.'), 403);
+		}
+		redirect('/master/statementofaccount/search');
+		exit;
+	}
+
+	/** Shell variables for customer_app_header / customer_app_footer. */
+	private function _app_shell($customer_id, $active, $title, $extra = array()) {
+		$info = $this->my_model->get_customer_info($customer_id);
+		$name = '';
+		if (!empty($info)) {
+			$name = strtoupper(trim($info['last_name'] . ', ' . $info['first_name'] . ' ' . $info['middle_name']));
+		}
+		$is_staff = $this->_is_staff() && strcasecmp($this->_pay_session_customer(), $customer_id) !== 0;
+		return array_merge(array(
+			'page_title' => $title . ' - Water Billing System',
+			'app_active' => $active,
+			'app_title' => $title,
+			'app_customer_id' => $customer_id,
+			'app_customer_name' => $name,
+			'app_is_staff' => $is_staff,
+		), $extra);
+	}
+
+	/** Customer dashboard (home of the customer app). */
+	public function index($customer_id=''){
+		if (trim((string) $customer_id) === '') {
+			$signed_in = $this->_pay_session_customer();
+			redirect($signed_in !== '' ? '/master/statementofaccount/index/'.rawurlencode($signed_in) : '/master/statementofaccount/search');
+		}
+		$customer_id = $this->_portal_customer_or_deny($customer_id);
+
+		$customer_info = $this->my_model->get_customer_info($customer_id);
+		if(empty($customer_info)){
+			$this->session->set_flashdata('msg', '<div class="alert alert-danger text-center">Customer not found!</div>');
 			redirect('/master/statementofaccount/search');
 		}
-		
+
+		$data = array(
+			'customer_info' => $customer_info,
+			'dashboard' => $this->_dashboard_payload($customer_id),
+		);
+		$shell = $this->_app_shell($customer_id, 'dashboard', 'Dashboard', array('app_subtitle' => 'Account overview'));
+		$this->load->view($this->appHeaderPage, $shell);
+		$this->load->view('statementofaccount_dashboard', $data);
+		$this->load->view($this->appFooterPage, $shell);
+	}
+
+	/** Statement of Account ledger (formerly the index page). */
+	public function soa($customer_id=''){
+		if (trim((string) $customer_id) === '') {
+			$signed_in = $this->_pay_session_customer();
+			redirect($signed_in !== '' ? '/master/statementofaccount/soa/'.rawurlencode($signed_in) : '/master/statementofaccount/search');
+		}
+		$customer_id = $this->_portal_customer_or_deny($customer_id);
+
 		// Get customer information
 		$data['customer_info'] = $this->my_model->get_customer_info($customer_id);
-		
+
 		if(empty($data['customer_info'])){
 			$this->session->set_flashdata('msg', '<div class="alert alert-danger text-center">Customer not found!</div>');
 			redirect('/master/statementofaccount/search');
 		}
-		
+
 		// Get all ledger entries (readings and payments combined)
 		$data['ledger_entries'] = $this->my_model->get_customer_ledger($customer_id);
-		
+
 		// Calculate running balance
 		$data['ledger_entries'] = $this->my_model->calculate_running_balance($data['ledger_entries']);
-		
+
 		// Get current balance
 		$data['current_balance'] = $this->my_model->get_current_balance($customer_id);
-		
-		// Use public header (no authentication)
-		$this->load->view($this->publicHeaderPage);
-		$this->load->view($this->viewPage,$data);
+
+		$data['auto_print'] = (string) $this->input->get('print') === '1';
+
+		$shell = $this->_app_shell($customer_id, 'soa', 'Statement of Account', array('app_subtitle' => 'Billing & payment ledger'));
+		$this->load->view($this->appHeaderPage, $shell);
+		$this->load->view('statementofaccount_soa', $data);
+		$this->load->view($this->appFooterPage, $shell);
+	}
+
+	/** JSON: same payload the dashboard renders, for refresh. Read-only. */
+	public function dashboard_data($customer_id=''){
+		$customer_id = $this->_portal_customer_or_deny($customer_id);
+		$info = $this->my_model->get_customer_info($customer_id);
+		if (empty($info)) {
+			$this->_pay_json(array('ok' => false, 'message' => 'Customer not found.'));
+		}
+		$this->_pay_json(array('ok' => true, 'data' => $this->_dashboard_payload($customer_id)));
+	}
+
+	/**
+	 * Dashboard figures. Every amount comes from the existing models
+	 * (statementofaccount_model for the ledger/balance, onlinepayment_model for
+	 * what is payable now); this only groups and adds up what they returned.
+	 */
+	private function _dashboard_payload($customer_id) {
+		$ledger = $this->my_model->get_customer_ledger($customer_id);
+		$ledger = $this->my_model->calculate_running_balance($ledger);
+		if (!is_array($ledger)) { $ledger = array(); }
+		$balance = (float) $this->my_model->get_current_balance($customer_id);
+
+		$total_debit = 0;
+		$total_credit = 0;
+		$billings = array();
+		$payments = array();
+		$monthly = array();
+		foreach ($ledger as $e) {
+			$debit = (float) $e['debit'];
+			$credit = (float) $e['credit'];
+			$total_debit += $debit;
+			$total_credit += $credit;
+			$ts = strtotime($e['date']);
+			if ($ts !== false) {
+				$mk = date('Y-m', $ts);
+				if (!isset($monthly[$mk])) { $monthly[$mk] = array('charges' => 0, 'credits' => 0); }
+				$monthly[$mk]['charges'] += $debit;
+				$monthly[$mk]['credits'] += $credit;
+			}
+			if ($e['type'] === 'billing') {
+				$raw = isset($e['raw_data']) && is_array($e['raw_data']) ? $e['raw_data'] : array();
+				$billings[] = array(
+					'period' => trim((isset($raw['month_name']) ? $raw['month_name'] : '') . ' ' . (isset($raw['year']) ? $raw['year'] : '')),
+					'month' => isset($raw['month']) ? (int) $raw['month'] : 0,
+					'year' => isset($raw['year']) ? (int) $raw['year'] : 0,
+					'date' => $e['date'],
+					'amount' => round($debit, 2),
+					'consumed' => is_numeric($e['consumed']) ? (float) $e['consumed'] : 0,
+					'due_date' => isset($e['due_date']) ? $e['due_date'] : '',
+					'refno' => $e['refno'],
+				);
+			} elseif ($e['type'] === 'payment') {
+				$payments[] = array(
+					'date' => $e['date'],
+					'refno' => $e['refno'],
+					'amount' => round($credit, 2),
+					'description' => $e['description'],
+				);
+			}
+		}
+
+		// Billing periods (ledger is newest first) -> chronological, last 12.
+		usort($billings, function ($a, $b) {
+			$ka = $a['year'] * 100 + $a['month'];
+			$kb = $b['year'] * 100 + $b['month'];
+			return $ka === $kb ? 0 : ($ka < $kb ? -1 : 1);
+		});
+		$consumption = array_slice($billings, -12);
+		$latest_bill = !empty($billings) ? $billings[count($billings) - 1] : null;
+
+		$recent6 = array_slice($billings, -6);
+		$avg6 = 0;
+		if (!empty($recent6)) {
+			$sum = 0;
+			foreach ($recent6 as $b) { $sum += $b['consumed']; }
+			$avg6 = round($sum / count($recent6), 2);
+		}
+		$prev_bill = count($billings) >= 2 ? $billings[count($billings) - 2] : null;
+		$same_last_year = null;
+		if ($latest_bill) {
+			foreach ($billings as $b) {
+				if ($b['month'] === $latest_bill['month'] && $b['year'] === $latest_bill['year'] - 1) {
+					$same_last_year = $b;
+				}
+			}
+		}
+
+		// Charges vs payments & credits per calendar month, last 12 months.
+		$months = array();
+		$start = strtotime(date('Y-m-01') . ' -11 months');
+		for ($i = 0; $i < 12; $i++) {
+			$mk = date('Y-m', strtotime('+' . $i . ' months', $start));
+			$months[] = array(
+				'key' => $mk,
+				'label' => date('M y', strtotime($mk . '-01')),
+				'charges' => isset($monthly[$mk]) ? round($monthly[$mk]['charges'], 2) : 0,
+				'credits' => isset($monthly[$mk]) ? round($monthly[$mk]['credits'], 2) : 0,
+			);
+		}
+
+		// Running balance trend, chronological, last 24 entries.
+		$trend = array();
+		foreach (array_reverse($ledger) as $e) {
+			$trend[] = array('date' => $e['date'], 'balance' => round((float) $e['balance'], 2));
+		}
+		$trend = array_slice($trend, -24);
+
+		// What can be paid online now, and which of it is past due (same rows as the Pay page).
+		$online = $this->_online();
+		$rows = $online->get_customer_bills($customer_id);
+		$payable_total = 0;
+		$payable_count = 0;
+		$past_due = array();
+		$today = strtotime(date('Y-m-d'));
+		foreach ($rows as $row) {
+			if (empty($row['is_payable'])) { continue; }
+			$payable_total += (float) $row['amount_due'];
+			$payable_count++;
+			$due_ts = !empty($row['due_date']) ? strtotime($row['due_date']) : false;
+			if ($due_ts !== false && $due_ts < $today) {
+				$past_due[] = array(
+					'period' => trim($row['month_name'] . ' ' . $row['year']),
+					'due_date' => $row['due_date'],
+					'days' => (int) floor(($today - $due_ts) / 86400),
+					'amount_due' => round((float) $row['amount_due'], 2),
+					'penalty' => round((float) $row['penalty'], 2),
+					'consumed' => (float) $row['consumed'],
+				);
+			}
+		}
+		$past_due_total = 0;
+		foreach ($past_due as $p) { $past_due_total += $p['amount_due']; }
+
+		$last_payment = !empty($payments) ? $payments[0] : null;
+
+		return array(
+			'generated_at' => date('Y-m-d H:i:s'),
+			'balance' => round($balance, 2),
+			'is_settled' => $balance <= 0.009,
+			'total_billed' => round($total_debit, 2),
+			'total_paid' => round($total_credit, 2),
+			'payable_total' => round($payable_total, 2),
+			'payable_count' => $payable_count,
+			'past_due' => $past_due,
+			'past_due_total' => round($past_due_total, 2),
+			'latest_bill' => $latest_bill,
+			'prev_bill' => $prev_bill,
+			'same_last_year' => $same_last_year,
+			'avg_consumption_6' => $avg6,
+			'last_payment' => $last_payment,
+			'recent_payments' => array_slice($payments, 0, 5),
+			'consumption' => $consumption,
+			'months' => $months,
+			'trend' => $trend,
+			'entry_count' => count($ledger),
+		);
+	}
+
+	/** Customer sign out. */
+	public function logout() {
+		$this->session->unset_userdata('soa_customer_id');
+		$this->session->unset_userdata('soa_after_login');
+		redirect('/master/statementofaccount/search');
 	}
 	
 	/** Search Function - Customer ID Entry **/
@@ -124,6 +361,15 @@ class statementofaccount extends CI_Controller {
 				echo json_encode(array('success' => false, 'message' => 'Customer ID and Password are required.'));
 				exit;
 			}
+
+			// Only the signed-in customer (or staff) may change this customer's password.
+			$signed_in = $this->_pay_session_customer();
+			$is_owner = ($signed_in !== '' && strcasecmp(trim((string) $customer_id), $signed_in) === 0);
+			if (!$is_owner && !$this->_is_staff()) {
+				http_response_code(403);
+				echo json_encode(array('success' => false, 'message' => 'Your session has ended. Please sign in again.'));
+				exit;
+			}
 			
 			// Validate password length
 			if(strlen($password) < 3) {
@@ -167,9 +413,7 @@ class statementofaccount extends CI_Controller {
 
 	/** Convert SOA to PDF (TCPDF) **/
 	public function pdf($customer_id='') {
-		if ($customer_id == '') {
-			redirect('/master/statementofaccount/search');
-		}
+		$customer_id = $this->_portal_customer_or_deny($customer_id);
 
 		$customer_info = $this->my_model->get_customer_info($customer_id);
 		if (empty($customer_info)) {
@@ -324,8 +568,14 @@ class statementofaccount extends CI_Controller {
 			}
 		}
 
-		$this->load->view($this->publicHeaderPage, array('page_title' => 'Online Pay - Water Billing System'));
+		$shell = $this->_app_shell($customer_id, 'pay', 'Online Pay', array(
+			'app_subtitle' => 'Pay your bill with QR Ph',
+			'app_brand_title' => 'Online Payment',
+			'app_shell_class' => 'has-pay-bar',
+		));
+		$this->load->view($this->appHeaderPage, $shell);
 		$this->load->view('statementofaccount_pay', $data);
+		$this->load->view($this->appFooterPage, $shell);
 	}
 
 	/** JSON: customer header + billing periods with amounts due. */
@@ -455,12 +705,16 @@ class statementofaccount extends CI_Controller {
 		$attempt = $this->_pay_attempt_or_deny($id);
 		$rows = json_decode(isset($attempt['bill_rows_json']) ? (string) $attempt['bill_rows_json'] : '', true);
 
-		$this->load->view($this->publicHeaderPage, array('page_title' => 'Payment Received - Water Billing System'));
+		$shell = $this->_app_shell(trim((string) $attempt['customer_id']), 'pay', 'Payment Received', array(
+			'app_subtitle' => 'Online payment confirmation',
+		));
+		$this->load->view($this->appHeaderPage, $shell);
 		$this->load->view('statementofaccount_pay_success', array(
 			'attempt' => $attempt,
 			'customer' => $this->online_model->get_customer_info($attempt['customer_id']),
 			'rows' => is_array($rows) ? $rows : array(),
 		));
+		$this->load->view($this->appFooterPage, $shell);
 	}
 
 	/** 80mm receipt for the customer. */
