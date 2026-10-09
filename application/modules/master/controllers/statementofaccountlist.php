@@ -109,7 +109,7 @@ class statementofaccountlist extends CI_Controller {
 			foreach ($records as $row) {
 				$row_status = isset($row['status']) ? $row['status'] : 0;
 				$customer_code = isset($row['customer_id']) ? $row['customer_id'] : '';
-				$soa_url = base_url() . 'master/statementofaccount/index/' . rawurlencode($customer_code);
+				$soa_url = base_url() . 'master/statementofaccount/soa/' . rawurlencode($customer_code);
 
 				if ($row_status == 1) {
 					$status_html = '<span class="badge badge-success badge-pill">Active</span>';

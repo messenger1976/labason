@@ -2,8 +2,8 @@
 /**
  * Statement of Account — Online Pay (customer self-service QR Ph).
  *
- * Loaded after views/admin-includes/public_header.php (Bootstrap 3 + Font
- * Awesome 4) and closes the wrapper divs the header leaves open.
+ * Rendered inside the customer app shell (customer_app_header.php /
+ * customer_app_footer.php); the shell prints the logo header and navigation.
  *
  * Layout follows mobile_payment.php (period cards, sticky total bar, QR overlay)
  * without the customer search: the page always shows the signed-in customer.
@@ -23,7 +23,7 @@ $this->load->library('Paymongo');
 $fee_cfg = $this->paymongo->fee_settings();
 
 $base = base_url() . 'master/statementofaccount/';
-$soa_url = $base . 'index/' . rawurlencode($customer_id);
+$soa_url = $base . 'soa/' . rawurlencode($customer_id);
 $pay_url = $base . 'pay/' . rawurlencode($customer_id);
 
 $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); };
@@ -43,9 +43,10 @@ $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
 	.soa-pay-brand .t { font-weight: 700; font-size: 16px; color: #24405c; margin-top: 6px; letter-spacing: .5px; }
 	.soa-pay-card {
 		background: #fff;
-		border-radius: 14px;
-		box-shadow: 0 2px 6px rgba(0, 0, 0, .12);
-		margin-bottom: 10px;
+		border: 1px solid #dfe7ee;
+		border-radius: .75rem;
+		box-shadow: 0 1px 2px rgba(6, 40, 66, .05), 0 2px 8px rgba(6, 40, 66, .05);
+		margin-bottom: 12px;
 		overflow: hidden;
 	}
 	.soa-pay-pad { padding: 12px; }
@@ -53,7 +54,7 @@ $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
 		display: flex; align-items: center; gap: 8px;
 		font-weight: 700; color: #24405c; font-size: 15px; margin-bottom: 8px;
 	}
-	.soa-pay-title i { color: #3276b1; }
+	.soa-pay-title i { color: #0a6ba3; }
 
 	.soa-pay-cust { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
 	.soa-pay-cust .name { font-weight: 700; color: #24405c; font-size: 15px; }
@@ -138,15 +139,6 @@ $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
 	data-bills-url="<?php echo $h($base . 'pay_bills/' . rawurlencode($customer_id)); ?>"
 	data-create-url="<?php echo $h($base . 'pay_create_qr'); ?>">
 
-	<div class="soa-pay-top">
-		<a href="<?php echo $h($soa_url); ?>" class="btn btn-default btn-sm"><i class="fa fa-arrow-left"></i> Back to Statement</a>
-	</div>
-
-	<div class="soa-pay-brand">
-		<img src="<?php echo site_url(); ?>images/mroxas-logo-report.jpg" alt="Water District Logo">
-		<div class="t">ONLINE PAYMENT</div>
-	</div>
-
 	<?php if (!$can_pay) { ?>
 	<div class="soa-pay-alert warning">
 		<strong>Online payment is not available right now.</strong>
@@ -176,6 +168,8 @@ $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
 	<div class="soa-pay-alert info">
 		Pay using any bank or e-wallet app that supports <strong>QR Ph</strong>. The bill is updated as soon as the payment is confirmed.
 	</div>
+
+	<a href="<?php echo $h($soa_url); ?>" class="soa-pay-link"><i class="fa fa-file-text-o"></i> View full Statement of Account</a>
 </div>
 
 <div class="soa-pay-bar" id="soa_pay_bar" style="display:none;">
@@ -466,7 +460,3 @@ $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
 	load();
 })();
 </script>
-			</div><!-- /#content -->
-		</div><!-- /#main -->
-	</body>
-</html>

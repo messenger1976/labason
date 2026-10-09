@@ -2,8 +2,8 @@
 /**
  * Statement of Account — Online Pay confirmation (customer).
  *
- * Loaded after views/admin-includes/public_header.php and closes the wrapper
- * divs the header leaves open. Layout follows mobile_payment_success.php.
+ * Rendered inside the customer app shell (customer_app_header.php /
+ * customer_app_footer.php). Layout follows mobile_payment_success.php.
  *
  * Expects: $attempt, $customer, $rows
  */
@@ -40,8 +40,8 @@ $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
 <style>
 	.soa-succ-wrap { max-width: 720px; margin: 0 auto; font-size: 14px; }
 	.soa-succ-card {
-		background: #fff; border-radius: 14px;
-		box-shadow: 0 2px 6px rgba(0, 0, 0, .12); margin-bottom: 10px; overflow: hidden;
+		background: #fff; border: 1px solid #dfe7ee; border-radius: .75rem;
+		box-shadow: 0 1px 2px rgba(6, 40, 66, .05), 0 2px 8px rgba(6, 40, 66, .05); margin-bottom: 12px; overflow: hidden;
 	}
 	.soa-succ-pad { padding: 14px; }
 	.soa-succ-hero { text-align: center; padding: 20px 14px; }
@@ -137,14 +137,13 @@ $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); 
 					<i class="fa fa-qrcode"></i> Back to Online Pay
 				</a>
 				<?php } ?>
-				<a class="soa-succ-btn secondary" href="<?php echo $h($base . 'index/' . rawurlencode($customer_id)); ?>">
-					<i class="fa fa-file-text-o"></i> Back to Statement
+				<a class="soa-succ-btn secondary" href="<?php echo $h($base . 'soa/' . rawurlencode($customer_id)); ?>">
+					<i class="fa fa-file-text-o"></i> View Statement of Account
+				</a>
+				<a class="soa-succ-btn ghost" href="<?php echo $h($base . 'index/' . rawurlencode($customer_id)); ?>">
+					<i class="fa fa-tachometer"></i> Back to Dashboard
 				</a>
 			</div>
 		</div>
 	</div>
 </div>
-			</div><!-- /#content -->
-		</div><!-- /#main -->
-	</body>
-</html>

@@ -1,7 +1,7 @@
 // Service Worker for the customer Statement of Account PWA.
 // Registered from public_header.php with scope <base>/master/statementofaccount/.
 const CACHE_PREFIX = 'statement-of-account-';
-const CACHE_NAME = CACHE_PREFIX + 'v3';
+const CACHE_NAME = CACHE_PREFIX + 'v4';
 const BASE = new URL('./', self.location).href;
 const LOGIN_URL = BASE + 'master/statementofaccount/search';
 
@@ -9,6 +9,9 @@ const PRECACHE = [
   'master/statementofaccount/search',
   'css/bootstrap.min.css',
   'css/font-awesome.min.css',
+  'css/soa-app.css?v=1',
+  'js/soa-app.js?v=1',
+  'images/mroxas-logo-report.jpg',
   'img/soa/lwd-seal.png',
   'img/soa/water-hero.webp',
   'img/soa/water-hero-sm.webp'
