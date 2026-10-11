@@ -10,182 +10,147 @@ class dashboard extends CI_Controller {
   		$this->load->model('dashboard_model','my_model');   //*****    Model Loading     *****//	
 		$this->load->model('common_model','comm_model');	
 		$this->load->library('form_validation');
-		$this->load->library('pagination');
 		$this->form_validation->set_error_delimiters('<div class="error" style="color:red;">', '</div>');
-		error_reporting(E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
 		error_reporting(0);
 		ini_set('display_errors','off'); 				
 		$this->load->model('adminheader_model','top_model');
-		/*if($this->session->userdata('usertype') == 'subadmin'){
-			$this->head['roleResponsible'] = $this->top_model->get_responsibilities();
-			//echo '<pre>';print_r($this->head['roleResponsible']);exit;
-		}else{
-			$this->head['roleResponsible'] = array();
-		}
-		if(	array_key_exists('dashboard',$this->head['roleResponsible']) && $this->session->userdata('usertype') == 'subadmin' ){
-			$this->top_model->get_responsibilities_conditions($this->head['roleResponsible']['dashboard']);
-		}*/
-		
+		date_default_timezone_set('Asia/Manila');
     }
+
 	public function index($mode =''){
+		// Legacy JSON list endpoints (kept for compatibility).
+		$legacy = array(
+			'pagination'      => 'get_expenses_list',
+			'paginationtwo'   => 'get_month_expenses_list',
+			'paginationthree' => 'get_list_meter_income',
+			'paginationfrst'  => 'get_customers_list',
+		);
+		if (isset($legacy[$mode])) {
+			$fn = $legacy[$mode];
+			$rows = $this->my_model->$fn();
+			if (!empty($rows)) {
+				echo json_encode(array('data' => $rows));
+			}
+			exit;
+		}
+
 		$header['roleResponsible'] = $this->top_model->get_responsibilities();
-		$data['msg'] ='';
-		//*****  View Loading  *****//
-		
-		// Get available years and selected year
+		$data['msg'] = '';
+
 		$availableYears = $this->my_model->get_available_years();
-		$selectedYearInput = $this->input->get('year') ? $this->input->get('year') : (isset($_POST['year']) ? $_POST['year'] : date('Y'));
-		$selectedYear = (int)$selectedYearInput; // Convert to integer for consistency
-		
-		// Validate selected year is in available years or use current year
-		if(empty($availableYears) || !in_array($selectedYear, $availableYears)) {
+		$selectedYear = (int)($this->input->get('year') ? $this->input->get('year') : date('Y'));
+		if (empty($availableYears) || !in_array($selectedYear, $availableYears)) {
 			$selectedYear = (int)date('Y');
 		}
-		
-		$yearrep = $selectedYear;
 		$data['selected_year'] = $selectedYear;
 		$data['available_years'] = $availableYears;
-		
-		//$header['host'] = $this->comm_model->get_single_record();				
-		//$header['record_info'] = $this->top_model->get_last_login_details(1);
-		$this->load->view($this->headerPage,$header);
-		
-		$data['customers'] = $this->my_model->get_total_customers();	
-		$data['meter'] = $this->my_model->get_total_meter_customers();	
-		$data['monthly'] = $this->my_model->get_total_monthly_customers();	
-		$data['total_expenses'] = $this->my_model->get_total_expenses();	
-		$data['meter_pay'] = $this->my_model->get_total_meter_pay();	
-		$data['monthly_pay'] = $this->my_model->get_total_monthly_pay();	
-		$data['total_prbm'] = $this->my_model->get_total_technical_problems();	
-		$data['solved_prbm'] = $this->my_model->get_total_solved_problems();
-		$data['customer'] = $this->my_model->get_customers_list();
-		$data['expenses'] = $this->my_model->get_expenses_list();
-		$data['leaking'] = $this->my_model->get_total_leaking_balance();
-		
-		// Load SMS notification statistics
-		$this->load->model('mobilenotifications_model','sms_model');
-		$data['sms_stats'] = $this->sms_model->get_notification_stats();
 
-		$data['JanTotal'] = $this->my_model->get_total_sales(1,$yearrep,99);
-		$data['FebTotal'] = $this->my_model->get_total_sales(2,$yearrep,99);
-		$data['MarchTotal'] = $this->my_model->get_total_sales(3,$yearrep,99);
-		$data['AprilTotal'] = $this->my_model->get_total_sales(4,$yearrep,99);
-		$data['MayTotal'] = $this->my_model->get_total_sales(5,$yearrep,99);
-		$data['JuneTotal'] = $this->my_model->get_total_sales(6,$yearrep,99);
-		$data['JulyTotal'] = $this->my_model->get_total_sales(7,$yearrep,99);
-		$data['AugTotal'] = $this->my_model->get_total_sales(8,$yearrep,99);
-		$data['SepTotal'] = $this->my_model->get_total_sales(9,$yearrep,99);
-		$data['OctTotal'] = $this->my_model->get_total_sales(10,$yearrep,99);
-		$data['NovTotal'] = $this->my_model->get_total_sales(11,$yearrep,99);
-		$data['DecTotal'] = $this->my_model->get_total_sales(12,$yearrep,99);
-		
-		$data['JanTotalPaid'] = $this->my_model->get_total_sales(1,$yearrep,1);
-		$data['FebTotalPaid'] = $this->my_model->get_total_sales(2,$yearrep,1);
-		$data['MarchTotalPaid'] = $this->my_model->get_total_sales(3,$yearrep,1);
-		$data['AprilTotalPaid'] = $this->my_model->get_total_sales(4,$yearrep,1);
-		$data['MayTotalPaid'] = $this->my_model->get_total_sales(5,$yearrep,1);
-		$data['JuneTotalPaid'] = $this->my_model->get_total_sales(6,$yearrep,1);
-		$data['JulyTotalPaid'] = $this->my_model->get_total_sales(7,$yearrep,1);
-		$data['AugTotalPaid'] = $this->my_model->get_total_sales(8,$yearrep,1);
-		$data['SepTotalPaid'] = $this->my_model->get_total_sales(9,$yearrep,1);
-		$data['OctTotalPaid'] = $this->my_model->get_total_sales(10,$yearrep,1);
-		$data['NovTotalPaid'] = $this->my_model->get_total_sales(11,$yearrep,1);
-		$data['DecTotalPaid'] = $this->my_model->get_total_sales(12,$yearrep,1);
-		
-		$data['JanTotalUnpaid'] = $this->my_model->get_total_sales(1,$yearrep,0);
-		$data['FebTotalUnpaid'] = $this->my_model->get_total_sales(2,$yearrep,0);
-		$data['MarchTotalUnpaid'] = $this->my_model->get_total_sales(3,$yearrep,0);
-		$data['AprilTotalUnpaid'] = $this->my_model->get_total_sales(4,$yearrep,0);
-		$data['MayTotalUnpaid'] = $this->my_model->get_total_sales(5,$yearrep,0);
-		$data['JuneTotalUnpaid'] = $this->my_model->get_total_sales(6,$yearrep,0);
-		$data['JulyTotalUnpaid'] = $this->my_model->get_total_sales(7,$yearrep,0);
-		$data['AugTotalUnpaid'] = $this->my_model->get_total_sales(8,$yearrep,0);
-		$data['SepTotalUnpaid'] = $this->my_model->get_total_sales(9,$yearrep,0);
-		$data['OctTotalUnpaid'] = $this->my_model->get_total_sales(10,$yearrep,0);
-		$data['NovTotalUnpaid'] = $this->my_model->get_total_sales(11,$yearrep,0);
-		$data['DecTotalUnpaid'] = $this->my_model->get_total_sales(12,$yearrep,0);
+		$this->load->view($this->headerPage, $header);
 
-		// Get all zones with customer counts dynamically
-		$data['zones'] = $this->my_model->get_all_zones_with_customer_counts();
-		
-		// Keep old zone variables for backward compatibility if needed
-		$data['zone1'] = $this->my_model->get_cust_by_zone(1);
-		$data['zone2'] = $this->my_model->get_cust_by_zone(2);
-		$data['zone3'] = $this->my_model->get_cust_by_zone(3);
-		$data['zone4'] = $this->my_model->get_cust_by_zone(4);
-		
-		$data['ticket0'] = $this->my_model->get_mytickets_chart(0);
-		$data['ticket1'] = $this->my_model->get_mytickets_chart(1);
-		$data['ticket2'] = $this->my_model->get_mytickets_chart(2);
-		$data['ticket3'] = $this->my_model->get_mytickets_chart(3);
-		$data['ticket4'] = $this->my_model->get_mytickets_chart(4);
-		$data['ticket5'] = $this->my_model->get_mytickets_chart(5);
-		$data['ticket6'] = $this->my_model->get_mytickets_chart(6);
-		
-		//print_r($data['JanTotal']);
-		//$data['this_expenses'] = $this->my_model->get_month_expenses_list();
-		//$data['monthly_income'] = $this->my_model->get_list_monthly_income();
-		//$data['meter_income'] = $this->my_model->get_list_meter_income();
-		//echo '<pre>';print_r($data);exit;
-		$config = array();
-		$config["base_url"] = base_url() . "index.php/master/dashboard/index";		
-		$config["total_rows"] = $this->my_model->record_count();
-        $config["per_page"] = 2;
-        $config["uri_segment"] = 3;		
-		$this->pagination->initialize($config);		
-		$page = ($this->uri->segment(3)) ? $this->uri->segment(3) : 0;  		 
-		// $data['expenses'] = $this->my_model->get_expenses_list($config["per_page"], $page);	
-		// $str_links = $this->pagination->create_links();
-		// $data["links"] = explode('&nbsp;',$str_links );
-		
-		if($mode == 'pagination'){
-			if($details = $this->my_model->get_expenses_list()){				
-					if(count($details) > 0){
-				$response = array("data"=>$details);			
-				echo json_encode($response);				
-				exit;
-				} 
+		$data['dash'] = $this->build_dashboard($selectedYear);
+		$this->load->view($this->listPage, $data);
+	}
+
+	private function build_dashboard($year) {
+		$m = $this->my_model;
+		$today          = date('Y-m-d');
+		$monthStart     = date('Y-m-01');
+		$prevMonthStart = date('Y-m-01', strtotime('first day of last month'));
+		$prevMonthEnd   = date('Y-m-t', strtotime('first day of last month'));
+		// Same number of days into last month, for a fair month-to-date comparison.
+		$prevMonthSameDay = min(date('Y-m-d', strtotime($prevMonthStart.' +'.(date('j') - 1).' days')), $prevMonthEnd);
+
+		$d = array();
+		$d['today']        = $today;
+		$d['coll_today']   = $m->get_collections_between($today, $today);
+		$d['coll_mtd']     = $m->get_collections_between($monthStart, $today);
+		$d['coll_prev_mtd']= $m->get_collections_between($prevMonthStart, $prevMonthSameDay);
+		$d['coll_prev_month'] = $m->get_collections_between($prevMonthStart, $prevMonthEnd);
+		$d['coll_ytd']     = $m->get_collections_between($year.'-01-01', $year.'-12-31');
+		$d['daily']        = $m->get_daily_collections(30);
+		$d['breakdown']    = $m->get_collection_breakdown($monthStart, $today);
+		$d['breakdown_prev'] = $m->get_collection_breakdown($prevMonthStart, $prevMonthEnd);
+		$d['by_month']     = $m->get_billing_by_month($year);
+		$d['periods']      = $m->get_latest_billing_periods(2);
+		$d['aging']        = $m->get_receivable_aging();
+		$d['top_unpaid']   = $m->get_top_unpaid_accounts(10);
+		$d['zones']        = $m->get_zone_summary();
+		$d['consumption']  = $m->get_consumption_by_category($year, $d['by_month']);
+		$d['mix']          = $m->get_customer_mix();
+		$d['customers']    = $m->get_customer_counts($monthStart);
+		$d['leaking']      = $m->get_leaking_summary();
+		$d['tickets']      = $m->get_ticket_status_counts();
+		$d['insights']     = $this->build_insights($d);
+		return $d;
+	}
+
+	/** Plain-language findings for management, derived from the figures above. */
+	private function build_insights($d) {
+		$out = array();
+		$months = array(1=>'January','February','March','April','May','June','July','August','September','October','November','December');
+
+		if (!empty($d['periods'][0]) && $d['periods'][0]['billed'] > 0) {
+			$p = $d['periods'][0];
+			$eff = $p['paid'] / $p['billed'] * 100;
+			$text = sprintf('Collection efficiency for the %s %d billing is <b>%.1f%%</b>', $months[(int)$p['m']], $p['y'], $eff);
+			$tone = $eff >= 95 ? 'good' : ($eff >= 85 ? 'warn' : 'bad');
+			if (!empty($d['periods'][1]) && $d['periods'][1]['billed'] > 0) {
+				$q = $d['periods'][1];
+				$prev = $q['paid'] / $q['billed'] * 100;
+				$text .= sprintf(' (%s %.1f pts vs %s).', $eff >= $prev ? 'up' : 'down', abs($eff - $prev), $months[(int)$q['m']]);
+			} else {
+				$text .= '.';
 			}
+			$out[] = array('tone' => $tone, 'icon' => 'fa-percentage', 'text' => $text);
 		}
-		
-		if($mode == 'paginationtwo'){
-			if($detailss = $this->my_model->get_month_expenses_list()){				
-					if(count($detailss) > 0){
-				$responses = array("data"=>$detailss);			
-				echo json_encode($responses);				
-				exit;
-				} 
-			}
+
+		$a3 = $d['aging'][3];
+		if ($a3['accounts'] > 0) {
+			$out[] = array('tone' => 'bad', 'icon' => 'fa-user-slash', 'text' => sprintf(
+				'<b>%s accounts</b> have 3 or more unpaid bills totalling <b>&#8369;%s</b>. These are candidates for a disconnection notice.',
+				number_format($a3['accounts']), number_format($a3['total'], 2)));
 		}
-		
-		if($mode == 'paginationthree'){
-			if($detai = $this->my_model->get_list_meter_income()){				
-					if(count($detai) > 0){
-				$respo = array("data"=>$detai);			
-				echo json_encode($respo);				
-				exit;
-				} 
-			}
-		} 
-		
-		if($mode == 'paginationfrst'){
-			if($detai = $this->my_model->get_customers_list()){				
-					if(count($detai) > 0){
-				$respo = array("data"=>$detai);			
-				echo json_encode($respo);				
-				exit;
-				} 
-			}
-		} 
-		
-		
-		
-		$data['total_rows'] = $config["total_rows"];
-		//$data['this_expenses'] = $this->my_model->get_month_expenses_list();
-		//$data['monthly_income'] = $this->my_model->get_list_monthly_income();
-		 //$data['meter_income'] = $this->my_model->get_list_meter_income();
-		//echo '<pre>';print_r($data);exit;
-		$this->load->view($this->listPage,$data);
+
+		$totalUnpaid = 0; $topZone = null;
+		foreach ($d['zones'] as $z) {
+			$totalUnpaid += $z['unpaid'];
+			if ($topZone === null || $z['unpaid'] > $topZone['unpaid']) { $topZone = $z; }
+		}
+		if ($topZone && $topZone['unpaid'] > 0 && $totalUnpaid > 0) {
+			$out[] = array('tone' => 'warn', 'icon' => 'fa-map-marker-alt', 'text' => sprintf(
+				'<b>%s</b> carries the largest unpaid balance: &#8369;%s (%.0f%% of all receivables, %s accounts). Prioritise it for collection visits.',
+				htmlspecialchars($topZone['zone']), number_format($topZone['unpaid'], 2),
+				$topZone['unpaid'] / $totalUnpaid * 100, number_format($topZone['unpaid_accounts'])));
+		}
+
+		$mtd = (float)$d['coll_mtd']['total'];
+		$prevMtd = (float)$d['coll_prev_mtd']['total'];
+		if ($prevMtd > 0 && $mtd > 0) {
+			$chg = ($mtd - $prevMtd) / $prevMtd * 100;
+			$out[] = array('tone' => $chg >= 0 ? 'good' : 'warn', 'icon' => 'fa-coins', 'text' => sprintf(
+				'Month-to-date collections are <b>&#8369;%s</b>, %s %.1f%% compared with the same days last month.',
+				number_format($mtd, 2), $chg >= 0 ? 'up' : 'down', abs($chg)));
+		} elseif ($mtd == 0 && (float)$d['coll_prev_month']['total'] > 0) {
+			$out[] = array('tone' => 'info', 'icon' => 'fa-coins', 'text' => sprintf(
+				'No collections posted yet this month. Last month closed at <b>&#8369;%s</b> from %s receipts.',
+				number_format($d['coll_prev_month']['total'], 2), number_format($d['coll_prev_month']['receipts'])));
+		}
+
+		$best = null;
+		foreach ($d['daily'] as $row) {
+			if ($best === null || $row['total'] > $best['total']) { $best = $row; }
+		}
+		if ($best && $best['total'] > 0) {
+			$out[] = array('tone' => 'info', 'icon' => 'fa-calendar-star', 'text' => sprintf(
+				'Busiest cashier day in the last 30 days was <b>%s</b> with &#8369;%s from %s receipts. Plan teller staffing around due dates.',
+				date('D, M j', strtotime($best['date'])), number_format($best['total'], 2), number_format($best['receipts'])));
+		}
+
+		if ((int)$d['leaking']['pending'] > 0) {
+			$out[] = array('tone' => 'warn', 'icon' => 'fa-tint', 'text' => sprintf(
+				'<b>%s leak-repair ledger(s)</b> are waiting for approval.', number_format($d['leaking']['pending'])));
+		}
+		return $out;
 	}
 	
 }
